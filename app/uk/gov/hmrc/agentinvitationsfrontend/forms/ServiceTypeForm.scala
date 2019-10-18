@@ -18,7 +18,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data.Form
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 
 object ServiceTypeForm {
 
@@ -31,4 +34,33 @@ object ServiceTypeForm {
           .transform(_.getOrElse(""), (Some(_)): String => Option[String])
       )
     )
+
+  /** Single select - returns String to be compatible with the above form
+    * empty string denotes selecting "No"
+    * */
+  def selectSingleServiceForm(service: String, clientType: ClientType): Form[String] = {
+
+    val UNDEF = "undefined"
+
+    def serviceValidator(errorMessageKey: String): Constraint[String] = Constraint[String] { service: String =>
+      if (service.isEmpty || supportedServices.contains(service))
+        Valid
+      else
+        Invalid(ValidationError(errorMessageKey))
+    }
+
+    Form[String](
+      single(
+        "accepted" -> optional(normalizedText)
+          .transform[String](
+            maybeChoice =>
+              maybeChoice.fold(UNDEF) {
+                case "true"  => service
+                case "false" => ""
+                case _       => UNDEF
+            },
+            service => if (service == UNDEF) None else Some(service))
+          .verifying(serviceValidator(s"select-single-service.$service.$clientType.error"))
+      ))
+  }
 }

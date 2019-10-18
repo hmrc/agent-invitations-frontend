@@ -22,7 +22,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
@@ -47,7 +47,8 @@ class AgentInvitationJourneyController @Inject()(
   relationshipsService: RelationshipsService,
   asaConnector: AgentServicesAccountConnector,
   val authActions: AuthActions,
-  override val journeyService: AgentInvitationJourneyService)(
+  override val journeyService: AgentInvitationJourneyService,
+  countryNamesLoader: CountryNamesLoader)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -67,6 +68,9 @@ class AgentInvitationJourneyController @Inject()(
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
   private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+
+  private val countries = countryNamesLoader.load
+  private val validCountryCodes = countries.keys.toSet
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -98,45 +102,29 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcCgt))
   }
 
-  def submitPersonalSelectItsa: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCMTDIT, business))(
-      Transitions.selectedPersonalServiceItsa)
-  }
-
-  def submitPersonalSelectPir: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCPIR, business))(
-      Transitions.selectedPersonalServicePir)
-  }
-
-  def submitPersonalSelectVat: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCMTDVAT, business))(
-      Transitions.selectedPersonalServiceVat)
-  }
-
-  def submitPersonalSelectCgt: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCCGTPD, business))(
-      Transitions.selectedPersonalServiceCgt)
+  def submitPersonalSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(service, personal))(
+      Transitions.selectedPersonalService(
+        featureFlags.showHmrcMtdIt,
+        featureFlags.showPersonalIncome,
+        featureFlags.showHmrcMtdVat,
+        featureFlags.showHmrcCgt))
   }
 
   def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCMTDVAT, business))(
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(
       Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
   }
 
-  def submitTrustSelectTrust: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(TRUST, business))(
-      Transitions.selectedTrustServiceTrust(featureFlags.showHmrcCgt))
-  }
-
-  def submitTrustSelectCgt: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CommonConfirmationForms.selectSingleServiceForm(HMRCCGTPD, business))(
-      Transitions.selectedTrustServiceCgt)
+  def submitTrustSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(service, business))(
+      Transitions.selectedTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
   }
 
   // this is only for multi-select option forms
   def submitTrustSelectServiceMultiple: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
-      Transitions.selectedTrustServiceMultiple(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
+      Transitions.selectedTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
   }
 
   def identifyClientRedirect: Action[AnyContent] =
@@ -152,6 +140,15 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt(cgtRef =>
+      invitationsConnector.getCgtSubscription(cgtRef)))
+  }
+
+  def showConfirmCgtCountryCode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ConfirmCountryCodeCgt =>
+  }
+
+  def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt(cgtRef =>
       invitationsConnector.getCgtSubscription(cgtRef)))
   }
 
@@ -216,8 +213,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
-    case _: ConfirmClientPersonalCgt =>
-    case _: ConfirmClientTrustCgt    =>
+    case _: ConfirmClientCgt         =>
   }
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
@@ -251,11 +247,8 @@ class AgentInvitationJourneyController @Inject()(
 
   def showNotMatched: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: KnownFactNotMatched =>
-    case TrustNotFound          =>
-  }
-
-  def showInvalidCgtReferencePage: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case InvalidCgtAccountReference(cgtRef) => ???
+    case _: TrustNotFound       =>
+    case _: CgtRefNotFound      =>
   }
 
   def showCannotCreateRequest: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -302,18 +295,20 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientBusinessVat     => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientTrust           => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPersonalCgt     => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientTrustCgt        => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmClientCgt             => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmPostcodeCgt           => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
-    case _: InvalidCgtAccountReference   => routes.AgentInvitationJourneyController.showInvalidCgtReferencePage()
+    case _: ConfirmCountryCodeCgt        => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
     case _: ReviewAuthorisationsPersonal => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case _: ReviewAuthorisationsTrust    => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
+    case DeleteAuthorisationRequestTrust(authorisationRequest, _) =>
+      routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
-    case TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: TrustNotFound             => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CgtRefNotFound            => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
     case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
     case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
@@ -350,19 +345,19 @@ class AgentInvitationJourneyController @Inject()(
         backLinkFor(breadcrumbs).url,
         routes.AgentInvitationJourneyController.showReviewAuthorisations()
       )
-      if (config.showMultiSelect) {
+
+      if (config.showMultiSelect)
         Ok(select_from_services(formWithErrors.or(ServiceTypeForm.form), config))
-      } else {
+      else
         Ok(
           select_single_service(
-            CommonConfirmationForms.selectSingleServiceForm(config.remainingService, personal),
+            formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, personal)),
             config))
-      }
 
     case SelectBusinessService =>
       Ok(
         select_single_service(
-          formWithErrors.or(CommonConfirmationForms.selectSingleServiceForm(HMRCMTDVAT, business)),
+          formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business)),
           BusinessSelectServicePageConfig(
             submitCall = routes.AgentInvitationJourneyController.submitBusinessSelectService(),
             backLink = backLinkFor(breadcrumbs).url,
@@ -382,7 +377,7 @@ class AgentInvitationJourneyController @Inject()(
       } else {
         Ok(
           select_single_service(
-            formWithErrors.or(CommonConfirmationForms.selectSingleServiceForm(config.remainingService, business)),
+            formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, business)),
             config))
       }
 
@@ -458,31 +453,31 @@ class AgentInvitationJourneyController @Inject()(
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
           routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
-    case ConfirmClientPersonalCgt(authorisationRequest, _) =>
+    case ConfirmClientCgt(authorisationRequest, _) =>
       Ok(
         confirm_client(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
           routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
-    case ConfirmClientTrustCgt(authorisationRequest, _) =>
-      Ok(
-        confirm_client(
-          authorisationRequest.clientName,
-          formWithErrors.or(ConfirmClientForm),
-          backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient(),
-          Some(authorisationRequest.invitation.clientId)
-        ))
-
-    case ConfirmPostcodeCgt(_, clientType, _) =>
+    case ConfirmPostcodeCgt(_, clientType, _, _, _) =>
       Ok(confirm_postcode_cgt(clientType, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url))
+
+    case ConfirmCountryCodeCgt(_, clientType, _, _, _) =>
+      Ok(
+        confirm_countryCode_cgt(
+          clientType,
+          countries,
+          formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
+          backLinkFor(breadcrumbs).url))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
       Ok(
@@ -490,7 +485,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ConfirmClientPersonalVat(authorisationRequest, _) =>
@@ -499,7 +496,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ConfirmClientBusinessVat(authorisationRequest) =>
@@ -508,7 +507,9 @@ class AgentInvitationJourneyController @Inject()(
           authorisationRequest.clientName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.submitConfirmClient()
+          routes.AgentInvitationJourneyController.submitConfirmClient(),
+          authorisationRequest.invitation.clientIdentifierType,
+          authorisationRequest.invitation.clientId
         ))
 
     case ReviewAuthorisationsPersonal(services, basket) =>
@@ -536,6 +537,12 @@ class AgentInvitationJourneyController @Inject()(
         ))
 
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
+      Ok(
+        delete(
+          DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
+          DeleteAuthorisationForm))
+
+    case DeleteAuthorisationRequestTrust(authorisationRequest, _) =>
       Ok(
         delete(
           DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
@@ -571,12 +578,21 @@ class AgentInvitationJourneyController @Inject()(
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
 
-    case TrustNotFound =>
+    case TrustNotFound(basket) =>
       Ok(
         not_matched(
-          hasJourneyCache = false,
+          basket.nonEmpty,
           routes.AgentInvitationJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+        ))
+
+    case CgtRefNotFound(cgtRef, basket) =>
+      Ok(
+        cgtRef_notFound(
+          basket.nonEmpty,
+          routes.AgentInvitationJourneyController.showIdentifyClient(),
+          Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+          cgtRef.value
         ))
 
     case CannotCreateRequest(basket) =>

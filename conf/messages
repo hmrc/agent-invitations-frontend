@@ -34,8 +34,8 @@ error.nino.required=Enter your client’s National Insurance number
 # Postcode
 identify-client.postcode.label=Postcode
 identify-client.postcode.hint=This is the postcode of your client’s registered address
-enter-postcode.invalid-format=Enter a valid postcode, like AA1 1AA
-enter-postcode.invalid-characters=Postcode must only include letters a to z, numbers and spaces, for example AA1 1AA
+enter-postcode.invalid-format=Enter a real postcode
+enter-postcode.invalid-characters=Enter a real postcode
 error.postcode.required=Enter your client’s postcode
 
 # Vrn
@@ -117,17 +117,17 @@ select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to subm
 select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
 select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
 
-select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client's PAYE income record?
-select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client's PAYE income record
+select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client’s PAYE income record?
+select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client’s PAYE income record
 
-select-single-service.HMRC-MTD-IT.personal.header=Do you want to send this client's Income Tax updates through software?
-select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to send this client's Income Tax updates through software
+select-single-service.HMRC-MTD-IT.personal.header=Do you want to send this client’s Income Tax updates through software?
+select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to send this client’s Income Tax updates through software
 
-select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage this client's Capital Gains Tax on UK property disposals?
-select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage this client's Capital Gains Tax on UK property disposals
+select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage this client’s Capital Gains Tax on UK property disposals?
+select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property disposals
 
-select-single-service.HMRC-CGT-PD.business.header=Do you want to manage a trust's Capital Gains Tax on UK property disposals?
-select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage a trust's Capital Gains Tax on UK property disposals
+select-single-service.HMRC-CGT-PD.business.header=Do you want to manage a trust’s Capital Gains Tax on UK property disposals?
+select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage a trust’s Capital Gains Tax on UK property disposals
 
 
 ## Identify Trust Client
@@ -137,8 +137,8 @@ identify-trust-client.p1=This will help us match their details against informati
 identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 ## Identify CGT Client
-identify-cgt-client.trust.header.personal=What is your client’s Capital Gains Tax (CGT) account reference?
-identify-cgt-client.trust.header.business=What is the trust’s Capital Gains Tax (CGT) account reference?
+identify-cgt-client.header.personal=What is your client’s Capital Gains Tax (CGT) account reference?
+identify-cgt-client.header.business=What is the trust’s Capital Gains Tax (CGT) account reference?
 identify-cgt-client.p1=This will help us match their details against information we hold.
 identify-cgt-client.p2=Capital Gains Tax (CGT) account reference
 identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
@@ -146,7 +146,20 @@ confirm-postcode-cgt.header=What is your client’s postcode?
 confirm-postcode-cgt.p1=This will help us match their details against information we hold.
 confirm-postcode-cgt.label=Postcode
 confirm-postcode-cgt.hint=This is the postcode of the address where the trust receives their Capital Tax Gains correspondence
+confirm-countryCode-cgt.header=Which country is your client from?
+confirm-countryCode-cgt.p1=This will help us match their details against information we hold.
+confirm-countryCode-cgt.hint=Start typing the country
+confirm-countryCode-cgt.label=Country
+error.country.empty=Enter the country that your client is from
+error.country.invalid=Enter the country that your client is from
 
+## CGT Not Matched
+cgt-not-matched.header=Capital Gains Tax (CGT) account reference is not valid
+cgt-not-matched.p1=You entered {0}.
+cgt-not-matched.p2=This does not match any registered CGT account reference.
+cgt-not-matched.advice=You can:
+cgt-not-matched.advice.l1=check the account reference is correct and try again
+cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
 continue.button=Continue
 button.back=Back
 finish.button=Finish and sign out
@@ -332,12 +345,16 @@ create-auth-failed.HMRC-MTD-IT=Send their Income Tax updates through software
 create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
 create-auth-failed.HMRC-MTD-VAT=Submit their VAT returns through software
 create-auth-failed.HMRC-TERS-ORG=Maintain a trust or an estate
+create-auth-failed.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
+create-auth-failed.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property disposals
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
 create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.button.try=Try again
 create-auth-failed.button.continue=Continue
+
+create-auth-failed.HMRC-CGT-PD.label=Capital Gains Tax account reference:
 
 # Client Pages
 # Landing Page
@@ -656,6 +673,8 @@ recent-invitations.invitation.service.HMRC-MTD-IT=Send their Income Tax updates 
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
 recent-invitations.invitation.service.HMRC-MTD-VAT=Submit their VAT returns through software
 recent-invitations.invitation.service.HMRC-TERS-ORG=Maintain a trust or an estate
+recent-invitations.invitation.service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property disposals
+recent-invitations.invitation.service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
 recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:

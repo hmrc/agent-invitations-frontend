@@ -1,0 +1,60 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary}
+
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers._
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+
+@(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
+
+    @back_link(backLinkUrl)
+
+    @if(countryCodeForm.hasErrors){
+        @errorSummary(Messages("error.summary.heading"), countryCodeForm, Seq.empty, Some("confirm-countryCode-cgt"))
+    }
+
+    <h1 class="heading-xlarge margin-bottom-10">@Messages("confirm-countryCode-cgt.header")</h1>
+
+    <p class="body-text">@Messages("confirm-countryCode-cgt.p1")</p>
+
+    <p class="hint-text">@Messages("confirm-countryCode-cgt.hint")</p>
+
+    @form(action = routes.AgentInvitationJourneyController.submitConfirmCgtCountryCode, 'class -> "form js-form") {
+        <div class="form-group">
+            @country_dropdown(
+                countryCodeForm("countryCode"),
+                countries.toSeq,
+                true,
+                '_errorsAboveInput -> true,
+                '_label -> Messages("confirm-countryCode-cgt.label"),
+                '_inputClass -> "form-control input--cleared",
+                '_labelClass -> "soft--ends",
+                '_selectWrapper -> Html("""class="autocomplete-wrapper"""")
+            )
+        </div>
+
+        <div class="form-group">
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        </div>
+    }
+}

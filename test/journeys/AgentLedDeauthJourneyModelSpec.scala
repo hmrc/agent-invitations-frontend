@@ -136,20 +136,19 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
     "at state SelectServiceBusiness" should {
       "transition to IdentifyClientBusiness when YES is selected and feature flag is on" in {
-        given(SelectServiceBusiness) when chosenBusinessService(showVatFlag = true)(authorisedAgent)(Confirmation(true)) should thenGo(
-          IdentifyClientBusiness
-        )
+        given(SelectServiceBusiness) when
+          chosenBusinessService(showVatFlag = true)(authorisedAgent)(HMRCMTDVAT) should
+          thenGo(IdentifyClientBusiness)
       }
       "transition to ClientType when NO is selected and feature flag is on" in {
-        given(SelectServiceBusiness) when chosenBusinessService(showVatFlag = true)(authorisedAgent)(
-          Confirmation(false)) should thenGo(
-          SelectClientType
-        )
+        given(SelectServiceBusiness) when
+          chosenBusinessService(showVatFlag = true)(authorisedAgent)("") should
+          thenGo(SelectClientType)
       }
       "throw an exception when YES is selected but the show vat flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceBusiness) when chosenBusinessService(showVatFlag = false)(authorisedAgent)(
-            Confirmation(true))
+          given(SelectServiceBusiness) when
+            chosenBusinessService(showVatFlag = false)(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
     }

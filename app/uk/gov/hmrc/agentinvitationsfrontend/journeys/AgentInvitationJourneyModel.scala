@@ -52,17 +52,28 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
     case class KnownFactNotMatched(basket: Basket) extends State
     case class CannotCreateRequest(basket: Basket) extends State
-    case object TrustNotFound extends State
-    case object CgtRefNotFound extends State
+    case class TrustNotFound(basket: Basket) extends State
+    case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
 
     case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
     case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
     case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientPersonalCgt(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientTrustCgt(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket) extends State
-    case class InvalidCgtAccountReference(cgtRef: CgtRef) extends State
+    case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
+    case class ConfirmPostcodeCgt(
+      cgtRef: CgtRef,
+      clientType: ClientType,
+      basket: Basket,
+      postcode: Option[String],
+      clientName: String)
+        extends State
+    case class ConfirmCountryCodeCgt(
+      cgtRef: CgtRef,
+      clientType: ClientType,
+      basket: Basket,
+      countryCode: String,
+      clientName: String)
+        extends State
 
     case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
     case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
@@ -74,6 +85,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       basket: Basket)
         extends State
     case class AllAuthorisationsFailed(basket: Basket) extends State
+    case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
     case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
         extends State
     case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
@@ -126,7 +138,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
             goto(IdentifyPersonalClient(service, basket))
           else
             fail(new Exception(s"Service: $service feature flag is switched off"))
-        if (services.contains(service)) {
+        if (service.isEmpty) { // user selected "no" to final service
+          goto(ReviewAuthorisationsPersonal(services, basket))
+        } else if (services.contains(service)) {
           service match {
             case HMRCMTDIT  => gotoIdentify(showItsaFlag, service)
             case HMRCPIR    => gotoIdentify(showPirFlag, service)
@@ -136,49 +150,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
         } else goto(SelectPersonalService(services, basket))
     }
 
-    def selectedPersonalServiceItsa(agent: AuthorisedAgent)(confirmed: Confirmation) =
-      Transition {
-        case SelectPersonalService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyPersonalClient(HMRCMTDIT, basket))
-          } else {
-            goto(ReviewAuthorisationsPersonal(services, basket))
-          }
-      }
-
-    def selectedPersonalServiceVat(agent: AuthorisedAgent)(confirmed: Confirmation) =
-      Transition {
-        case SelectPersonalService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
-          } else {
-            goto(ReviewAuthorisationsPersonal(services, basket))
-          }
-      }
-
-    def selectedPersonalServicePir(agent: AuthorisedAgent)(confirmed: Confirmation) =
-      Transition {
-        case SelectPersonalService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyPersonalClient(HMRCPIR, basket))
-          } else {
-            goto(ReviewAuthorisationsPersonal(services, basket))
-          }
-      }
-
-    def selectedPersonalServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
-      Transition {
-        case SelectPersonalService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyPersonalClient(HMRCCGTPD, basket))
-          } else {
-            goto(ReviewAuthorisationsPersonal(services, basket))
-          }
-      }
-
-    def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) = Transition {
+    def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(service: String) = Transition {
       case SelectBusinessService =>
-        if (confirmed.choice) {
+        if (service.nonEmpty) {
           if (showVatFlag) goto(IdentifyBusinessClient)
           else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
         } else {
@@ -186,44 +160,28 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
-    def selectedTrustServiceMultiple(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
-      service: String) = Transition {
-
-      case SelectTrustService(services, basket) =>
-        def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
-          if (serviceEnabled)
-            goto(IdentifyTrustClient(service, basket))
-          else
-            fail(new Exception(s"Service: $service feature flag is switched off"))
-        if (services.contains(service)) {
-          service match {
-            case TRUST     => gotoIdentify(showTrustsFlag, service)
-            case HMRCCGTPD => gotoIdentify(showCgtFlag, service)
-          }
-        } else goto(SelectTrustService(services, basket))
-    }
-
-    def selectedTrustServiceCgt(agent: AuthorisedAgent)(confirmed: Confirmation) =
+    def selectedTrustService(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(service: String) =
       Transition {
-        case SelectTrustService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyTrustClient(HMRCCGTPD, basket))
-          } else {
-            goto(ReviewAuthorisationsTrust(services, basket))
-          }
-      }
 
-    def selectedTrustServiceTrust(showCgtFlag: Boolean)(agent: AuthorisedAgent)(confirmed: Confirmation) =
-      Transition {
         case SelectTrustService(services, basket) =>
-          if (confirmed.choice) {
-            goto(IdentifyTrustClient(TRUST, basket))
-          } else {
-            if (showCgtFlag)
-              goto(ReviewAuthorisationsTrust(services, basket)) // only show review if CGT enabled (and hence > 1 service)
+          def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
+            if (serviceEnabled)
+              goto(IdentifyTrustClient(service, basket))
+            else
+              fail(new Exception(s"Service: $service feature flag is switched off"))
+
+          if (service.isEmpty) { // user selected "no" to final service
+            if (basket.nonEmpty)
+              goto(ReviewAuthorisationsTrust(services, basket))
             else
               goto(root)
-          }
+
+          } else if (services.contains(service)) {
+            service match {
+              case TRUST     => gotoIdentify(showTrustsFlag, service)
+              case HMRCCGTPD => gotoIdentify(showCgtFlag, service)
+            }
+          } else goto(SelectTrustService(services, basket))
       }
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
@@ -237,70 +195,77 @@ object AgentInvitationJourneyModel extends JourneyModel {
                 )
               case Left(invalidTrust) =>
                 Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
-                goto(TrustNotFound)
+                goto(TrustNotFound(basket))
             }
           }
       }
 
     def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       cgtClient: CgtClient): AgentInvitationJourneyModel.Transition = {
-      def handle(ifUkClient: => Future[State], ifNonUkClient: => Future[State]) =
+      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State, basket: Basket) =
         getCgtSubscription(cgtClient.cgtRef).flatMap {
-          case Some(sub) =>
-            if (sub.countryCode() == "GB") {
-              ifUkClient
+          case Some(subscription) =>
+            if (subscription.countryCode == "GB") {
+              goto(showPostcode(subscription))
             } else {
-              //go to confirm country page
-              ifNonUkClient
+              goto(showCountryCode(subscription))
             }
           case None =>
-            goto(InvalidCgtAccountReference(cgtClient.cgtRef))
+            goto(CgtRefNotFound(cgtClient.cgtRef, basket))
         }
 
       Transition {
         case IdentifyTrustClient(HMRCCGTPD, basket) =>
-          handle(goto(ConfirmPostcodeCgt(cgtClient.cgtRef, business, basket)), ???)
+          handle(
+            cgtSubscription =>
+              ConfirmPostcodeCgt(cgtClient.cgtRef, business, basket, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription =>
+              ConfirmCountryCodeCgt(
+                cgtClient.cgtRef,
+                business,
+                basket,
+                cgtSubscription.countryCode,
+                cgtSubscription.name),
+            basket
+          )
 
         case IdentifyPersonalClient(HMRCCGTPD, basket) =>
-          handle(goto(ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket)), ???)
+          handle(
+            cgtSubscription =>
+              ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription =>
+              ConfirmCountryCodeCgt(
+                cgtClient.cgtRef,
+                personal,
+                basket,
+                cgtSubscription.countryCode,
+                cgtSubscription.name),
+            basket
+          )
       }
     }
 
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      postcode: Postcode): Transition = {
-      def handle(cgtRef: CgtRef, state: State, basket: Basket) =
-        getCgtSubscription(cgtRef).flatMap {
-          case Some(sub) =>
-            if (sub.postCode().contains(postcode.value)) {
-              goto(state)
-            } else {
-              //TODO: Implement this later for CGT
-              goto(KnownFactNotMatched(basket))
-            }
-
-          case None =>
-            goto(InvalidCgtAccountReference(cgtRef))
-        }
-
+      postcode: Postcode): Transition =
       Transition {
-        case ConfirmPostcodeCgt(cgtRef, clientType, basket) =>
-          if (clientType == personal) {
-            handle(
-              cgtRef,
-              ConfirmClientPersonalCgt(
-                AuthorisationRequest("dummy name for now", CgtInvitation(cgtRef, Some(personal))),
-                basket),
-              basket)
+        case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) =>
+          if (postcodeFromDes.contains(postcode.value)) {
+            goto(ConfirmClientCgt(AuthorisationRequest(name, CgtInvitation(cgtRef, Some(clientType))), basket))
           } else {
-            handle(
-              cgtRef,
-              ConfirmClientTrustCgt(
-                AuthorisationRequest("dummy name for now", CgtInvitation(cgtRef, Some(business))),
-                basket),
-              basket)
+            goto(KnownFactNotMatched(basket))
           }
       }
-    }
+
+    def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      countryCode: CountryCode): Transition =
+      Transition {
+        case ConfirmCountryCodeCgt(cgtRef, clientType, basket, countryCodeFromDes, name) =>
+          if (countryCodeFromDes.contains(countryCode.value)) {
+            goto(ConfirmClientCgt(AuthorisationRequest(name, CgtInvitation(cgtRef, Some(clientType))), basket))
+          } else {
+            goto(KnownFactNotMatched(basket))
+          }
+      }
 
     // format: off
     def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)
@@ -493,26 +458,30 @@ object AgentInvitationJourneyModel extends JourneyModel {
             basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
         } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
 
-      case ConfirmClientPersonalCgt(request, basket) =>
-        if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(
-            ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
-            personal,
-            authorisedAgent.arn,
-            request.invitation.clientId,
-            HMRCCGTPD,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
-        } else goto(IdentifyPersonalClient(HMRCCGTPD, basket))
+      case ConfirmClientCgt(request, basket) => {
+        val (reviewAuthState, state, clientType) = request.invitation.clientType match {
+          case Some(`business`) =>
+            (
+              ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request),
+              IdentifyTrustClient(HMRCCGTPD, basket),
+              business)
+          case Some(`personal`) =>
+            (
+              ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request),
+              IdentifyPersonalClient(HMRCCGTPD, basket),
+              personal)
+          case None => throw new RuntimeException("unexpected clientType in the AuthorisationRequest") //TODO
+        }
 
-      case ConfirmClientTrustCgt(request, basket) =>
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request))(
-            business,
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(
+            clientType,
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCCGTPD,
             basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
-        } else goto(IdentifyTrustClient(HMRCCGTPD, basket))
+        } else goto(state)
+      }
 
       case ConfirmClientPersonalVat(request, basket) =>
         if (confirmation.choice) {
@@ -645,18 +614,33 @@ object AgentInvitationJourneyModel extends JourneyModel {
       Transition {
         case ReviewAuthorisationsPersonal(_, basket) =>
           goto(DeleteAuthorisationRequestPersonal(findItem(basket), basket))
-        case ReviewAuthorisationsTrust(_, basket) => goto(DeleteAuthorisationRequestPersonal(findItem(basket), basket))
+        case ReviewAuthorisationsTrust(_, basket) =>
+          goto(DeleteAuthorisationRequestPersonal(findItem(basket), basket))
       }
     }
 
     def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
+
         case DeleteAuthorisationRequestPersonal(authorisationRequest, basket) =>
           if (confirmation.choice) {
             if ((basket - authorisationRequest).nonEmpty)
               goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket - authorisationRequest))
-            else goto(AllAuthorisationsRemoved)
-          } else goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket))
+            else
+              goto(AllAuthorisationsRemoved)
+          } else {
+            goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket))
+          }
+
+        case DeleteAuthorisationRequestTrust(authorisationRequest, basket) =>
+          if (confirmation.choice) {
+            if ((basket - authorisationRequest).nonEmpty)
+              goto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket - authorisationRequest))
+            else
+              goto(AllAuthorisationsRemoved)
+          } else {
+            goto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket))
+          }
       }
   }
 }

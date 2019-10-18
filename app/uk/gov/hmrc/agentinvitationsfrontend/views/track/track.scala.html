@@ -19,6 +19,7 @@
 @import org.joda.time.LocalDate
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, pending_form, cancel_authorisation_form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
@@ -56,7 +57,13 @@
                 </div>
                 <div class="table-cell serviceInfo">
                     <h3 class="context">@Messages("recent-invitations.table-row-header.service")</h3>
-                    <span>@Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
+                    <span>
+                        @if(invitationOrRelationship.service == "HMRC-CGT-PD") {
+                          @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}.${invitationOrRelationship.clientType.getOrElse(personal)}")
+                        } else {
+                          @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
+                        }
+                    </span>
                 </div>
                 <div class="table-cell status">
                     <h3 class="context">@Messages("recent-invitations.table-row-header.status")</h3>

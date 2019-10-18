@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import play.api.Logger
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -43,6 +43,7 @@ trait GetClientName {
       case Services.HMRCPIR    => getCitizenName(Nino(clientId))
       case Services.HMRCMTDVAT => getVatName(Vrn(clientId))
       case Services.TRUST      => getTrustName(Utr(clientId))
+      case Services.HMRCCGTPD  => getCgtClientName(CgtRef(clientId))
       case _                   => Future successful None
     }
 
@@ -72,6 +73,14 @@ trait GetClientName {
       case Right(trustName) => Some(trustName.name)
       case Left(invalidTrust) =>
         Logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
+        None
+    }
+
+  def getCgtClientName(cgtRef: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    invitationsConnector.getCgtSubscription(cgtRef).map {
+      case Some(cgtSubscription) => Some(cgtSubscription.name)
+      case None =>
+        Logger.warn(s"no cgtSubscription found to retrieve name for reference: ${cgtRef.value}")
         None
     }
 
