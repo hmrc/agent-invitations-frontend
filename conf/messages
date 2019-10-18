@@ -755,7 +755,8 @@ active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised yo
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
 active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to submit their VAT returns through software.
 active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust or an estate.
-active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised you for Capital Gains Tax.
+active-authorisation-exists.p1.HMRC-CGT-PD.personal=This client has already authorised you to manage their Capital Gains Tax on UK property disposals.
+active-authorisation-exists.p1.HMRC-CGT-PD.business=This client has already authorised you to manage a trust’s Capital Gains Tax on UK property disposals.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 
