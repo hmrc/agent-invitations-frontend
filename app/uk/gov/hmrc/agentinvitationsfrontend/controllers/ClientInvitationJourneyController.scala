@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import java.time.LocalDateTime
+
 import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Logger}
 import play.api.data.Form
@@ -23,7 +25,7 @@ import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector, PersonalDetailsValidationConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -32,6 +34,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
+import uk.gov.hmrc.auth.core.ConfidenceLevel
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -45,6 +49,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   authActions: AuthActions,
+  pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -214,6 +219,25 @@ class ClientInvitationJourneyController @Inject()(
               .getIVResult(id)
               .map(reason => getErrorPage(reason, success)))
   }
+
+  def pdvComplete(targetUrl: Option[String] = None, validationId: Option[String] = None): Action[AnyContent] =
+    Action.async { implicit request =>
+      withIndividualAuth { providerId =>
+        val validId = validationId.getOrElse("TODO")
+        pdvConnector
+          .getPdvResult(validId)
+          .flatMap {
+            case Some(nino) =>
+              identityVerificationConnector
+                .updateEntry(NinoClStoreEntry(providerId, nino, None, None, None), providerId)
+                .map(_ => Redirect(targetUrl.getOrElse("TODO")))
+            case None => {
+              Logger.warn(s"no Nino returned from personal-details-validation using validationId ${validationId.getOrElse("no id found!")}")
+
+            }
+          }
+      }
+    }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannot_confirm_identity())) {

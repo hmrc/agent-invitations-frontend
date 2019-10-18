@@ -22,23 +22,28 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
+import play.api.http.Status
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.models.IVResult
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, NotFoundException}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{IVResult, NinoClStoreEntry}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IdentityVerificationConnector @Inject()(
-  @Named("identity-verification-frontend-baseUrl") baseUrl: URL,
-  http: HttpGet,
+  @Named("identity-verification-frontend-baseUrl") ivFrontendBaseUrl: URL,
+  @Named("identity-verification-baseUrl") ivBaseUrl: URL,
+  http: HttpGet with HttpPut,
   metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   private[connectors] def getIVResultUrl(journeyId: String): URL =
-    new URL(baseUrl, s"/mdtp/journey/journeyId/$journeyId")
+    new URL(ivFrontendBaseUrl, s"/mdtp/journey/journeyId/$journeyId")
+
+  private[connectors] def updateEntryUrl(credId: String): URL =
+    new URL(ivBaseUrl, s"/nino/$credId")
 
   def getIVResult(journeyId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[IVResult]] =
     monitor("ConsumedAPI-Client-Get-IVResult-GET") {
@@ -57,6 +62,24 @@ class IdentityVerificationConnector @Inject()(
           case e: NotFoundException => {
             Logger.warn(s"identity verification did not recognise the journeyId $journeyId $e")
             None
+          }
+        }
+    }
+
+  def updateEntry(entry: NinoClStoreEntry, credId: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Unit] =
+    monitor("ConsumedAPI-Client-updateEntry-PUT") {
+      http
+        .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)
+        .map { response =>
+          response.status match {
+            case Status.CREATED | Status.OK => ()
+          }
+        }
+        .recover {
+          case e: Upstream5xxResponse => {
+            Logger.warn(s"identity-verification did not update entry ${e.getMessage}")
           }
         }
     }

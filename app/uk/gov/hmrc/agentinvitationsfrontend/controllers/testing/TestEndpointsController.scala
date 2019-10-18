@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
+import java.net.URL
+
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
@@ -42,10 +44,8 @@ class TestEndpointsController @Inject()(
   agentSessionCache: AgentSessionCache,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification)(
-  implicit val config: Configuration,
-  val externalUrls: ExternalUrls,
-  ec: ExecutionContext)
+  val withVerifiedPasscode: PasscodeVerification,
+  val pdvBaseUrl: URL)(implicit val config: Configuration, val externalUrls: ExternalUrls, ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   import TestEndpointsController._
