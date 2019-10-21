@@ -203,15 +203,15 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       cgtClient: CgtClient): AgentInvitationJourneyModel.Transition = {
       def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State, basket: Basket) =
-        getCgtSubscription(cgtClient.cgtRef).flatMap {
+        getCgtSubscription(cgtClient.cgtRef).map {
           case Some(subscription) =>
-            if (subscription.countryCode == "GB") {
-              goto(showPostcode(subscription))
+            if (subscription.isUKBasedClient) {
+              showPostcode(subscription)
             } else {
-              goto(showCountryCode(subscription))
+              showCountryCode(subscription)
             }
           case None =>
-            goto(CgtRefNotFound(cgtClient.cgtRef, basket))
+            CgtRefNotFound(cgtClient.cgtRef, basket)
         }
 
       Transition {

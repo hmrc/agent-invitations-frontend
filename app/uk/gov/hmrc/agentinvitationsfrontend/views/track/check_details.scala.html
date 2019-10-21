@@ -21,15 +21,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import scala.util.Try
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentSession
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
-
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -57,7 +54,7 @@
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}${if(config.fastTrackRequest.service== "HMRC-CGT-PD") "." + config.fastTrackRequest.clientType.getOrElse(personal) else ""}")</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
@@ -82,6 +79,7 @@
                     case "ni" => Messages("check-details.nino")
                     case "vrn" => Messages("check-details.vrn")
                     case "utr" => Messages("check-details.utr")
+                    case "CGTPDRef" => Messages("check-details.cgt")
                     case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
                 }}
             </dt>
@@ -102,6 +100,7 @@
                         case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
                         case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
                         case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
+                        case "HMRC-CGT-PD" => Messages("check-details.cgtRef")
                     }
                 }
                 </dt>

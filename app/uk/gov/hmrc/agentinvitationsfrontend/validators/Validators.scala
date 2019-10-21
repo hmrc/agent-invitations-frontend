@@ -122,6 +122,7 @@ object Validators {
         else Invalid(ValidationError("INVALID_NINO"))
       case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) && Vrn.isValid(clientId) => Valid
       case clientId if clientId.nonEmpty && clientId.matches(utrPattern)                        => Valid
+      case clientId if clientId.nonEmpty && CgtRef.isValid(clientId)                            => Valid
       case _ =>
         Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
 

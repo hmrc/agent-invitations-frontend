@@ -19,11 +19,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.CheckDOBMatches
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetCgtSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -94,6 +94,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
 
+    case class CheckDetailsCompleteCgt(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
     case class NoPostcode(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -140,6 +146,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
 
+    case class IdentifyCgtClient(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
     case class ConfirmClientTrust(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -174,6 +186,31 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
     case object TryAgainWithoutFastTrack extends State
+
+    case class ConfirmPostcodeCgt(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String],
+      postcodeFromDes: Option[String],
+      clientName: String)
+        extends State
+
+    case class ConfirmCountryCodeCgt(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String],
+      countryCode: String,
+      clientName: String)
+        extends State
+
+    case class ConfirmClientCgt(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String],
+      clientName: String)
+        extends State
+
+    case class CgtRefNotFound(cgtRef: CgtRef) extends State
   }
 
   object Transitions {
@@ -230,6 +267,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
             goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+
+          case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
+            goto(CheckDetailsCompleteCgt(fastTrackRequest, fastTrackRequest, continueUrl))
         }
     }
 
@@ -284,7 +324,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
         goto(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl))
     }
 
-    def checkedDetailsNoKnownFact(agent: AuthorisedAgent) =
+    def checkedDetailsNoKnownFact(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent) =
       Transition {
         case CheckDetailsNoPostcode(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
           goto(NoPostcode(originalFastTrackRequest, fastTrackRequest, continueUrl))
@@ -294,9 +334,79 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
         case CheckDetailsNoVatRegDate(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
           goto(NoVatRegDate(originalFastTrackRequest, fastTrackRequest, continueUrl))
+
+        case CheckDetailsCompleteCgt(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
+          val cgtRef = CgtRef(fastTrackRequest.clientIdentifier)
+
+          getCgtSubscription(cgtRef).map {
+            case Some(subscription) =>
+              if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.postCode,
+                  subscription.name)
+              } else {
+                ConfirmCountryCodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.countryCode,
+                  subscription.name)
+              }
+            case None =>
+              CgtRefNotFound(cgtRef)
+          }
       }
 
-    def checkedDetailsChangeInformation(agent: AuthorisedAgent) = {
+    def confirmPostcodeCgt(agent: AuthorisedAgent)(postcode: Postcode): Transition =
+      Transition {
+        case ConfirmPostcodeCgt(originalFastTrackRequest, fastTrackRequest, continueUrl, postcodeFromDes, name) =>
+          if (postcodeFromDes.contains(postcode.value)) {
+            goto(ConfirmClientCgt(originalFastTrackRequest, fastTrackRequest, continueUrl, name))
+          } else {
+            goto(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, continueUrl))
+          }
+      }
+
+    def confirmCountryCodeCgt(agent: AuthorisedAgent)(countryCode: CountryCode): Transition =
+      Transition {
+        case ConfirmCountryCodeCgt(originalFastTrackRequest, fastTrackRequest, continueUrl, countryCodeFromDes, name) =>
+          if (countryCodeFromDes.contains(countryCode.value)) {
+            goto(ConfirmClientCgt(originalFastTrackRequest, fastTrackRequest, continueUrl, name))
+          } else {
+            goto(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, continueUrl))
+          }
+      }
+
+    def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      cgtClient: CgtClient): Transition =
+      Transition {
+        case IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
+          getCgtSubscription(cgtClient.cgtRef).map {
+            case Some(subscription) =>
+              if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
+                  continueUrl,
+                  subscription.postCode,
+                  subscription.name)
+              } else {
+                ConfirmCountryCodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
+                  continueUrl,
+                  subscription.countryCode,
+                  subscription.name)
+              }
+            case None =>
+              CgtRefNotFound(cgtClient.cgtRef)
+          }
+      }
+
+    def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition = {
       def gotoIdentifyClient(
         originalFtr: AgentFastTrackRequest,
         ftRequest: AgentFastTrackRequest,
@@ -324,6 +434,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
         case CheckDetailsCompleteTrust(originalFtr, ftr, continueUrl) =>
           goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
+
+        case CheckDetailsCompleteCgt(originalFtr, ftr, continueUrl) =>
+          goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoPostcode(originalFtr, ftr, continueUrl) =>
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))
@@ -420,6 +533,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             continueUrl
           )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
+
+      case CheckDetailsCompleteCgt(originalFtr, fastTrackRequest, continueUrl) =>
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(
+            fastTrackRequest,
+            agent.arn,
+            CgtInvitation(CgtRef(fastTrackRequest.clientIdentifier), fastTrackRequest.clientType),
+            continueUrl
+          )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
+        } else goto(IdentifyCgtClient(originalFtr, fastTrackRequest, continueUrl))
     }
 
     def identifiedClientItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
@@ -516,6 +639,23 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           }
       }
 
+    def submitConfirmClientCgt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
+      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
+      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(confirmation: Confirmation) =
+      Transition {
+        case ConfirmClientCgt(originalFtr, ftr, continueUrl, cgtName) =>
+          if (confirmation.choice) {
+            checkIfPendingOrActiveAndGoto(
+              ftr,
+              agent.arn,
+              CgtInvitation(CgtRef(ftr.clientIdentifier), ftr.clientType),
+              continueUrl
+            )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
+          } else {
+            goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
+          }
+      }
+
     def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
@@ -589,7 +729,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
       checkRegDateMatches: CheckRegDateMatches)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(suppliedClientType: String) =
+      hasActiveRelationship: HasActiveRelationship)(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      suppliedClientType: String) =
       Transition {
         case SelectClientTypeVat(originalFtr, ftr, continueUrl) =>
           val isKnownFactRequired = ftr.knownFact.isDefined
@@ -612,7 +753,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
                 continueUrl)
 
-            checkedDetailsNoKnownFact(agent)
+            checkedDetailsNoKnownFact(getCgtSubscription)(agent)
               .apply(newState)
           }
       }

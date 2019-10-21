@@ -26,6 +26,7 @@ import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
@@ -42,7 +43,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class TrackResendForm(service: String, clientType: Option[ClientType], expiryDate: String)
 
-case class CancelRequestForm(invitationId: String, service: String, clientName: String)
+case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
 case class CancelAuthorisationForm(service: String, clientId: String, clientName: String)
 
@@ -120,6 +121,7 @@ class AgentsRequestTrackingController @Inject()(
             Future successful Redirect(routes.AgentsRequestTrackingController.showConfirmCancel()).addingToSession(
               "invitationId" -> data.invitationId,
               "service"      -> data.service,
+              "clientType"   -> data.clientType,
               "clientName"   -> data.clientName)
         )
     }
@@ -128,7 +130,8 @@ class AgentsRequestTrackingController @Inject()(
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
-      Future successful Ok(confirm_cancel(service, confirmCancelForm))
+      val clientType = request.session.get("clientType").getOrElse("")
+      Future successful Ok(confirm_cancel(service, clientType, confirmCancelForm))
     }
   }
 
@@ -139,11 +142,12 @@ class AgentsRequestTrackingController @Inject()(
         case Some(id) =>
           val invitationId = InvitationId(id)
           val service = Services.determineServiceMessageKey(invitationId)
+          val clientType = request.session.get("clientType").getOrElse("")
           confirmCancelForm
             .bindFromRequest()
             .fold(
               formWithErrors => {
-                Future successful Ok(confirm_cancel(service, formWithErrors))
+                Future successful Ok(confirm_cancel(service, clientType, formWithErrors))
               },
               data => {
                 if (data.value.getOrElse(true)) {
@@ -167,8 +171,9 @@ class AgentsRequestTrackingController @Inject()(
   def showRequestCancelled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
+      val clientType = request.session.get("clientType").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      Future successful Ok(request_cancelled(RequestCancelledPageConfig(service, clientName)))
+      Future successful Ok(request_cancelled(RequestCancelledPageConfig(service, clientType, clientName)))
     }
   }
 
@@ -237,10 +242,9 @@ class AgentsRequestTrackingController @Inject()(
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(
-          text
-            .verifying("Unsupported client type", clientType => Services.supportedClientTypes.contains(clientType))
-            .transform(ClientType.toEnum, ClientType.fromEnum)),
+        "clientType" -> optional(text
+          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+          .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
@@ -250,7 +254,9 @@ class AgentsRequestTrackingController @Inject()(
       mapping(
         "invitationId" -> text
           .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientType" -> text
+          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )

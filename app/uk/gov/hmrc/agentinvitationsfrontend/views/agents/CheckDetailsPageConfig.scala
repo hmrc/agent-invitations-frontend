@@ -35,6 +35,7 @@ case class CheckDetailsPageConfig(
       case "PERSONAL-INCOME-RECORD" => "afi"
       case "HMRC-MTD-VAT"           => "vat"
       case "HMRC-TERS-ORG"          => "trust"
+      case "HMRC-CGT-PD"            => "cgt"
     }
   }
 

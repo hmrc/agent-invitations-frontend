@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -204,6 +204,36 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |    "fastTrackRequest":{
                                 |      "clientType": "business",
                                 |      "service": "HMRC-TERS-ORG",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "CheckDetailsCompleteCgt" in {
+        val state =
+          CheckDetailsCompleteCgt(
+            AgentFastTrackRequest(Some(business), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", None),
+            AgentFastTrackRequest(Some(business), HMRCCGTPD, "ClientIdType", "ClientId", None),
+            Some("continue/url")
+          )
+        val json = Json.parse("""{
+                                |  "state":"CheckDetailsCompleteCgt",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
                                 |      "clientIdentifierType": "ClientIdType",
                                 |      "clientIdentifier": "ClientId"
                                 |    },
@@ -579,6 +609,35 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "IdentifyCgtClient" in {
+        val state = IdentifyCgtClient(
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "ClientIdType", "ClientId", None),
+          Some("continue/url")
+        )
+        val json = Json.parse("""{
+                                |  "state":"IdentifyCgtClient",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "IdentifyNoClientTypeClient" in {
         val state = IdentifyNoClientTypeClient(
           AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
@@ -632,6 +691,103 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |    },
                                 |    "continueUrl": "continue/url",
                                 |    "trustName": "some-trust-name"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "ConfirmClientCgt" in {
+        val state = ConfirmClientCgt(
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "ClientIdType", "ClientId", None),
+          Some("continue/url"),
+          "some-cgt-name"
+        )
+        val json = Json.parse("""{
+                                |  "state":"ConfirmClientCgt",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url",
+                                |    "clientName": "some-cgt-name"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "ConfirmPostcodeCgt" in {
+        val state = ConfirmPostcodeCgt(
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "ClientIdType", "ClientId", None),
+          Some("continue/url"),
+          Some("some-postcode"),
+          "some-cgt-name"
+        )
+        val json = Json.parse("""{
+                                |  "state":"ConfirmPostcodeCgt",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url",
+                                |    "postcodeFromDes": "some-postcode",
+                                |    "clientName": "some-cgt-name"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "ConfirmCountryCodeCgt" in {
+        val state = ConfirmCountryCodeCgt(
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), HMRCCGTPD, "ClientIdType", "ClientId", None),
+          Some("continue/url"),
+          "some-countryCode",
+          "some-cgt-name"
+        )
+        val json = Json.parse("""{
+                                |  "state":"ConfirmCountryCodeCgt",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "business",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId"
+                                |    },
+                                |    "continueUrl": "continue/url",
+                                |    "countryCode": "some-countryCode",
+                                |    "clientName": "some-cgt-name"
                                 |  }
                                 |}""".stripMargin)
 
