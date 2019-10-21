@@ -44,8 +44,10 @@ class TestEndpointsController @Inject()(
   agentSessionCache: AgentSessionCache,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification,
-  val pdvBaseUrl: URL)(implicit val config: Configuration, val externalUrls: ExternalUrls, ec: ExecutionContext)
+  val withVerifiedPasscode: PasscodeVerification)(
+  implicit val config: Configuration,
+  val externalUrls: ExternalUrls,
+  ec: ExecutionContext)
     extends FrontendController with I18nSupport with AuthActions {
 
   import TestEndpointsController._

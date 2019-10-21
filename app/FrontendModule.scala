@@ -66,7 +66,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("agent-client-relationships")
     bindBaseUrl("identity-verification-frontend")
     bindBaseUrl("identity-verification")
-    bindBaseUrl("personal-details-validation-frontend")
     bindBaseUrl("personal-details-validation")
 
     bindServiceProperty("company-auth-frontend.external-url")
@@ -84,6 +83,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("privacy-policy.external-url")
     bindServiceProperty("vat-online-service-helpline.external-url")
     bindServiceProperty("sa-online-service-helpline.external-url")
+    bindServiceProperty("personal-details-validation-frontend.external-url")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")

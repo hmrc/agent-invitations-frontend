@@ -23,18 +23,19 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200)(
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
+    val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
-      """
+      payload = """
         |{
         |"authorise": [ {
         |  "authProviders": [ "GovernmentGateway" ]
         |}],
-        |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+        |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments", "nino" ]
         |}
        """.stripMargin,
-      s"""
+      responseBody = s"""
          |{
          |  "affinityGroup":"Individual",
          |  "confidenceLevel":$confidenceLevel,
@@ -59,6 +60,7 @@ trait AuthStubs {
          |      ]
          |     }
          |  ]
+         |  $ninoRetrieval
          |}
           """.stripMargin
     )

@@ -43,8 +43,7 @@ class AuthActionsImpl @Inject()(
   val externalUrls: ExternalUrls,
   val env: Environment,
   val config: Configuration,
-  val authConnector: AuthConnector,
-  @Named("personal-details-validation-frontend-baseUrl") val pdvBaseUrl: URL
+  val authConnector: AuthConnector
 ) extends AuthActions
 
 @ImplementedBy(classOf[AuthActionsImpl])
@@ -137,7 +136,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     currentLevel: ConfidenceLevel,
     requiredLevel: ConfidenceLevel,
     journeyId: Option[String],
-    mayBeNino: Option[String])(body: => Future[Result])(implicit request: Request[A]) =
+    mayBeNino: Option[String])(body: => Future[Result])(implicit request: Request[A]): Future[Result] =
     if (currentLevel >= requiredLevel) {
       body
     } else if (request.method == "GET" && mayBeNino.isDefined) {
@@ -171,7 +170,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
     val targetUrl = toLocalFriendlyUrl(request.uri, request.host)
 
-    val pdvStartUrl = s"$pdvBaseUrl/start"
+    val pdvStartUrl = s"${externalUrls.personalDetailsValidationFrontendExternalUrl}/start"
 
     val pdvCompleteUrl =
       CallOps.addParamsToUrl(routes.ClientInvitationJourneyController.pdvComplete().url, "target" -> Some(targetUrl))

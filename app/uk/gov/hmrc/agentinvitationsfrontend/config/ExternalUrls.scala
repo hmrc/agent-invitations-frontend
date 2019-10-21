@@ -37,7 +37,8 @@ class ExternalUrls @Inject()(
   @Named("privacy-policy.external-url") val privacypolicyUrl: String,
   @Named("agent-invitations-frontend.external-url") val agentInvitationsExternalUrl: String,
   @Named("vat-online-service-helpline.external-url") val vatOnlineServiceHelplineUrl: String,
-  @Named("sa-online-service-helpline.external-url") val saOnlineServiceHelplineUrl: String
+  @Named("sa-online-service-helpline.external-url") val saOnlineServiceHelplineUrl: String,
+  @Named("personal-details-validation-frontend.external-url") val personalDetailsValidationFrontendExternalUrl: String
 ) {
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
