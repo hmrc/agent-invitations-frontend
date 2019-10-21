@@ -66,8 +66,9 @@ class AgentInvitationJourneyController @Inject()(
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
+  //TODO Add local date service to provide flexibility for testing
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
-  private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+  private def inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
