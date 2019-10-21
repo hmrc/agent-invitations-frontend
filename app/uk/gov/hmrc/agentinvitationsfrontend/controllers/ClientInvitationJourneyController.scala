@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.time.LocalDateTime
-
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector, PersonalDetailsValidationConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
@@ -34,8 +32,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.auth.core.ConfidenceLevel
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -191,7 +187,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    authActions.withAuthorisedAsAgent { _ =>
       Future successful Forbidden(not_authorised_as_client())
     }
   }

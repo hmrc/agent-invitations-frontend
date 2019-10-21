@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.net.URL
-
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
@@ -33,7 +32,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import CallOps._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,6 +50,8 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   def withVerifiedPasscode: PasscodeVerification
 
   def externalUrls: ExternalUrls
+
+  val pdvStartUrl = s"${externalUrls.personalDetailsValidationFrontendExternalUrl}/start"
 
   val isDevEnv: Boolean =
     if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
@@ -93,9 +93,12 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(affinityGroup and credentials) {
         case Some(affinity) ~ Some(Credentials(providerId, _)) =>
-          if (affinity == AffinityGroup.Individual) body(providerId)
-          else Logger.warn(s"affinity group: $affinityGroup is not individual cannot progress")
-          Future successful Forbidden
+          if (affinity == AffinityGroup.Individual) {
+            body(providerId)
+          } else {
+            Logger.warn(s"affinity group: $affinityGroup is not individual cannot progress")
+            Future successful Forbidden
+          }
         case _ =>
           Logger.warn(s"problem retrieving affinity group $affinityGroup or credentials")
           Future successful Forbidden
@@ -167,16 +170,20 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   }
 
   private def redirectToPersonalDetailsValidation[A]()(implicit request: Request[A]): Future[Result] = {
+
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
+
     val targetUrl = toLocalFriendlyUrl(request.uri, request.host)
+    val completeUrlBase = toLocalFriendlyUrl(routes.ClientInvitationJourneyController.pdvComplete().url, request.host)
 
-    val pdvStartUrl = s"${externalUrls.personalDetailsValidationFrontendExternalUrl}/start"
-
+    // completion URL needs to include the target (where user is trying to go)
     val pdvCompleteUrl =
-      CallOps.addParamsToUrl(routes.ClientInvitationJourneyController.pdvComplete().url, "targetUrl" -> Some(targetUrl))
+      CallOps.addParamsToUrl(completeUrlBase, "targetUrl" -> Some(targetUrl))
 
-    val personalDetailsValidationUrl = CallOps.addParamsToUrl(pdvStartUrl, "completionUrl" -> Some(pdvCompleteUrl))
-    Future successful (Redirect(personalDetailsValidationUrl))
+    val personalDetailsValidationUrl =
+      CallOps.addParamsToUrl(pdvStartUrl, "completionUrl" -> Some(pdvCompleteUrl))
+
+    Future successful Redirect(personalDetailsValidationUrl)
   }
 
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
