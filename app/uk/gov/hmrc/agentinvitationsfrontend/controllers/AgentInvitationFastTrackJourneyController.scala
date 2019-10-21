@@ -482,6 +482,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         active_authorisation_exists(
           authRequestsExist = false,
           agentFastTrackRequest.service,
+          agentFastTrackRequest.clientType.getOrElse(personal),
           fromFastTrack = true,
           routes.AgentInvitationJourneyController.showReviewAuthorisations(),
           routes.AgentInvitationFastTrackJourneyController.showClientType()

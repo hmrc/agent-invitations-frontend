@@ -606,11 +606,12 @@ class AgentInvitationJourneyController @Inject()(
     case AllAuthorisationsFailed(basket) =>
       Ok(invitation_creation_failed(AllInvitationCreationFailedPageConfig(basket)))
 
-    case ActiveAuthorisationExists(_, service, basket) =>
+    case ActiveAuthorisationExists(clientType, service, basket) =>
       Ok(
         active_authorisation_exists(
           basket.nonEmpty,
           service,
+          clientType,
           fromFastTrack = false,
           routes.AgentInvitationJourneyController.showReviewAuthorisations(),
           routes.AgentInvitationJourneyController.showClientType()
