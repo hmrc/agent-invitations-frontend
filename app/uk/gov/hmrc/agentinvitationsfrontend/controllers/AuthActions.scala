@@ -173,7 +173,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     val pdvStartUrl = s"${externalUrls.personalDetailsValidationFrontendExternalUrl}/start"
 
     val pdvCompleteUrl =
-      CallOps.addParamsToUrl(routes.ClientInvitationJourneyController.pdvComplete().url, "target" -> Some(targetUrl))
+      CallOps.addParamsToUrl(routes.ClientInvitationJourneyController.pdvComplete().url, "targetUrl" -> Some(targetUrl))
 
     val personalDetailsValidationUrl = CallOps.addParamsToUrl(pdvStartUrl, "completionUrl" -> Some(pdvCompleteUrl))
     Future successful (Redirect(personalDetailsValidationUrl))

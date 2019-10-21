@@ -99,6 +99,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
 
   "POST /warm-up" when {
+
     "journey ID is not available or session expired" should {
       behave like anActionHandlingSessionExpiry(controller.submitWarmUp)
     }
@@ -113,12 +114,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       behave like warmupSubmitAccept(request)
     }
 
-    "user is authenticated as valid client" should {
+    "user is authenticated as individual with NINO, but low confidence level" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like aClientWithLowConfidenceLevelGetEndpoint(request(), controller.submitWarmUp)
+      behave like anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(request(), controller.submitWarmUp)
     }
 
-    def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
+    "user is authenticated as individual without NINO, and low confidence level" should {
+      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
+      behave like anIndividualWithLowConfidenceLevelWithoutNinoGetEndpoint(request(), controller.submitWarmUp)
+    }
+
+    def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]): Unit = {
 
       "redirect to consent page if the invitation is found" in {
         givenAllInvitationIdsByStatus(uid, "Pending")
