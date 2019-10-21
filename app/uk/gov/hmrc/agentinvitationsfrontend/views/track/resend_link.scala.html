@@ -47,6 +47,16 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.service}")</li>
     </ol>
 
+    <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDate)</p>
+
+    <p>@Html(Messages("invitation-sent.resend.track-info.header", config.trackLink))</p>
+
+    <ol class="list list-bullet">
+        <li>@Messages("invitation-sent.resend.track-info.l1")</li>
+        <li>@Messages("invitation-sent.resend.track-info.l2")</li>
+        <li>@Messages("invitation-sent.resend.track-info.l3")</li>
+    </ol>
+
     <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
     <p><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
     <p><a href="@config.trackLink" class="form-field-group" id="trackRequests">@Messages(s"invitation-sent.trackRequests")</a></p>

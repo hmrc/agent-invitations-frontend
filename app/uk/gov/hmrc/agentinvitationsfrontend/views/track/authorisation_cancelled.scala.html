@@ -18,7 +18,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@(service: String, clientId: String, clientName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+
+@(service: String, clientId: String, clientName: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
@@ -30,7 +32,7 @@
  </div>
 
     <h3 class="heading-medium">@Messages("authorisation-cancelled.subheader")</h3>
-    <p>@Html(Messages(s"authorisation-cancelled.p1.$service", clientName))</p>
+    <p>@Html(Messages(s"authorisation-cancelled.p1.${if(service == "HMRC-CGT-PD") s"HMRC-CGT-PD.$clientType" else s"$service"}", clientName))</p>
 
     <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button">@Messages(s"authorisation-cancelled.track.button")</a>
 

@@ -190,6 +190,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 200 and go to resend link page" in {
       givenAgentReference(arn, "uid", personal)
+      givenGetAgencyEmailAgentStub
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(14).toString
       val formData =
         controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate))

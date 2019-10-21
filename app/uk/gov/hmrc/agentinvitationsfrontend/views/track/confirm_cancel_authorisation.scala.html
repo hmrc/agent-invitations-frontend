@@ -23,15 +23,9 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
-
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(confirmForm: Form[ConfirmForm], service: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
-
-@legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-authorisation-cancelled.header") + """</h1>""" +
-        """<p class="hint-text">""" + Messages(s"confirm-authorisation-cancelled.p1.$service") + """</p>""" + """<p class="panel panel-border-wide">""" +
- Messages("confirm-authorisation-cancelled.warning") + """</p>"""}
+@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
 
@@ -41,13 +35,17 @@
    @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
   }
 
+  <h1 class="heading-xlarge margin-bottom-20">@Messages("confirm-authorisation-cancelled.header")</h1>
+  <p>@Messages(s"confirm-authorisation-cancelled.p1.${if(service == "HMRC-CGT-PD") s"HMRC-CGT-PD.$clientType" else s"$service"}")</p>
+
+
   @form(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
     <div class="govuk-radios--inline">
      @input_radio_group(
       confirmForm("confirmCancelAuthorisation"),
       Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
-      '_legend -> Html(legend),
+        '_legend -> Html("""<p class="panel panel-border-wide">""" + Messages("confirm-authorisation-cancelled.warning")+ """</p>"""),
       '_groupDivClass -> "form-group soft--ends",
       '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
      )

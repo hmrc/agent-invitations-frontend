@@ -176,20 +176,26 @@ invitation-sent.l1=Copy this link and email it to your client.
 invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their individual or sole trader tax affairs.
 invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their business taxes.
 invitation-sent.l1.p.business.HMRC-TERS-ORG=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
-invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">Capital Gains Tax on UK property disposals.</span>.
+invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs.</span>.
+invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
 invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if it expires without being accepted.
+invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
+invitation-sent.resend.track-info.header=You can <a href="{0}">Track your recent authorisation requests</a> if you want to:
+invitation-sent.resend.track-info.l1=Check the status of your request
+invitation-sent.resend.track-info.l2=resend a link to a client
+invitation-sent.resend.track-info.l3=cancel requests and authorisations
 invitation-sent.header.links=Other actions
 invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
 invitation-sent.trackRequests=Track your recent authorisation requests
 invitation-sent.new-window=(opens a new window or tab)
-invitation-sent.startNewAuthRequest=Start a new authorisation request
+invitation-sent.startNewAuthRequest=Start a new authorisation request (opens a new window or tab)
 
 #Check Details
 check-details.heading=Check your client’s details before you continue
@@ -734,6 +740,8 @@ confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to sen
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate.
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.personal=You will no longer be able to manage their Capital Gains Tax on UK property disposals
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.business=You will no longer be able to manage a trust’s Capital Gains Tax on UK property disposals
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No
@@ -745,6 +753,8 @@ authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to se
 authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
 authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to submit their VAT returns through software.
 authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to maintain their trust or estate.
+authorisation-cancelled.p1.HMRC-CGT-PD.personal=You are no longer authorised by {0} to maintain their Capital Gains Tax on UK property disposals.
+authorisation-cancelled.p1.HMRC-CGT-PD.business=You are no longer authorised by {0} to maintain a trust’s Capital Gains Tax on UK property disposals.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page

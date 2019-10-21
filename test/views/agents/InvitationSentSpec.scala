@@ -65,7 +65,7 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
     "show the agency email address that will be sent an email upon outcome of the invitation" in {
       view(pageConf) should containMessageWithParams(
         expectedMessageKey = "invitation-sent.email.p",
-        expectedMessageParameters = "abc@xyz.com"
+        expectedMessageParameters = Seq("abc@xyz.com", "3 February 2001"): _*
       )(expectHtmlEscaped = false)
     }
 

@@ -77,7 +77,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
-  private val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+  val inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
