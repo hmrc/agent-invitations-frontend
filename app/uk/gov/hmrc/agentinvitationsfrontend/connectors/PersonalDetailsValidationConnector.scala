@@ -70,18 +70,7 @@ class PersonalDetailsValidationConnector @Inject()(
     }
 }
 
-sealed trait PdvError {
-  def Result[A](validationId: String)(
-    implicit request: Request[A],
-    messages: Messages,
-    configuration: Configuration,
-    externalUrls: ExternalUrls): Result = this match {
-    case PdvValidationNotFound =>
-      InternalServerError(s"failed to get PDV result: data for validationId $validationId not found")
-    case PdvValidationNoNino  => InternalServerError(s"failed to get PDV result: No NINO in response for $validationId")
-    case PdvValidationFailure => Forbidden(cannot_confirm_identity())
-  }
-}
+sealed trait PdvError
 
 case object PdvValidationNotFound extends PdvError
 case object PdvValidationNoNino extends PdvError

@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
-import java.net.{URL, URLEncoder}
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import akka.stream.Materializer
@@ -44,6 +44,7 @@ abstract class BaseISpec
 
   override implicit lazy val app: Application = appBuilder(featureFlags).build()
 
+  val pdvFrontendUrl = "http://localhost:9968"
   val companyAuthUrl = "https://company-auth-url"
   val companyAuthSignOutPath = "/sign-out-path"
   val businessTaxAccountUrl = "https://business-tax-account-url"
@@ -87,8 +88,7 @@ abstract class BaseISpec
         "microservice.services.identity-verification.port"                    -> wireMockPort,
         "microservice.services.personal-details-validation.host"              -> wireMockHost,
         "microservice.services.personal-details-validation.port"              -> wireMockPort,
-        "microservice.services.personal-details-validation-frontend.host"     -> wireMockHost,
-        "microservice.services.personal-details-validation-frontend.port"     -> wireMockPort,
+        "microservice.services.personal-details-validation-frontend.external-url" -> pdvFrontendUrl,
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,

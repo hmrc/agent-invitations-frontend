@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.Results.{Forbidden, InternalServerError}
 import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
@@ -187,7 +188,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
-    authActions.withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAgent { _ =>
       Future successful Forbidden(not_authorised_as_client())
     }
   }
@@ -240,7 +241,7 @@ class ClientInvitationJourneyController @Inject()(
                         Logger.error(s"identity-verification upsert /nino/credId returned: $status")
                         InternalServerError("identity-verification upsert NINO failed")
                     }
-                case Left(pdvError) => Future.successful(pdvError.Result(validId))
+                case Left(pdvError) => Future.successful(pdvErrorResult(pdvError, validId))
               }
           case (None, _) =>
             Logger.error(s"no targetUrl returned from personal-details-validation - assuming technical error")
@@ -250,6 +251,15 @@ class ClientInvitationJourneyController @Inject()(
             Future.successful(InternalServerError("no validationId in /pdv-compelete"))
         }
       }
+    }
+
+  def pdvErrorResult[A](pdvError: PdvError, validationId: String)(implicit request: Request[A]): Result =
+    pdvError match {
+      case PdvValidationNotFound =>
+        InternalServerError(s"failed to get PDV result: data for validationId $validationId not found")
+      case PdvValidationNoNino =>
+        InternalServerError(s"failed to get PDV result: No NINO in response for $validationId")
+      case PdvValidationFailure => Forbidden(cannot_confirm_identity())
     }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =

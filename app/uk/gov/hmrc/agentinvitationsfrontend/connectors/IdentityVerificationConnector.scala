@@ -73,7 +73,7 @@ class IdentityVerificationConnector @Inject()(
   def updateEntry(entry: NinoClStoreEntry, credId: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Int] =
-    monitor("ConsumedAPI-Client-updateEntry-PUT") {
+    monitor("ConsumedAPI-Client-updateNinoOnAuthRecord-PUT") {
       http
         .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)
         .map(_.status)
