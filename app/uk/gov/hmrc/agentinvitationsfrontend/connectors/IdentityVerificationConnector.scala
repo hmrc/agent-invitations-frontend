@@ -43,7 +43,7 @@ class IdentityVerificationConnector @Inject()(
     new URL(ivFrontendBaseUrl, s"/mdtp/journey/journeyId/$journeyId")
 
   private[connectors] def updateEntryUrl(credId: String): URL =
-    new URL(ivBaseUrl, s"/nino/$credId")
+    new URL(ivBaseUrl, s"/identity-verification/nino/$credId")
 
   def getIVResult(journeyId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[IVResult]] =
     monitor("ConsumedAPI-Client-Get-IVResult-GET") {

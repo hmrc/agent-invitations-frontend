@@ -27,14 +27,14 @@ trait IVStubs {
 
   def givenIVUpsertSucceeded: StubMapping = {
     stubFor(
-      put(urlPathMatching("/nino/.+"))
+      put(urlPathMatching("/identity-verification/nino/.+"))
         .willReturn(aResponse()
                       .withStatus(200)))
   }
 
   def givenIVUpsertFailed: StubMapping = {
     stubFor(
-      put(urlPathMatching(s"/nino/.+"))
+      put(urlPathMatching(s"/identity-verification/nino/.+"))
         .willReturn(aResponse()
                       .withStatus(500)))
   }
