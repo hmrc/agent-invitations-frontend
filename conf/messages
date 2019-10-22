@@ -173,8 +173,8 @@ error.confirm-client.required=Select yes if you want to ask this client for auth
 # Invitation Sent
 invitation-sent.header=What you need to do next
 invitation-sent.l1=Copy this link and email it to your client.
-invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their individual or sole trader tax affairs.
-invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their business taxes.
+invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.
+invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.
 invitation-sent.l1.p.business.HMRC-TERS-ORG=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
 invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs.</span>.
 invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
@@ -195,7 +195,7 @@ invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
 invitation-sent.trackRequests=Track your recent authorisation requests
 invitation-sent.new-window=(opens a new window or tab)
-invitation-sent.startNewAuthRequest=Start a new authorisation request (opens a new window or tab)
+invitation-sent.startNewAuthRequest=Start a new authorisation request
 
 #Check Details
 check-details.heading=Check your client’s details before you continue
@@ -740,8 +740,8 @@ confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to sen
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate.
-confirm-authorisation-cancelled.p1.HMRC-CGT-PD.personal=You will no longer be able to manage their Capital Gains Tax on UK property disposals
-confirm-authorisation-cancelled.p1.HMRC-CGT-PD.business=You will no longer be able to manage a trust’s Capital Gains Tax on UK property disposals
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.personal=You will no longer be able to manage this client’s Capital Gains Tax on UK property disposals
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.business=You will no longer be able to manage a trust’s Capital Gains Tax on UK property disposals on behalf of this client
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No

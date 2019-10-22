@@ -1402,9 +1402,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1",
-        "invitation-sent.l1.p.personal.personal")
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.email.p", "abc@xyz.com", expiryDate))
+        "invitation-sent.l1")
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.email.p", "abc@xyz.com", expiryDate),
+      "You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">individual or sole trader tax affairs</span>.")
     }
 
     "show the invitation sent page for a business service" in {
@@ -1417,8 +1417,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1",
-        "invitation-sent.l1.p.business.HMRC-MTD-VAT")
+        "invitation-sent.l1")
+      checkHtmlResultWithBodyText(result,"You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">business taxes</span>.")
     }
   }
 
