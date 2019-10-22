@@ -30,7 +30,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport with IVStubs {
+    with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
 
   val featureFlags: FeatureFlags = new FeatureFlags()
 
@@ -44,12 +44,14 @@ abstract class BaseISpec
 
   override implicit lazy val app: Application = appBuilder(featureFlags).build()
 
+  val pdvFrontendUrl = "http://localhost:9968"
   val companyAuthUrl = "https://company-auth-url"
   val companyAuthSignOutPath = "/sign-out-path"
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
+  val pdvBaseUrl = "/pdv-base-url"
 
   lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
@@ -82,6 +84,11 @@ abstract class BaseISpec
         "microservice.services.sso.port"                                      -> wireMockPort,
         "microservice.services.identity-verification-frontend.host"           -> wireMockHost,
         "microservice.services.identity-verification-frontend.port"           -> wireMockPort,
+        "microservice.services.identity-verification.host"                    -> wireMockHost,
+        "microservice.services.identity-verification.port"                    -> wireMockPort,
+        "microservice.services.personal-details-validation.host"              -> wireMockHost,
+        "microservice.services.personal-details-validation.port"              -> wireMockPort,
+        "microservice.services.personal-details-validation-frontend.external-url" -> pdvFrontendUrl,
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,

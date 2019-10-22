@@ -43,5 +43,4 @@ class UrlBindersSpec extends UnitSpec with OneAppPerSuite {
       UrlBinders.invitationIdBinder.bind("invitationId", "XG3HFG43HW2PF") shouldBe error
     }
   }
-
 }

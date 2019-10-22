@@ -17,13 +17,14 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.Results.{Forbidden, InternalServerError}
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector, PdvError, PdvValidationFailure, PdvValidationNoNino, PdvValidationNotFound, PersonalDetailsValidationConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -45,6 +46,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   authActions: AuthActions,
+  pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -214,6 +216,51 @@ class ClientInvitationJourneyController @Inject()(
               .getIVResult(id)
               .map(reason => getErrorPage(reason, success)))
   }
+
+  /** Individual Users with low confidence level and also no NINO arrive here...
+    *
+    * they have just finished the personal-details-validation journey and entered either their NINO or Postcode.
+    * PDV will add a validationId to the response which we can use to find the result of the journey.
+    * If all went well, we can update the NINO for the user and send them back to the original endpoint (targetUrl)
+    *
+    *  */
+  def pdvComplete(targetUrl: Option[String] = None, validationId: Option[String] = None): Action[AnyContent] =
+    Action.async { implicit request =>
+      withIndividualAuth { providerId =>
+        (targetUrl, validationId) match {
+          case (Some(targetUrl), Some(validId)) =>
+            pdvConnector
+              .getPdvResult(validId)
+              .flatMap {
+                case Right(nino) =>
+                  identityVerificationConnector
+                    .updateEntry(NinoClStoreEntry(providerId, nino, None, None, None), providerId)
+                    .map {
+                      case 200 | 201 => Redirect(targetUrl)
+                      case status =>
+                        Logger.error(s"identity-verification upsert /nino/credId returned: $status")
+                        InternalServerError("identity-verification upsert NINO failed")
+                    }
+                case Left(pdvError) => Future.successful(pdvErrorResult(pdvError, validId))
+              }
+          case (None, _) =>
+            Logger.error(s"no targetUrl returned from personal-details-validation - assuming technical error")
+            Future.successful(InternalServerError("no targetUrl in /pdv-compelete"))
+          case (_, None) =>
+            Logger.error(s"no validationId returned from personal-details-validation - assuming technical error")
+            Future.successful(InternalServerError("no validationId in /pdv-compelete"))
+        }
+      }
+    }
+
+  def pdvErrorResult[A](pdvError: PdvError, validationId: String)(implicit request: Request[A]): Result =
+    pdvError match {
+      case PdvValidationNotFound =>
+        InternalServerError(s"failed to get PDV result: data for validationId $validationId not found")
+      case PdvValidationNoNino =>
+        InternalServerError(s"failed to get PDV result: No NINO in response for $validationId")
+      case PdvValidationFailure => Forbidden(cannot_confirm_identity())
+    }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannot_confirm_identity())) {

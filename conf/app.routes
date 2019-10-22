@@ -175,6 +175,8 @@ GET         /cannot-confirm-identity                                    @uk.gov.
 GET         /session-timeout                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 GET         /signed-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.handleIVTimeout(success: Option[String] ?= None)
 GET         /locked-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.lockedOut
+GET         /pdv-complete                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)
+
 
 GET         /trust-not-claimed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /:clientType/:uid/:agentName                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
