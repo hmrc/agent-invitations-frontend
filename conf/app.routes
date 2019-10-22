@@ -77,12 +77,22 @@ POST        /agents/client-details-irv                                  @uk.gov.
 GET         /agents/client-details-vat                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.identifyClientRedirect
 POST        /agents/client-details-vat                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient
 POST        /agents/client-details-trust                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient
+POST        /agents/client-details-cgt                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitIdentifyCgtClient
 
 POST        /agents/to-known-fact                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToKnownFact
 POST        /agents/to-client-type                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToClientType
 POST        /agents/to-identify-client                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToIdentifyClient
 GET         /agents/confirm-trust-client                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmTrustClient
 POST        /agents/confirm-trust-client                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient
+
+GET         /agents/track/client-postcode                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode
+POST        /agents/track/client-postcode                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode
+
+GET         /agents/track/client-country                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode
+POST        /agents/track/client-country                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode
+
+GET         /agents/track/confirm-cgt-client                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmClientCgt
+POST        /agents/track/confirm-cgt-client                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmCgtClient
 
 GET         /agents/more-details                                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showKnownFact
 GET         /agents/more-details-itsa                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.knownFactRedirect

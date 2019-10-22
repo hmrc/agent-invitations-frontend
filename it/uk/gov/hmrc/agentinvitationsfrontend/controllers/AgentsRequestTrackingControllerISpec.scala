@@ -190,6 +190,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 200 and go to resend link page" in {
       givenAgentReference(arn, "uid", personal)
+      givenGetAgencyEmailAgentStub
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(14).toString
       val formData =
         controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate))
@@ -244,7 +245,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 303 redirect to confirm cancel page when form is correct" in {
       val formData =
-        controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "HMRC-MTD-IT", "Johnny Gogo"))
+        controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "HMRC-MTD-IT", "personal", "Johnny Gogo"))
       val result =
         postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -253,7 +254,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in invitationId" in {
-      val formData = controller.cancelRequestForm.fill(CancelRequestForm("foo", "HMRC-MTD-IT", "Johnny Gogo"))
+      val formData = controller.cancelRequestForm.fill(CancelRequestForm("foo", "HMRC-MTD-IT", "personal", "Johnny Gogo"))
       val result =
         postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -261,7 +262,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in service" in {
-      val formData = controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "foo", "Johnny Gogo"))
+      val formData = controller.cancelRequestForm.fill(CancelRequestForm(invitationIdITSA.value, "foo", "personal", "Johnny Gogo"))
       val result =
         postToConfirmCancel(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -388,7 +389,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation request cancelled",
         "You have cancelled your authorisation request to send Income Tax updates through software for this client.",
-        "Joe Volcano will not be able to respond to this request.",
+        "Joe Volcano can no longer respond to this request.",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
       )
     }
@@ -407,7 +408,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation request cancelled",
         "You have cancelled your authorisation request to view their PAYE income record.",
-        "Your client will not be able to respond to this request."
+        "Your client can no longer respond to this request."
       )
     }
   }

@@ -23,12 +23,14 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(service: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, clientType: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
+@subHeaderKey = @{if(service == "HMRC-CGT-PD") s"confirm-cancel.subheader.HMRC-CGT-PD.$clientType" else s"confirm-cancel.subheader.$service"}
+
 @legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-cancel.header") + """</h1>""" +
-        """<p class="hint-text">""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
+        """<p class="hint-text">""" + Messages(subHeaderKey) + """</p>"""}
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 

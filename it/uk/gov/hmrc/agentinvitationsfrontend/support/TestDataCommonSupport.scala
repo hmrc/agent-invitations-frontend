@@ -50,6 +50,8 @@ trait TestDataCommonSupport {
   val serviceTrust = "HMRC-TERS-ORG"
   val identifierTrust = "UTR"
 
+  val invitationIdCgt = InvitationId("EF99K6PXSBHTF")
+
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val trustNotFoundJson =
     """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""

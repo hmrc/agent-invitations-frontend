@@ -1799,7 +1799,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.continue",
-        "create-auth-failed.HMRC-CGT-PD.label",
         "create-auth-failed.HMRC-CGT-PD.business"
       )
     }
@@ -1821,7 +1820,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.try",
-        "create-auth-failed.HMRC-CGT-PD.label",
         "create-auth-failed.HMRC-CGT-PD.business"
       )
     }

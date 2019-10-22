@@ -30,9 +30,7 @@ object Services {
   val HMRCCGTPD = "HMRC-CGT-PD"
 
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
-  val supportedClientIdentifierTypes = List("ni", "vrn", "utr")
-
-  val supportedClientTypes = List("personal", "business", "trust")
+  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef")
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {

@@ -189,7 +189,16 @@ class RelationshipsConnector @Inject()(
         }
     }
 
-  // TODO implement
-  def deleteRelationshipCgt(arn: Arn, ref: CgtRef): Future[Option[Boolean]] = Future.successful(Some(true))
-
+  def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedAPI-DELETE-CgtRelationship-DELETE") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-CGT-PD/client/CGTPDRef/${ref.value}").toString
+      http.DELETE(url).map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException => Some(false)
+      case _                    => None
+    }
 }
