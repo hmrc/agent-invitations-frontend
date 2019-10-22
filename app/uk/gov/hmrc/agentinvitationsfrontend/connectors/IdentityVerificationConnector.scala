@@ -66,20 +66,21 @@ class IdentityVerificationConnector @Inject()(
         }
     }
 
+  /** Call identity-verification to update NINO store
+    * @return The HTTP status code of the PUT response
+    *
+    * */
   def updateEntry(entry: NinoClStoreEntry, credId: String)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Unit] =
+    ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Client-updateEntry-PUT") {
       http
         .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)
-        .map { response =>
-          response.status match {
-            case Status.CREATED | Status.OK => ()
-          }
-        }
+        .map(_.status)
         .recover {
           case e: Upstream5xxResponse => {
-            Logger.warn(s"identity-verification did not update entry ${e.getMessage}")
+            Logger.error(s"identity-verification did not update entry ${e.getMessage}")
+            Status.INTERNAL_SERVER_ERROR
           }
         }
     }
