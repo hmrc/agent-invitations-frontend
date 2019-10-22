@@ -23,6 +23,29 @@ trait AuthStubs {
   def authorisedAsValidClientVAT[A](request: FakeRequest[A], clientId: String) =
     authenticatedClient(request, "Organisation", Enrolment("HMRC-MTD-VAT", "VRN", clientId))
 
+  def authorisedAsIndividualWithCredentialRetrieval[A](request: FakeRequest[A], providerId: String)
+                                                      (implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenAuthorisedFor(
+      payload = """
+                  |{
+                  |"authorise": [ {
+                  |  "authProviders": [ "GovernmentGateway" ]
+                  |}],
+                  |  "retrieve": [ "affinityGroup", "optionalCredentials"]
+                  |}
+       """.stripMargin,
+      responseBody = s"""
+                        |{
+                        |  "affinityGroup":"Individual",
+                        |  "optionalCredentials": {"providerId": "$providerId", "providerType": "GovernmentGateway"}
+                        |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+  }
+
   def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""

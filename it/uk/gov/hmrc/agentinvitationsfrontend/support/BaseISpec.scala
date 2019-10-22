@@ -30,7 +30,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport with IVStubs {
+    with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
 
   val featureFlags: FeatureFlags = new FeatureFlags()
 
