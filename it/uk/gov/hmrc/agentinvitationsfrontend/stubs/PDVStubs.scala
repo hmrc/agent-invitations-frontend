@@ -10,7 +10,7 @@ trait PDVStubs {
 
   def givenPdvValidationSuccess(validationId: String): StubMapping = {
     stubFor(
-      get(urlEqualTo(s"/${encodePathSegment(validationId)}"))
+      get(urlEqualTo(s"/personal-details-validation/${encodePathSegment(validationId)}"))
         .willReturn(aResponse()
                       .withStatus(200)
                       .withBody(s"""{
@@ -28,7 +28,7 @@ trait PDVStubs {
 
   def givenPdvValidationSuccessNoNino(validationId: String): StubMapping = {
     stubFor(
-      get(urlEqualTo(s"/${encodePathSegment(validationId)}"))
+      get(urlEqualTo(s"/personal-details-validation/${encodePathSegment(validationId)}"))
         .willReturn(aResponse()
                       .withStatus(200)
                       .withBody(s"""{
@@ -45,7 +45,7 @@ trait PDVStubs {
 
   def givenPdvValidationFailure(validationId: String): StubMapping = {
     stubFor(
-      get(urlEqualTo(s"/${encodePathSegment(validationId)}"))
+      get(urlEqualTo(s"/personal-details-validation/${encodePathSegment(validationId)}"))
         .willReturn(aResponse()
                       .withStatus(200)
                       .withBody(s"""{
@@ -57,7 +57,7 @@ trait PDVStubs {
 
   def givenPdvValidationNotFound(validationId: String): StubMapping = {
     stubFor(
-      get(urlEqualTo(s"/${encodePathSegment(validationId)}"))
+      get(urlEqualTo(s"/personal-details-validation/${encodePathSegment(validationId)}"))
         .willReturn(aResponse()
                       .withStatus(404)))
   }
