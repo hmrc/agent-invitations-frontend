@@ -47,7 +47,7 @@
         <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.serviceType}")</li>
     </ol>
 
-  <p>@Messages("invitation-sent.email.p", config.agencyEmail)</p>
+  <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDate)</p>
 
 @if(config.hasContinueUrl) {
     <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>

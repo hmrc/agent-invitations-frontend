@@ -113,7 +113,7 @@ class TrackService @Inject()(
                                 "HMRC-CGT-PD",
                                 cgtName.getOrElse(""),
                                 clientId,
-                                "cgtRef",
+                                "CGTPDRef",
                                 dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>

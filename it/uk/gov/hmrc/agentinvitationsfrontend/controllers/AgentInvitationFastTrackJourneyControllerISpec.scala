@@ -1389,6 +1389,14 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
+      val inferredDate = controller.inferredExpiryDate
+      //not sure whys its coded like this in the views
+      val expiryDate =
+        if(inferredDate.getDayOfMonth < 10) {
+          inferredDate.toString("d MMMM yyyy")
+        } else {
+          inferredDate.toString("dd MMMM yyyy")
+        }
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1396,7 +1404,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "invitation-sent.header",
         "invitation-sent.l1",
         "invitation-sent.l1.p.personal.personal")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.email.p", "abc@xyz.com", expiryDate))
     }
 
     "show the invitation sent page for a business service" in {
