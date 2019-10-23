@@ -162,8 +162,10 @@ object TestEndpointsController {
   val testCancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientId"   -> normalizedText.verifying(validateClientId),
+        "service"  -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientId" -> normalizedText.verifying(validateClientId),
+        "clientType" -> text
+          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }

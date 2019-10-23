@@ -419,7 +419,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 303 redirect to confirm cancel authorisation page when form is correct" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, validNino.value, "Sylvia Plath"))
+        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, validNino.value, "personal", "Sylvia Plath"))
       val result = postToConfirmCancelAuth(
         authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -429,7 +429,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 400 BadRequest when form data contains errors in service" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm("foo", validNino.value, "Sylvia Plath"))
+        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm("foo", validNino.value, "personal", "Sylvia Plath"))
       val result = postToConfirmCancelAuth(
         authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -438,7 +438,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 400 BadRequest when form data contains errors in clientId" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, "foo", "Sylvia Plath"))
+        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, "foo", "personal", "Sylvia Plath"))
       val result = postToConfirmCancelAuth(
         authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 

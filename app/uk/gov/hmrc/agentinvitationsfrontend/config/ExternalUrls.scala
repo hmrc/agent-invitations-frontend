@@ -25,7 +25,6 @@ class ExternalUrls @Inject()(
   @Named("company-auth-frontend.external-url") val companyAuthUrl: String,
   @Named("company-auth-frontend.sign-out.path") val companyAuthSignOutPath: String,
   @Named("business-tax-account.external-url") val businessTaxAccountUrl: String,
-  @Named("tax-account-router-frontend.account-url") val taxAccountRelativeUrl: String,
   @Named("agent-services-account-frontend.external-url") val agentServicesAccountUrl: String,
   @Named("contact-frontend.external-url") val contactFrontendUrl: String,
   @Named("feedback-survey-frontend.external-url") val exitSurveyUrl: String,

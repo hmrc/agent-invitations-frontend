@@ -76,7 +76,6 @@ abstract class BaseISpec
         "microservice.services.company-auth-frontend.external-url"            -> companyAuthUrl,
         "microservice.services.company-auth-frontend.sign-out.path"           -> companyAuthSignOutPath,
         "microservice.services.business-tax-account.external-url"             -> businessTaxAccountUrl,
-        "microservice.services.tax-account-router-frontend.account-url"       -> taxAccountRelativeUrl,
         "microservice.services.personal-tax-account.external-url"             -> personalTaxAccountUrl,
         "microservice.services.citizen-details.host"                          -> wireMockHost,
         "microservice.services.citizen-details.port"                          -> wireMockPort,
