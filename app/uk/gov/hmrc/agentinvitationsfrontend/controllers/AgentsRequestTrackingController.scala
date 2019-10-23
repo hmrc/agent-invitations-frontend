@@ -45,7 +45,7 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
-case class CancelAuthorisationForm(service: String, clientId: String, clientName: String)
+case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String)
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -191,7 +191,11 @@ class AgentsRequestTrackingController @Inject()(
           },
           data =>
             Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm())
-              .addingToSession("service" -> data.service, "clientId" -> data.clientId, "clientName" -> data.clientName)
+              .addingToSession(
+                "service"    -> data.service,
+                "clientId"   -> data.clientId,
+                "clientName" -> data.clientName,
+                "clientType" -> data.clientType)
         )
     }
   }
@@ -286,8 +290,10 @@ class AgentsRequestTrackingController @Inject()(
   val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientId"   -> normalizedText.verifying(validateClientId),
+        "service"  -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientId" -> normalizedText.verifying(validateClientId),
+        "clientType" -> text
+          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
