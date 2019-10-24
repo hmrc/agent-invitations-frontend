@@ -411,7 +411,8 @@ object ClientInvitationJourneyController {
         "confirmedTerms.itsa"  -> boolean,
         "confirmedTerms.afi"   -> boolean,
         "confirmedTerms.vat"   -> boolean,
-        "confirmedTerms.trust" -> boolean
+        "confirmedTerms.trust" -> boolean,
+        "confirmedTerms.cgt"   -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =

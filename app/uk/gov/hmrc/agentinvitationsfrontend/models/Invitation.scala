@@ -40,7 +40,7 @@ object Invitation {
       case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier))
       case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier))
       case Services.TRUST      => TrustInvitation(Utr(clientIdentifier))
-      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier))
+      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier), clientType)
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -119,7 +119,7 @@ object TrustInvitation {
 
 case class CgtInvitation(
   clientIdentifier: CgtRef,
-  clientType: Option[ClientType] = Some(business),
+  clientType: Option[ClientType],
   service: String = Services.HMRCCGTPD,
   clientIdentifierType: String = "CGTPDRef")
     extends Invitation

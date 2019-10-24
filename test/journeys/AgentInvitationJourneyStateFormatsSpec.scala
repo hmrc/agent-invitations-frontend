@@ -36,7 +36,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientCgt" in {
         val state = ConfirmClientCgt(
-          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456")), itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), Some(business)), itemId = "ABC"),
           Set.empty)
         val json = Json.parse("""{
                                 |"state":"ConfirmClientCgt",

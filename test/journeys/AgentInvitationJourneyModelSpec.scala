@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.{AgentInvitationJourneyModel, _}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
@@ -53,7 +53,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
 
   def makeBasket(services: Set[String]) = services.map {
-    case `HMRCCGTPD` => AuthorisationRequest("client", CgtInvitation(CgtRef("X")), AuthorisationRequest.NEW, "item-cgt")
+    case `HMRCCGTPD` =>
+      AuthorisationRequest("client", CgtInvitation(CgtRef("X"), Some(business)), AuthorisationRequest.NEW, "item-cgt")
     case `HMRCMTDVAT` =>
       AuthorisationRequest("client", VatInvitation(Some(personal), Vrn(vrn)), AuthorisationRequest.NEW, "item-vat")
     case `HMRCMTDIT` =>

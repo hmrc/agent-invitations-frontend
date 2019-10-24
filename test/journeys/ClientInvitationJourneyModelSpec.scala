@@ -64,6 +64,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdIrv = InvitationId("B1BEOZEO7MNO6")
   val invitationIdVat = InvitationId("C1BEOZEO7MNO6")
   val invitationIdTrust = InvitationId("D1BEOZEO7MNO6")
+  val invitationIdCgt = InvitationId("E1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
 
   val normalisedAgentName = "agent-name"
@@ -177,11 +178,17 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
+              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = false)
             )
           )) when
           submitConsents(authorisedIndividualClient)(
-            ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true)) should
+            ConfirmedTerms(
+              itsaConsent = true,
+              afiConsent = true,
+              vatConsent = true,
+              trustConsent = true,
+              cgtConsent = true)) should
           thenGo(
             CheckAnswers(
               personal,
@@ -191,7 +198,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
                 ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
                 ClientConsent(invitationIdVat, expiryDate, "vat", consent = true),
-                ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)
+                ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true),
+                ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = true)
               )
             )
           )
@@ -208,7 +216,12 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               )
             )) when
             submitConsents(authorisedIndividualClient)(
-              ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true))
+              ConfirmedTerms(
+                itsaConsent = true,
+                afiConsent = true,
+                vatConsent = true,
+                trustConsent = true,
+                cgtConsent = true))
         }.getMessage shouldBe "the service key was not supported"
       }
     }
@@ -225,11 +238,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = true,
-          afiConsent = false,
-          vatConsent = false,
-          trustConsent = true)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = true,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = true,
+            cgtConsent = false)) should thenGo(
           CheckAnswers(
             personal,
             uid,
@@ -250,11 +265,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
             Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = false,
-          afiConsent = true,
-          vatConsent = false,
-          trustConsent = false)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = true,
+            vatConsent = false,
+            trustConsent = false,
+            cgtConsent = false)) should thenGo(
           CheckAnswers(
             personal,
             uid,
@@ -270,11 +287,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
             Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = false,
-          afiConsent = false,
-          vatConsent = true,
-          trustConsent = false)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = false,
+            vatConsent = true,
+            trustConsent = false,
+            cgtConsent = false)) should thenGo(
           CheckAnswers(
             personal,
             uid,
@@ -290,16 +309,41 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
             Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = false,
-          afiConsent = false,
-          vatConsent = false,
-          trustConsent = true)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = true,
+            cgtConsent = false)) should thenGo(
           CheckAnswers(
             personal,
             uid,
             "agent name",
             Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
+        )
+      }
+
+      "transition to CheckAnswers with changed cgt consent" in {
+        given(
+          SingleConsent(
+            personal,
+            uid,
+            "agent name",
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false),
+            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = false,
+            cgtConsent = true)) should thenGo(
+          CheckAnswers(
+            personal,
+            uid,
+            "agent name",
+            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
         )
       }
     }

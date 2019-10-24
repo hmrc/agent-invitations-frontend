@@ -1257,7 +1257,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the confirm client page for CGT clients" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
       journeyState.set(
-        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)), emptyBasket),
+        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business))), emptyBasket),
         List(ConfirmCountryCodeCgt(cgtRef, business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService, SelectClientType(emptyBasket))
       )
 
@@ -1788,7 +1788,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the some create authorisations failed" in {
       journeyState.set(
-        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
+        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1809,7 +1809,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the all create authorisations failed page" in {
       journeyState.set(
-        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
+        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1832,7 +1832,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       supportedServices.foreach { service =>
         journeyState.set(
-          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)))),
+          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(personal))))),
           List()
         )
         val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
