@@ -4,6 +4,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
+import org.joda.time.LocalDate
 import org.scalatest.Assertion
 import play.api.Application
 import play.api.mvc._
@@ -258,7 +259,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     behave like anActionHandlingSessionExpiry(controller.showConsent)
 
-    "display the multi consent page" in {
+    "display the multi consent page for itsa" in {
       journeyState.set(
         MultiConsent(
           personal,
@@ -271,6 +272,62 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
+    }
+
+    "display the multi consent page for cgt personal" in {
+      journeyState.set(
+        MultiConsent(
+          personal,
+          uid,
+          "My Agency",
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
+        Nil)
+
+      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.cgt.personal.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l5"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l6"))
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l4"))
+    }
+
+    "display the multi consent page for cgt business" in {
+      journeyState.set(
+        MultiConsent(
+          business,
+          uid,
+          "My Agency",
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
+        Nil)
+
+      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.cgt.business.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l4"))
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l4"))
     }
   }
 

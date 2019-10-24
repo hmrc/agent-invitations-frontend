@@ -50,6 +50,7 @@ trait TestDataCommonSupport {
   val serviceTrust = "HMRC-TERS-ORG"
   val identifierTrust = "UTR"
 
+  val serviceCgt = "HMRC-CGT-PD"
   val invitationIdCgt = InvitationId("EF99K6PXSBHTF")
 
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
