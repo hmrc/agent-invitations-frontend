@@ -373,7 +373,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
             ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
             ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
-            ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = false)
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
           )
         ),
         Nil
@@ -484,9 +484,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
+      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
       givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       givenRejectInvitationSucceeds("AB123456A", invitationIdPIR, identifierPIR)
       givenRejectInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
+      givenRejectInvitationSucceeds(cgtRef.value, invitationIdCgt, "CGTPDRef")
       journeyState.set(
         CheckAnswers(
           personal,
@@ -495,7 +497,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
             ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
           )
         ),
         Nil
