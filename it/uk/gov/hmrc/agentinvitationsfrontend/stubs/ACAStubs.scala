@@ -343,7 +343,7 @@ trait ACAStubs {
                          |  }
                          |}""".stripMargin)))
 
-  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String): StubMapping =
+  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String, service: String = "HMRC-MTD-IT", clientIdType: String = "mtditid"): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}"))
         .willReturn(
@@ -353,11 +353,11 @@ trait ACAStubs {
               s"""
                  |{
                  |  "arn" : "TARN00001",
-                 |  "service" : "HMRC-MTD-IT",
+                 |  "service" : "$service",
                  |  "clientId" : "$clientId",
-                 |  "clientIdType" : "mtditid",
+                 |  "clientIdType" : "$clientIdType",
                  |  "suppliedClientId" : "$clientId",
-                 |  "suppliedClientIdType" : "mtditid",
+                 |  "suppliedClientIdType" : "$clientIdType",
                  |  "status" : "Pending",
                  |  "created" : "2017-10-31T23:22:50.971Z",
                  |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -505,10 +505,9 @@ trait ACAStubs {
     invitationId: InvitationId,
     responseStatus: Int,
     serviceIdentifier: String) = {
-    val mtdItIdEncoded = encodePathSegment(clientId)
     val invitationIdEncoded = encodePathSegment(invitationId.value)
     stubFor(put(urlEqualTo(
-      s"/agent-client-authorisation/clients/$serviceIdentifier/$mtdItIdEncoded/invitations/received/$invitationIdEncoded/accept"))
+      s"/agent-client-authorisation/clients/$serviceIdentifier/${encodePathSegment(clientId)}/invitations/received/$invitationIdEncoded/accept"))
       .willReturn(aResponse()
         .withStatus(responseStatus)))
   }

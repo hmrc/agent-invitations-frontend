@@ -292,6 +292,34 @@ class InvitationsConnector @Inject()(
         false
     }
 
+  def acceptCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/accept").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Create Cgt Relationship Failed: ${e.getMessage}")
+        false
+    }
+
+  def rejectCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/reject").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Reject CGT Invitation Failed: ${e.getMessage}")
+        false
+    }
+
   def cancelInvitation(arn: Arn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
