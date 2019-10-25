@@ -357,7 +357,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /consent-change" should {
+  "GET /change-consent" should {
     def request = requestWithJourneyIdInCookie("GET", "/consent/individual")
 
     behave like anActionHandlingSessionExpiry(controller.showConsentChange)
@@ -372,7 +372,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
             ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
+            ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = false)
           )
         ),
         Nil
@@ -388,7 +389,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val consents = Seq(
         ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
         ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-        ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false)
+        ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
+        ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
       )
       val currentState = CheckAnswers(
         personal,
@@ -418,7 +420,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/check-answers" should {
+  "GET check-answers" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/check-answers")
 
     behave like anActionHandlingSessionExpiry(controller.showCheckAnswers)
@@ -429,7 +431,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          Seq(
+            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
+          )
+          ),
         Nil)
 
       val result = controller.showCheckAnswers(authorisedAsAnyIndividualClient(request))
@@ -437,10 +443,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.service.itsa"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.service.cgt.personal"))
     }
   }
 
-  "POST /warm-up/check-answers" should {
+  "POST /check-answers" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/check-answers")
 
     behave like anActionHandlingSessionExpiry(controller.submitCheckAnswers)
@@ -449,9 +456,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
+      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
       givenAcceptInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       givenAcceptInvitationSucceeds("AB123456A", invitationIdPIR, identifierPIR)
       givenAcceptInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
+      givenAcceptInvitationSucceeds(cgtRef.value, invitationIdCgt, "CGTPDRef")
       journeyState.set(
         CheckAnswers(
           personal,
@@ -460,7 +469,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
             ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = true)
+            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = true),
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)
           )
         ),
         Nil
