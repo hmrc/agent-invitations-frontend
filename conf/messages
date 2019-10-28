@@ -95,7 +95,7 @@ select-service.HMRC-MTD-VAT.business=Submit their VAT returns through software
 select-service.HMRC-TERS-ORG.business=Maintain a trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
-select-service.HMRC-CGT-PD.personal=Manage a client's Capital Gains Tax on UK property disposals
+select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property disposals
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
