@@ -561,12 +561,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/confirm-decline" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/confirm-decline")
+  "GET /confirm-decline" should {
+    def request = requestWithJourneyIdInCookie("GET", "/confirm-decline")
 
     behave like anActionHandlingSessionExpiry(controller.showConfirmDecline)
 
-    "display the confirm decline page" in {
+    "display the confirm decline page for single itsa consent" in {
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -580,6 +580,39 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.sub-header", "My Agency"))
+    }
+
+    "display the confirm decline page for single cgt consent" in {
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
+        Nil)
+
+      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.sub-header", "My Agency"))
+    }
+
+    "display the confirm decline page for multi consent" in {
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false), ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
+        Nil)
+
+      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.sub-header", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.service-name"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.service-name"))
     }
   }
 
