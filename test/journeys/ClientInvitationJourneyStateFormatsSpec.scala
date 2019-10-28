@@ -171,10 +171,11 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               "afi",
               consent = true
             )
-          )
+          ),
+          personal
         )
         val json = Json.parse(
-          s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents}}""".stripMargin)
+          s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents, "clientType": "personal"}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

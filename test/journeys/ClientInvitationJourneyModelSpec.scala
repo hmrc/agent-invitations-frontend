@@ -369,7 +369,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
-            )
+            ),
+            personal
           ))
       }
       "transition to InvitationsDeclined if all invitations are successfully declined" in {
@@ -540,7 +541,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "Mr agent",
-            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true))))
+            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true)),
+            personal))
       }
     }
   }

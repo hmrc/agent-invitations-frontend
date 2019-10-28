@@ -95,7 +95,7 @@ select-service.HMRC-MTD-VAT.business=Submit their VAT returns through software
 select-service.HMRC-TERS-ORG.business=Maintain a trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
-select-service.HMRC-CGT-PD.personal=Manage a client's Capital Gains Tax on UK property disposals
+select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property disposals
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -552,6 +552,8 @@ client-complete.afi.p1={0} is now confirmed as your authorised tax agent for vie
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for sending your Income Tax updates through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for submitting your VAT returns through software.
 client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
+client-complete.cgt.personal.p1={0} is now confirmed as your authorised tax agent for managing your Capital Gains Tax on UK property disposals
+client-complete.cgt.business.p1={0} is now confirmed as your authorised tax agent for managing a trust’s Capital Gains Tax on UK property disposals
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -565,6 +567,8 @@ client-complete.multi.p1.itsa=sending your Income Tax updates through software
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=submitting your VAT returns through software
 client-complete.multi.p1.trust=maintaining a trust or an estate
+client-complete.multi.p1.cgt.personal=managing your Capital Gains Tax on UK property disposals
+client-complete.multi.p1.cgt.business=managing a trust’s Capital Gains Tax on UK property disposals
 client-complete.multi.mistake=Made a mistake?
 client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
 
