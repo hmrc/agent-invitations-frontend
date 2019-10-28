@@ -17,9 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logger
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,7 +56,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
 
-    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
+        extends State
 
     case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
 
@@ -152,7 +155,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
               }
             for {
               newConsents <- newConsentsF
-              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName, clientType)
 
             } yield result
           } else goto(MultiConsent(clientType, uid, agentName, consents))
@@ -214,17 +217,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
       client: AuthorisedClient) = Transition {
-      case CheckAnswers(_, _, agentName, consents) =>
+      case CheckAnswers(clientType, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)(agentName)
-          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName, clientType)
         } yield result
     }
 
     private def getRedirectLinkAfterProcessConsents(
       consents: Seq[ClientConsent],
       newConsents: Seq[ClientConsent],
-      agentName: String) =
+      agentName: String,
+      clientType: ClientType) =
       if (ClientConsent.allFailed(newConsents))
         goto(AllResponsesFailed)
       else if (ClientConsent.someFailed(newConsents))
@@ -234,14 +238,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
             newConsents.filter(_.processed == false),
             newConsents.filter(_.processed == true)))
       else if (ClientConsent.allAcceptedProcessed(newConsents))
-        goto(InvitationsAccepted(agentName, consents))
+        goto(InvitationsAccepted(agentName, consents, clientType))
       else if (ClientConsent.allDeclinedProcessed(newConsents))
         goto(InvitationsDeclined(agentName, consents))
-      else goto(InvitationsAccepted(agentName, consents))
+      else goto(InvitationsAccepted(agentName, consents, clientType))
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
       case SomeResponsesFailed(agentName, _, successfulConsents) =>
-        goto(InvitationsAccepted(agentName, successfulConsents))
+        goto(
+          InvitationsAccepted(
+            agentName,
+            successfulConsents,
+            if (client.affinityGroup == Individual) personal else business))
     }
 
     def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {

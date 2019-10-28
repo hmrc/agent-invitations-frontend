@@ -663,22 +663,37 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/accepted" should {
+  "GET /invitations/accepted" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/accepted")
 
     behave like anActionHandlingSessionExpiry(controller.showInvitationsAccepted)
 
-    "display the accepted page" in {
+    "display the accepted page for multi consents" in {
       journeyState
         .set(
-          InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
+          InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)), personal),
           Nil)
 
       val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.itsa", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.head", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.itsa"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.cgt.personal"))
+    }
+
+    "display the accepted page for single consent" in {
+      journeyState
+        .set(
+          InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)), business),
+          Nil)
+
+      val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.cgt.business.p1", "My Agency"))
     }
   }
   "GET /warm-up/rejected" should {
@@ -756,7 +771,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
 
       journeyState.get.get._1 shouldBe
-        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)))
+        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)), personal)
     }
   }
 
