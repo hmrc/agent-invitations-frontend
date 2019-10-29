@@ -616,7 +616,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "POST /warm-up/confirm-decline" should {
+  "POST /confirm-decline" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/confirm-decline")
 
     behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
@@ -729,15 +729,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.cgt.business.p1", "My Agency"))
     }
   }
-  "GET /warm-up/rejected" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/rejected")
+  "GET /declined" should {
+    def request = requestWithJourneyIdInCookie("GET", "/declined")
 
     behave like anActionHandlingSessionExpiry(controller.showInvitationsDeclined)
 
-    "display the rejected page" in {
+    "display the rejected page for itsa" in {
       journeyState
         .set(
-          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)), personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
@@ -745,6 +745,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.itsa.p1", "My Agency"))
+    }
+
+    "display the rejected page for cgt" in {
+      journeyState
+        .set(
+          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)), personal),
+          Nil)
+
+      val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.cgt.personal.p1", "My Agency"))
     }
   }
   "GET /warm-up/all-failed" should {

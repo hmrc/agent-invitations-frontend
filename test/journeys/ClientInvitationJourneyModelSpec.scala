@@ -396,7 +396,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
               ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
-            )
+            ),
+            personal
           ))
       }
       "transition to SomeResponsesFailed if some of the invitation acceptances fail" in {
@@ -497,7 +498,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
-            )
+            ),
+            personal
           )
         )
       }

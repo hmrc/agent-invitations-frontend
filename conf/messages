@@ -397,22 +397,15 @@ warm-up.link=I do not want to appoint {0}
 
 # Invitation Declined
 invitation-declined.header=You declined this request
-invitation-declined-itsa.p1=You have not authorised {0} to send your Income Tax updates through software.
-invitation-declined-afi.p1={0} will not be able to view your personal income records.
-invitation-declined-itsa.button=Continue to your tax account
-invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
 invitation-declined.multi.itsa.p1=You have not given permission to {0} to send your Income Tax updates through software.
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to submit your VAT returns through software.
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
-
-invitation-declined-vat.p1=	You have not authorised {0} to submit your VAT returns through software.
-invitation-declined-vat.button=Continue to your tax account
+invitation-declined.multi.cgt.personal.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property disposals.
+invitation-declined.multi.cgt.business.p1=You have not given permission to {0} to manage a trust’s Capital Gains Tax on UK property disposals.
 invitation-declined.sign-out.button=Finish and sign out
-
-
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 

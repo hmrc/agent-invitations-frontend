@@ -59,7 +59,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
         extends State
 
-    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
+        extends State
 
     case object AllResponsesFailed extends State
 
@@ -240,7 +241,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       else if (ClientConsent.allAcceptedProcessed(newConsents))
         goto(InvitationsAccepted(agentName, consents, clientType))
       else if (ClientConsent.allDeclinedProcessed(newConsents))
-        goto(InvitationsDeclined(agentName, consents))
+        goto(InvitationsDeclined(agentName, consents, clientType))
       else goto(InvitationsAccepted(agentName, consents, clientType))
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
