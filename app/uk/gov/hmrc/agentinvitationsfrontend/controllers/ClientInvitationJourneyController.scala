@@ -383,8 +383,8 @@ class ClientInvitationJourneyController @Inject()(
     case InvitationsAccepted(agentName, consents, clientType) =>
       Ok(complete(CompletePageConfig(agentName, consents, clientType)))
 
-    case InvitationsDeclined(agentName, consents) =>
-      Ok(invitation_declined(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct)))
+    case InvitationsDeclined(agentName, consents, clientType) =>
+      Ok(invitation_declined(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
 
     case AllResponsesFailed => Ok(all_responses_failed())
 

@@ -561,12 +561,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /warm-up/confirm-decline" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/confirm-decline")
+  "GET /confirm-decline" should {
+    def request = requestWithJourneyIdInCookie("GET", "/confirm-decline")
 
     behave like anActionHandlingSessionExpiry(controller.showConfirmDecline)
 
-    "display the confirm decline page" in {
+    "display the confirm decline page for single itsa consent" in {
       journeyState.set(
         ConfirmDecline(
           personal,
@@ -581,9 +581,42 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.sub-header", "My Agency"))
     }
+
+    "display the confirm decline page for single cgt consent" in {
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
+        Nil)
+
+      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.sub-header", "My Agency"))
+    }
+
+    "display the confirm decline page for multi consent" in {
+      journeyState.set(
+        ConfirmDecline(
+          personal,
+          "uid",
+          "My Agency",
+          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false), ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
+        Nil)
+
+      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.sub-header", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.service-name"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.service-name"))
+    }
   }
 
-  "POST /warm-up/confirm-decline" should {
+  "POST /confirm-decline" should {
     def request = requestWithJourneyIdInCookie("POST", "/warm-up/confirm-decline")
 
     behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
@@ -696,15 +729,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.cgt.business.p1", "My Agency"))
     }
   }
-  "GET /warm-up/rejected" should {
-    def request = requestWithJourneyIdInCookie("GET", "/warm-up/rejected")
+  "GET /declined" should {
+    def request = requestWithJourneyIdInCookie("GET", "/declined")
 
     behave like anActionHandlingSessionExpiry(controller.showInvitationsDeclined)
 
-    "display the rejected page" in {
+    "display the rejected page for itsa" in {
       journeyState
         .set(
-          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)), personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
@@ -712,6 +745,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.itsa.p1", "My Agency"))
+    }
+
+    "display the rejected page for cgt" in {
+      journeyState
+        .set(
+          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)), personal),
+          Nil)
+
+      val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.cgt.personal.p1", "My Agency"))
     }
   }
   "GET /warm-up/all-failed" should {
