@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.{JsError, JsResult, JsString, JsSuccess, JsValue, Reads, Writes}
 import uk.gov.hmrc.http.BadRequestException
 
-sealed trait IVResult {
+sealed trait IVRIesult {
   val value: String
 }
 

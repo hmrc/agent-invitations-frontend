@@ -1,0 +1,38 @@
+@*
+ * Copyright 2019 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("global.error.500.title")) {
+    <h1 class="heading-xlarge">@Messages("global.error.500.heading")</h1>
+
+<p>@Messages("global.error.500.message")</p>
+<p>@Messages("global.error.500.p2")</p>
+<p>
+    <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk">
+    @Messages("global.error.500.vat_helpline.link")
+    </a>
+        &nbsp;@Messages("global.error.500.vat_helpline")
+</p>
+<p>
+    <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk">
+    @Messages("global.error.500.sa_helpline.link")
+    </a>
+        &nbsp;@Messages("global.error.500.sa_helpline")
+</p>
+}
