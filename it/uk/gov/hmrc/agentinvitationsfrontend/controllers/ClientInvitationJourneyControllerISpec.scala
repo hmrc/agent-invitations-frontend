@@ -786,8 +786,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           SomeResponsesFailed(
             "My Agency",
-            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
-            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+              ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+            personal),
           Nil
         )
 
@@ -795,7 +797,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.itsa"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.li.itsa"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.li.cgt.personal"))
     }
   }
 
@@ -808,7 +812,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           SomeResponsesFailed(
             "My Agency",
             Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
-            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true))),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+            personal),
           Nil
         )
 

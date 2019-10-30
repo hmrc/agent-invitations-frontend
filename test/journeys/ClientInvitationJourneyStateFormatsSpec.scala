@@ -233,7 +233,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               "afi",
               consent = true,
               processed = true
-            ))
+            )),
+          personal
         )
         val json =
           Json.parse(s"""{"state":"SomeResponsesFailed","properties":{"agentName": "agent name", 
@@ -254,7 +255,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                         |  "serviceKey": "afi",
                         |  "consent": true,
                         |  "processed": true
-                        |}]}}""".stripMargin)
+                        |}],
+                        |"clientType": "personal"}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

@@ -424,7 +424,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Seq(
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true, processed = true)
-            )
+            ),
+            personal
           ))
       }
       "transition to AllResponsesFailed if all of the invitation acceptances fail" in {
@@ -539,7 +540,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           SomeResponsesFailed(
             "Mr agent",
             Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)),
-            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true))
+            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true)),
+            personal
           )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "Mr agent",

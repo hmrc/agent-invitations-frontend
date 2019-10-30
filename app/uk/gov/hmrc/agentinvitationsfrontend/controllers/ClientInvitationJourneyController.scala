@@ -388,13 +388,14 @@ class ClientInvitationJourneyController @Inject()(
 
     case AllResponsesFailed => Ok(all_responses_failed())
 
-    case SomeResponsesFailed(agentName, failedConsents, _) =>
+    case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
       Ok(
         some_responses_failed(
           SomeResponsesFailedPageConfig(
             failedConsents,
             agentName,
-            routes.ClientInvitationJourneyController.submitSomeResponsesFailed())))
+            routes.ClientInvitationJourneyController.submitSomeResponsesFailed(),
+            clientType)))
 
     case TrustNotClaimed =>
       val backLink =
