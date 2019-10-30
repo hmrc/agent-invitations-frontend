@@ -633,10 +633,14 @@ some-responses-failed.li.itsa=Send your Income Tax updates through software
 some-responses-failed.li.afi=View your PAYE income record
 some-responses-failed.li.vat=Submit your VAT returns through software
 some-responses-failed.li.trust=Maintain a trust or an estate
+some-responses-failed.li.cgt.personal=manage your Capital Gains Tax on UK property disposals.
+some-responses-failed.li.cgt.business=Manage a trust’s Capital Gains Tax on UK property disposals.
 some-responses-failed.itsa=We could not save your response for sending your Income Tax updates through software.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
+some-responses-failed.cgt.personal=We could not save your response for managing your Capital Gains Tax on UK property disposals.
+some-responses-failed.cgt.business=We could not save your response for managing a trust’s Capital Gains Tax on UK property disposals.
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
 
