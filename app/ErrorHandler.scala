@@ -20,12 +20,12 @@ import play.api.http.HeaderNames.CACHE_CONTROL
 import play.api.http.HttpErrorHandler
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.Results._
-import play.api.mvc.{RequestHeader, Result}
+import play.api.mvc.{Request, RequestHeader, Result}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.error_template
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template, error_template_5xx}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
@@ -64,6 +64,7 @@ class ErrorHandler @Inject()(
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     auditServerError(request, exception)
+    implicit val r = Request(request, "")
     val response = exception match {
 
       case ex: OtacFailureThrowable =>
@@ -76,12 +77,7 @@ class ErrorHandler @Inject()(
 
       case ex =>
         Logger(getClass).warn(s"There has been a failure", ex)
-        InternalServerError(
-          error_template(
-            Messages("global.error.500.title"),
-            Messages("global.error.500.heading"),
-            Messages("global.error.500.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
-
+        InternalServerError(error_template_5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
     }
     Future.successful(response)
   }
