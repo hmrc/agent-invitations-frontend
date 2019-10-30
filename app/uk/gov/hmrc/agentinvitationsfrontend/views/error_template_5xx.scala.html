@@ -15,10 +15,11 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration)
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("global.error.500.title")) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("global.error.500.title"), isAgent = false) {
     <h1 class="heading-xlarge">@Messages("global.error.500.heading")</h1>
 
 <p>@Messages("global.error.500.message")</p>
