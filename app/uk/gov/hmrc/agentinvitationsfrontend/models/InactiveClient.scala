@@ -21,7 +21,6 @@ import org.joda.time.LocalDate
 case class InactiveClient(
   clientType: Option[String],
   serviceName: String,
-  clientName: String,
   clientId: String,
   clientIdType: String,
   dateTo: Option[LocalDate])

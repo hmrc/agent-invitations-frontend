@@ -139,7 +139,7 @@ GET         /agents/cancel-authorisation/not-authorised                 @uk.gov.
 GET         /agents/cancel-authorisation/response-failed                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showResponseFailed
 
 # Request tracking
-GET         /track                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests
+GET         /track                                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests(page: Int ?= 1)
 POST        /resend-link                                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToResendLink
 POST        /confirm-cancel                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToConfirmCancel
 GET         /track/confirm-cancel                                       @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showConfirmCancel

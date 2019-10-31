@@ -23,7 +23,7 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
-    val showTrackRequests = requestTrackingController.showTrackRequests
+    val showTrackRequests = requestTrackingController.showTrackRequests(1)
 
     "render a page without cancel authorisation link when flag is off" in {
       givenGetInvitations(arn)

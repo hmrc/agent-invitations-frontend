@@ -42,7 +42,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
-    val showTrackRequests = controller.showTrackRequests
+    val showTrackRequests = controller.showTrackRequests(1)
 
     "render a page listing non-empty invitations with client's names resolved" in {
       givenGetInvitations(arn)

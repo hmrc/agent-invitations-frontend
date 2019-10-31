@@ -94,6 +94,7 @@ abstract class BaseISpec
         "metrics.jvm"                                                         -> false,
         "metrics.logback"                                                     -> false,
         "passcodeAuthentication.enabled"                                      -> false,
+        "track-requests-per-page"                                             -> 50,
         "features.show-hmrc-mtd-it"                                           -> featureFlags.showHmrcMtdIt,
         "features.show-personal-income"                                       -> featureFlags.showPersonalIncome,
         "features.show-hmrc-mtd-vat"                                          -> featureFlags.showHmrcMtdVat,

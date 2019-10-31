@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
+import uk.gov.hmrc.agentinvitationsfrontend.models.{PageInfo, TrackInformationSorted}
 
 case class TrackPageConfig(
-  invitationsAndRelationships: Seq[TrackInformationSorted],
+  invitationsAndRelationships: Seq[TrackInformationSorted], // should be just one page of results
   trackRequestsShowLastDays: Int,
-  cancelAuthActionFlag: Boolean) {
+  cancelAuthActionFlag: Boolean,
+  pageInfo: PageInfo) {
 
   val hasInvitationsOrRelationships: Boolean = invitationsAndRelationships.nonEmpty
 }

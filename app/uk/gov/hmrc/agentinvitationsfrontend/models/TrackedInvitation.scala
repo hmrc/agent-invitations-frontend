@@ -17,26 +17,28 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import org.joda.time.{DateTime, LocalDate}
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.ExecutionContext
 
 case class TrackedInvitation(
   clientType: Option[String],
   service: String,
   clientId: String,
   clientIdType: String,
-  clientName: Option[String],
   status: String,
   lastUpdated: DateTime,
   expiryDate: LocalDate,
   invitationId: String
 ) extends ServiceAndClient {
 
-  def lastUpdatedFormatted = LocalDate.parse(lastUpdated.toString)
+  def lastUpdatedFormatted: LocalDate = LocalDate.parse(lastUpdated.toString)
 
 }
 
 object TrackedInvitation {
 
-  val preferredIdTypes = Set("ni", "vrn")
+  val preferredIdTypes: Set[String] = Set("ni", "vrn")
 
   def fromStored(i: StoredInvitation): TrackedInvitation = {
 
@@ -51,10 +53,10 @@ object TrackedInvitation {
       i.service,
       clientId,
       clientIdType,
-      None,
       i.status,
       i.lastUpdated,
       i.expiryDate,
-      i.invitationId)
+      i.invitationId
+    )
   }
 }

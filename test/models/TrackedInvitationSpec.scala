@@ -71,11 +71,6 @@ class TrackedInvitationSpec extends UnitSpec {
         tracked.clientIdType shouldBe "barType"
       }
 
-      "not have clientName" in {
-        val invitation = exampleInvitation
-        val tracked = TrackedInvitation.fromStored(invitation)
-        tracked.clientName shouldBe None
-      }
     }
   }
 

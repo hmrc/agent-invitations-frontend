@@ -20,25 +20,22 @@ class TrackServiceISpec extends BaseISpec {
   val itsaRelationship1 = InactiveClient(
     Some("personal"),
     "HMRC-MTD-IT",
-    "Boolean Ltd",
     validNino.value,
     "ni",
     Some(LocalDate.parse("2015-09-21")))
   val itsaRelationship2 = InactiveClient(
     Some("personal"),
     "HMRC-MTD-IT",
-    "Boolean Ltd",
     validNino.value,
     "ni",
     Some(LocalDate.parse("2015-09-24")))
   val vatRelationship1 =
-    InactiveClient(None, "HMRC-MTD-VAT", "Gadgetron", validVrn.value, "vrn", Some(LocalDate.parse("2015-09-21")))
+    InactiveClient(None, "HMRC-MTD-VAT", validVrn.value, "vrn", Some(LocalDate.parse("2015-09-21")))
   val vatRelationship2 =
-    InactiveClient(None, "HMRC-MTD-VAT", "Gadgetron", validVrn9755.value, "vrn", Some(LocalDate.parse("2018-09-24")))
+    InactiveClient(None, "HMRC-MTD-VAT", validVrn9755.value, "vrn", Some(LocalDate.parse("2018-09-24")))
   val irvRelationship1 = InactiveClient(
     Some("personal"),
     "PERSONAL-INCOME-RECORD",
-    "Serena Williams",
     validNino.value,
     "ni",
     Some(LocalDate.parse("2015-09-21")))
@@ -46,7 +43,6 @@ class TrackServiceISpec extends BaseISpec {
   val irvRelationship2 = InactiveClient(
     Some("personal"),
     "PERSONAL-INCOME-RECORD",
-    "Venus Williams",
     "GZ753451B",
     "ni",
     Some(LocalDate.parse("2018-09-24")))
