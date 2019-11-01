@@ -144,8 +144,10 @@ class TrackService @Inject()(
       }
       .getOrElse(Future.successful(None))
 
+  case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int)
+
   def bindInvitationsAndRelationships(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int, pageInfo: PageInfo)(
-    implicit hc: HeaderCarrier): Future[Seq[TrackInformationSorted]] = {
+    implicit hc: HeaderCarrier): Future[TrackResultsPage] = {
     implicit val now = LocalDate.now(DateTimeZone.UTC)
     val allResults = for {
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
@@ -225,16 +227,17 @@ class TrackService @Inject()(
     allResults.flatMap { all =>
       // get one page of the results and fetch client names for each item
 
-      val start = (pageInfo.page - 1) * pageInfo.resultsPerPage
-      val end = start + (pageInfo.resultsPerPage - 1)
-      val pageItems = all.slice(start, end)
+      val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
+      val until = from + pageInfo.resultsPerPage
+      val pageItems: Seq[TrackInformationSorted] = all.slice(from, until)
 
-      Future.traverse(pageItems) { trackInfo =>
-        for {
-          name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
-        } yield trackInfo.copy(clientName = name)
-      }
-
+      Future
+        .traverse(pageItems) { trackInfo =>
+          for {
+            name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
+          } yield trackInfo.copy(clientName = name)
+        }
+        .map(TrackResultsPage(_, all.size))
     }
 
   }

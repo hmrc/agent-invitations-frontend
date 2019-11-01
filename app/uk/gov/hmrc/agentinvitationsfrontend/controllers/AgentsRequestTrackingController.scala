@@ -72,21 +72,27 @@ class AgentsRequestTrackingController @Inject()(
   def showTrackRequests(page: Int): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
-      val pageInfo = PageInfo(page, trackRequestsPerPage)
+      val pageInfo = PageInfo(math.max(page, 1), trackRequestsPerPage)
       for {
-        invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
-                                        agent.arn,
-                                        agent.isWhitelisted,
-                                        trackRequestsShowLastDays,
-                                        pageInfo)
-      } yield
-        Ok(
-          track(
-            TrackPageConfig(
-              invitationsAndRelationships,
-              trackRequestsShowLastDays,
-              featureFlags.enableTrackCancelAuth,
-              pageInfo)))
+        trackResultsPage <- trackService.bindInvitationsAndRelationships(
+                             agent.arn,
+                             agent.isWhitelisted,
+                             trackRequestsShowLastDays,
+                             pageInfo)
+      } yield {
+        val config = TrackPageConfig(
+          trackResultsPage.results,
+          trackRequestsShowLastDays,
+          featureFlags.enableTrackCancelAuth,
+          pageInfo,
+          trackResultsPage.totalResults)
+        if (config.hasInvitationsOrRelationships && page > config.numberOfPages) {
+          Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
+        } else {
+          Ok(track(config))
+        }
+      }
+
     }
   }
 

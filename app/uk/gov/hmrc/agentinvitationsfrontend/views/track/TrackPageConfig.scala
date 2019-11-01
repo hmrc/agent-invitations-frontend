@@ -22,7 +22,14 @@ case class TrackPageConfig(
   invitationsAndRelationships: Seq[TrackInformationSorted], // should be just one page of results
   trackRequestsShowLastDays: Int,
   cancelAuthActionFlag: Boolean,
-  pageInfo: PageInfo) {
+  pageInfo: PageInfo,
+  totalResults: Int) {
+
+  val firstResult: Int = (pageInfo.page - 1) * pageInfo.resultsPerPage + 1
+  val lastResult: Int = firstResult + invitationsAndRelationships.size - 1
+
+  val numberOfPages: Int = Math.ceil(totalResults.toDouble / pageInfo.resultsPerPage).toInt
+  val hasNextPage: Boolean = numberOfPages > 1 && pageInfo.page < numberOfPages
 
   val hasInvitationsOrRelationships: Boolean = invitationsAndRelationships.nonEmpty
 }

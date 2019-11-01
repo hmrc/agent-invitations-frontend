@@ -42,15 +42,17 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
-    val showTrackRequests = controller.showTrackRequests(1)
+    val showTrackRequestsPageOne = controller.showTrackRequests(1)
+    val showTrackRequestsPageTwo = controller.showTrackRequests(2)
+    val showTrackRequestsPageThree = controller.showTrackRequests(3)
 
     "render a page listing non-empty invitations with client's names resolved" in {
-      givenGetInvitations(arn)
-      givenInactiveITSARelationships(arn)
-      givenInactiveVATRelationships(arn)
-      givenInactiveAfiRelationship(arn)
-      givenInactiveTrustRelationships(arn)
-      givenInactiveCgtRelationships(arn)
+      givenGetInvitations(arn) // 18 invitations
+      givenInactiveITSARelationships(arn) // 2 relationships
+      givenInactiveVATRelationships(arn) // 2 relationships
+      givenInactiveAfiRelationship(arn)  // 2 relationships
+      givenInactiveTrustRelationships(arn)  // 1 relationship
+      givenInactiveCgtRelationships(arn)  // 1 relationship
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
@@ -63,33 +65,30 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
-      val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
+      val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
+      status(resultPageOne) shouldBe 200
       checkHtmlResultWithBodyText(
-        result,
+        resultPageOne,
         "Accepted by client",
         "Client has not yet responded",
         "Declined by client",
-        "Request expired as client did not respond in time",
-        "You cancelled this request",
         "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
         "Cosmo Kramer",
         "GDT",
         "11 September 2018",
-        "21 September 2015",
         "24 September 2018",
         "01 January 2099",
         "Resend request to client",
         "Cancel this request",
         "Start new request",
         "Cancel your authorisation",
-        cgtSubscription().name,
         htmlEscapedMessage("recent-invitations.description", 30)
       )
+
       checkHtmlResultWithBodyMsgs(
-        result,
+        resultPageOne,
         "recent-invitations.header",
         "recent-invitations.table-row-header.clientName",
         "recent-invitations.table-row-header.service",
@@ -97,31 +96,60 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.table-row-header.actions",
         "recent-invitations.invitation.service.HMRC-MTD-IT",
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
-        "recent-invitations.invitation.service.HMRC-TERS-ORG",
-        "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD",
-        "recent-invitations.invitation.service.HMRC-CGT-PD.personal"
+        "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
 
-      val parseHtml = Jsoup.parse(contentAsString(result))
+      val y = List("recent-invitations.invitation.service.HMRC-TERS-ORG", "recent-invitations.invitation.service.HMRC-CGT-PD.personal")
+
+      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include(
-        "Send their Income Tax updates through software")
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Send their Income Tax updates through software")
+
       parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("GDT")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include(
-        "Submit their VAT returns through software")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("Submit their VAT returns through software")
       parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("resendRequest")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("cancelled your authorisation")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("fastTrackInvitationCreate")
+
       parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("John Smith")
       parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("View their PAYE income record")
-      parseHtml.getElementsByAttributeValue("id", "row-23").toString should include("Rodney Jones")
-      parseHtml.getElementsByAttributeValue("id", "row-23").toString should include("View their PAYE income record")
 
       parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("Declined")
       parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("fastTrackInvitationCreate")
-      parseHtml.getElementsByAttributeValue("id", "row-11").toString should include("cancelled this request")
-      parseHtml.getElementsByAttributeValue("id", "row-11").toString should include("fastTrackInvitationCreate")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("cancelled your authorisation")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("fastTrackInvitationCreate")
+
+      val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
+      status(resultPageTwo) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        resultPageTwo,
+        "Request expired as client did not respond in time",
+        "You cancelled this request"
+        )
+
+      val parseHtmlPageTwo = Jsoup.parse(contentAsString(resultPageTwo))
+
+      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("cancelled this request")
+      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("fastTrackInvitationCreate")
+
+      val resultPageThree = showTrackRequestsPageThree(authorisedAsValidAgent(request, arn.value))
+      status(resultPageThree) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        resultPageThree,
+        "21 September 2015",
+        cgtSubscription().name
+        )
+
+      checkHtmlResultWithBodyMsgs(
+        resultPageThree,
+        "recent-invitations.invitation.service.HMRC-CGT-PD.personal",
+        "recent-invitations.invitation.service.HMRC-TERS-ORG")
+
+      val parseHtmlPageThree = Jsoup.parse(contentAsString(resultPageThree))
+
+      parseHtmlPageThree.getElementsByAttributeValue("id", "row-3").toString should include("Rodney Jones")
+      parseHtmlPageThree.getElementsByAttributeValue("id", "row-3").toString should include("View their PAYE income record")
 
     }
 
@@ -139,20 +167,21 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
       givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
       givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-      val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
+
+      val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
+
       checkHtmlResultWithBodyText(
         result,
         "Accepted by client",
         "Client has not yet responded",
         "Declined by client",
-        "Request expired as client did not respond in time",
-        "You cancelled this request",
         "You cancelled your authorisation",
         "11 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
+
       checkHtmlResultWithBodyMsgs(
         result,
         "recent-invitations.header",
@@ -163,6 +192,15 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.invitation.service.HMRC-MTD-VAT",
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
+
+      val result2 = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
+      status(result2) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result2,
+        "Request expired as client did not respond in time",
+        "You cancelled this request")
+
     }
 
     "render a page listing empty invitations" in {
@@ -170,7 +208,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenInactiveITSARelationshipsNotFound
       givenInactiveVATRelationshipsNotFound
       givenInactiveAfiRelationshipNotFound
-      val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
+      val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
       checkHtmlResultWithBodyMsgs(
@@ -180,7 +218,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.empty.continue")
     }
 
-    behave like anAuthorisedAgentEndpoint(request, showTrackRequests)
+    behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
   }
 
   "POST /resend-link" should {

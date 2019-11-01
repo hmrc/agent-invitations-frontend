@@ -42,6 +42,11 @@
 
     @if(config.hasInvitationsOrRelationships) {
         <div class="table text-small">
+            <div style="font-size: 16.5px;">Showing
+                <strong class="bold">@config.firstResult</strong>
+                to <strong class="bold">@config.lastResult</strong>
+                of <strong class="bold">@config.totalResults</strong>
+            </div>
             <div class="table-row table-head">
                 <div class="table-cell column-22">@Messages("recent-invitations.table-row-header.clientName")</div>
                 <div class="table-cell column-30">@Messages("recent-invitations.table-row-header.service")</div>
@@ -85,12 +90,72 @@
             </div>
             }
         </div>
+        @if(config.numberOfPages > 1) {
+            @paginationControls
+        }
     } else {
         <p>@Messages(s"recent-invitations.empty")</p>
         <p>
             <a href="@routes.AgentInvitationJourneyController.showSelectService()">@Messages(s"recent-invitations.empty.continue")</a>
         </p>
     }
+}
+
+@paginationControls = {
+    <style type="text/css">
+        .pager-items {
+            float: right;
+            margin: 0;
+            display: flex;
+        }
+        .pager-items li {
+            border-right: 1px solid #ddd;
+            list-style-type: none;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.8em;
+        }
+
+        .pager-items li.selected-pagination-item {
+            padding: 7px 14px;
+        }
+
+        .pager-items li a {
+            display: inline-block;
+            padding: 7px 14px;
+        }
+
+        .pager-items li:first-child {
+            border-left: 1px solid #ddd;
+        }
+
+        .pager-items li:hover {
+          background-color: lightgrey;
+          cursor: pointer;
+        }
+
+        .pager-items li.selected-pagination-item:hover {
+          background-color: transparent;
+          cursor: default;
+        }
+
+    </style>
+    <ul class="pager-items all-sub" style="float: right; display: flex">
+        @if(config.pageInfo.page > 1) {
+          <li class="prev"><a class="home" href="?page=@(config.pageInfo.page - 1)"><span class="visually-hidden">page</span>Prev </a></li>
+        }
+        @for(pageNum <- (1 to config.numberOfPages)) {
+            @if(pageNum == config.pageInfo.page) {
+                <li class="selected-pagination-item">@pageNum</li>
+            } else {
+                <li><a class="home" href="?page=@pageNum"><span class="visually-hidden">Page</span>@pageNum</a></li>
+            }
+        }
+
+        @if(config.hasNextPage) {
+          <li class="next"><a class="home" href="?page=@(config.pageInfo.page + 1)"><span class="visually-hidden">page</span>Next </a></li>
+        }
+    </ul>
 }
 
 @dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
