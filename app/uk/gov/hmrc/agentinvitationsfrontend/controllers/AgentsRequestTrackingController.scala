@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConn
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PageInfo, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
@@ -61,6 +61,7 @@ class AgentsRequestTrackingController @Inject()(
   val pirRelationshipConnector: PirRelationshipConnector,
   agentServicesAccountConnector: AgentServicesAccountConnector,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
+  @Named("track-requests-per-page") val trackRequestsPerPage: Int,
   @Named("agent-invitations-frontend.external-url") externalUrl: String)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
@@ -68,17 +69,30 @@ class AgentsRequestTrackingController @Inject()(
     extends FrontendController with I18nSupport {
   import authActions._
 
-  val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
+  def showTrackRequests(page: Int): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
+      val pageInfo = PageInfo(math.max(page, 1), trackRequestsPerPage)
       for {
-        invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
-                                        agent.arn,
-                                        agent.isWhitelisted,
-                                        trackRequestsShowLastDays)
-      } yield
-        Ok(track(
-          TrackPageConfig(invitationsAndRelationships, trackRequestsShowLastDays, featureFlags.enableTrackCancelAuth)))
+        trackResultsPage <- trackService.bindInvitationsAndRelationships(
+                             agent.arn,
+                             agent.isWhitelisted,
+                             trackRequestsShowLastDays,
+                             pageInfo)
+      } yield {
+        val config = TrackPageConfig(
+          trackResultsPage.results,
+          trackRequestsShowLastDays,
+          featureFlags.enableTrackCancelAuth,
+          pageInfo,
+          trackResultsPage.totalResults)
+        if (config.hasInvitationsOrRelationships && page > config.numberOfPages) {
+          Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
+        } else {
+          Ok(track(config))
+        }
+      }
+
     }
   }
 

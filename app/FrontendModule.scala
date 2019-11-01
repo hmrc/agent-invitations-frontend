@@ -90,6 +90,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("survey.originTokenIdentifier.client")
     bindProperty("invitation.expiryDuration")
     bindIntegerProperty("track-requests-show-last-days")
+    bindIntegerProperty("track-requests-per-page")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
