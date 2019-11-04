@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
@@ -51,24 +52,17 @@ class TrackService @Inject()(
   def whitelistedInvitation(isPirWhitelisted: Boolean): StoredInvitation => Boolean =
     i => isPirWhitelisted || i.service != Services.HMRCPIR
 
-  def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] = {
-
-    val itsaRelationships: Future[Seq[ItsaInactiveTrackRelationship]] =
-      relationshipsConnector.getInactiveItsaRelationships
-    val vatRelationships: Future[Seq[VatTrackRelationship]] = relationshipsConnector.getInactiveVatRelationships
-    val trustRelationships: Future[Seq[TrustTrackRelationship]] = relationshipsConnector.getInactiveTrustRelationships
-    val irvRelationships: Future[Seq[IrvTrackRelationship]] = pirRelationshipConnector.getInactiveIrvRelationships
-    val cgtRelationships: Future[Seq[CgtTrackRelationship]] = relationshipsConnector.getInactiveCgtRelationships
-
+  def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] =
     for {
       relationships <- Future
                         .sequence(
                           Seq(
-                            itsaRelationships,
-                            vatRelationships,
-                            irvRelationships,
-                            trustRelationships,
-                            cgtRelationships))
+                            relationshipsConnector.getInactiveItsaRelationships,
+                            relationshipsConnector.getInactiveVatRelationships,
+                            pirRelationshipConnector.getInactiveIrvRelationships,
+                            relationshipsConnector.getInactiveTrustRelationships,
+                            relationshipsConnector.getInactiveCgtRelationships
+                          ))
                         .map(_.flatten)
 
       inactiveClients <- Future.traverse(relationships) {
@@ -105,7 +99,6 @@ class TrackService @Inject()(
                           case _ => Future successful InactiveClient(None, "", "", "", None)
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
-  }
 
   def relationships(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[TrackRelationship]]) =
     identifierOpt match {
