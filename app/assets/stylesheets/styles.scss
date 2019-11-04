@@ -257,6 +257,10 @@ fieldset .div-underline:last-child {
     vertical-align: middle;
 }
 
+.table-head .table-cell {
+    border-top: 1px solid #bfc1c3;
+}
+
 .table-head, .table-head .table-row {
     display: none;
 }
