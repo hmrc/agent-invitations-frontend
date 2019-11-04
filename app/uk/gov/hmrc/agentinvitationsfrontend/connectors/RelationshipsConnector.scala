@@ -23,9 +23,10 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,171 +35,147 @@ import scala.concurrent.{ExecutionContext, Future}
 class RelationshipsConnector @Inject()(
   @Named("agent-client-relationships-baseUrl") baseUrl: URL,
   http: HttpGet with HttpDelete,
-  metrics: Metrics)
+  metrics: Metrics,
+  featureFlags: FeatureFlags)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getInactiveRelationshipUrlFor(service: String): String =
+  // TODO when Service becomes a sealed trait, move these to that class
+  private val serviceShortNames = Map(
+    "HMRC-MTD-IT"   -> "Itsa",
+    "HMRC-MTD-VAT"  -> "VAT",
+    "HMRC-TERS-ORG" -> "Trust",
+    "HMRC-CGT-PD"   -> "Cgt"
+  )
+
+  private val serviceIdentifierTypes = Map(
+    "HMRC-MTD-IT"   -> "NI",
+    "HMRC-MTD-VAT"  -> "VRN",
+    "HMRC-TERS-ORG" -> "SAUTR",
+    "HMRC-CGT-PD"   -> "CGTPDRef"
+  )
+
+  private def isServiceEnabled(service: String): Boolean = service match {
+    case "HMRC-MTD-IT"   => featureFlags.showHmrcMtdIt
+    case "HMRC-MTD-VAT"  => featureFlags.showHmrcMtdVat
+    case "HMRC-TERS-ORG" => featureFlags.showHmrcTrust
+    case "HMRC-CGT-PD"   => featureFlags.showHmrcCgt
+    case _               => false // unknown service
+  }
+
+  private def getInactiveRelationshipUrlFor(service: String): String =
     new URL(baseUrl, s"/agent-client-relationships/agent/relationships/inactive/service/$service").toString
+
+  private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
+    new URL(
+      baseUrl,
+      s"/agent-client-relationships/agent/${arn.value}/service" +
+        s"/$service/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
+
+  private def getInactiveRelationshipsForService[A](
+    service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, evidence: HttpReads[Seq[A]]): Future[Seq[A]] =
+    if (isServiceEnabled(service)) {
+      monitor(s"ConsumedApi-Get-Inactive${serviceShortNames(service)}Relationships-GET") {
+        http
+          .GET[Seq[A]](getInactiveRelationshipUrlFor(service))
+          .recover {
+            case _: NotFoundException =>
+              Logger(getClass).warn(s"No inactive relationships were found for ${serviceShortNames(service)}")
+              Seq.empty
+          }
+      }
+    } else {
+      Logger(getClass).warn(
+        s"${serviceShortNames(service)} service is disabled - returning empty list of relationships")
+      Future successful Seq.empty
+    }
 
   def getInactiveItsaRelationships(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
-    monitor("ConsumedApi-Get-InactiveItsaRelationships-GET") {
-      http
-        .GET[Seq[ItsaInactiveTrackRelationship]](getInactiveRelationshipUrlFor("HMRC-MTD-IT"))
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No inactive relationships were found for ITSA")
-            Seq.empty
-        }
-    }
+    getInactiveRelationshipsForService[ItsaInactiveTrackRelationship]("HMRC-MTD-IT")
 
   def getInactiveVatRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatTrackRelationship]] =
-    monitor("ConsumedApi-Get-InactiveVatRelationships-GET") {
-      http
-        .GET[Seq[VatTrackRelationship]](getInactiveRelationshipUrlFor("HMRC-MTD-VAT"))
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No inactive relationships were found for VAT")
-            Seq.empty
-        }
-    }
+    getInactiveRelationshipsForService[VatTrackRelationship]("HMRC-MTD-VAT")
 
   def getInactiveTrustRelationships(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[TrustTrackRelationship]] =
-    monitor("ConsumedApi-Get-InactiveTrustRelationships-GET") {
-      http
-        .GET[Seq[TrustTrackRelationship]](getInactiveRelationshipUrlFor("HMRC-TERS-ORG"))
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No inactive relationships were found for Trust")
-            Seq.empty
-        }
-    }
+    getInactiveRelationshipsForService[TrustTrackRelationship]("HMRC-TERS-ORG")
 
   def getInactiveCgtRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[CgtTrackRelationship]] =
-    monitor("ConsumedApi-Get-InactiveCgtRelationships-GET") {
-      http
-        .GET[Seq[CgtTrackRelationship]](getInactiveRelationshipUrlFor("HMRC-CGT-PD"))
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No inactive relationships were found for CGT")
-            Seq.empty
-        }
+    getInactiveRelationshipsForService[CgtTrackRelationship]("HMRC-CGT-PD")
+
+  def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    if (isServiceEnabled(service)) {
+      monitor(s"ConsumedAPI-DELETE-${serviceShortNames(service)}Relationship-DELETE") {
+        val url = getRelationshipUrlFor(service, arn, identifier)
+
+        http.DELETE(url).map(_ => Some(true))
+      }.recover {
+        case _: NotFoundException => Some(false)
+        case _                    => None
+      }
+    } else {
+      Logger(getClass).warn(s"$serviceShortNames(service) is disabled - cannot delete relationship")
+      Future successful None
     }
 
   def deleteRelationshipItsa(arn: Arn, nino: Nino)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-DELETE-ItsaRelationship-DELETE") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}").toString
-      http.DELETE(url).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
-    }
+    deleteRelationshipForService("HMRC-MTD-IT", arn, nino)
 
   def deleteRelationshipVat(arn: Arn, vrn: Vrn)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-DELETE-VatRelationship-DELETE") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}").toString
-      http.DELETE(url).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
-    }
+    deleteRelationshipForService("HMRC-MTD-VAT", arn, vrn)
 
   def deleteRelationshipTrust(arn: Arn, utr: Utr)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-DELETE-TrustRelationship-DELETE") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}").toString
-      http.DELETE(url).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
-    }
-
-  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}").toString
-      http
-        .GET[HttpResponse](url)
-        .map(_ => true)
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No relationships were found for this agent and client for ITSA")
-            false
-        }
-    }
-
-  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor("ConsumedApi-Get-CheckVatRelationship-GET") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}").toString
-      http
-        .GET[HttpResponse](url)
-        .map(_ => true)
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No relationships were found for this agent and client for VAT")
-            false
-        }
-    }
-
-  def checkTrustRelationship(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor("ConsumedApi-Get-CheckTrustRelationship-GET") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}").toString
-      http
-        .GET[HttpResponse](url)
-        .map(_ => true)
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No relationships were found for this agent and client for Trust")
-            false
-        }
-    }
-
-  def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor("ConsumedApi-Get-CheckCgtRelationship-GET") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-CGT-PD/client/CGTPDRef/${ref.value}").toString
-      http
-        .GET[HttpResponse](url)
-        .map(_ => true)
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No relationships were found for this agent and client for CGT")
-            false
-        }
-    }
+    deleteRelationshipForService("HMRC-TERS-ORG", arn, utr)
 
   def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    monitor("ConsumedAPI-DELETE-CgtRelationship-DELETE") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-relationships/agent/${arn.value}/service/HMRC-CGT-PD/client/CGTPDRef/${ref.value}").toString
-      http.DELETE(url).map(_ => Some(true))
-    }.recover {
-      case _: NotFoundException => Some(false)
-      case _                    => None
+    deleteRelationshipForService("HMRC-CGT-PD", arn, ref)
+
+  private def checkRelationship(service: String, arn: Arn, identifier: TaxIdentifier)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    if (isServiceEnabled(service)) {
+      monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
+        val url = getRelationshipUrlFor(service, arn, identifier)
+
+        http
+          .GET[HttpResponse](url)
+          .map(_ => true)
+          .recover {
+            case _: NotFoundException =>
+              Logger(getClass).warn(
+                s"No relationships were found for this agent and client for $serviceShortNames(service)")
+              false
+          }
+      }
+    } else {
+      Logger.warn(s"$serviceShortNames(service) is disabled - cannot check relationships")
+      Future successful false
     }
+
+  def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-MTD-IT", arn, nino)
+
+  def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-MTD-VAT", arn, vrn)
+
+  def checkTrustRelationship(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-TERS-ORG", arn, utr)
+
+  def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-CGT-PD", arn, ref)
+
 }

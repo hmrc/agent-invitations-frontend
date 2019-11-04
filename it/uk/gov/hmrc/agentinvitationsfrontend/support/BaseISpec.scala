@@ -99,7 +99,7 @@ abstract class BaseISpec
         "features.show-personal-income"                                       -> featureFlags.showPersonalIncome,
         "features.show-hmrc-mtd-vat"                                          -> featureFlags.showHmrcMtdVat,
         "features.show-hmrc-trust"                                            -> true,
-        "features.show-hmrc-cgt"                                              -> featureFlags.showHmrcCgt,
+        "features.show-hmrc-cgt"                                              -> true,
         "features.enable-track-cancel-auth-action"                            -> featureFlags.enableTrackCancelAuth,
         "features.show-agent-led-de-auth"                                     -> featureFlags.showAgentLedDeAuth,
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
