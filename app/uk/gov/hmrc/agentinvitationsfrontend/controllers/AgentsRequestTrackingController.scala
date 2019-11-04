@@ -86,7 +86,7 @@ class AgentsRequestTrackingController @Inject()(
           featureFlags.enableTrackCancelAuth,
           pageInfo,
           trackResultsPage.totalResults)
-        if (config.hasInvitationsOrRelationships && page > config.numberOfPages) {
+        if (trackResultsPage.totalResults > 0 && page > config.numberOfPages) {
           Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
         } else {
           Ok(track(config))
