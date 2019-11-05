@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, Services}
 
 case class CheckDetailsPageConfig(
   fastTrackRequest: AgentFastTrackRequest,
@@ -39,7 +39,8 @@ case class CheckDetailsPageConfig(
     }
   }
 
-  val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
+  val needClientType: Boolean = fastTrackRequest.service ==
+    Services.HMRCMTDVAT /* We always need clientType page for VAT*/ || fastTrackRequest.clientType.isEmpty
 
   val needKnownFact: Boolean = fastTrackRequest.service != Services.TRUST && fastTrackRequest.knownFact
     .getOrElse("")

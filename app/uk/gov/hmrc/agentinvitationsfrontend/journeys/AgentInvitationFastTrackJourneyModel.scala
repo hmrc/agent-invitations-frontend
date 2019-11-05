@@ -322,6 +322,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
       case NoVatRegDate(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
         goto(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl))
+
+      case CheckDetailsNoVatRegDate(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
+        goto(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl))
     }
 
     def checkedDetailsNoKnownFact(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent) =
@@ -445,7 +448,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoVatRegDate(originalFtr, ftr, continueUrl) =>
-          gotoIdentifyClient(originalFtr, ftr, continueUrl)
+          goto(SelectClientTypeVat(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoClientTypeVat(originalFtr, ftr, continueUrl) =>
           gotoIdentifyClient(originalFtr, ftr, continueUrl)

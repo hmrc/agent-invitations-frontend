@@ -157,12 +157,12 @@ class RelationshipsConnector @Inject()(
           .recover {
             case _: NotFoundException =>
               Logger(getClass).warn(
-                s"No relationships were found for this agent and client for $serviceShortNames(service)")
+                s"No relationships were found for this agent and client for ${serviceShortNames(service)}")
               false
           }
       }
     } else {
-      Logger.warn(s"$serviceShortNames(service) is disabled - cannot check relationships")
+      Logger.warn(s"${serviceShortNames(service)} is disabled - cannot check relationships")
       Future successful false
     }
 

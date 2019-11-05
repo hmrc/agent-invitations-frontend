@@ -565,12 +565,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           authorisedAgent) should
           thenGo(IdentifyPersonalClient(fastTrackRequest, fastTrackRequest, None))
       }
-      "transition to IdentifyPersonalClient for VAT with no vat reg date when changing information" in {
+      "transition to SelectClientTypeVat for VAT with no vat reg date when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
 
         given(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsChangeInformation(
           authorisedAgent) should
-          thenGo(IdentifyPersonalClient(fastTrackRequest, fastTrackRequest, None))
+          thenGo(SelectClientTypeVat(fastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyNoClientTypeClient for VAT with no client type when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
