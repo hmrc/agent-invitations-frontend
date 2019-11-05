@@ -85,7 +85,7 @@ select-service.yes=Yes
 select-service.no=No
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
-service.type.invalid=You must select a service
+service.type.invalid=Select what you want the client to authorise you to do
 
 # multi-choice selections
 select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
