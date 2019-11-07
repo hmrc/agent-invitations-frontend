@@ -939,7 +939,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "POST /agents/client-details-cgt" should {
     val request = FakeRequest("POST", "/agents/client-details-cgt")
-    "redirect to /agents/track/client-postcode" in new CgtHappyScenario {
+
+    "redirect to /agents/select-client-type" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
@@ -958,23 +959,49 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode().url)
+        routes.AgentInvitationFastTrackJourneyController.showClientType().url)
     }
+  }
 
-    "redirect to /agents/track/client-country" in new CgtHappyScenario {
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+  "POST /agents/select-client-type-cgt" should {
+    val request = FakeRequest("POST", "/agents/client-details-cgt")
+
+    "redirect to /agents/client-postcode" in new CgtHappyScenario {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
-        IdentifyCgtClient(ftr, ftr, None),
+        SelectClientTypeCgt(ftr, ftr, None),
         List(
-          CheckDetailsCompleteCgt(ftr, ftr, None),
+          IdentifyCgtClient(ftr, ftr, None),
           Prologue(None, None)
         )
       )
 
-      val result = controller.submitIdentifyCgtClient(
+      val result = controller.submitClientTypeCgt(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
+          request.withFormUrlEncodedBody("clientType" -> "personal"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode().url)
+    }
+
+    "redirect to /agents/client-country" in new CgtHappyScenario {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("FR")).toString())
+      val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      journeyState.set(
+        SelectClientTypeCgt(ftr, ftr, None),
+        List(
+          IdentifyCgtClient(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitClientTypeCgt(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
         ))
 

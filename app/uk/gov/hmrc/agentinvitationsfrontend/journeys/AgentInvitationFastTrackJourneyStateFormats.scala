@@ -39,6 +39,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val NoDobFormat = Json.format[NoDob]
   val NoVatRegDateFormat = Json.format[NoVatRegDate]
   val SelectClientTypeVatFormat = Json.format[SelectClientTypeVat]
+  val SelectClientTypeCgtFormat = Json.format[SelectClientTypeCgt]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val IdentifyBusinessClientFormat = Json.format[IdentifyBusinessClient]
   val IdentifyTrustClientFormat = Json.format[IdentifyTrustClient]
@@ -76,6 +77,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: NoDob                           => NoDobFormat.writes(s)
     case s: NoVatRegDate                    => NoVatRegDateFormat.writes(s)
     case s: SelectClientTypeVat             => SelectClientTypeVatFormat.writes(s)
+    case s: SelectClientTypeCgt             => SelectClientTypeCgtFormat.writes(s)
     case s: IdentifyPersonalClient          => IdentifyPersonalClientFormat.writes(s)
     case s: IdentifyBusinessClient          => IdentifyBusinessClientFormat.writes(s)
     case s: IdentifyTrustClient             => IdentifyTrustClientFormat.writes(s)
@@ -111,6 +113,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "NoDob"                           => NoDobFormat.reads(properties)
     case "NoVatRegDate"                    => NoVatRegDateFormat.reads(properties)
     case "SelectClientTypeVat"             => SelectClientTypeVatFormat.reads(properties)
+    case "SelectClientTypeCgt"             => SelectClientTypeCgtFormat.reads(properties)
     case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
     case "IdentifyTrustClient"             => IdentifyTrustClientFormat.reads(properties)

@@ -509,6 +509,43 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "SelectClientTypeCgt" in {
+        val state = SelectClientTypeCgt(
+          AgentFastTrackRequest(
+            Some(personal),
+            HMRCCGTPD,
+            "OriginalClientIdType",
+            "OriginalClientId",
+            Some("OriginalKnownFact")),
+          AgentFastTrackRequest(Some(personal), HMRCCGTPD, "ClientIdType", "ClientId", Some("KnownFact")),
+          Some("continue/url")
+        )
+        val json = Json.parse("""{
+                                |  "state":"SelectClientTypeCgt",
+                                |  "properties":{
+                                |    "originalFastTrackRequest":{
+                                |      "clientType": "personal",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "OriginalClientIdType",
+                                |      "clientIdentifier": "OriginalClientId",
+                                |      "knownFact": "OriginalKnownFact"
+                                |    },
+                                |    "fastTrackRequest":{
+                                |      "clientType": "personal",
+                                |      "service": "HMRC-CGT-PD",
+                                |      "clientIdentifierType": "ClientIdType",
+                                |      "clientIdentifier": "ClientId",
+                                |      "knownFact": "KnownFact"
+                                |    },
+                                |    "continueUrl": "continue/url"
+                                |  }
+                                |}""".stripMargin)
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "IdentifyPersonalClient" in {
         val state = IdentifyPersonalClient(
           AgentFastTrackRequest(
