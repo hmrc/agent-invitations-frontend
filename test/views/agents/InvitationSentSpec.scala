@@ -127,7 +127,7 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
 
         "show a link to track recent authorisation requests" in {
           view(pageConfNoContinueUrl) should containLink(
-            expectedMessageKey = "invitation-sent.trackRequests",
+            expectedMessageKey = "invitation-sent.p1.link",
             expectedHref = "/invitations/track"
           )
         }
@@ -153,8 +153,7 @@ class InvitationSentSpec extends UnitSpec with MatcherWords with OneAppPerSuite 
 
         "show a link to track recent authorisation requests, which opens in a new window" in {
           view(pageConfContinueUrl) should containLinkWithSubstring(
-            expectedSubstring = messages("invitation-sent.trackRequests") + " " + messages(
-              "invitation-sent.new-window"),
+            expectedSubstring = messages("invitation-sent.p1.link"),
             expectedHref = "/invitations/track"
           )
         }
