@@ -533,7 +533,6 @@ confirm-terms.vat.p1=This tax agent needs access to this information to submit y
 #Check answers
 check-answers.heading = Check your answers before sending your response
 check-answers.subheading = Consent for {0}
-check-answers.p1 = Here are the details of your response to {0}.
 check-answers.service.afi = View your PAYE income record
 check-answers.service.itsa = Send your Income Tax updates through software
 check-answers.service.vat = Submit your VAT returns through software
