@@ -192,7 +192,7 @@ invitation-sent.p1.end=if you want to:
 invitation-sent.l5=check the status of your request
 invitation-sent.l6=resend a link to a client
 invitation-sent.l7=cancel requests and authorisations
-invitation-sent.resend.track-info.header=You can <a href="{0}">track your recent authorisation requests</a> if you want to:
+invitation-sent.resend.track-info.header=You can <a href="{0}">Track your recent authorisation requests</a> if you want to:
 invitation-sent.resend.track-info.l1=Check the status of your request
 invitation-sent.resend.track-info.l2=resend a link to a client
 invitation-sent.resend.track-info.l3=cancel requests and authorisations
