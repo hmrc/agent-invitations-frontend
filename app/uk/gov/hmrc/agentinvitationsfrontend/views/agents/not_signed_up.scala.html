@@ -34,6 +34,8 @@
 
   <p>@Messages(s"not-enrolled.p2")</p>
 
+  <p>@Messages("not-enrolled.p3.start") <a href="https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat">@Messages("not-enrolled.p3.link")</a></p>
+
   @if(hasRequests) {
    <a href=@routes.AgentInvitationJourneyController.showReviewAuthorisations() class="button">@Messages("review-auths.link")</a>
   }else {

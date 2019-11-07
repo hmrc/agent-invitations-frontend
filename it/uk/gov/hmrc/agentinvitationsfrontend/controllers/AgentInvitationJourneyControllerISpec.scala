@@ -1420,7 +1420,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       checkHtmlResultWithBodyText(
         result,
-        "Review your authorisation requests",
+        "Check your authorisation requests",
         "You have added 1 authorisation request.",
         "Send their Income Tax updates through software",
         "James Client",

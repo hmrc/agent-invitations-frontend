@@ -102,7 +102,7 @@ select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
-select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
+select-service.alt-suggestion=You can use this service to ask a client to authorise you for the services listed here.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
@@ -166,7 +166,7 @@ finish.button=Finish and sign out
 
 # Confirm Client
 confirm-client.header=Is this the client you want authorisation from?
-confirm-client.yes=Yes - I want to ask this client for authorisation
+confirm-client.yes=Yes
 confirm-client.no=No - I need to start over again
 error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
@@ -179,7 +179,7 @@ invitation-sent.l1.p.business.HMRC-TERS-ORG=You only need to send it to them onc
 invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs.</span>.
 invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
-invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
+invitation-sent.l3=<span>Make sure they respond by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
@@ -221,12 +221,12 @@ check-details.cgt=Capital Gains Tax account reference
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
 confirm-details.sub-header=Are these details correct?
-confirm-details.radio1=Yes - I want to ask this client for authorisation
+confirm-details.radio1=Yes
 confirm-details.radio2=No - I need to change them
 error.confirmDetails.invalid=Select yes if the details are correct
 
 #Review authorisations
-review-authorisations.heading=Review your authorisation requests
+review-authorisations.heading=Check your authorisation requests
 review-authorisations.p=You have added {0}.
 review-authorisations.table.HMRC-MTD-IT=Send their Income Tax updates through software
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
@@ -320,8 +320,10 @@ known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
 not-enrolled.p1.HMRC-MTD-IT=This client has not signed up to send their Income Tax updates through software.
-not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to submit their VAT returns through software.
+not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to Making Tax Digital for VAT.
 not-enrolled.p2=They cannot authorise you for this service until they have signed up.
+not-enrolled.p3.start=Find out how to
+not-enrolled.p3.link=sign up your client to Making Tax Digital for VAT (opens in a new window or tab).
 not-enrolled.button=Back to your account
 not-enrolled.vat.button=Back to your account
 
@@ -524,7 +526,7 @@ confirm-terms.vat.p1=This tax agent needs access to this information to submit y
 
 #Check answers
 check-answers.heading = Check your answers before sending your response
-check-answers.subheading = Your consent details
+check-answers.subheading = Consent for {0}
 check-answers.p1 = Here are the details of your response to {0}.
 check-answers.service.afi = View your PAYE income record
 check-answers.service.itsa = Send your Income Tax updates through software
@@ -567,7 +569,7 @@ client-complete.multi.p1.trust=maintaining a trust or an estate
 client-complete.multi.p1.cgt.personal=managing your Capital Gains Tax on UK property disposals
 client-complete.multi.p1.cgt.business=managing a trust’s Capital Gains Tax on UK property disposals
 client-complete.multi.mistake=Made a mistake?
-client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
+client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid
@@ -575,7 +577,7 @@ client-problem.header=Your authorisation request is no longer valid
 # Not Signed Up
 not-signed-up.header=There is a problem
 not-signed-up.description=You have not signed up to send your Income Tax updates through software.
-not-signed-up-vat.description=You have not signed up to submit your VAT returns through software.
+not-signed-up-vat.description=You have not signed up to Making Tax Digital for VAT.
 not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
 #Not Authorised
