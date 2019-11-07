@@ -48,14 +48,19 @@
     </ol>
 
   <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDate)</p>
+<p>@Messages("invitation-sent.p1.start") <a href="@config.trackUrl">@Messages("invitation-sent.p1.link")</a> @Messages("invitation-sent.p1.end")</p>
+<ol class="list list-bullet margin-left-0">
+<li>@Messages("invitation-sent.l5")</li>
+<li>@Messages("invitation-sent.l6")</li>
+<li>@Messages("invitation-sent.l7")</li></ol>
+
+
 
 @if(config.hasContinueUrl) {
     <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>
-    <p><a class="text-link-small" href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests") @Messages("invitation-sent.new-window")</a></p>
 } else {
     <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
     <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
-    <p><a href="@config.trackUrl" id="trackRequests" target="_blank" rel="noopener noreferrer">@Messages(s"invitation-sent.trackRequests")</a></p>
     <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.continueToASAccount.button")</a>
 }
 }

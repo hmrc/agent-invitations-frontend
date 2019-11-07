@@ -55,7 +55,6 @@
     </ul>
 
     @if(config.consents.count(_.consent == false) > 0) {
-        <h3>@Messages("client-complete.multi.mistake")</h3>
         <p>@Messages("client-complete.multi.fail", config.agencyName, if(config.consents.count(_.consent == false) == 1){
             s"${config.consents.count(_.consent == false)} service"
         }else {

@@ -186,6 +186,12 @@ invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Go
 invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
+invitation-sent.p1.start=You can
+invitation-sent.p1.link=track your recent authorisation requests
+invitation-sent.p1.end=if you want to:
+invitation-sent.l5=check the status of your request
+invitation-sent.l6=resend a link to a client
+invitation-sent.l7=cancel requests and authorisations
 invitation-sent.resend.track-info.header=You can <a href="{0}">Track your recent authorisation requests</a> if you want to:
 invitation-sent.resend.track-info.l1=Check the status of your request
 invitation-sent.resend.track-info.l2=resend a link to a client
@@ -527,7 +533,6 @@ confirm-terms.vat.p1=This tax agent needs access to this information to submit y
 #Check answers
 check-answers.heading = Check your answers before sending your response
 check-answers.subheading = Consent for {0}
-check-answers.p1 = Here are the details of your response to {0}.
 check-answers.service.afi = View your PAYE income record
 check-answers.service.itsa = Send your Income Tax updates through software
 check-answers.service.vat = Submit your VAT returns through software
@@ -568,7 +573,6 @@ client-complete.multi.p1.vat=submitting your VAT returns through software
 client-complete.multi.p1.trust=maintaining a trust or an estate
 client-complete.multi.p1.cgt.personal=managing your Capital Gains Tax on UK property disposals
 client-complete.multi.p1.cgt.business=managing a trust’s Capital Gains Tax on UK property disposals
-client-complete.multi.mistake=Made a mistake?
 client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
 
 # Generic Issue Title
