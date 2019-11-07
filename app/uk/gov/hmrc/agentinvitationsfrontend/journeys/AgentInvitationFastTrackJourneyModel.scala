@@ -122,6 +122,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       continueUrl: Option[String])
         extends State
 
+    case class SelectClientTypeCgt(
+      originalFastTrackRequest: AgentFastTrackRequest,
+      fastTrackRequest: AgentFastTrackRequest,
+      continueUrl: Option[String])
+        extends State
+
     case class IdentifyPersonalClient(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -319,9 +325,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     def checkedDetailsNoClientType(agent: AuthorisedAgent) = Transition {
       case CheckDetailsNoClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
         goto(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl))
-
       case NoVatRegDate(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
         goto(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, continueUrl))
+      case CheckDetailsCompleteCgt(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
+        goto(SelectClientTypeCgt(originalFastTrackRequest, fastTrackRequest, continueUrl))
     }
 
     def checkedDetailsNoKnownFact(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent) =
@@ -384,26 +391,11 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       cgtClient: CgtClient): Transition =
       Transition {
         case IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
-          getCgtSubscription(cgtClient.cgtRef).map {
-            case Some(subscription) =>
-              if (subscription.isUKBasedClient) {
-                ConfirmPostcodeCgt(
-                  originalFastTrackRequest,
-                  fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
-                  continueUrl,
-                  subscription.postCode,
-                  subscription.name)
-              } else {
-                ConfirmCountryCodeCgt(
-                  originalFastTrackRequest,
-                  fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
-                  continueUrl,
-                  subscription.countryCode,
-                  subscription.name)
-              }
-            case None =>
-              CgtRefNotFound(cgtClient.cgtRef)
-          }
+          goto(
+            SelectClientTypeCgt(
+              originalFastTrackRequest,
+              fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
+              continueUrl))
       }
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition = {
@@ -755,6 +747,28 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
             checkedDetailsNoKnownFact(getCgtSubscription)(agent)
               .apply(newState)
+          }
+
+        case SelectClientTypeCgt(originalFtr, ftr, continueUrl) =>
+          getCgtSubscription(CgtRef(ftr.clientIdentifier)).map {
+            case Some(subscription) =>
+              if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(
+                  originalFtr,
+                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
+                  continueUrl,
+                  subscription.postCode,
+                  subscription.name)
+              } else {
+                ConfirmCountryCodeCgt(
+                  originalFtr,
+                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
+                  continueUrl,
+                  subscription.countryCode,
+                  subscription.name)
+              }
+            case None =>
+              CgtRefNotFound(CgtRef(ftr.clientIdentifier))
           }
       }
 

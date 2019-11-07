@@ -23,12 +23,14 @@ case class ClientTypePageConfig(
   backLinkUrl: String,
   submitCall: Call,
   showTrustFlag: Boolean,
-  isForVat: Boolean = false)(implicit messages: Messages) {
+  isForVat: Boolean = false,
+  isForCgt: Boolean = false)(implicit messages: Messages) {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))
   val trustOption = Seq("trust"       -> Messages("client-type.trust"))
   val clientTypes =
-    if (showTrustFlag && !isForVat) personalOption ++ businessOption ++ trustOption
+    if (showTrustFlag && !isForVat && !isForCgt) personalOption ++ businessOption ++ trustOption
+    else if (showTrustFlag && isForCgt) personalOption ++ trustOption
     else personalOption ++ businessOption
 }

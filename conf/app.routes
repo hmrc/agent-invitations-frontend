@@ -103,6 +103,7 @@ GET         /agents/more-details-vat                                    @uk.gov.
 POST        /agents/more-details-vat                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitKnownFactVat
 GET         /agents/select-client-type                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientType
 POST        /agents/select-client-type                                  @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientType
+POST        /agents/select-client-type-cgt                              @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypeCgt
 GET         /agents/sent-invitation                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showInvitationSent
 
 #Error Fast Track Endpoints
