@@ -129,6 +129,17 @@ select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manag
 select-single-service.HMRC-CGT-PD.business.header=Do you want to manage a trust’s Capital Gains Tax on UK property disposals?
 select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage a trust’s Capital Gains Tax on UK property disposals
 
+# Agent suspended
+agent-suspended.heading.multi=We could not create one of your requests
+agent-suspended.heading.single=We could not create your authorisation request
+agent-suspended.p1=You cannot ask a client to authorise you to {0} because your agent code is suspended.
+agent-suspended.p1.HMRC-MTD-IT=send their Income Tax updates through software
+agent-suspended.p1.PERSONAL-INCOME-RECORD=view their PAYE income record
+agent-suspended.p1.HMRC-MTD-VAT=submit their VAT returns through software
+agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
+agent-suspended.p1.HMRC-CGT-PD=maintain their Capital Gain Tax on UK property disposals
+agent-suspended.p2.single=You can start a new authorisation request for a different service.
+agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
 ## Identify Trust Client
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
@@ -161,6 +172,7 @@ cgt-not-matched.advice=You can:
 cgt-not-matched.advice.l1=check the account reference is correct and try again
 cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
 continue.button=Continue
+start-again.button=Start again
 button.back=Back
 finish.button=Finish and sign out
 

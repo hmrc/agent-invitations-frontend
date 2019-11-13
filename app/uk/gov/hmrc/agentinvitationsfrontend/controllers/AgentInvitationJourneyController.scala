@@ -23,12 +23,12 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, AgentSuspensionConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -46,6 +46,7 @@ class AgentInvitationJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
   asaConnector: AgentServicesAccountConnector,
+  agentSuspensionConnector: AgentSuspensionConnector,
   val authActions: AuthActions,
   override val journeyService: AgentInvitationJourneyService,
   countryNamesLoader: CountryNamesLoader)(
@@ -58,6 +59,7 @@ class AgentInvitationJourneyController @Inject()(
 
   import AgentInvitationJourneyController._
   import asaConnector._
+  import agentSuspensionConnector._
   import authActions._
   import invitationsService._
   import journeyService.model.State._
@@ -99,7 +101,10 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdIt,
         featureFlags.showPersonalIncome,
         featureFlags.showHmrcMtdVat,
-        featureFlags.showHmrcCgt))
+        featureFlags.showHmrcCgt,
+        featureFlags.agentSuspensionEnabled,
+        getSuspensionStatus
+      ))
   }
 
   def submitPersonalSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
@@ -108,23 +113,35 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdIt,
         featureFlags.showPersonalIncome,
         featureFlags.showHmrcMtdVat,
-        featureFlags.showHmrcCgt))
+        featureFlags.showHmrcCgt,
+        featureFlags.agentSuspensionEnabled,
+        getSuspensionStatus
+      ))
   }
 
   def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(
-      Transitions.selectedBusinessService(featureFlags.showHmrcMtdVat))
+      Transitions
+        .selectedBusinessService(featureFlags.showHmrcMtdVat, featureFlags.agentSuspensionEnabled, getSuspensionStatus))
   }
 
   def submitTrustSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(service, business))(
-      Transitions.selectedTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
+      Transitions.selectedTrustService(
+        featureFlags.showHmrcTrust,
+        featureFlags.showHmrcCgt,
+        featureFlags.agentSuspensionEnabled,
+        getSuspensionStatus))
   }
 
   // this is only for multi-select option forms
   def submitTrustSelectServiceMultiple: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
-      Transitions.selectedTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
+      Transitions.selectedTrustService(
+        featureFlags.showHmrcTrust,
+        featureFlags.showHmrcCgt,
+        featureFlags.agentSuspensionEnabled,
+        getSuspensionStatus))
   }
 
   def identifyClientRedirect: Action[AnyContent] =
@@ -282,6 +299,10 @@ class AgentInvitationJourneyController @Inject()(
     case AllAuthorisationsRemoved =>
   }
 
+  def showAgentSuspended: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: AgentSuspended =>
+  }
+
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case _: SelectClientType             => routes.AgentInvitationJourneyController.showClientType()
@@ -316,6 +337,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: PendingInvitationExists   => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
     case _: ActiveAuthorisationExists => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
     case AllAuthorisationsRemoved     => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
+    case _: AgentSuspended            => routes.AgentInvitationJourneyController.showAgentSuspended()
     case _                            => throw new Exception(s"Link not found for $state")
   }
 
@@ -634,6 +656,9 @@ class AgentInvitationJourneyController @Inject()(
 
     case AllAuthorisationsRemoved =>
       Ok(all_authorisations_removed(routes.AgentInvitationJourneyController.showClientType()))
+
+    case AgentSuspended(suspendedService, basket) =>
+      Ok(agent_suspended(basket, suspendedService, backLinkFor(breadcrumbs).url))
 
     case _ => throw new Exception(s"Cannot render a page for unexpected state: $state")
 

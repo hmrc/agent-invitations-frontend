@@ -18,6 +18,7 @@ package journeys
 
 import org.joda.time.LocalDate
 import play.api.http.Status
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition}
@@ -119,12 +120,21 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state SelectPersonalService" should {
 
+      def notSuspended(arn: Arn) = AgentSuspensionResponse("NotSuspended", None)
+
       def selectedService(
         showItsaFlag: Boolean = true,
         showPirFlag: Boolean = true,
         showVatFlag: Boolean = true,
-        showCgtFlag: Boolean = true): String => AgentInvitationJourneyModel.Transition =
-        selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag)(authorisedAgent)
+        showCgtFlag: Boolean = true,
+        agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
+        selectedPersonalService(
+          showItsaFlag,
+          showPirFlag,
+          showVatFlag,
+          showCgtFlag,
+          agentSuspensionEnabled,
+          notSuspended)(authorisedAgent)
 
       "transition to SelectClientType" in {
 
@@ -175,6 +185,48 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SelectPersonalService(availableServices, emptyBasket))
       }
 
+      "transition to AgentSuspended when agent is suspended for the selected service" in {
+        def suspendedForItsa(arn: Arn) = AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDIT)))
+
+        def selectedService(
+          showItsaFlag: Boolean = true,
+          showPirFlag: Boolean = true,
+          showVatFlag: Boolean = true,
+          showCgtFlag: Boolean = true,
+          agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
+          selectedPersonalService(
+            showItsaFlag,
+            showPirFlag,
+            showVatFlag,
+            showCgtFlag,
+            agentSuspensionEnabled,
+            suspendedForItsa)(authorisedAgent)
+
+        given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDIT) should thenGo(
+          AgentSuspended(HMRCMTDIT, emptyBasket))
+      }
+
+      "transition to IdentifyPersonalClient when agent is suspended for a service not selected" in {
+        def suspendedForItsa(arn: Arn) = AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDIT)))
+
+        def selectedService(
+          showItsaFlag: Boolean = true,
+          showPirFlag: Boolean = true,
+          showVatFlag: Boolean = true,
+          showCgtFlag: Boolean = true,
+          agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
+          selectedPersonalService(
+            showItsaFlag,
+            showPirFlag,
+            showVatFlag,
+            showCgtFlag,
+            agentSuspensionEnabled,
+            suspendedForItsa)(authorisedAgent)
+
+        given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDVAT) should thenGo(
+          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
+      }
+
       "throw an exception when the show itsa feature flag is off" in {
 
         intercept[Exception] {
@@ -214,6 +266,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     // *************************************************
 
     "at state SelectBusinessService" should {
+      def notSuspended(arn: Arn) = AgentSuspensionResponse("NotSuspended", None)
 
       "transition to SelectClientType" in {
 
@@ -223,22 +276,42 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedBusinessService(true)(true) transition to IdentifyBusinessClient" in {
 
         given(SelectBusinessService) when
-          selectedBusinessService(showVatFlag = true)(authorisedAgent)(HMRCMTDVAT) should
+          selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)(
+            HMRCMTDVAT) should
           thenGo(IdentifyBusinessClient)
       }
 
       "after selectedBusinessService(true)(false) transition to SelectClientType" in {
 
         given(SelectBusinessService) when
-          selectedBusinessService(showVatFlag = true)(authorisedAgent)("") should
+          selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
+      }
+
+      "transition to AgentSuspended if agent is suspended for the chosen service" in {
+        def suspendedForVat(arn: Arn) = AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDVAT)))
+
+        given(SelectBusinessService) when
+          selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, suspendedForVat)(authorisedAgent)(
+            HMRCMTDVAT) should
+          thenGo(AgentSuspended(HMRCMTDVAT, emptyBasket))
+      }
+
+      "transition to IdentifyBusinessClient if agent is suspended for a different service" in {
+        def suspendedForItsa(arn: Arn) = AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDIT)))
+
+        given(SelectBusinessService) when
+          selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, suspendedForItsa)(authorisedAgent)(
+            HMRCMTDVAT) should
+          thenGo(IdentifyBusinessClient)
       }
 
       "throw an exception when the show vat feature flag is off" in {
 
         intercept[Exception] {
           given(SelectBusinessService) when
-            selectedBusinessService(showVatFlag = false)(authorisedAgent)(HMRCMTDVAT)
+            selectedBusinessService(showVatFlag = false, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)(
+              HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
     }
@@ -248,6 +321,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     // *************************************************
 
     "at state SelectTrustService" should {
+      def notSuspended(arn: Arn) = AgentSuspensionResponse("NotSuspended", None)
 
       "transition to SelectClientType" in {
 
@@ -259,31 +333,38 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true)(agent = authorisedAgent)(TRUST) should
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
         val basket = makeBasket(Set(HMRCCGTPD))
         given(SelectTrustService(availableTrustServices, basket)) when
-          selectedTrustService(true, true)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(ReviewAuthorisationsTrust(availableTrustServices, basket))
       }
 
+      "transition to AgentSuspended if the agent is suspended for the selected service" in {
+        def suspendedForTrust(arn: Arn) = AgentSuspensionResponse("Suspended", Some(Set(TRUST)))
+
+        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+          selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
+          thenGo(AgentSuspended(TRUST, emptyBasket))
+      }
     }
 
     // *************************************************
