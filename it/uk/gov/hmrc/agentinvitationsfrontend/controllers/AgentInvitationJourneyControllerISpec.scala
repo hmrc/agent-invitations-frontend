@@ -8,10 +8,12 @@ import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AgentSuspensionStubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -248,6 +250,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-personal-service")
 
     "accept valid service choice and redirect" in {
+      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
       journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitPersonalSelectService(
@@ -260,12 +263,28 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
+
+    "redirect to agent suspended if the agent is suspended for the selected service" in {
+      givenSuspensionStatus(arn, AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDIT))))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
   }
 
   "POST /agents/select-business-service" should {
     val request = FakeRequest("POST", "/agents/select-business-service")
 
     "redirect to identify-client when yes is selected" in {
+      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
       journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
       val result = controller.submitBusinessSelectService(
@@ -300,7 +319,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-trust-service")
 
     "redirect to identify-client when yes is selected" in {
-
+      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitTrustSelectSingle(TRUST)(
@@ -1912,6 +1931,18 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "all-authorisations-removed.p",
         "new-request.button"
       )
+    }
+  }
+
+  "GET /access-removed" should {
+    val request = FakeRequest("GET", "/agents/access-removed")
+
+    "display the access removed page" in {
+      journeyState.set(AgentSuspended(HMRCMTDIT, Set.empty), List())
+      val result = controller.showAgentSuspended(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")
     }
   }
 }

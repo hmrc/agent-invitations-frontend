@@ -17,10 +17,9 @@ POST        /agents/select-personal-service-single                      @uk.gov.
 
 POST        /agents/select-business-service                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
 
-POST        /agents/select-trust-service-single                        @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectSingle(service: String)
+POST        /agents/select-trust-service-single                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectSingle(service: String)
 
-# multi-select endpoint
-POST /agents/select-trust-services                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
+POST        /agents/select-trust-services                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
 
 GET         /agents/identify-client                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
 
@@ -64,6 +63,7 @@ GET         /agents/already-authorisation-present                       @uk.gov.
 GET         /agents/all-create-authorisation-failed                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAllAuthorisationsFailed
 GET         /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSomeAuthorisationsFailed
 POST        /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSomeAuthorisationsFailed
+GET         /agents/access-removed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAgentSuspended
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack

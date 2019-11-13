@@ -67,6 +67,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("identity-verification-frontend")
     bindBaseUrl("identity-verification")
     bindBaseUrl("personal-details-validation")
+    bindBaseUrl("agent-suspension")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -99,6 +100,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-hmrc-cgt")
 
     bindBooleanProperty("features.enable-track-cancel-auth-action")
+    bindBooleanProperty("features.enable-agent-suspension")
     bindBooleanProperty("features.show-agent-led-de-auth")
 
     bindIntegerProperty("mongodb.session.expireAfterSeconds")

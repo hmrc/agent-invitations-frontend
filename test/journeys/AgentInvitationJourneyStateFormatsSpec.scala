@@ -359,8 +359,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "AgentSuspended" in {
+        val state = AgentSuspended(HMRCMTDIT, Set.empty)
+        val json =
+          Json.parse("""{"state":"AgentSuspended","properties":{"suspendedService": "HMRC-MTD-IT", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
-
   }
-
 }
