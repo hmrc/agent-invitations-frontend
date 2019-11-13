@@ -19,7 +19,6 @@ POST        /agents/select-business-service                             @uk.gov.
 
 POST        /agents/select-trust-service-single                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectSingle(service: String)
 
-# multi-select endpoint
 POST        /agents/select-trust-services                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
 
 GET         /agents/identify-client                                     @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
