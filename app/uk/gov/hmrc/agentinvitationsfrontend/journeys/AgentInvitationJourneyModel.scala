@@ -17,6 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logger
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -98,6 +99,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
         extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
     case object AllAuthorisationsRemoved extends State
+    case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   }
 
   object Transitions {
@@ -116,6 +118,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = Utr => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
+    type GetSuspensionStatus = Arn => Future[AgentSuspensionResponse]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -126,50 +129,80 @@ object AgentInvitationJourneyModel extends JourneyModel {
         }
     }
 
+    def gotoIdentify(
+      serviceEnabled: Boolean,
+      agentSuspensionEnabled: Boolean,
+      getSuspensionStatus: GetSuspensionStatus,
+      arn: Arn,
+      service: String,
+      identifyClientState: State,
+      suspendedState: State): Future[State] =
+      (serviceEnabled, agentSuspensionEnabled) match {
+        case (true, true) =>
+          getSuspensionStatus(arn).flatMap {
+            case AgentSuspensionResponse("NotSuspended", None) => goto(identifyClientState)
+            case AgentSuspensionResponse("Suspended", Some(ss)) =>
+              if (ss.contains(service)) goto(suspendedState) else goto(identifyClientState)
+          }
+        case (true, false) => goto(identifyClientState)
+        case (false, _)    => fail(new Exception(s"Service: $service feature flag is switched off"))
+      }
+
     def selectedPersonalService(
       showItsaFlag: Boolean,
       showPirFlag: Boolean,
       showVatFlag: Boolean,
-      showCgtFlag: Boolean)(agent: AuthorisedAgent)(service: String) = Transition {
+      showCgtFlag: Boolean,
+      agentSuspensionEnabled: Boolean,
+      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) = Transition {
 
       case SelectPersonalService(services, basket) =>
-        def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
-          if (serviceEnabled)
-            goto(IdentifyPersonalClient(service, basket))
-          else
-            fail(new Exception(s"Service: $service feature flag is switched off"))
         if (service.isEmpty) { // user selected "no" to final service
           goto(ReviewAuthorisationsPersonal(services, basket))
         } else if (services.contains(service)) {
-          service match {
-            case HMRCMTDIT  => gotoIdentify(showItsaFlag, service)
-            case HMRCPIR    => gotoIdentify(showPirFlag, service)
-            case HMRCMTDVAT => gotoIdentify(showVatFlag, service)
-            case HMRCCGTPD  => gotoIdentify(showCgtFlag, service)
+          val flag = service match {
+            case HMRCMTDIT  => showItsaFlag
+            case HMRCPIR    => showPirFlag
+            case HMRCMTDVAT => showVatFlag
+            case HMRCCGTPD  => showCgtFlag
           }
+          gotoIdentify(
+            flag,
+            agentSuspensionEnabled,
+            getSuspensionStatus,
+            agent.arn,
+            service,
+            IdentifyPersonalClient(service, basket),
+            AgentSuspended(service, basket))
         } else goto(SelectPersonalService(services, basket))
     }
 
-    def selectedBusinessService(showVatFlag: Boolean)(agent: AuthorisedAgent)(service: String) = Transition {
+    def selectedBusinessService(
+      showVatFlag: Boolean,
+      agentSuspensionEnabled: Boolean,
+      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) = Transition {
       case SelectBusinessService =>
         if (service.nonEmpty) {
-          if (showVatFlag) goto(IdentifyBusinessClient)
-          else fail(new Exception(s"Service: $HMRCMTDVAT feature flag is switched off"))
+          gotoIdentify(
+            showVatFlag,
+            agentSuspensionEnabled,
+            getSuspensionStatus,
+            agent.arn,
+            HMRCMTDVAT,
+            IdentifyBusinessClient,
+            AgentSuspended(service, Set.empty))
         } else {
           goto(root)
         }
     }
 
-    def selectedTrustService(showTrustsFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(service: String) =
+    def selectedTrustService(
+      showTrustsFlag: Boolean,
+      showCgtFlag: Boolean,
+      agentSuspensionEnabled: Boolean,
+      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) =
       Transition {
-
         case SelectTrustService(services, basket) =>
-          def gotoIdentify(serviceEnabled: Boolean, service: String): Future[State] =
-            if (serviceEnabled)
-              goto(IdentifyTrustClient(service, basket))
-            else
-              fail(new Exception(s"Service: $service feature flag is switched off"))
-
           if (service.isEmpty) { // user selected "no" to final service
             if (basket.nonEmpty)
               goto(ReviewAuthorisationsTrust(services, basket))
@@ -177,10 +210,18 @@ object AgentInvitationJourneyModel extends JourneyModel {
               goto(root)
 
           } else if (services.contains(service)) {
-            service match {
-              case TRUST     => gotoIdentify(showTrustsFlag, service)
-              case HMRCCGTPD => gotoIdentify(showCgtFlag, service)
+            val flag = service match {
+              case TRUST     => showTrustsFlag
+              case HMRCCGTPD => showCgtFlag
             }
+            gotoIdentify(
+              flag,
+              agentSuspensionEnabled,
+              getSuspensionStatus,
+              agent.arn,
+              service,
+              IdentifyTrustClient(service, basket),
+              AgentSuspended(service, basket))
           } else goto(SelectTrustService(services, basket))
       }
 

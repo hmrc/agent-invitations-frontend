@@ -27,7 +27,8 @@ case class FeatureFlags @Inject()(
   @Named("features.show-hmrc-trust") showHmrcTrust: Boolean = false,
   @Named("features.show-hmrc-cgt") showHmrcCgt: Boolean = false,
   @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false,
-  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true) {}
+  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true,
+  @Named("features.enable-agent-suspension") agentSuspensionEnabled: Boolean = false) {}
 
 object FeatureFlags {
   def apply(): FeatureFlags = new FeatureFlags()
