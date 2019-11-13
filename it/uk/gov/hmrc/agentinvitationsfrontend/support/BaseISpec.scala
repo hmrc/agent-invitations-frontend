@@ -88,6 +88,7 @@ abstract class BaseISpec
         "microservice.services.personal-details-validation.host"              -> wireMockHost,
         "microservice.services.personal-details-validation.port"              -> wireMockPort,
         "microservice.services.personal-details-validation-frontend.external-url" -> pdvFrontendUrl,
+<<<<<<< Updated upstream
         "auditing.enabled"                                                    -> true,
         "auditing.consumer.baseUri.host"                                      -> wireMockHost,
         "auditing.consumer.baseUri.port"                                      -> wireMockPort,
@@ -105,6 +106,26 @@ abstract class BaseISpec
         "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                         -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
+=======
+        "auditing.enabled"                                                        -> true,
+        "auditing.consumer.baseUri.host"                                          -> wireMockHost,
+        "auditing.consumer.baseUri.port"                                          -> wireMockPort,
+        "metrics.jvm"                                                             -> false,
+        "metrics.logback"                                                         -> false,
+        "passcodeAuthentication.enabled"                                          -> false,
+        "track-requests-per-page"                                                 -> 10,
+        "features.show-hmrc-mtd-it"                                               -> featureFlags.showHmrcMtdIt,
+        "features.show-personal-income"                                           -> featureFlags.showPersonalIncome,
+        "features.show-hmrc-mtd-vat"                                              -> featureFlags.showHmrcMtdVat,
+        "features.show-hmrc-trust"                                                -> true,
+        "features.show-hmrc-cgt"                                                  -> true,
+        "features.enable-agent-suspension"                                        -> true,
+        "features.enable-track-cancel-auth-action"                                -> featureFlags.enableTrackCancelAuth,
+        "features.show-agent-led-de-auth"                                         -> featureFlags.showAgentLedDeAuth,
+        "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
+        "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
+>>>>>>> Stashed changes
       )
       .overrides(new TestGuiceModule)
 
