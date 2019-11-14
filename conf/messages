@@ -415,6 +415,17 @@ warm-up.p2.personal=So we can confirm who you are, you will need to sign in with
 warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to appoint {0}
 
+# suspended agent
+suspended-agent.header=There is a problem
+suspended-agent.p1.single=You cannot appoint this tax agent to {0}.
+suspended-agent.p1.multi=You cannot appoint this tax agent for the following services:
+suspended-agent.p1.itsa=send your Income Tax updates through software
+suspended-agent.p1.vat=submit your VAT returns through software
+suspended-agent.p1.afi=view your personal income records
+suspended-agent.p1.trust=maintain a trust or an estate
+suspended-agent.p1.cgt=manage your Capital Gains Tax on UK property disposals
+suspended-agent.p2=If you have any questions, contact the tax agent who sent you this request.
+
 # Invitation Declined
 invitation-declined.header=You declined this request
 invitation-declined.sub-header=Made a mistake?
