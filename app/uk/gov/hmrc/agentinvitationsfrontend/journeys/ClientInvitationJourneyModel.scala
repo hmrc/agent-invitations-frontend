@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
@@ -90,7 +90,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
     type AcceptInvitation = InvitationId => String => Future[Boolean]
     type RejectInvitation = InvitationId => String => Future[Boolean]
-    type GetSuspensionStatus = Arn => Future[AgentSuspensionResponse]
+    type GetSuspensionStatus = Arn => Future[SuspendedServices]
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -153,14 +153,10 @@ object ClientInvitationJourneyModel extends JourneyModel {
             } else {
               consents match {
                 case _ if consents.nonEmpty && agentSuspensionEnabled =>
-                  getSuspensionStatus(arn).flatMap {
-                    case AgentSuspensionResponse("NotSuspended", _) =>
-                      goto(idealTargetState(clientType, uid, agentName, consents))
-                    case AgentSuspensionResponse("Suspended", Some(suspendedServices)) =>
-                      intersectConsentAndSuspension(
-                        consents,
-                        suspendedServices,
-                        notSuspendedConsents => idealTargetState(clientType, uid, agentName, notSuspendedConsents))
+                  getSuspensionStatus(arn).flatMap { suspendedServices =>
+                    suspendedServices.intersectConsentAndSuspension(
+                      consents,
+                      notSuspendedConsents => idealTargetState(clientType, uid, agentName, notSuspendedConsents))
                   }
                 case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
                 case _                      => goto(NotFoundInvitation)
@@ -168,28 +164,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
             }
           }
       }
-
-    def intersectConsentAndSuspension(
-      consents: Seq[ClientConsent],
-      suspendedServices: Set[String],
-      targetState: Seq[ClientConsent] => State): Future[State] = {
-
-      val consentServices: Set[String] = consents.map(_.serviceKey).toSet
-
-      val suspendedServicesMessageKeys: Set[String] =
-        suspendedServices.map(Services.determineServiceMessageKeyFromService)
-
-      val intersectingServices: Set[String] = suspendedServicesMessageKeys.intersect(consentServices)
-
-      val notSuspendedConsentServices: Set[String] = consentServices.diff(intersectingServices)
-
-      val notSuspendedConsents: Seq[ClientConsent] =
-        consents.filter(consent => notSuspendedConsentServices.contains(consent.serviceKey))
-
-      //if agent is suspended for all consent services go to error page else continue with only non-suspended services
-      if (intersectingServices.equals(consentServices)) goto(SuspendedAgent(intersectingServices))
-      else goto(targetState(notSuspendedConsents))
-    }
 
     def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
       Transition {

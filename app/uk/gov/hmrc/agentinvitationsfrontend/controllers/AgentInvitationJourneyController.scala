@@ -103,7 +103,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdVat,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspensionStatus
+        getSuspendedServices
       ))
   }
 
@@ -115,14 +115,13 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdVat,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspensionStatus
+        getSuspendedServices
       ))
   }
 
   def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(
-      Transitions
-        .selectedBusinessService(featureFlags.showHmrcMtdVat, featureFlags.agentSuspensionEnabled, getSuspensionStatus))
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(Transitions
+      .selectedBusinessService(featureFlags.showHmrcMtdVat, featureFlags.agentSuspensionEnabled, getSuspendedServices))
   }
 
   def submitTrustSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
@@ -131,7 +130,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcTrust,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspensionStatus))
+        getSuspendedServices))
   }
 
   // this is only for multi-select option forms
@@ -141,7 +140,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcTrust,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspensionStatus))
+        getSuspendedServices))
   }
 
   def identifyClientRedirect: Action[AnyContent] =

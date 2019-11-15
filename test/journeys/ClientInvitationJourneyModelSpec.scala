@@ -17,11 +17,11 @@
 package journeys
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
@@ -114,7 +114,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         "transition to Consent when the invitation is found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-          def getNotSuspended(arn: Arn) = Future(AgentSuspensionResponse("NotSuspended"))
+          def getNotSuspended(arn: Arn) = Future(SuspendedServices(Set.empty))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getPendingInvitationIdsAndExpiryDates, getNotSuspended)(
@@ -129,7 +129,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation is not found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
-          def getNotSuspended(arn: Arn) = Future(AgentSuspensionResponse("NotSuspended"))
+          def getNotSuspended(arn: Arn) = Future(SuspendedServices(Set.empty))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(
@@ -141,7 +141,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdTrust, expiryDate)))
-          def getNotSuspended(arn: Arn) = Future(AgentSuspensionResponse("NotSuspended"))
+          def getNotSuspended(arn: Arn) = Future(SuspendedServices(Set.empty))
 
           given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getPendingInvitationIdsAndExpiryDates, getNotSuspended)(
@@ -152,7 +152,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         "transition to SuspendedAgent when agent is suspended for one or more of consent services" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-          def getSuspendedForItsa(arn: Arn) = Future(AgentSuspensionResponse("Suspended", Some(Set("HMRC-MTD-IT"))))
+          def getSuspendedForItsa(arn: Arn) = Future(SuspendedServices(Set("HMRC-MTD-IT")))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getPendingInvitationIdsAndExpiryDates, getSuspendedForItsa)(
@@ -164,7 +164,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         "transition to ConfirmDecline when the invitation is found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) =
             Future(Seq(InvitationIdAndExpiryDate(invitationIdItsa, expiryDate)))
-          def getNotSuspended(arn: Arn) = Future(AgentSuspensionResponse("NotSuspended"))
+          def getNotSuspended(arn: Arn) = Future(SuspendedServices(Set.empty))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(
@@ -180,7 +180,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation is not found" in {
           def getPendingInvitationIdsAndExpiryDates(uid: String, status: InvitationStatus) = Future(Seq.empty)
-          def getNotSuspended(arn: Arn) = Future(AgentSuspensionResponse("NotSuspended"))
+          def getNotSuspended(arn: Arn) = Future(SuspendedServices(Set.empty))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(
@@ -188,45 +188,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               getNotSuspended)(authorisedIndividualClient) should
             thenGo(NotFoundInvitation)
         }
-      }
-    }
-
-    "intersectConsentAndSuspension helper method" should {
-      val itsaConsent = ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)
-      val afiConsent = ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false)
-      val vatConsent = ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
-      val cgtConsent = ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
-      "go to suspended state when agent is suspended for all consent services" in {
-        await(
-          intersectConsentAndSuspension(
-            Seq(itsaConsent, vatConsent, cgtConsent),
-            Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD),
-            nonSuspendedConsents =>
-              SingleConsent(personal, "uid", "agent-name", itsaConsent, Seq(itsaConsent, vatConsent, cgtConsent))
-          )) shouldBe SuspendedAgent(Set("itsa", "vat", "cgt"))
-      }
-
-      "go to target state with non suspended services when some consent services are suspended and some are not" in {
-        await(
-          intersectConsentAndSuspension(
-            Seq(itsaConsent, afiConsent, vatConsent, cgtConsent),
-            Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD),
-            nonSuspendedConsents => SingleConsent(personal, "uid", "agent-name", itsaConsent, nonSuspendedConsents)
-          )) shouldBe SingleConsent(personal, "uid", "agent-name", itsaConsent, Seq(afiConsent))
-      }
-
-      "go to target state with all services none of the consent services are suspended" in {
-        await(
-          intersectConsentAndSuspension(
-            Seq(itsaConsent, afiConsent, vatConsent),
-            Set(HMRCCGTPD),
-            nonSuspendedConsents => SingleConsent(personal, "uid", "agent-name", itsaConsent, nonSuspendedConsents)
-          )) shouldBe SingleConsent(
-          personal,
-          "uid",
-          "agent-name",
-          itsaConsent,
-          Seq(itsaConsent, afiConsent, vatConsent))
       }
     }
 

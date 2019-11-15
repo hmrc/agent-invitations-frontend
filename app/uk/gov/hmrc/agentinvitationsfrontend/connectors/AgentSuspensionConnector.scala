@@ -20,24 +20,48 @@ import java.net.URL
 
 import javax.inject.{Inject, Named}
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.SuspendedAgent
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, goto}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AgentSuspensionResponse(status: String, suspendedServices: Option[Set[String]] = None)
-
-case class AgentSuspensionStatusNotFound() extends Exception
-
-object AgentSuspensionResponse {
-  implicit val formats: OFormat[AgentSuspensionResponse] = Json.format
-}
-
 class AgentSuspensionConnector @Inject()(@Named("agent-suspension-baseUrl") baseUrl: URL, http: HttpGet) {
 
-  def getSuspensionStatus(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentSuspensionResponse] = {
-    http.GET[AgentSuspensionResponse](new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString)
+  def getSuspendedServices(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspendedServices] = {
+    http
+      .GET[SuspendedServices](
+        new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString
+      )
   } recoverWith {
-    case _: NotFoundException => Future failed AgentSuspensionStatusNotFound()
+    case _: NotFoundException => Future successful SuspendedServices(Set.empty)
   }
+}
+
+case class SuspendedServices(services: Set[String]) {
+  def intersectConsentAndSuspension(
+    consents: Seq[ClientConsent],
+    targetState: Seq[ClientConsent] => State): Future[State] = {
+
+    val consentServices: Set[String] = consents.map(_.serviceKey).toSet
+
+    val suspendedServicesMessageKeys: Set[String] = this.services.map(Services.determineServiceMessageKeyFromService)
+
+    val intersectingServices: Set[String] = suspendedServicesMessageKeys.intersect(consentServices)
+
+    val notSuspendedConsentServices: Set[String] = consentServices.diff(intersectingServices)
+
+    val notSuspendedConsents: Seq[ClientConsent] =
+      consents.filter(consent => notSuspendedConsentServices.contains(consent.serviceKey))
+
+    //if agent is suspended for all consent services go to error page else continue with only non-suspended services
+    if (intersectingServices.equals(consentServices)) goto(SuspendedAgent(intersectingServices))
+    else goto(targetState(notSuspendedConsents))
+  }
+}
+
+object SuspendedServices {
+  implicit val formats: OFormat[SuspendedServices] = Json.format
 }
