@@ -17,7 +17,7 @@
 package models
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -41,14 +41,14 @@ class SuspendedServicesSpec extends UnitSpec {
   "returnNonSuspendedServices helper method" should {
 
     "return only the non suspended services" in {
-      SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).returnNonSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
+      SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).getNonSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
         HMRCCGTPD)
     }
 
     "returnSuspendedServices helper method" should {
 
       "return only the suspended services" in {
-        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).returnSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).getSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
           HMRCMTDIT)
       }
     }
@@ -56,11 +56,11 @@ class SuspendedServicesSpec extends UnitSpec {
     "isAllSuspended helper method" should {
 
       "return true is all the services are suspended" in {
-        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCMTDVAT)) shouldBe true
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCMTDVAT)) shouldBe true
       }
 
       "return false is not all the services are suspended" in {
-        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe false
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe false
       }
     }
   }

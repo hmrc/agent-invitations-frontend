@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
@@ -90,7 +90,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
     type AcceptInvitation = InvitationId => String => Future[Boolean]
     type RejectInvitation = InvitationId => String => Future[Boolean]
-    type GetSuspensionStatus = Arn => Future[SuspendedServices]
+    type GetSuspensionStatus = Arn => Future[SuspensionResponse]
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -155,14 +155,12 @@ object ClientInvitationJourneyModel extends JourneyModel {
                 case _ if consents.nonEmpty && agentSuspensionEnabled =>
                   getSuspensionStatus(arn).flatMap { suspendedServices =>
                     val consentServices: Set[String] =
-                      consents.map(consent => Services.determineServiceFromServiceMessageKey(consent.serviceKey)).toSet
+                      consents.map(consent => consent.service).toSet
                     if (suspendedServices.isAllSuspended(consentServices)) goto(SuspendedAgent(consentServices))
                     else {
-                      val nonSuspendedServices = suspendedServices.returnNonSuspendedServices(consentServices)
-                      val nonSuspendedConsents = consents.filter(
-                        consent =>
-                          nonSuspendedServices.contains(
-                            Services.determineServiceFromServiceMessageKey(consent.serviceKey)))
+                      val nonSuspendedServices = suspendedServices.getNonSuspendedServices(consentServices)
+                      val nonSuspendedConsents =
+                        consents.filter(consent => nonSuspendedServices.contains(consent.service))
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
                     }
                   }

@@ -27,29 +27,31 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AgentSuspensionConnector @Inject()(@Named("agent-suspension-baseUrl") baseUrl: URL, http: HttpGet) {
 
-  def getSuspendedServices(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspendedServices] = {
+  def getSuspendedServices(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionResponse] = {
     http
-      .GET[SuspendedServices](
+      .GET[SuspensionResponse](
         new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString
       )
   } recoverWith {
-    case _: NotFoundException => Future successful SuspendedServices(Set.empty)
+    case _: NotFoundException => Future successful SuspensionResponse(Set.empty)
   }
 }
 
-case class SuspendedServices(services: Set[String]) {
+case class SuspensionResponse(services: Set[String]) {
 
-  def returnNonSuspendedServices(s: Set[String]): Set[String] =
+  def getNonSuspendedServices(s: Set[String]): Set[String] =
     s.diff(services)
 
-  def returnSuspendedServices(s: Set[String]): Set[String] =
+  def getSuspendedServices(s: Set[String]): Set[String] =
     s.intersect(services)
 
   def isAllSuspended(s: Set[String]): Boolean =
     s.diff(services) == Set.empty
 
+  def isSuspended(s: String): Boolean = services.contains(s)
+
 }
 
-object SuspendedServices {
-  implicit val formats: OFormat[SuspendedServices] = Json.format
+object SuspensionResponse {
+  implicit val formats: OFormat[SuspensionResponse] = Json.format
 }

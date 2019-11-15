@@ -10,7 +10,7 @@ import play.api.Application
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -130,7 +130,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]): Unit = {
 
       "redirect to consent page if the invitation is found" in {
-        givenSuspensionStatus(arn, SuspendedServices(Set.empty))
+        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
@@ -149,7 +149,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
-        givenSuspensionStatus(arn, SuspendedServices(Set("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD", "HMRC-MTD-VAT")))
+        givenSuspensionStatus(arn, SuspensionResponse(Set("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD", "HMRC-MTD-VAT")))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
@@ -241,7 +241,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     def warmupSubmitDecline(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
       "redirect to confirm decline" in {
-        givenSuspensionStatus(arn, SuspendedServices(Set.empty))
+        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
