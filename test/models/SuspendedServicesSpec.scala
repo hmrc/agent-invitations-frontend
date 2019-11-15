@@ -18,9 +18,6 @@ package models
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspendedServices
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{SingleConsent, SuspendedAgent}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -41,34 +38,30 @@ class SuspendedServicesSpec extends UnitSpec {
   val invitationIdCgt = InvitationId("E1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
 
-  "intersectConsentAndSuspension helper method" should {
-    val itsaConsent = ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)
-    val afiConsent = ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false)
-    val vatConsent = ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
-    val cgtConsent = ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
-    "go to suspended state when agent is suspended for all consent services" in {
-      await(
-        SuspendedServices(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)).intersectConsentAndSuspension(
-          Seq(itsaConsent, vatConsent, cgtConsent),
-          nonSuspendedConsents =>
-            SingleConsent(personal, "uid", "agent-name", itsaConsent, Seq(itsaConsent, vatConsent, cgtConsent))
-        )) shouldBe SuspendedAgent(Set("itsa", "vat", "cgt"))
+  "returnNonSuspendedServices helper method" should {
+
+    "return only the non suspended services" in {
+      SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).returnNonSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
+        HMRCCGTPD)
     }
 
-    "go to target state with non suspended services when some consent services are suspended and some are not" in {
-      await(
-        SuspendedServices(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)) intersectConsentAndSuspension (
-          Seq(itsaConsent, afiConsent, vatConsent, cgtConsent),
-          nonSuspendedConsents => SingleConsent(personal, "uid", "agent-name", itsaConsent, nonSuspendedConsents)
-        )) shouldBe SingleConsent(personal, "uid", "agent-name", itsaConsent, Seq(afiConsent))
+    "returnSuspendedServices helper method" should {
+
+      "return only the suspended services" in {
+        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).returnSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
+          HMRCMTDIT)
+      }
     }
 
-    "go to target state with all services none of the consent services are suspended" in {
-      await(
-        SuspendedServices(Set(HMRCCGTPD)).intersectConsentAndSuspension(
-          Seq(itsaConsent, afiConsent, vatConsent),
-          nonSuspendedConsents => SingleConsent(personal, "uid", "agent-name", itsaConsent, nonSuspendedConsents)
-        )) shouldBe SingleConsent(personal, "uid", "agent-name", itsaConsent, Seq(itsaConsent, afiConsent, vatConsent))
+    "isAllSuspended helper method" should {
+
+      "return true is all the services are suspended" in {
+        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCMTDVAT)) shouldBe true
+      }
+
+      "return false is not all the services are suspended" in {
+        SuspendedServices(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe false
+      }
     }
   }
 }
