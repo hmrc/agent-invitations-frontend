@@ -158,9 +158,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
                       consents.map(consent => consent.service).toSet
                     if (suspendedServices.isAllSuspended(consentServices)) goto(SuspendedAgent(consentServices))
                     else {
-                      val nonSuspendedServices = suspendedServices.getNonSuspendedServices(consentServices)
                       val nonSuspendedConsents =
-                        consents.filter(consent => nonSuspendedServices.contains(consent.service))
+                        consents.filter(consent => !suspendedServices.isSuspended(consent.service))
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
                     }
                   }

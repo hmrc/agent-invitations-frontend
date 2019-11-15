@@ -39,9 +39,6 @@ class AgentSuspensionConnector @Inject()(@Named("agent-suspension-baseUrl") base
 
 case class SuspensionResponse(services: Set[String]) {
 
-  def getNonSuspendedServices(s: Set[String]): Set[String] =
-    s.diff(services)
-
   def getSuspendedServices(s: Set[String]): Set[String] =
     s.intersect(services)
 

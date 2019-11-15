@@ -38,14 +38,9 @@ class SuspendedServicesSpec extends UnitSpec {
   val invitationIdCgt = InvitationId("E1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
 
-  "returnNonSuspendedServices helper method" should {
+  "getSuspendedServices helper method" should {
 
-    "return only the non suspended services" in {
-      SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).getNonSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
-        HMRCCGTPD)
-    }
-
-    "returnSuspendedServices helper method" should {
+    "getSuspendedServices helper method" should {
 
       "return only the suspended services" in {
         SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).getSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
@@ -55,12 +50,23 @@ class SuspendedServicesSpec extends UnitSpec {
 
     "isAllSuspended helper method" should {
 
-      "return true is all the services are suspended" in {
+      "return true if all the services are suspended" in {
         SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCMTDVAT)) shouldBe true
       }
 
-      "return false is not all the services are suspended" in {
+      "return false if not all the services are suspended" in {
         SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe false
+      }
+    }
+
+    "isSuspended helper method" should {
+
+      "return true when the service is suspended" in {
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCMTDIT) shouldBe true
+      }
+
+      "return false when the service is not suspended" in {
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCCGTPD) shouldBe false
       }
     }
   }
