@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.HMRCMTDIT
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 sealed trait Service
