@@ -24,7 +24,7 @@ import play.api.mvc.Results.{Forbidden, InternalServerError}
 import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{IdentityVerificationConnector, InvitationsConnector, PdvError, PdvValidationFailure, PdvValidationNoNino, PdvValidationNotFound, PersonalDetailsValidationConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentSuspensionConnector, IdentityVerificationConnector, InvitationsConnector, PdvError, PdvValidationFailure, PdvValidationNoNino, PdvValidationNotFound, PersonalDetailsValidationConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -45,6 +45,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   identityVerificationConnector: IdentityVerificationConnector,
+  agentSuspensionConnector: AgentSuspensionConnector,
   authActions: AuthActions,
   pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService)(
@@ -60,6 +61,7 @@ class ClientInvitationJourneyController @Inject()(
   import authActions._
   import invitationsConnector._
   import invitationsService._
+  import agentSuspensionConnector._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
@@ -109,7 +111,10 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitWarmUp = {
     action { implicit request =>
-      whenAuthorised(AsClient)(Transitions.submitWarmUp(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+      whenAuthorised(AsClient)(
+        Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
+          getAllClientInvitationsInfoForAgentAndStatus,
+          getSuspendedServices))(redirect)
     }
   }
 
@@ -146,7 +151,10 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def submitWarmUpConfirmDecline = action { implicit request =>
-    whenAuthorised(AsClient)(Transitions.submitWarmUpToDecline(getAllClientInvitationsInfoForAgentAndStatus))(redirect)
+    whenAuthorised(AsClient)(
+      Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
+        getAllClientInvitationsInfoForAgentAndStatus,
+        getSuspendedServices))(redirect)
   }
 
   def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {
@@ -278,10 +286,14 @@ class ClientInvitationJourneyController @Inject()(
     case TrustNotClaimed =>
   }
 
+  def showSuspendedAgent: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
+    case _: SuspendedAgent =>
+  }
+
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
-    case WarmUp(clientType, uid, _, normalisedAgentName) =>
+    case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
@@ -293,6 +305,7 @@ class ClientInvitationJourneyController @Inject()(
     case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
     case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
     case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
+    case _: SuspendedAgent      => routes.ClientInvitationJourneyController.showSuspendedAgent()
     case _                      => throw new Exception(s"Link not found for $state")
   }
 
@@ -303,7 +316,7 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory =>
       Ok(session_lost())
 
-    case WarmUp(clientType, uid, agentName, _) =>
+    case WarmUp(clientType, uid, _, agentName, _) =>
       Ok(
         warm_up(
           WarmUpPageConfig(
@@ -402,6 +415,9 @@ class ClientInvitationJourneyController @Inject()(
         if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
         else Call("GET", externalUrls.agentClientManagementUrl)
       Ok(trust_not_claimed(backLink))
+
+    case SuspendedAgent(suspendedServices) =>
+      Ok(suspended_agent(suspendedServices))
   }
 }
 

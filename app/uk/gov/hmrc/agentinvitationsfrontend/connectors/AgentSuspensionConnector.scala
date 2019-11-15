@@ -25,19 +25,30 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AgentSuspensionResponse(status: String, suspendedServices: Option[Set[String]] = None)
-
-case class AgentSuspensionStatusNotFound() extends Exception
-
-object AgentSuspensionResponse {
-  implicit val formats: OFormat[AgentSuspensionResponse] = Json.format
-}
-
 class AgentSuspensionConnector @Inject()(@Named("agent-suspension-baseUrl") baseUrl: URL, http: HttpGet) {
 
-  def getSuspensionStatus(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[AgentSuspensionResponse] = {
-    http.GET[AgentSuspensionResponse](new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString)
+  def getSuspendedServices(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionResponse] = {
+    http
+      .GET[SuspensionResponse](
+        new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString
+      )
   } recoverWith {
-    case _: NotFoundException => Future failed AgentSuspensionStatusNotFound()
+    case _: NotFoundException => Future successful SuspensionResponse(Set.empty)
   }
+}
+
+case class SuspensionResponse(services: Set[String]) {
+
+  def getSuspendedServices(s: Set[String]): Set[String] =
+    s.intersect(services)
+
+  def isAllSuspended(s: Set[String]): Boolean =
+    s.diff(services) == Set.empty
+
+  def isSuspended(s: String): Boolean = services.contains(s)
+
+}
+
+object SuspensionResponse {
+  implicit val formats: OFormat[SuspensionResponse] = Json.format
 }

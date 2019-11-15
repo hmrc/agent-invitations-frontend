@@ -50,4 +50,13 @@ object Services {
       case TRUST      => "trust"
       case HMRCCGTPD  => "cgt"
     }
+
+  def determineServiceFromServiceMessageKey(serviceMessageKey: String): String =
+    serviceMessageKey match {
+      case "itsa"  => HMRCMTDIT
+      case "afi"   => HMRCPIR
+      case "vat"   => HMRCMTDVAT
+      case "trust" => TRUST
+      case "cgt"   => HMRCCGTPD
+    }
 }

@@ -8,12 +8,12 @@ import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentSuspensionResponse
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.AgentSuspensionStubs._
+import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -250,7 +250,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-personal-service")
 
     "accept valid service choice and redirect" in {
-      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitPersonalSelectService(
@@ -265,7 +265,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to agent suspended if the agent is suspended for the selected service" in {
-      givenSuspensionStatus(arn, AgentSuspensionResponse("Suspended", Some(Set(HMRCMTDIT))))
+      givenSuspensionStatus(arn, SuspensionResponse (Set(HMRCMTDIT)))
       journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitPersonalSelectService(
@@ -284,7 +284,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-business-service")
 
     "redirect to identify-client when yes is selected" in {
-      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
       val result = controller.submitBusinessSelectService(
@@ -319,7 +319,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-trust-service")
 
     "redirect to identify-client when yes is selected" in {
-      givenSuspensionStatus(arn, AgentSuspensionResponse("NotSuspended"))
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitTrustSelectSingle(TRUST)(

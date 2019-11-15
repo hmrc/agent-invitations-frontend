@@ -10,9 +10,11 @@ import play.api.Application
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AgentSuspensionStubs._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -128,8 +130,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]): Unit = {
 
       "redirect to consent page if the invitation is found" in {
+        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
@@ -138,16 +141,26 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to not found invitation if the invitation is not found" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
+      "redirect to suspended agent if the agent is suspended for all consent services" in {
+        givenSuspensionStatus(arn, SuspensionResponse(Set("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD", "HMRC-MTD-VAT")))
+        givenAllInvitationIdsByStatus(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSuspendedAgent().url)
+      }
+
       "redirect to /trust-not-claimed if client doesn't have the trust enrolment but invitation contains trust" in {
         givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
-        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
@@ -158,7 +171,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to not authorised when an agent tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
       val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
@@ -170,7 +183,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenUnauthorisedWith("UnsupportedAffinityGroup")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
       intercept[Exception] {
@@ -180,7 +193,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to gg log in with an appended journey ID on the continue url when there is no session" in {
       givenUnauthorisedWith("MissingBearerToken")
-      journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
 
       val result = controller.submitWarmUp(request())
@@ -191,6 +204,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       redirectLocation(result) shouldBe Some(
         s"/gg/sign-in?continue=$continueUrlEncoded&origin=agent-invitations-frontend")
+    }
+  }
+
+  "GET /cannot-appoint" should {
+    "display the agent suspended page" in {
+      def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
+      journeyState.set(SuspendedAgent(Set("HMRC-MTD-IT", "HMRC-MTD-VAT")), Nil)
+
+      val result = controller.showSuspendedAgent(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "suspended-agent.header",
+        "suspended-agent.p1.multi",
+        "suspended-agent.p1.HMRC-MTD-IT",
+        "suspended-agent.p1.HMRC-MTD-VAT")
     }
   }
 
@@ -211,8 +241,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     def warmupSubmitDecline(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
       "redirect to confirm decline" in {
+        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
@@ -221,7 +252,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to not found invitation" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
@@ -230,7 +261,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
         givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
-        journeyState.set(WarmUp(business, uid, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
@@ -435,8 +466,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
             ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
           )
-          ),
-        Nil)
+        ),
+        Nil
+      )
 
       val result = controller.showCheckAnswers(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -604,8 +636,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false), ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
-        Nil)
+          Seq(
+            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))
+        ),
+        Nil
+      )
 
       val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -704,8 +740,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the accepted page for multi consents" in {
       journeyState
         .set(
-          InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)), personal),
-          Nil)
+          InvitationsAccepted(
+            "My Agency",
+            Seq(
+              ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+              ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
+            personal),
+          Nil
+        )
 
       val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -719,7 +761,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the accepted page for single consent" in {
       journeyState
         .set(
-          InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)), business),
+          InvitationsAccepted(
+            "My Agency",
+            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
+            business),
           Nil)
 
       val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
@@ -737,7 +782,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the rejected page for itsa" in {
       journeyState
         .set(
-          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)), personal),
+          InvitationsDeclined(
+            "My Agency",
+            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)),
+            personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
@@ -750,7 +798,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the rejected page for cgt" in {
       journeyState
         .set(
-          InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)), personal),
+          InvitationsDeclined(
+            "My Agency",
+            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)),
+            personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
@@ -786,10 +837,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           SomeResponsesFailed(
             "My Agency",
-            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+            Seq(
+              ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
               ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
             Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
-            personal),
+            personal
+          ),
           Nil
         )
 
@@ -813,7 +866,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             "My Agency",
             Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
             Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
-            personal),
+            personal
+          ),
           Nil
         )
 
@@ -822,7 +876,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
 
       journeyState.get.get._1 shouldBe
-        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)), personal)
+        InvitationsAccepted(
+          "My Agency",
+          Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+          personal)
     }
   }
 
@@ -875,14 +932,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("technical-issues.p2"))
-      checkHtmlResultWithBodyText(result,
+      checkHtmlResultWithBodyText(
+        result,
         "Call the VAT online services helpline",
         "if you need help with Making Tax Digital for VAT.",
         "Call the HMRC Self Assessment online services helpline",
-        "if you need help with Making Tax Digital for Income Tax.")
+        "if you need help with Making Tax Digital for Income Tax."
+      )
 
-      checkResultContainsLink(result, "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk", "Call the VAT online services helpline")
-      checkResultContainsLink(result, "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk", "Call the HMRC Self Assessment online services helpline")
+      checkResultContainsLink(
+        result,
+        "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
+        "Call the VAT online services helpline")
+      checkResultContainsLink(
+        result,
+        "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
+        "Call the HMRC Self Assessment online services helpline"
+      )
     }
   }
 
@@ -953,51 +1019,71 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   }
 
-      Set(FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence).foreach { reason =>
-        s"IV returns failed reason $reason " when {
-          "display the default page" in {
-            givenIVFailureReasonResponse(reason)
-            val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
-            status(result) shouldBe 403
-            checkHtmlResultWithBodyMsgs(result,"cannot-confirm-identity.header",
-              "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
-            checkResultContainsLink(result,"/invitations/warm-up", "Try again", Some("button"))
-          }
-      }
-    }
-
-  Set(TechnicalIssue, FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence, TimedOut, UserAborted, LockedOut)
-    .foreach { reason =>
-    s"IV returns failed reason $reason" when {
-      "display the signed out page" in {
+  Set(FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence).foreach { reason =>
+    s"IV returns failed reason $reason " when {
+      "display the default page" in {
         givenIVFailureReasonResponse(reason)
         val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
-        val resultCode = status(result)
-        reason match {
-          case TechnicalIssue => {
-            resultCode shouldBe 403
-            checkHtmlResultWithBodyMsgs(result, "technical-issues.header", "technical-issues.p1","technical-issues.p2")
-            checkResultContainsLink(result,
-              "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
-              "Call the VAT online services helpline")
-            checkResultContainsLink(result,
-            "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
-              "Call the HMRC Self Assessment online services helpline")
-          }
-          case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence => {
-            resultCode shouldBe 403
-            checkHtmlResultWithBodyMsgs(result, "cannot-confirm-identity.header",
-            "cannot-confirm-identity.p1", "cannot-confirm-identity.p2")
-            checkResultContainsLink(result,"/invitations/warm-up","Try again", Some("button")
-            )
-          }
-          case UserAborted | TimedOut => resultCode shouldBe 303
-          case LockedOut => resultCode shouldBe 303
-          case _ => resultCode shouldBe 403
-        }
+        status(result) shouldBe 403
+        checkHtmlResultWithBodyMsgs(
+          result,
+          "cannot-confirm-identity.header",
+          "cannot-confirm-identity.p1",
+          "cannot-confirm-identity.p2")
+        checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"))
       }
     }
   }
+
+  Set(
+    TechnicalIssue,
+    FailedMatching,
+    FailedDirectorCheck,
+    FailedIV,
+    InsufficientEvidence,
+    TimedOut,
+    UserAborted,
+    LockedOut)
+    .foreach { reason =>
+      s"IV returns failed reason $reason" when {
+        "display the signed out page" in {
+          givenIVFailureReasonResponse(reason)
+          val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
+          val resultCode = status(result)
+          reason match {
+            case TechnicalIssue => {
+              resultCode shouldBe 403
+              checkHtmlResultWithBodyMsgs(
+                result,
+                "technical-issues.header",
+                "technical-issues.p1",
+                "technical-issues.p2")
+              checkResultContainsLink(
+                result,
+                "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
+                "Call the VAT online services helpline")
+              checkResultContainsLink(
+                result,
+                "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
+                "Call the HMRC Self Assessment online services helpline"
+              )
+            }
+            case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence => {
+              resultCode shouldBe 403
+              checkHtmlResultWithBodyMsgs(
+                result,
+                "cannot-confirm-identity.header",
+                "cannot-confirm-identity.p1",
+                "cannot-confirm-identity.p2")
+              checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"))
+            }
+            case UserAborted | TimedOut => resultCode shouldBe 303
+            case LockedOut              => resultCode shouldBe 303
+            case _                      => resultCode shouldBe 403
+          }
+        }
+      }
+    }
 
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
