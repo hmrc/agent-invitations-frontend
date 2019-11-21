@@ -78,7 +78,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   //TODO Add local date service to provide flexibility for testing
   private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
-  private def inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+  def inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
