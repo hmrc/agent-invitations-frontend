@@ -32,6 +32,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val InvitationsDeclinedFormat = Json.format[InvitationsDeclined]
   val SomeResponsesFailedFormat = Json.format[SomeResponsesFailed]
   val ConfirmDeclineFormat = Json.format[ConfirmDecline]
+  val SuspendedAgentFormat = Json.format[SuspendedAgent]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp              => WarmUpFormat.writes(s)
@@ -42,6 +43,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: InvitationsDeclined => InvitationsDeclinedFormat.writes(s)
     case s: SomeResponsesFailed => SomeResponsesFailedFormat.writes(s)
     case s: ConfirmDecline      => ConfirmDeclineFormat.writes(s)
+    case s: SuspendedAgent      => SuspendedAgentFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -57,6 +59,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "AllResponsesFailed"    => JsSuccess(AllResponsesFailed)
     case "ConfirmDecline"        => ConfirmDeclineFormat.reads(properties)
     case "TrustNotClaimed"       => JsSuccess(TrustNotClaimed)
+    case "SuspendedAgent"        => SuspendedAgentFormat.reads(properties)
   }
 
 }

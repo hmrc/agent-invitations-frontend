@@ -25,16 +25,16 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PageInfo, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
 import uk.gov.hmrc.agentinvitationsfrontend.views.track.{RequestCancelledPageConfig, ResendLinkPageConfig, TrackPageConfig}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -45,7 +45,7 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
-case class CancelAuthorisationForm(service: String, clientId: String, clientName: String)
+case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String)
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -59,7 +59,9 @@ class AgentsRequestTrackingController @Inject()(
   val invitationsConnector: InvitationsConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
+  agentServicesAccountConnector: AgentServicesAccountConnector,
   @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
+  @Named("track-requests-per-page") val trackRequestsPerPage: Int,
   @Named("agent-invitations-frontend.external-url") externalUrl: String)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
@@ -67,17 +69,30 @@ class AgentsRequestTrackingController @Inject()(
     extends FrontendController with I18nSupport {
   import authActions._
 
-  val showTrackRequests: Action[AnyContent] = Action.async { implicit request =>
+  def showTrackRequests(page: Int): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
+      val pageInfo = PageInfo(math.max(page, 1), trackRequestsPerPage)
       for {
-        invitationsAndRelationships <- trackService.bindInvitationsAndRelationships(
-                                        agent.arn,
-                                        agent.isWhitelisted,
-                                        trackRequestsShowLastDays)
-      } yield
-        Ok(track(
-          TrackPageConfig(invitationsAndRelationships, trackRequestsShowLastDays, featureFlags.enableTrackCancelAuth)))
+        trackResultsPage <- trackService.bindInvitationsAndRelationships(
+                             agent.arn,
+                             agent.isWhitelisted,
+                             trackRequestsShowLastDays,
+                             pageInfo)
+      } yield {
+        val config = TrackPageConfig(
+          trackResultsPage.results,
+          trackRequestsShowLastDays,
+          featureFlags.enableTrackCancelAuth,
+          pageInfo,
+          trackResultsPage.totalResults)
+        if (trackResultsPage.totalResults > 0 && page > config.numberOfPages) {
+          Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
+        } else {
+          Ok(track(config))
+        }
+      }
+
     }
   }
 
@@ -92,7 +107,8 @@ class AgentsRequestTrackingController @Inject()(
           },
           data => {
             for {
-              agentLink <- invitationsService.createAgentLink(agent.arn, data.clientType)
+              agentLink   <- invitationsService.createAgentLink(agent.arn, data.clientType)
+              agencyEmail <- agentServicesAccountConnector.getAgencyEmail()
             } yield
               Ok(
                 resend_link(ResendLinkPageConfig(
@@ -101,7 +117,8 @@ class AgentsRequestTrackingController @Inject()(
                   data.clientType.map(ClientType.fromEnum).getOrElse(""),
                   data.expiryDate,
                   if (data.clientType.contains(personal)) "personal"
-                  else data.service
+                  else data.service,
+                  agencyEmail
                 )))
           }
         )
@@ -130,7 +147,7 @@ class AgentsRequestTrackingController @Inject()(
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
-      val clientType = request.session.get("clientType").getOrElse("")
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
       Future successful Ok(confirm_cancel(service, clientType, confirmCancelForm))
     }
   }
@@ -142,7 +159,7 @@ class AgentsRequestTrackingController @Inject()(
         case Some(id) =>
           val invitationId = InvitationId(id)
           val service = Services.determineServiceMessageKey(invitationId)
-          val clientType = request.session.get("clientType").getOrElse("")
+          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
           confirmCancelForm
             .bindFromRequest()
             .fold(
@@ -188,7 +205,11 @@ class AgentsRequestTrackingController @Inject()(
           },
           data =>
             Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm())
-              .addingToSession("service" -> data.service, "clientId" -> data.clientId, "clientName" -> data.clientName)
+              .addingToSession(
+                "service"    -> data.service,
+                "clientId"   -> data.clientId,
+                "clientName" -> data.clientName,
+                "clientType" -> data.clientType)
         )
     }
   }
@@ -196,7 +217,8 @@ class AgentsRequestTrackingController @Inject()(
   def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
-      Future successful Ok(confirm_cancel_authorisation(confirmCancelAuthorisationForm, service))
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+      Future successful Ok(confirm_cancel_authorisation(confirmCancelAuthorisationForm, service, clientType))
     }
   }
 
@@ -204,10 +226,11 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { agent =>
       val clientId = request.session.get("clientId").getOrElse("")
       val service = request.session.get("service").getOrElse("")
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
-          formWithErrors => Future successful Ok(confirm_cancel_authorisation(formWithErrors, service)),
+          formWithErrors => Future successful Ok(confirm_cancel_authorisation(formWithErrors, service, clientType)),
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, agent.arn, clientId).map {
@@ -224,8 +247,9 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
       val clientId = request.session.get("clientId").getOrElse("")
-      Future successful Ok(authorisation_cancelled(service, clientId, clientName))
+      Future successful Ok(authorisation_cancelled(service, clientId, clientName, clientType))
     }
   }
 
@@ -235,6 +259,7 @@ class AgentsRequestTrackingController @Inject()(
       case "PERSONAL-INCOME-RECORD" => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
       case "HMRC-MTD-VAT"           => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
       case "HMRC-TERS-ORG"          => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
+      case "HMRC-CGT-PD"            => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
       case _                        => throw new Error("Service not supported")
     }
 
@@ -279,8 +304,10 @@ class AgentsRequestTrackingController @Inject()(
   val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"    -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientId"   -> normalizedText.verifying(validateClientId),
+        "service"  -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "clientId" -> normalizedText.verifying(validateClientId),
+        "clientType" -> text
+          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }

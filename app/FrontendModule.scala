@@ -65,6 +65,9 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBaseUrl("citizen-details")
     bindBaseUrl("agent-client-relationships")
     bindBaseUrl("identity-verification-frontend")
+    bindBaseUrl("identity-verification")
+    bindBaseUrl("personal-details-validation")
+    bindBaseUrl("agent-suspension")
 
     bindServiceProperty("company-auth-frontend.external-url")
     bindServiceProperty("company-auth-frontend.sign-out.path")
@@ -72,7 +75,6 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
 
     bindServiceProperty("business-tax-account.external-url")
     bindServiceProperty("agent-services-account-frontend.external-url")
-    bindServiceProperty("tax-account-router-frontend.account-url")
     bindServiceProperty("personal-tax-account.external-url")
     bindServiceProperty("agent-invitations-frontend.external-url")
     bindServiceProperty("agent-subscription-frontend.external-url")
@@ -81,6 +83,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindServiceProperty("privacy-policy.external-url")
     bindServiceProperty("vat-online-service-helpline.external-url")
     bindServiceProperty("sa-online-service-helpline.external-url")
+    bindServiceProperty("personal-details-validation-frontend.external-url")
 
     bindServiceProperty("feedback-survey-frontend.external-url")
     bindProperty("survey.feedbackSurveyURNWithoutOriginToken")
@@ -88,6 +91,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("survey.originTokenIdentifier.client")
     bindProperty("invitation.expiryDuration")
     bindIntegerProperty("track-requests-show-last-days")
+    bindIntegerProperty("track-requests-per-page")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
@@ -96,6 +100,7 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindBooleanProperty("features.show-hmrc-cgt")
 
     bindBooleanProperty("features.enable-track-cancel-auth-action")
+    bindBooleanProperty("features.enable-agent-suspension")
     bindBooleanProperty("features.show-agent-led-de-auth")
 
     bindIntegerProperty("mongodb.session.expireAfterSeconds")

@@ -30,7 +30,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport with IVStubs {
+    with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
 
   val featureFlags: FeatureFlags = new FeatureFlags()
 
@@ -44,12 +44,14 @@ abstract class BaseISpec
 
   override implicit lazy val app: Application = appBuilder(featureFlags).build()
 
+  val pdvFrontendUrl = "http://localhost:9968"
   val companyAuthUrl = "https://company-auth-url"
   val companyAuthSignOutPath = "/sign-out-path"
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
+  val pdvBaseUrl = "/pdv-base-url"
 
   lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
   lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
@@ -59,45 +61,53 @@ abstract class BaseISpec
   protected def appBuilder(featureFlags: FeatureFlags): GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port"                                     -> wireMockPort,
-        "microservice.services.agent-client-authorisation.port"               -> wireMockPort,
-        "microservice.services.agent-client-relationships.port"               -> wireMockPort,
-        "microservice.services.agent-services-account.port"                   -> wireMockPort,
-        "microservice.services.company-auth.login-url"                        -> wireMockHost,
-        "microservice.services.company-auth.port"                             -> wireMockPort,
-        "microservice.services.des.port"                                      -> wireMockPort,
-        "microservice.services.agent-fi-relationship.port"                    -> wireMockPort,
-        "microservice.services.citizen-details.host"                          -> wireMockHost,
-        "microservice.services.citizen-details.port"                          -> wireMockPort,
-        "microservice.services.agent-invitations-frontend.external-url"       -> wireMockBaseUrlAsString,
-        "microservice.services.agent-services-account-frontend.external-url"  -> wireMockBaseUrlAsString,
-        "microservice.services.company-auth-frontend.external-url"            -> companyAuthUrl,
-        "microservice.services.company-auth-frontend.sign-out.path"           -> companyAuthSignOutPath,
-        "microservice.services.business-tax-account.external-url"             -> businessTaxAccountUrl,
-        "microservice.services.tax-account-router-frontend.account-url"       -> taxAccountRelativeUrl,
-        "microservice.services.personal-tax-account.external-url"             -> personalTaxAccountUrl,
-        "microservice.services.citizen-details.host"                          -> wireMockHost,
-        "microservice.services.citizen-details.port"                          -> wireMockPort,
-        "microservice.services.sso.host"                                      -> wireMockHost,
-        "microservice.services.sso.port"                                      -> wireMockPort,
-        "microservice.services.identity-verification-frontend.host"           -> wireMockHost,
-        "microservice.services.identity-verification-frontend.port"           -> wireMockPort,
-        "auditing.enabled"                                                    -> true,
-        "auditing.consumer.baseUri.host"                                      -> wireMockHost,
-        "auditing.consumer.baseUri.port"                                      -> wireMockPort,
-        "metrics.jvm"                                                         -> false,
-        "metrics.logback"                                                     -> false,
-        "passcodeAuthentication.enabled"                                      -> false,
-        "features.show-hmrc-mtd-it"                                           -> featureFlags.showHmrcMtdIt,
-        "features.show-personal-income"                                       -> featureFlags.showPersonalIncome,
-        "features.show-hmrc-mtd-vat"                                          -> featureFlags.showHmrcMtdVat,
-        "features.show-hmrc-trust"                                            -> true,
-        "features.show-hmrc-cgt"                                              -> featureFlags.showHmrcCgt,
-        "features.enable-track-cancel-auth-action"                            -> featureFlags.enableTrackCancelAuth,
-        "features.show-agent-led-de-auth"                                     -> featureFlags.showAgentLedDeAuth,
-        "microservice.services.agent-subscription-frontend.external-url"      -> "someSubscriptionExternalUrl",
-        "microservice.services.agent-client-management-frontend.external-url" -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri"                                                         -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
+        "microservice.services.auth.port"                                         -> wireMockPort,
+        "microservice.services.agent-client-authorisation.port"                   -> wireMockPort,
+        "microservice.services.agent-client-relationships.port"                   -> wireMockPort,
+        "microservice.services.agent-services-account.port"                       -> wireMockPort,
+        "microservice.services.company-auth.login-url"                            -> wireMockHost,
+        "microservice.services.company-auth.port"                                 -> wireMockPort,
+        "microservice.services.des.port"                                          -> wireMockPort,
+        "microservice.services.agent-fi-relationship.port"                        -> wireMockPort,
+        "microservice.services.citizen-details.host"                              -> wireMockHost,
+        "microservice.services.citizen-details.port"                              -> wireMockPort,
+        "microservice.services.agent-invitations-frontend.external-url"           -> wireMockBaseUrlAsString,
+        "microservice.services.agent-services-account-frontend.external-url"      -> wireMockBaseUrlAsString,
+        "microservice.services.company-auth-frontend.external-url"                -> companyAuthUrl,
+        "microservice.services.company-auth-frontend.sign-out.path"               -> companyAuthSignOutPath,
+        "microservice.services.business-tax-account.external-url"                 -> businessTaxAccountUrl,
+        "microservice.services.personal-tax-account.external-url"                 -> personalTaxAccountUrl,
+        "microservice.services.citizen-details.host"                              -> wireMockHost,
+        "microservice.services.citizen-details.port"                              -> wireMockPort,
+        "microservice.services.sso.host"                                          -> wireMockHost,
+        "microservice.services.sso.port"                                          -> wireMockPort,
+        "microservice.services.identity-verification-frontend.host"               -> wireMockHost,
+        "microservice.services.identity-verification-frontend.port"               -> wireMockPort,
+        "microservice.services.identity-verification.host"                        -> wireMockHost,
+        "microservice.services.identity-verification.port"                        -> wireMockPort,
+        "microservice.services.personal-details-validation.host"                  -> wireMockHost,
+        "microservice.services.personal-details-validation.port"                  -> wireMockPort,
+        "microservice.services.agent-suspension.host"                             -> wireMockHost,
+        "microservice.services.agent-suspension.port"                             -> wireMockPort,
+        "microservice.services.personal-details-validation-frontend.external-url" -> pdvFrontendUrl,
+        "auditing.enabled"                                                        -> true,
+        "auditing.consumer.baseUri.host"                                          -> wireMockHost,
+        "auditing.consumer.baseUri.port"                                          -> wireMockPort,
+        "metrics.jvm"                                                             -> false,
+        "metrics.logback"                                                         -> false,
+        "passcodeAuthentication.enabled"                                          -> false,
+        "track-requests-per-page"                                                 -> 10,
+        "features.show-hmrc-mtd-it"                                               -> featureFlags.showHmrcMtdIt,
+        "features.show-personal-income"                                           -> featureFlags.showPersonalIncome,
+        "features.show-hmrc-mtd-vat"                                              -> featureFlags.showHmrcMtdVat,
+        "features.show-hmrc-trust"                                                -> true,
+        "features.show-hmrc-cgt"                                                  -> true,
+        "features.enable-agent-suspension"                                        -> true,
+        "features.enable-track-cancel-auth-action"                                -> featureFlags.enableTrackCancelAuth,
+        "features.show-agent-led-de-auth"                                         -> featureFlags.showAgentLedDeAuth,
+        "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
+        "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
+        "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
       )
       .overrides(new TestGuiceModule)
 
@@ -157,9 +167,8 @@ abstract class BaseISpec
 
   protected def hasMessage(key: String, args: Any*): String = Messages(key, args: _*).toString
 
-  implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier = {
+  implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
     HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
-  }
 
   def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
@@ -167,12 +176,16 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, continueUrl)
   }
 
-  def checkResultContainsLink(result: Future[Result], linkUrl: String, linkText: String, clazz: Option[String] = None): Unit = {
-    val element = if(clazz.isDefined) {
+  def checkResultContainsLink(
+    result: Future[Result],
+    linkUrl: String,
+    linkText: String,
+    clazz: Option[String] = None): Unit = {
+    val element = if (clazz.isDefined) {
       s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
     } else {
       s"""<a href="$linkUrl">$linkText</a>"""
-  }
+    }
     checkHtmlResultWithBodyText(result, element)
   }
 

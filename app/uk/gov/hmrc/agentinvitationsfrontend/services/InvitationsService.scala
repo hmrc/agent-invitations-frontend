@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
@@ -188,17 +188,26 @@ class InvitationsService @Inject()(
                    if (response == "Accepted")
                      invitationsConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)
                    else invitationsConnector.rejectITSAInvitation(MtdItId(si.clientId), invitationId)
+
                  case "afi" =>
                    if (response == "Accepted") invitationsConnector.acceptAFIInvitation(Nino(si.clientId), invitationId)
                    else invitationsConnector.rejectAFIInvitation(Nino(si.clientId), invitationId)
+
                  case "vat" =>
                    if (response == "Accepted") invitationsConnector.acceptVATInvitation(Vrn(si.clientId), invitationId)
                    else invitationsConnector.rejectVATInvitation(Vrn(si.clientId), invitationId)
+
                  case "trust" =>
                    if (response == "Accepted")
                      invitationsConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
                    else invitationsConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
+
+                 case "cgt" =>
+                   if (response == "Accepted")
+                     invitationsConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)
+                   else invitationsConnector.rejectCgtInvitation(CgtRef(si.clientId), invitationId)
                }
+
       _ <- auditService.sendAgentInvitationResponse(
             invitationId.value,
             si.arn,

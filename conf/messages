@@ -85,7 +85,7 @@ select-service.yes=Yes
 select-service.no=No
 select-service.p1=You need to create a separate request for each type of authorisation.
 select-service.hint=Select an option.
-service.type.invalid=You must select a service
+service.type.invalid=Select what you want the client to authorise you to do
 
 # multi-choice selections
 select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
@@ -95,14 +95,14 @@ select-service.HMRC-MTD-VAT.business=Submit their VAT returns through software
 select-service.HMRC-TERS-ORG.business=Maintain a trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
-select-service.HMRC-CGT-PD.personal=Manage a client's Capital Gains Tax on UK property disposals
+select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property disposals
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
-select-service.alt-suggestion=You can use this service to ask for the types of authorisation listed above.
+select-service.alt-suggestion=You can use this service to ask a client to authorise you for the services listed here.
 select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
@@ -129,6 +129,17 @@ select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manag
 select-single-service.HMRC-CGT-PD.business.header=Do you want to manage a trust’s Capital Gains Tax on UK property disposals?
 select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage a trust’s Capital Gains Tax on UK property disposals
 
+# Agent suspended
+agent-suspended.heading.multi=We could not create one of your requests
+agent-suspended.heading.single=We could not create your authorisation request
+agent-suspended.p1=You cannot ask a client to authorise you to {0} because your agent code is suspended.
+agent-suspended.p1.HMRC-MTD-IT=send their Income Tax updates through software
+agent-suspended.p1.PERSONAL-INCOME-RECORD=view their PAYE income record
+agent-suspended.p1.HMRC-MTD-VAT=submit their VAT returns through software
+agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
+agent-suspended.p1.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property disposals
+agent-suspended.p2.single=You can start a new authorisation request for a different service.
+agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
 ## Identify Trust Client
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
@@ -145,7 +156,7 @@ identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Yo
 confirm-postcode-cgt.header=What is your client’s postcode?
 confirm-postcode-cgt.p1=This will help us match their details against information we hold.
 confirm-postcode-cgt.label=Postcode
-confirm-postcode-cgt.hint=This is the postcode of the address where the trust receives their Capital Tax Gains correspondence
+confirm-postcode-cgt.hint=This is the postcode of the address where your client receives their Capital Tax Gains correspondence
 confirm-countryCode-cgt.header=Which country is your client from?
 confirm-countryCode-cgt.p1=This will help us match their details against information we hold.
 confirm-countryCode-cgt.hint=Start typing the country
@@ -161,29 +172,42 @@ cgt-not-matched.advice=You can:
 cgt-not-matched.advice.l1=check the account reference is correct and try again
 cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
 continue.button=Continue
+start-again.button=Start again
 button.back=Back
 finish.button=Finish and sign out
 
 # Confirm Client
 confirm-client.header=Is this the client you want authorisation from?
-confirm-client.yes=Yes - I want to ask this client for authorisation
+confirm-client.yes=Yes
 confirm-client.no=No - I need to start over again
 error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 # Invitation Sent
 invitation-sent.header=What you need to do next
 invitation-sent.l1=Copy this link and email it to your client.
-invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their individual or sole trader tax affairs.
-invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their business taxes.
+invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.
+invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.
 invitation-sent.l1.p.business.HMRC-TERS-ORG=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
-invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">Capital Gains Tax on UK property disposals.</span>.
+invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs.</span>.
+invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
-invitation-sent.l3=<span>Make sure your client responds by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
+invitation-sent.l3=<span>Make sure they respond by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
 invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
 invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if it expires without being accepted.
+invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
+invitation-sent.p1.start=You can
+invitation-sent.p1.link=track your recent authorisation requests
+invitation-sent.p1.end=if you want to:
+invitation-sent.l5=check the status of your request
+invitation-sent.l6=resend a link to a client
+invitation-sent.l7=cancel requests and authorisations
+invitation-sent.resend.track-info.header=You can <a href="{0}">Track your recent authorisation requests</a> if you want to:
+invitation-sent.resend.track-info.l1=Check the status of your request
+invitation-sent.resend.track-info.l2=resend a link to a client
+invitation-sent.resend.track-info.l3=cancel requests and authorisations
 invitation-sent.header.links=Other actions
 invitation-sent.continueToASAccount.button=Go to agent services account home
 invitation-sent.continueJourney.button=Continue
@@ -215,12 +239,12 @@ check-details.cgt=Capital Gains Tax account reference
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
 confirm-details.sub-header=Are these details correct?
-confirm-details.radio1=Yes - I want to ask this client for authorisation
+confirm-details.radio1=Yes
 confirm-details.radio2=No - I need to change them
 error.confirmDetails.invalid=Select yes if the details are correct
 
 #Review authorisations
-review-authorisations.heading=Review your authorisation requests
+review-authorisations.heading=Check your authorisation requests
 review-authorisations.p=You have added {0}.
 review-authorisations.table.HMRC-MTD-IT=Send their Income Tax updates through software
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
@@ -314,8 +338,10 @@ known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
 not-enrolled.p1.HMRC-MTD-IT=This client has not signed up to send their Income Tax updates through software.
-not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to submit their VAT returns through software.
+not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to Making Tax Digital for VAT.
 not-enrolled.p2=They cannot authorise you for this service until they have signed up.
+not-enrolled.p3.start=Find out how to
+not-enrolled.p3.link=sign up your client to Making Tax Digital for VAT (opens in a new window or tab).
 not-enrolled.button=Back to your account
 not-enrolled.vat.button=Back to your account
 
@@ -389,24 +415,28 @@ warm-up.p2.personal=So we can confirm who you are, you will need to sign in with
 warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to appoint {0}
 
+# suspended agent
+suspended-agent.header=There is a problem
+suspended-agent.p1.single=You cannot appoint this tax agent to {0}.
+suspended-agent.p1.multi=You cannot appoint this tax agent for the following services:
+suspended-agent.p1.HMRC-MTD-IT=send your Income Tax updates through software
+suspended-agent.p1.HMRC-MTD-VAT=submit your VAT returns through software
+suspended-agent.p1.PERSONAL-INCOME-RECORD=view your personal income records
+suspended-agent.p1.HMRC-TERS-ORG=maintain a trust or an estate
+suspended-agent.p1.HMRC-CGT-PD=manage your Capital Gains Tax on UK property disposals
+suspended-agent.p2=If you have any questions, contact the tax agent who sent you this request.
+
 # Invitation Declined
 invitation-declined.header=You declined this request
-invitation-declined-itsa.p1=You have not authorised {0} to send your Income Tax updates through software.
-invitation-declined-afi.p1={0} will not be able to view your personal income records.
-invitation-declined-itsa.button=Continue to your tax account
-invitation-declined-afi.button=Continue to your personal tax account
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
 invitation-declined.multi.itsa.p1=You have not given permission to {0} to send your Income Tax updates through software.
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to submit your VAT returns through software.
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
-
-invitation-declined-vat.p1=	You have not authorised {0} to submit your VAT returns through software.
-invitation-declined-vat.button=Continue to your tax account
+invitation-declined.multi.cgt.personal.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property disposals.
+invitation-declined.multi.cgt.business.p1=You have not given permission to {0} to manage a trust’s Capital Gains Tax on UK property disposals.
 invitation-declined.sign-out.button=Finish and sign out
-
-
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 
@@ -417,11 +447,15 @@ confirm-decline.itsa.sub-header={0} will not be able to send your Income Tax upd
 confirm-decline.afi.sub-header={0} will not be able to view your income record.
 confirm-decline.vat.sub-header={0} will not be able to submit your VAT returns through software.
 confirm-decline.trust.sub-header={0} will not be able to maintain a trust or an estate.
+confirm-decline.cgt.personal.sub-header={0} will not be able to manage your Capital Gains Tax on UK property disposals.
+confirm-decline.cgt.business.sub-header={0} will not be able to manage a trust’s Capital Gains Tax on UK property disposals.
 confirm-decline.sub-header={0} will not be able to:
 confirm-decline.itsa.service-name=send your Income Tax updates through software
 confirm-decline.afi.service-name=report your employer PAYE updates through software
 confirm-decline.vat.service-name=submit your VAT returns through software
 confirm-decline.trust.service-name=maintain a trust or an estate
+confirm-decline.cgt.personal.service-name=manage your Capital Gains Tax on UK property disposals.
+confirm-decline.cgt.business.service-name=manage a trust’s Capital Gains Tax on UK property disposals.
 confirm-decline.radio1=Yes
 confirm-decline.radio2=No
 confirm-decline.button=Continue
@@ -477,6 +511,34 @@ confirm-terms-multi.trust.p1=I consent to HMRC sharing this information with {0}
 confirm-terms-multi.trust.list.item1=report changes relating to trustees, settlers, beneficiaries and protectors, such as names and addresses, and declare the trust is up to date
 confirm-terms-multi.trust.list.item2=report changes relating to the estate’s personal representative, such as name and address, and declare the estate is up to date
 
+confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property disposals
+confirm-terms-multi.cgt.business.heading=Manage a trust’s Capital Gains Tax on UK property disposals
+confirm-terms-multi.cgt.personal.p1=I consent to HMRC sharing my CGT on UK property disposals details with {0}, such as my:
+confirm-terms-multi.cgt.personal.p1.l1=name and contact details
+confirm-terms-multi.cgt.personal.p1.l2=residence status
+confirm-terms-multi.cgt.personal.p1.l3=liability for current and previous tax years
+confirm-terms-multi.cgt.personal.p1.l4=tax codes and personal allowance details
+confirm-terms-multi.cgt.personal.p1.l5=amounts due and paid
+confirm-terms-multi.cgt.personal.p1.l6=penalty details
+
+confirm-terms-multi.cgt.personal.p2=I also consent to HMRC allowing {0} to manage my CGT on UK property disposals account, so they can:
+confirm-terms-multi.cgt.personal.p2.l1=view, change and submit my current returns
+confirm-terms-multi.cgt.personal.p2.l2=view and change my previous return details
+confirm-terms-multi.cgt.personal.p2.l3=view and change my contact preferences
+confirm-terms-multi.cgt.personal.p2.l4=contact to HMRC to discuss my returns, payments and any penalties
+
+confirm-terms-multi.cgt.business.p1=I consent to HMRC sharing a trust’s CGT on UK property disposals details with {0}, such as the trust’s:
+confirm-terms-multi.cgt.business.p1.l1=name, location and contact details
+confirm-terms-multi.cgt.business.p1.l2=liability for current and previous tax years
+confirm-terms-multi.cgt.business.p1.l3=amount due and paid
+confirm-terms-multi.cgt.business.p1.l4=penalty details
+
+confirm-terms-multi.cgt.business.p2=I also consent to HMRC allowing {0} to manage a trust’s CGT on UK property disposals account, so they can:
+confirm-terms-multi.cgt.business.p2.l1=view, change and submit the trust’s current returns
+confirm-terms-multi.cgt.business.p2.l2=view and change the trust’s previous return details
+confirm-terms-multi.cgt.business.p2.l3=view and change the trust’s contact preferences
+confirm-terms-multi.cgt.business.p2.l4=contact to HMRC to discuss the trust’s returns, payments and any penalties
+
 confirm-terms.itsa.bullet1=your Income Tax updates information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
 confirm-terms.itsa.p1=This tax agent needs access to this information to send your Income Tax updates through software.
@@ -493,12 +555,13 @@ confirm-terms.vat.p1=This tax agent needs access to this information to submit y
 
 #Check answers
 check-answers.heading = Check your answers before sending your response
-check-answers.subheading = Your consent details
-check-answers.p1 = Here are the details of your response to {0}.
+check-answers.subheading = Consent for {0}
 check-answers.service.afi = View your PAYE income record
 check-answers.service.itsa = Send your Income Tax updates through software
 check-answers.service.vat = Submit your VAT returns through software
 check-answers.service.trust=Maintain a trust or an estate
+check-answers.service.cgt.personal=Manage your Capital Gains Tax for UK property disposals
+check-answers.service.cgt.business=Manage a trust’s Capital Gains Tax on UK property disposals
 check-answers.consent.true = Yes
 check-answers.consent.false = No
 check-answers.change-link=Change
@@ -516,6 +579,8 @@ client-complete.afi.p1={0} is now confirmed as your authorised tax agent for vie
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for sending your Income Tax updates through software.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for submitting your VAT returns through software.
 client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
+client-complete.cgt.personal.p1={0} is now confirmed as your authorised tax agent for managing your Capital Gains Tax on UK property disposals
+client-complete.cgt.business.p1={0} is now confirmed as your authorised tax agent for managing a trust’s Capital Gains Tax on UK property disposals
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -529,8 +594,9 @@ client-complete.multi.p1.itsa=sending your Income Tax updates through software
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=submitting your VAT returns through software
 client-complete.multi.p1.trust=maintaining a trust or an estate
-client-complete.multi.mistake=Made a mistake?
-client-complete.multi.fail=You did not appoint {0} for {1}. Contact the person who sent you the request if you declined it by mistake.
+client-complete.multi.p1.cgt.personal=managing your Capital Gains Tax on UK property disposals
+client-complete.multi.p1.cgt.business=managing a trust’s Capital Gains Tax on UK property disposals
+client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid
@@ -538,7 +604,7 @@ client-problem.header=Your authorisation request is no longer valid
 # Not Signed Up
 not-signed-up.header=There is a problem
 not-signed-up.description=You have not signed up to send your Income Tax updates through software.
-not-signed-up-vat.description=You have not signed up to submit your VAT returns through software.
+not-signed-up-vat.description=You have not signed up to Making Tax Digital for VAT.
 not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
 #Not Authorised
@@ -596,17 +662,21 @@ some-responses-failed.li.itsa=Send your Income Tax updates through software
 some-responses-failed.li.afi=View your PAYE income record
 some-responses-failed.li.vat=Submit your VAT returns through software
 some-responses-failed.li.trust=Maintain a trust or an estate
+some-responses-failed.li.cgt.personal=manage your Capital Gains Tax on UK property disposals.
+some-responses-failed.li.cgt.business=Manage a trust’s Capital Gains Tax on UK property disposals.
 some-responses-failed.itsa=We could not save your response for sending your Income Tax updates through software.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
+some-responses-failed.cgt.personal=We could not save your response for managing your Capital Gains Tax on UK property disposals.
+some-responses-failed.cgt.business=We could not save your response for managing a trust’s Capital Gains Tax on UK property disposals.
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
 
 
 technical-issues.header=Sorry, there is a problem with the service
 technical-issues.p1=Try again later.
-technical-issues.p2=We have not saved your answers. When the service is available, you will have to start again.
+technical-issues.p2=We may not have saved your answers. When the service is available, you may have to start again.
 technical-issues.vat=<a href="{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
 technical-issues.it=<a href="{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
 
@@ -639,9 +709,14 @@ global.error.404.title=Page not found - GOV.UK
 global.error.404.heading=Page not found
 global.error.404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
 
-global.error.500.title=Sorry, we are experiencing technical difficulties - 500
-global.error.500.heading=Sorry, we’re experiencing technical difficulties
-global.error.500.message=Please try again in a few minutes.
+global.error.500.title=Sorry, there is a problem with the service - 500
+global.error.500.heading=Sorry, there is a problem with the service
+global.error.500.message=Try again later.
+global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
+global.error.500.vat_helpline.link=Call the VAT online services helpline
+global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
+global.error.500.sa_helpline.link=Call the HMRC Self Assessment online services helpline
+global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
 
 #Relationships
 #Client ends relationship
@@ -734,6 +809,8 @@ confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to sen
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to submit their VAT returns through software.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate.
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.personal=You will no longer be able to manage this client’s Capital Gains Tax on UK property disposals
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD.business=You will no longer be able to manage a trust’s Capital Gains Tax on UK property disposals on behalf of this client
 confirm-authorisation-cancelled.warning=You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No
@@ -745,6 +822,8 @@ authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to se
 authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised by {0} to view their PAYE income record.
 authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to submit their VAT returns through software.
 authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to maintain their trust or estate.
+authorisation-cancelled.p1.HMRC-CGT-PD.personal=You are no longer authorised by {0} to maintain their Capital Gains Tax on UK property disposals.
+authorisation-cancelled.p1.HMRC-CGT-PD.business=You are no longer authorised by {0} to maintain a trust’s Capital Gains Tax on UK property disposals.
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page

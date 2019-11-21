@@ -939,7 +939,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "POST /agents/client-details-cgt" should {
     val request = FakeRequest("POST", "/agents/client-details-cgt")
-    "redirect to /agents/track/client-postcode" in new CgtHappyScenario {
+
+    "redirect to /agents/select-client-type" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
@@ -958,23 +959,49 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode().url)
+        routes.AgentInvitationFastTrackJourneyController.showClientType().url)
     }
+  }
 
-    "redirect to /agents/track/client-country" in new CgtHappyScenario {
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+  "POST /agents/select-client-type-cgt" should {
+    val request = FakeRequest("POST", "/agents/client-details-cgt")
+
+    "redirect to /agents/client-postcode" in new CgtHappyScenario {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
-        IdentifyCgtClient(ftr, ftr, None),
+        SelectClientTypeCgt(ftr, ftr, None),
         List(
-          CheckDetailsCompleteCgt(ftr, ftr, None),
+          IdentifyCgtClient(ftr, ftr, None),
           Prologue(None, None)
         )
       )
 
-      val result = controller.submitIdentifyCgtClient(
+      val result = controller.submitClientTypeCgt(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
+          request.withFormUrlEncodedBody("clientType" -> "personal"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode().url)
+    }
+
+    "redirect to /agents/client-country" in new CgtHappyScenario {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("FR")).toString())
+      val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      journeyState.set(
+        SelectClientTypeCgt(ftr, ftr, None),
+        List(
+          IdentifyCgtClient(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitClientTypeCgt(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
         ))
 
@@ -1389,14 +1416,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
+      val inferredDate = controller.inferredExpiryDate
+      //not sure whys its coded like this in the views
+      val expiryDate =
+        if(inferredDate.getDayOfMonth < 10) {
+          inferredDate.toString("d MMMM yyyy")
+        } else {
+          inferredDate.toString("dd MMMM yyyy")
+        }
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1",
-        "invitation-sent.l1.p.personal.personal")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"))
+        "invitation-sent.l1")
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.email.p", "abc@xyz.com", expiryDate),
+      "You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">individual or sole trader tax affairs</span>.")
     }
 
     "show the invitation sent page for a business service" in {
@@ -1409,8 +1444,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1",
-        "invitation-sent.l1.p.business.HMRC-MTD-VAT")
+        "invitation-sent.l1")
+      checkHtmlResultWithBodyText(result,"You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">business taxes</span>.")
     }
   }
 

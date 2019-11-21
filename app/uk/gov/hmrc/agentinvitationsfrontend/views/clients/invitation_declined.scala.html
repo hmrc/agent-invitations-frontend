@@ -24,22 +24,24 @@
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("invitation-declined.header"), config.serviceKeys.headOption.getOrElse("")))) {
 
-
       <div class="transaction-banner--complete">
           <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>
       </div>
 
         @if(config.serviceKeys.length == 1) {
-            <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
-
+            @defining({
+                val serviceKey = config.serviceKeys.head
+                val messageKey =  if(serviceKey == "cgt") s"cgt.${config.clientType}" else serviceKey
+                messageKey
+            }) { messageKey => <p>@Messages(s"invitation-declined.multi.$messageKey.p1", config.agencyName)</p>
+            }
         } else {
             <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
             <ul class="list list-bullet">
             @for(key <- config.serviceKeys) {
-                <li>@Messages(s"confirm-decline.$key.service-name")</li>
+                <li>@Messages(s"confirm-decline.${if(key == "cgt") s"cgt.${config.clientType}" else key}.service-name")</li>
             }
             </ul>
-
         }
 
         <a class="button" href="@externalUrls.signOutUrl(false, None)" id="continue" role="button">@Messages(s"invitation-declined.sign-out.button")</a>

@@ -31,15 +31,13 @@
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-answers.heading")</h1>
 
-    <h2 class="heading-medium margin-top-40">@Messages("check-answers.subheading")</h2>
-
-    <p>@Messages("check-answers.p1", pageConfig.processedAgencyName)</p>
+    <h2 class="heading-medium margin-top-40">@Messages("check-answers.subheading", pageConfig.processedAgencyName)</h2>
 
     <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
     @for(consent <- pageConfig.consents) {
         <div>
             <dt class="cya-question">
-            @Messages(s"check-answers.service.${consent.serviceKey}")
+            @Messages(s"check-answers.service.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}")
             </dt>
             <dd class="cya-answer" id="client-identifier">
             @Messages(s"check-answers.consent.${consent.consent}")
@@ -49,8 +47,7 @@
               <button type="submit" class="button--link-style">@Messages("check-answers.change-link")</button>
             }
 
-                    <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${consent.serviceKey}")</span>
-                </a>
+             <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}")</span>
             </dd>
         </div>
     }

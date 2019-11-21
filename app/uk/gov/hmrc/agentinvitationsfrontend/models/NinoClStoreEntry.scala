@@ -16,28 +16,19 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
+import org.joda.time._
+import play.api.libs.json._
+import uk.gov.hmrc.auth.core.ConfidenceLevel
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats._
 
-case class TrackInformationSorted(
-  clientType: Option[String],
-  service: String,
-  clientId: String,
-  clientIdType: String,
-  clientName: Option[String],
-  status: String,
-  date: Option[LocalDate],
-  expiryDate: Option[LocalDate],
-  invitationId: Option[String]) {
+case class NinoClStoreEntry(
+  credId: String,
+  nino: Nino,
+  confidenceLevel: Option[ConfidenceLevel],
+  createdAt: Option[LocalDateTime],
+  updatedAt: Option[LocalDateTime])
 
-  def sortDate: Option[LocalDate] =
-    if (date.isEmpty) expiryDate
-    else if (expiryDate.isEmpty) date
-    else None
-}
-
-object TrackInformationSorted {
-
-  implicit def dateOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
-
-  val orderingByDate: Ordering[TrackInformationSorted] = Ordering.by(_.sortDate)
+object NinoClStoreEntry {
+  implicit val ninoCLStoreEntryFormat: OFormat[NinoClStoreEntry] = Json.format[NinoClStoreEntry]
 }

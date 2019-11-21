@@ -22,23 +22,28 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Named, Singleton}
 import play.api.Logger
+import play.api.http.Status
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.models.IVResult
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, NotFoundException}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{IVResult, NinoClStoreEntry}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IdentityVerificationConnector @Inject()(
-  @Named("identity-verification-frontend-baseUrl") baseUrl: URL,
-  http: HttpGet,
+  @Named("identity-verification-frontend-baseUrl") ivFrontendBaseUrl: URL,
+  @Named("identity-verification-baseUrl") ivBaseUrl: URL,
+  http: HttpGet with HttpPut,
   metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   private[connectors] def getIVResultUrl(journeyId: String): URL =
-    new URL(baseUrl, s"/mdtp/journey/journeyId/$journeyId")
+    new URL(ivFrontendBaseUrl, s"/mdtp/journey/journeyId/$journeyId")
+
+  private[connectors] def updateEntryUrl(credId: String): URL =
+    new URL(ivBaseUrl, s"/identity-verification/nino/$credId")
 
   def getIVResult(journeyId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[IVResult]] =
     monitor("ConsumedAPI-Client-Get-IVResult-GET") {
@@ -57,6 +62,25 @@ class IdentityVerificationConnector @Inject()(
           case e: NotFoundException => {
             Logger.warn(s"identity verification did not recognise the journeyId $journeyId $e")
             None
+          }
+        }
+    }
+
+  /** Call identity-verification to update NINO store
+    * @return The HTTP status code of the PUT response
+    *
+    * */
+  def updateEntry(entry: NinoClStoreEntry, credId: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Int] =
+    monitor("ConsumedAPI-Client-updateNinoOnAuthRecord-PUT") {
+      http
+        .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)
+        .map(_.status)
+        .recover {
+          case e: Upstream5xxResponse => {
+            Logger.error(s"identity-verification did not update entry ${e.getMessage}")
+            Status.INTERNAL_SERVER_ERROR
           }
         }
     }

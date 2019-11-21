@@ -174,18 +174,13 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             None
         }
 
-        clientType match {
-          case Some(ct) =>
-            whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(ct))(
-              Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
-            )
-          case None =>
-            Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
-        }
+        whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(clientType.getOrElse(personal)))(
+          Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+        )
 
       case _ =>
         Logger.warn("expecting some state here, but missing")
-        Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
+        Future.successful(Redirect(routes.AgentInvitationFastTrackJourneyController.showClientType()))
     }
   }
 
@@ -234,10 +229,18 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val showClientType = actionShowStateWhenAuthorised(AsAgent) {
     case _: SelectClientTypeVat =>
+    case _: SelectClientTypeCgt =>
   }
 
   val submitClientType = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.fastTrackForm)(
+      Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+        createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+        invitationsConnector.getCgtSubscription(_)))
+  }
+
+  val submitClientTypeCgt = action { implicit request =>
+    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.cgtClientTypeForm)(
       Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
         createInvitation)(createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
         invitationsConnector.getCgtSubscription(_)))
@@ -298,6 +301,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         case None => routes.AgentInvitationFastTrackJourneyController.showClientType()
       }
     case _: SelectClientTypeVat             => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case _: SelectClientTypeCgt             => routes.AgentInvitationFastTrackJourneyController.showClientType()
     case _: NoPostcode                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
     case _: NoDob                           => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
     case _: NoVatRegDate                    => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
@@ -438,6 +442,18 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             routes.AgentInvitationFastTrackJourneyController.submitClientType(),
             featureFlags.showHmrcTrust,
             isForVat = true
+          )
+        ))
+
+    case SelectClientTypeCgt(_, _, _) =>
+      Ok(
+        client_type(
+          formWithErrors.or(ClientTypeForm.cgtClientTypeForm),
+          ClientTypePageConfig(
+            backLinkFor(breadcrumbs).url,
+            routes.AgentInvitationFastTrackJourneyController.submitClientTypeCgt(),
+            featureFlags.showHmrcTrust,
+            isForCgt = true
           )
         ))
 

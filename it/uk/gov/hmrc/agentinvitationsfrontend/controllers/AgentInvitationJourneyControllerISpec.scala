@@ -8,9 +8,11 @@ import play.api.mvc.Flash
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AgentSuspensionStubs._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 import uk.gov.hmrc.domain.Nino
@@ -248,6 +250,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-personal-service")
 
     "accept valid service choice and redirect" in {
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitPersonalSelectService(
@@ -260,12 +263,28 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
+
+    "redirect to agent suspended if the agent is suspended for the selected service" in {
+      givenSuspensionStatus(arn, SuspensionResponse (Set(HMRCMTDIT)))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
   }
 
   "POST /agents/select-business-service" should {
     val request = FakeRequest("POST", "/agents/select-business-service")
 
     "redirect to identify-client when yes is selected" in {
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
 
       val result = controller.submitBusinessSelectService(
@@ -300,7 +319,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/select-trust-service")
 
     "redirect to identify-client when yes is selected" in {
-
+      givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
       val result = controller.submitTrustSelectSingle(TRUST)(
@@ -1257,7 +1276,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the confirm client page for CGT clients" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
       journeyState.set(
-        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)), emptyBasket),
+        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business))), emptyBasket),
         List(ConfirmCountryCodeCgt(cgtRef, business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService, SelectClientType(emptyBasket))
       )
 
@@ -1420,7 +1439,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       checkHtmlResultWithBodyText(
         result,
-        "Review your authorisation requests",
+        "Check your authorisation requests",
         "You have added 1 authorisation request.",
         "Send their Income Tax updates through software",
         "James Client",
@@ -1788,7 +1807,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the some create authorisations failed" in {
       journeyState.set(
-        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
+        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1799,7 +1818,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.continue",
-        "create-auth-failed.HMRC-CGT-PD.label",
         "create-auth-failed.HMRC-CGT-PD.business"
       )
     }
@@ -1810,7 +1828,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the all create authorisations failed page" in {
       journeyState.set(
-        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef), AuthorisationRequest.FAILED))),
+        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -1821,7 +1839,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.try",
-        "create-auth-failed.HMRC-CGT-PD.label",
         "create-auth-failed.HMRC-CGT-PD.business"
       )
     }
@@ -1834,7 +1851,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       supportedServices.foreach { service =>
         journeyState.set(
-          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef)))),
+          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(personal))))),
           List()
         )
         val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -1914,6 +1931,18 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "all-authorisations-removed.p",
         "new-request.button"
       )
+    }
+  }
+
+  "GET /access-removed" should {
+    val request = FakeRequest("GET", "/agents/access-removed")
+
+    "display the access removed page" in {
+      journeyState.set(AgentSuspended(HMRCMTDIT, Set.empty), List())
+      val result = controller.showAgentSuspended(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")
     }
   }
 }

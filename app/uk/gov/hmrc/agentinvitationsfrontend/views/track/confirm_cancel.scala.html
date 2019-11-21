@@ -21,9 +21,10 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
-@(service: String, clientType: String, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 

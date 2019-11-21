@@ -226,19 +226,49 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
         CgtRef => Future(Some(cgtSubscription(countryCode)))
 
-      "transition to ConfirmPostcodeCgt when CGT client is a UK based client" in {
+      "transition to SelectClientTypeCgt" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
 
         given(IdentifyCgtClient(fastTrackRequest, fastTrackRequest, None)) when identifyCgtClient(getCgtSubscription())(
           authorisedAgent)(CgtClient(cgtRef)) should
+          thenGo(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None))
+      }
+    }
+
+    "at SelectClientTypeCgt" should {
+
+      def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
+        CgtRef => Future(Some(cgtSubscription(countryCode)))
+
+      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def createInvitation(arn: Arn, invitation: Invitation): Future[InvitationId] =
+        Future(InvitationId("ABBTAKTMFKWU8"))
+      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
+      def getAgencyEmail() = Future("abc@xyz.com")
+
+      "transition to ConfirmPostcodeCgt when CGT client is a UK based client" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+
+        given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(getCgtSubscription())(
+            authorisedAgent)("personal") should
           thenGo(ConfirmPostcodeCgt(fastTrackRequest, fastTrackRequest, None, Some("BN13 1FN"), "firstName lastName"))
       }
 
       "transition to ConfirmCountryCodeCgt when CGT client is a non UK based client" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
 
-        given(IdentifyCgtClient(fastTrackRequest, fastTrackRequest, None)) when identifyCgtClient(
-          getCgtSubscription("FR"))(authorisedAgent)(CgtClient(cgtRef)) should
+        given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(getCgtSubscription("FR"))(
+            authorisedAgent)("personal") should
           thenGo(ConfirmCountryCodeCgt(fastTrackRequest, fastTrackRequest, None, "FR", "firstName lastName"))
       }
     }

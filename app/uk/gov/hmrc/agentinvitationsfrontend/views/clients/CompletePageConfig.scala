@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientType}
 
-case class CompletePageConfig(agencyName: String, consents: Seq[ClientConsent])
+case class CompletePageConfig(agencyName: String, consents: Seq[ClientConsent], clientType: ClientType)

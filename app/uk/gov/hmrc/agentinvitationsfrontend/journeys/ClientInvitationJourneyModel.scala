@@ -17,9 +17,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logger
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,7 +39,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
   object State {
     case object MissingJourneyHistory extends State
 
-    case class WarmUp(clientType: ClientType, uid: String, agentName: String, normalisedAgentName: String) extends State
+    case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String)
+        extends State
 
     case object NotFoundInvitation extends State with IsError
 
@@ -54,22 +58,27 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
 
-    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
+        extends State
 
-    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent]) extends State
+    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
+        extends State
 
     case object AllResponsesFailed extends State
 
     case class SomeResponsesFailed(
       agentName: String,
       failedConsents: Seq[ClientConsent],
-      successfulConsents: Seq[ClientConsent])
+      successfulConsents: Seq[ClientConsent],
+      clientType: ClientType)
         extends State
 
     case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
 
     case object TrustNotClaimed extends State
+
+    case class SuspendedAgent(suspendedServices: Set[String]) extends State
   }
 
   object Transitions {
@@ -81,6 +90,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
     type AcceptInvitation = InvitationId => String => Future[Boolean]
     type RejectInvitation = InvitationId => String => Future[Boolean]
+    type GetSuspensionStatus = Arn => Future[SuspensionResponse]
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -92,7 +102,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                        case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
                          val clientType = ClientType.toEnum(clientTypeStr)
                          getAgencyName(r.arn).flatMap { name =>
-                           goto(WarmUp(clientType, uid, name, normalisedAgentName))
+                           goto(WarmUp(clientType, uid, r.arn, name, normalisedAgentName))
                          }
                        case _ => goto(NotFoundInvitation)
                      }
@@ -113,18 +123,27 @@ object ClientInvitationJourneyModel extends JourneyModel {
               consent = false))
       } yield consents
 
-    def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
-      client: AuthorisedClient) =
-      transitionFromWarmup(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates)(client)
+    def submitWarmUp(agentSuspensionEnabled: Boolean)(
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
+      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
+      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
+        getPendingInvitationIdsAndExpiryDates,
+        getSuspensionStatus)(client)
 
-    def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(
-      client: AuthorisedClient) =
-      transitionFromWarmup(idealTargetState = ConfirmDecline.apply)(getPendingInvitationIdsAndExpiryDates)(client)
+    def submitWarmUpToDecline(agentSuspensionEnabled: Boolean)(
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
+      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
+      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = ConfirmDecline.apply)(
+        getPendingInvitationIdsAndExpiryDates,
+        getSuspensionStatus)(client)
 
-    private def transitionFromWarmup(idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
-      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates)(client: AuthorisedClient) =
+    private def transitionFromWarmup(
+      agentSuspensionEnabled: Boolean,
+      idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
+      getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
+      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
       Transition {
-        case WarmUp(clientType, uid, agentName, _) =>
+        case WarmUp(clientType, uid, arn, agentName, _) =>
           getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
             val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
             val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
@@ -133,6 +152,17 @@ object ClientInvitationJourneyModel extends JourneyModel {
               goto(TrustNotClaimed)
             } else {
               consents match {
+                case _ if consents.nonEmpty && agentSuspensionEnabled =>
+                  getSuspensionStatus(arn).flatMap { suspendedServices =>
+                    val consentServices: Set[String] =
+                      consents.map(consent => consent.service).toSet
+                    if (suspendedServices.isAllSuspended(consentServices)) goto(SuspendedAgent(consentServices))
+                    else {
+                      val nonSuspendedConsents =
+                        consents.filter(consent => !suspendedServices.isSuspended(consent.service))
+                      goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
+                    }
+                  }
                 case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
                 case _                      => goto(NotFoundInvitation)
               }
@@ -152,7 +182,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
               }
             for {
               newConsents <- newConsentsF
-              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+              result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName, clientType)
 
             } yield result
           } else goto(MultiConsent(clientType, uid, agentName, consents))
@@ -165,6 +195,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
           case "afi"   => oldConsent.copy(consent = formTerms.afiConsent)
           case "vat"   => oldConsent.copy(consent = formTerms.vatConsent)
           case "trust" => oldConsent.copy(consent = formTerms.trustConsent)
+          case "cgt"   => oldConsent.copy(consent = formTerms.cgtConsent)
           case _       => throw new IllegalStateException("the service key was not supported")
         }
       }
@@ -184,6 +215,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case "afi"   => changedConsent.copy(consent = formTerms.afiConsent)
         case "vat"   => changedConsent.copy(consent = formTerms.vatConsent)
         case "trust" => changedConsent.copy(consent = formTerms.trustConsent)
+        case "cgt"   => changedConsent.copy(consent = formTerms.cgtConsent)
         case _       => throw new IllegalStateException("the service key was not supported")
       }
       oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
@@ -212,17 +244,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
       client: AuthorisedClient) = Transition {
-      case CheckAnswers(_, _, agentName, consents) =>
+      case CheckAnswers(clientType, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)(agentName)
-          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName)
+          result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName, clientType)
         } yield result
     }
 
     private def getRedirectLinkAfterProcessConsents(
       consents: Seq[ClientConsent],
       newConsents: Seq[ClientConsent],
-      agentName: String) =
+      agentName: String,
+      clientType: ClientType) =
       if (ClientConsent.allFailed(newConsents))
         goto(AllResponsesFailed)
       else if (ClientConsent.someFailed(newConsents))
@@ -230,16 +263,21 @@ object ClientInvitationJourneyModel extends JourneyModel {
           SomeResponsesFailed(
             agentName,
             newConsents.filter(_.processed == false),
-            newConsents.filter(_.processed == true)))
+            newConsents.filter(_.processed == true),
+            clientType))
       else if (ClientConsent.allAcceptedProcessed(newConsents))
-        goto(InvitationsAccepted(agentName, consents))
+        goto(InvitationsAccepted(agentName, consents, clientType))
       else if (ClientConsent.allDeclinedProcessed(newConsents))
-        goto(InvitationsDeclined(agentName, consents))
-      else goto(InvitationsAccepted(agentName, consents))
+        goto(InvitationsDeclined(agentName, consents, clientType))
+      else goto(InvitationsAccepted(agentName, consents, clientType))
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
-      case SomeResponsesFailed(agentName, _, successfulConsents) =>
-        goto(InvitationsAccepted(agentName, successfulConsents))
+      case SomeResponsesFailed(agentName, _, successfulConsents, _) =>
+        goto(
+          InvitationsAccepted(
+            agentName,
+            successfulConsents,
+            if (client.affinityGroup == Individual) personal else business))
     }
 
     def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {

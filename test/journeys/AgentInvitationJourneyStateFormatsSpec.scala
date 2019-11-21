@@ -36,7 +36,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientCgt" in {
         val state = ConfirmClientCgt(
-          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456")), itemId = "ABC"),
+          AuthorisationRequest("Sylvia Plath", CgtInvitation(CgtRef("123456"), Some(business)), itemId = "ABC"),
           Set.empty)
         val json = Json.parse("""{
                                 |"state":"ConfirmClientCgt",
@@ -359,8 +359,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "AgentSuspended" in {
+        val state = AgentSuspended(HMRCMTDIT, Set.empty)
+        val json =
+          Json.parse("""{"state":"AgentSuspended","properties":{"suspendedService": "HMRC-MTD-IT", "basket": []}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
-
   }
-
 }

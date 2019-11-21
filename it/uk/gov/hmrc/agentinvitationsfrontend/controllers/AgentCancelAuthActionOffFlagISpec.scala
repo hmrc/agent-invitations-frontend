@@ -23,7 +23,8 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
-    val showTrackRequests = requestTrackingController.showTrackRequests
+    val showTrackRequestsPageOne = requestTrackingController.showTrackRequests(1)
+    val showTrackRequestsPageTwo = requestTrackingController.showTrackRequests(2)
 
     "render a page without cancel authorisation link when flag is off" in {
       givenGetInvitations(arn)
@@ -38,22 +39,19 @@ class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
       givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
       givenClientDetails(Vrn("101747696"))
       givenClientDetails(Vrn("101747641"))
-      val result = showTrackRequests(authorisedAsValidAgent(request, arn.value))
+      val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
         "Accepted by client",
         "Client has not yet responded",
         "Declined by client",
-        "Request expired as client did not respond in time",
-        "You cancelled this request",
         "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
         "Cosmo Kramer",
         "GDT",
         "11 September 2018",
-        "21 September 2015",
         "24 September 2018",
         "01 January 2099",
         "Resend request to client",

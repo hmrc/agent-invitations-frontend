@@ -1,14 +1,14 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import play.api.mvc.Result
 import play.api.mvc.Results._
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException}
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.Future
@@ -22,8 +22,8 @@ class AuthActionsISpec extends BaseISpec {
     override def env: Environment = app.injector.instanceOf[Environment]
     override def withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
 
-    implicit val hc = HeaderCarrier()
-    implicit val request = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -33,7 +33,7 @@ class AuthActionsISpec extends BaseISpec {
       })
 
     override def externalUrls: ExternalUrls =
-      new ExternalUrls("", "", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "", "", "", "")
+      new ExternalUrls("", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "", "", "", "", pdvFrontendUrl = "")
   }
 
   "withAuthorisedAsAgent" should {
