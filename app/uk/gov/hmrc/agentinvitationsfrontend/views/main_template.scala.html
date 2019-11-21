@@ -17,6 +17,7 @@
 @import uk.gov.hmrc.play.views.html.layouts
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @(title: String,
         sidebarLinks: Option[Html] = None,
         contentHeader: Option[Html] = None,
@@ -27,7 +28,8 @@
         bannerTitle: String = "banner.agents.auth",
         completedInviteGoSurvey: Option[Boolean] = None,
         gaCalls: Option[(String,String) => Html] = None,
-        mainDataAttributes: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
+        mainDataAttributes: Option[Html] = None,
+        hasTimeout: Boolean = true)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
 
     @serviceInfoContent = {}
 
@@ -37,6 +39,26 @@
     }
     }
 
+        @scriptElements = {
+            @scriptElem
+            @if(hasTimeout) {
+     <script id="timeoutDialog">
+        $.timeoutDialog({
+            timeout: @externalUrls.timeout,
+            countdown: @externalUrls.timeoutCountdown,
+            keep_alive_url: '@routes.ClientInvitationJourneyController.keepAlive()',
+            title: "@Messages("timeout-dialog.title")",
+            messageSeconds: "@Messages("timeout-dialog.seconds")",
+            messageMinutes: "@Messages("timeout-dialog.minutes")",
+            messageMinute: "@Messages("timeout-dialog.minute")",
+            logout_url: '@routes.ClientInvitationJourneyController.handleIVTimeout()',
+            message: "@Messages("timeout-dialog.p1")",
+            keep_alive_button_text: "@Messages("timeout-dialog.button")"
+        });
+        </script>
+            }
+        }
+
     @govuk_wrapper(title,
         mainClass,
         bodyClasses = bodyClasses,
@@ -44,7 +66,7 @@
         contentHeader = contentHeader,
         mainContent = layouts.article(mainContent),
         serviceInfoContent = serviceInfoContent,
-        scriptElem = scriptElem,
+        scriptElem = Some(scriptElements),
         cookies = Some(request.cookies),
         isAgent = isAgent,
         bannerTitle = bannerTitle,

@@ -21,7 +21,7 @@
 
 @(continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("signed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("es-failed.header"), ""))) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("signed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("es-failed.header"), "")), hasTimeout = false) {
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("signed-out.header")</h1>
     <p>@Messages("signed-out.p1")</p>
