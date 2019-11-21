@@ -1,5 +1,5 @@
 #error-summary-display:focus {
-    outline: 3px solid #ffbf47;
+    outline: none;
 }
 
 .margin-top-0 {
@@ -111,7 +111,6 @@ caption.caption-normal {
 
 .no-js .nojs-date-fields-error .form-group.soft--ends {
     border-left: 3px solid #df3034;
-    padding: 0.75em 1em;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
     padding: .63158em .84211em .63158em .84211em;
@@ -165,6 +164,7 @@ caption.caption-normal {
 
 .form-field--error input[type="text"] {
     border: 4px solid #b10e1e;
+    height: 40px;
 }
 
 .form-field--error legend h1 {
