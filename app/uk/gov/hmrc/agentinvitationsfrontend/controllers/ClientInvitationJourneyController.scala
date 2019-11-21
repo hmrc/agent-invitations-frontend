@@ -201,6 +201,10 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
+  def keepAlive = Action.async { implicit request =>
+    Future successful Ok("OK")
+  }
+
   def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps

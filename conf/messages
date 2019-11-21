@@ -850,6 +850,14 @@ active-authorisation-exists.p1.HMRC-CGT-PD.business=This client has already auth
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 
+#session time out
+timeout-dialog.title=You are about to be signed out
+timeout-dialog.seconds=seconds
+timeout-dialog.minutes=minutes
+timeout-dialog.minute=minute
+timeout-dialog.button=Stay signed in
+timeout-dialog.p1=For security reasons, you will be signed out of your Agent services account in
+
 
 #Signed out
 signed-out.header=You have been signed out

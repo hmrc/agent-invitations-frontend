@@ -92,6 +92,8 @@ class FrontendModule(val environment: Environment, val configuration: Configurat
     bindProperty("invitation.expiryDuration")
     bindIntegerProperty("track-requests-show-last-days")
     bindIntegerProperty("track-requests-per-page")
+    bindIntegerProperty("timeoutDialog.timeout-seconds")
+    bindIntegerProperty("timeoutDialog.timeout-countdown-seconds")
 
     bindBooleanProperty("features.show-hmrc-mtd-it")
     bindBooleanProperty("features.show-personal-income")
