@@ -18,10 +18,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.GetTrustName
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetTrustName}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.IdentifyClientTrust
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -38,10 +39,17 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case object SelectClientType extends State
     case class SelectServicePersonal(enabledServices: Set[String]) extends State
     case object SelectServiceBusiness extends State
-    case object SelectServiceTrust extends State
+    case class SelectServiceTrust(enabledServices: Set[String]) extends State
     case class IdentifyClientPersonal(service: String) extends State
     case object IdentifyClientBusiness extends State
     case object IdentifyClientTrust extends State
+    case object IdentifyClientCgt extends State
+
+    case class ConfirmPostcodeCgt(cgtRef: CgtRef, postcode: Option[String], clientName: String) extends State
+    case class ConfirmCountryCodeCgt(cgtRef: CgtRef, countryCode: String, clientName: String) extends State
+
+    case class ConfirmClientCgt(cgtRef: CgtRef, clientName: String) extends State
+
     case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends State
     case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends State
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
@@ -56,6 +64,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
     case object TrustNotFound extends State
+    case class CgtRefNotFound(cgtRef: CgtRef) extends State
   }
 
   object Transitions {
@@ -76,16 +85,16 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
           case "personal" =>
             val enabledPersonalServices =
               if (agent.isWhitelisted)
-                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
               else
-                Set(HMRCMTDIT, HMRCMTDVAT)
+                Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
             goto(SelectServicePersonal(enabledPersonalServices))
           case "business" => goto(SelectServiceBusiness)
-          case "trust"    => goto(SelectServiceTrust)
+          case "trust"    => goto(SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
         }
     }
 
-    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean)(
+    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean)(
       agent: AuthorisedAgent)(service: String) = Transition {
       case SelectServicePersonal(enabledServices) =>
         if (enabledServices.contains(service)) {
@@ -101,6 +110,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
             case HMRCMTDVAT =>
               if (showVatFlag) goto(IdentifyClientPersonal(service))
               else fail(new Exception(s"Service: $service feature flag is switched off"))
+
+            case HMRCCGTPD =>
+              if (showCgtFlag) goto(IdentifyClientPersonal(service))
+              else fail(new Exception(s"Service: $service feature flag is switched off"))
           }
         } else goto(SelectServicePersonal(enabledServices))
     }
@@ -113,13 +126,23 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
       case SelectServiceBusiness => goto(root)
     }
 
-    def chosenTrustService(showTrustFlag: Boolean)(agent: AuthorisedAgent)(confirmation: Confirmation) = Transition {
-      case SelectServiceTrust if confirmation.choice =>
-        if (showTrustFlag) goto(IdentifyClientTrust)
-        else fail(new Exception(s"Service: $TRUST feature flag is switched off"))
+    def chosenTrustService(showTrustFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(service: String) =
+      Transition {
+        case SelectServiceTrust(enabledServices) =>
+          if (enabledServices.contains(service)) {
+            service match {
+              case TRUST =>
+                if (showTrustFlag) goto(IdentifyClientTrust)
+                else fail(new Exception(s"Service: $service feature flag is switched off"))
 
-      case SelectServiceTrust => goto(root)
-    }
+              case HMRCCGTPD =>
+                if (showCgtFlag) goto(IdentifyClientCgt)
+                else fail(new Exception(s"Service: $service feature flag is switched off"))
+            }
+          } else fail(new Exception(s"Service: $service feature flag is switched off"))
+
+        case _ => goto(root)
+      }
 
     def submitIdentifyClientItsa(
       checkPostcodeMatches: CheckPostcodeMatches,
@@ -193,6 +216,56 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
           }
       }
 
+    def submitIdentifyClientCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      cgtClient: CgtClient): AgentLedDeauthJourneyModel.Transition = {
+      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State) =
+        getCgtSubscription(cgtClient.cgtRef).map {
+          case Some(subscription) =>
+            if (subscription.isUKBasedClient) {
+              showPostcode(subscription)
+            } else {
+              showCountryCode(subscription)
+            }
+          case None =>
+            CgtRefNotFound(cgtClient.cgtRef)
+        }
+
+      Transition {
+        case IdentifyClientPersonal(HMRCCGTPD) | IdentifyClientCgt =>
+          handle(
+            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription =>
+              ConfirmCountryCodeCgt(
+                cgtClient.cgtRef,
+                cgtSubscription.countryCode,
+                cgtSubscription.name
+            )
+          )
+      }
+    }
+
+    def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      postcode: Postcode): AgentLedDeauthJourneyModel.Transition =
+      Transition {
+        case ConfirmPostcodeCgt(cgtRef, postcodeFromDes, name) =>
+          if (postcodeFromDes.contains(postcode.value)) {
+            goto(ConfirmClientCgt(cgtRef, name))
+          } else {
+            goto(KnownFactNotMatched)
+          }
+      }
+
+    def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
+      countryCode: CountryCode): AgentLedDeauthJourneyModel.Transition =
+      Transition {
+        case ConfirmCountryCodeCgt(cgtRef, countryCodeFromDes, name) =>
+          if (countryCodeFromDes.contains(countryCode.value)) {
+            goto(ConfirmClientCgt(cgtRef, name))
+          } else {
+            goto(KnownFactNotMatched)
+          }
+      }
+
     def submitIdentifyClientVat(
       vatRegDateMatches: VatRegDateMatches,
       getClientName: GetClientName,
@@ -252,6 +325,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TRUST, Some(name))
+        case ConfirmClientCgt(cgtRef, name)      => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
       }
     }
 

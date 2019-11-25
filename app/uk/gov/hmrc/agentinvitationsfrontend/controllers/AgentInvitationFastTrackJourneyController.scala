@@ -550,7 +550,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           ftr.clientType.getOrElse(personal),
           formWithErrors.or(PostcodeForm.form),
           backLinkFor(breadcrumbs).url,
-          true))
+          fromFastTrack = true,
+          isDeAuth = false))
 
     case ConfirmCountryCodeCgt(_, ftr, _, _, _) =>
       Ok(
@@ -559,7 +560,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           countries,
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
           backLinkFor(breadcrumbs).url,
-          true))
+          fromFastTrack = true,
+          isDeAuth = false
+        ))
 
     case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
       Ok(

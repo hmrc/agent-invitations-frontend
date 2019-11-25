@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 
 case class SelectServicePageConfigCancel(
   featureFlags: FeatureFlags,
@@ -39,9 +39,30 @@ case class SelectServicePageConfigCancel(
     if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
       map.update(HMRCMTDVAT, Messages("cancel-authorisation.select-service.vat"))
 
+    if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
+      map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
+
     map.toSeq match {
-      case Seq(vat, irv, itsa) => Seq(itsa, irv, vat)
-      case Seq(vat, itsa)      => Seq(itsa, vat)
+      case Seq(cgt, vat, irv, itsa) => Seq(itsa, irv, vat, cgt)
+      case Seq(cgt, vat, itsa)      => Seq(itsa, vat, cgt)
+      case Seq(vat, itsa)           => Seq(itsa, vat)
+      case Seq(cgt)                 => Seq(cgt)
+    }
+  }
+
+  val enabledTrustServices: Seq[(String, String)] = {
+    val map = collection.mutable.Map[String, String]()
+
+    if (featureFlags.showHmrcTrust && services.contains(TRUST))
+      map.update(TRUST, Messages("cancel-authorisation.select-service.trust"))
+
+    if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
+      map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
+
+    map.toSeq match {
+      case Seq(cgt, trust) => Seq(trust, cgt)
+      case Seq(trust)      => Seq(trust)
+      case Seq()           => Seq()
     }
   }
 

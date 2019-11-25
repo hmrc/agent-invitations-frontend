@@ -36,7 +36,7 @@
         <div class="form-group">
         @input_radio_group(
             choiceForm("accepted"),
-            Seq("true"-> Messages("business-select-service.yes"), "false" -> Messages("business-select-service.no")),
+            Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.business-select-service.header") + """</h1>"""),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='service'"""),

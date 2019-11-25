@@ -20,32 +20,30 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
-
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 
-@(choiceForm: Form[Confirmation], submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.trust-select-service.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(serviceTypeForm) + Messages("generic.title", Messages("cancel-authorisation.trust-select-service.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
-    @back_link(backLink)
+    @back_link(config.backLink)
 
-    @if(choiceForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("service"))
+    @if(serviceTypeForm.hasErrors) {
+        @errorSummary(Messages("error.summary.heading"), serviceTypeForm, Seq.empty, Some("service"))
     }
 
-    @form(
-        action = submitCall,
-        'class -> "form js-form") {
+    @form(action = config.submitCall,'class -> "form js-form") {
         <div class="form-group">
-        @input_radio_group(
-            choiceForm("accepted"),
-            Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.trust-select-service.header") + """</h1>"""),
+            @input_radio_group(
+            serviceTypeForm("serviceType"),
+            config.enabledTrustServices,
+            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.trust-select-service.header") + """</h1>""" +
+            """<span class="form-hint">""" + Messages("cancel-authorisation.select-service.hint") + """</span>"""),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='service'"""),
             '_legendClass -> "margin-bottom-10"
-
-        )
+            )
         </div>
 
         <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
