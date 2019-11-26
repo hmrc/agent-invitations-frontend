@@ -1,4 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
+
 import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
@@ -15,7 +16,7 @@ import scala.concurrent.duration._
 
 class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
-  val enabledServices: Set[String] = Set(HMRCMTDIT, HMRCPIR, HMRCMTDVAT)
+  val enabledServices: Set[String] = Set(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, HMRCCGTPD)
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder(featureFlags)
@@ -25,8 +26,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   val timeout = 2.seconds
 
   lazy val journeyState = app.injector.instanceOf[TestAgentLedDeauthJourneyService]
-
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
 
   val controller = app.injector.instanceOf[AgentLedDeauthJourneyController]
 
@@ -108,7 +107,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation/select-service" should {
     "show the select service page for personal services" in {
-      journeyState.set(SelectServicePersonal(availableServices), Nil)
+      journeyState.set(SelectServicePersonal(enabledServices), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -135,14 +134,14 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
           htmlEscapedMessage("title.suffix.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
-        hasMessage("business-select-service.yes"),
-        hasMessage("business-select-service.no")
+        hasMessage("select-service.yes"),
+        hasMessage("select-service.no")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
 
     "show the select service page for trust service" in {
-      journeyState.set(SelectServiceTrust, Nil)
+      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -153,8 +152,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
           htmlEscapedMessage("title.suffix.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
-        hasMessage("select-service.yes"),
-        hasMessage("select-service.no")
+        hasMessage("cancel-authorisation.select-service.trust"),
+        hasMessage("cancel-authorisation.select-service.cgt")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
@@ -189,13 +188,25 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
 
   "POST /agents/cancel-authorisation/select-trust-service" should {
-    "redirect to identify client for trust service when yes is selected" in {
-      journeyState.set(SelectServiceTrust, Nil)
+    "redirect to identify trust client when trust is selected" in {
+      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =
         controller.submitTrustService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+    }
+
+    "redirect to identify cgt client when cgt is selected" in {
+      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
+
+      val result =
+        controller.submitTrustService(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-CGT-PD"), arn.value))
       status(result) shouldBe 303
 
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
@@ -233,6 +244,18 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("identify-client.vrn.label"),
         htmlEscapedMessage("identify-client.vat-registration-date.label"))
     }
+
+    "display the identify client page for personal cgt service" in {
+      journeyState.set(IdentifyClientPersonal(HMRCCGTPD), Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("identify-cgt-client.header.personal"),
+        htmlEscapedMessage("identify-cgt-client.hint"))
+    }
+
     "display the identify client page for business service" in {
       journeyState.set(IdentifyClientBusiness, Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
@@ -253,6 +276,18 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         "identify-trust-client.header",
        "identify-trust-client.p1")
+    }
+
+    "display the identify client page for cgt trust service" in {
+      journeyState.set(IdentifyClientCgt, Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "identify-cgt-client.header.personal",
+        "identify-cgt-client.p1",
+        "identify-cgt-client.p2")
     }
   }
   "GET /agents/identify-itsa-client" should {
@@ -420,6 +455,160 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
   }
 
+  "POST /agents/cancel-authorisation/identify-cgt-client" should {
+
+    "redirect to ConfirmPostcodeCgt for UK based clients" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
+      journeyState.set(IdentifyClientCgt, Nil)
+
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-cgt-client")
+
+      val result =
+        controller.submitIdentifyCgtClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "cgtRef"       -> s"${cgtRef.value}"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showPostcodeCgt().url
+    }
+
+    "redirect to ConfirmCountryCodeCgt for UK based clients" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("FR")).toString())
+      journeyState.set(IdentifyClientCgt, Nil)
+
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-cgt-client")
+
+      val result =
+        controller.submitIdentifyCgtClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "cgtRef"       -> s"${cgtRef.value}"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showCountryCodeCgt().url
+    }
+
+    "redirect to /agents/not-matched when cgtRef passed in does not match to any cgt client" in {
+      givenGetCgtSubscriptionReturns(cgtRef, 404, cgtNotFoundJson)
+
+      journeyState.set(IdentifyClientCgt, Nil)
+
+      val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-cgt-client")
+
+      val result = controller.submitIdentifyCgtClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+
+    }
+  }
+
+
+  "GET /agents/cancel-authorisation/client-postcode" should {
+
+    val request = FakeRequest("GET", "/agents/cancel-authorisation/client-postcode")
+
+    "display the page as expected" in {
+
+      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
+
+      val result = controller.showPostcodeCgt()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "confirm-postcode-cgt.header",
+        "confirm-postcode-cgt.p1",
+        "confirm-postcode-cgt.label",
+        "confirm-postcode-cgt.hint",
+        "continue.button"
+      )
+    }
+  }
+
+  "POST /agents/cancel-authorisation/client-postcode" should {
+
+    val request = FakeRequest("POST", "/agents/cancel-authorisation/client-postcode")
+
+    "redirect to /confirm-client if postcode matches for a UK client" in {
+
+      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
+
+      val result = controller.submitConfirmCgtPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody("postcode" -> "BN13 1FN"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient().url)
+    }
+
+    "redirect to /not-matched if postcode does not match for a UK client" in {
+
+      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"),Nil)
+
+      val result = controller.submitConfirmCgtPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody("postcode" -> "BN13 1XX"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+    }
+  }
+
+  "GET /agents/cancel-authorisation/client-country" should {
+
+    val request = FakeRequest("GET", "/agents/cancel-authorisation/client-country")
+
+    "display the page as expected" in {
+
+      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+
+      val result = controller.showCountryCodeCgt()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "confirm-countryCode-cgt.header",
+        "confirm-countryCode-cgt.p1",
+        "confirm-countryCode-cgt.label",
+        "confirm-countryCode-cgt.hint",
+        "continue.button"
+      )
+    }
+  }
+
+  "POST /agents/cancel-authorisation/client-country" should {
+
+    val request = FakeRequest("POST", "/agents/cancel-authorisation/client-country")
+
+    "redirect to /confirm-client if country code matches for a non UK client" in {
+
+      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+
+      val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "FR"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient().url)
+    }
+
+    "redirect to /not-matched if country code does not match for a non UK client" in {
+
+      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+
+      val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "IN"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+    }
+  }
+
   "GET /agents/cancel-authorisation/confirm-client" should {
     "display the confirm client page for ITSA" in {
       journeyState.set(ConfirmClientItsa(Some("Barry Block"), validNino), List(IdentifyClientPersonal(HMRCMTDIT)))
@@ -484,6 +673,21 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(
         result,
         "some-trust",
+        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
+      )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
+    }
+
+    "display the confirm client page for CGT" in {
+      journeyState.set(ConfirmClientCgt(cgtRef, "some-cgt-client"), List(IdentifyClientCgt))
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
+      val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "some-cgt-client",
+        cgtRef.value,
         htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
