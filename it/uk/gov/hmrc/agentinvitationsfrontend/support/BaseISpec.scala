@@ -18,7 +18,6 @@ import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.repository.{AgentSessionCache, ClientConsentsCache}
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -52,9 +51,6 @@ abstract class BaseISpec
   val taxAccountRelativeUrl = "/account"
   val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
   val pdvBaseUrl = "/pdv-base-url"
-
-  lazy val sessionStore: AgentSessionCache = app.injector.instanceOf[AgentSessionCache]
-  lazy val clientConsentCache: ClientConsentsCache = app.injector.instanceOf[ClientConsentsCache]
 
   val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
 

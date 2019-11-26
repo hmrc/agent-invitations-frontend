@@ -17,8 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, AgentSession, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, Services}
 
 case class CheckDetailsPageConfig(
   fastTrackRequest: AgentFastTrackRequest,
