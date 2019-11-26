@@ -129,6 +129,14 @@ POST        /agents/cancel-authorisation/identify-irv-client            @uk.gov.
 GET         /agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.identifyClientRedirect
 POST        /agents/cancel-authorisation/identify-vat-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyVatClient
 POST        /agents/cancel-authorisation/identify-trust-client          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyTrustClient
+POST        /agents/cancel-authorisation/identify-cgt-client            @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyCgtClient
+
+GET         /agents/cancel-authorisation/client-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showPostcodeCgt
+POST        /agents/cancel-authorisation/client-postcode                @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmCgtPostcode
+
+GET         /agents/cancel-authorisation/client-country                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showCountryCodeCgt
+POST        /agents/cancel-authorisation/client-country                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmCgtCountryCode
+
 GET         /agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmClient
 POST        /agents/cancel-authorisation/confirm-client                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmClient
 GET         /agents/cancel-authorisation/confirm-cancel                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showConfirmCancel

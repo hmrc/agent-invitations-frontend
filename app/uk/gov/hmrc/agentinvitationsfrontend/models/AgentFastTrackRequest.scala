@@ -27,7 +27,4 @@ case class AgentFastTrackRequest(
 object AgentFastTrackRequest {
 
   implicit val format: OFormat[AgentFastTrackRequest] = Json.format
-
-  def apply(clientType: Option[ClientType], service: String): AgentFastTrackRequest =
-    AgentFastTrackRequest(clientType, service, "", "", None)
 }

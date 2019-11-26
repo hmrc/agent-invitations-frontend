@@ -491,7 +491,13 @@ class AgentInvitationJourneyController @Inject()(
         ))
 
     case ConfirmPostcodeCgt(_, clientType, _, _, _) =>
-      Ok(confirm_postcode_cgt(clientType, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, false))
+      Ok(
+        confirm_postcode_cgt(
+          clientType,
+          formWithErrors.or(PostcodeForm.form),
+          backLinkFor(breadcrumbs).url,
+          fromFastTrack = false,
+          isDeAuth = false))
 
     case ConfirmCountryCodeCgt(_, clientType, _, _, _) =>
       Ok(
@@ -500,7 +506,8 @@ class AgentInvitationJourneyController @Inject()(
           countries,
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
           backLinkFor(breadcrumbs).url,
-          false))
+          fromFastTrack = false,
+          isDeAuth = false))
 
     case ConfirmClientItsa(authorisationRequest, _) =>
       Ok(

@@ -23,9 +23,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@submitUrl = @{if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode else routes.AgentInvitationJourneyController.submitConfirmCgtCountryCode}
+@submitUrl = @{if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode
+                else if(isDeAuth) routes.AgentLedDeauthJourneyController.submitConfirmCgtCountryCode
+                else routes.AgentInvitationJourneyController.submitConfirmCgtCountryCode
+               }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
 

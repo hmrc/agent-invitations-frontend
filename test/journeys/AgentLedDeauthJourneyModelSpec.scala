@@ -17,12 +17,13 @@
 package journeys
 
 import org.joda.time.LocalDate
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetAgencyEmail, GetCgtSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -45,8 +46,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
   val nonWhitelistedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-  val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT)
+  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+  val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
   val nino = "AB123456A"
   val postCode = "BN114AW"
   val vrn = "123456"
@@ -56,6 +57,20 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val utr = Utr("1977030537")
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
+  val cgtRef = CgtRef("XMCGTP123456789")
+
+  val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
+
+  def cgtAddressDetails(countryCode: String = "GB") =
+    CgtAddressDetails("line1", Some("line2"), Some("line2"), Some("line2"), countryCode, Some("BN13 1FN"))
+
+  def cgtSubscription(countryCode: String = "GB") =
+    CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails(countryCode)))
+
+  def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
+
+  def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
+    CgtRef => Future(Some(cgtSubscription(countryCode)))
 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
@@ -73,7 +88,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to SelectServiceTrust with only whitelisted services" in {
-        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(SelectServiceTrust)
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(
+          SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
       }
     }
     "at state SelectServicePersonal" should {
@@ -81,7 +97,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(SelectServicePersonal(availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
-          showVatFlag = true)(authorisedAgent)(HMRCMTDIT) should thenGo(
+          showVatFlag = true,
+          showCgtFlag = true)(authorisedAgent)(HMRCMTDIT) should thenGo(
           IdentifyClientPersonal(HMRCMTDIT)
         )
       }
@@ -89,7 +106,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(SelectServicePersonal(availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
-          showVatFlag = true)(authorisedAgent)("foo") should thenGo(
+          showVatFlag = true,
+          showCgtFlag = true)(authorisedAgent)("foo") should thenGo(
           SelectServicePersonal(availableServices)
         )
       }
@@ -98,14 +116,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = false,
             showPirFlag = true,
-            showVatFlag = true)(authorisedAgent)(HMRCMTDIT)
+            showVatFlag = true,
+            showCgtFlag = true)(authorisedAgent)(HMRCMTDIT)
         }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is PIR and feature flag is on" in {
         given(SelectServicePersonal(availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
-          showVatFlag = true)(authorisedAgent)(HMRCPIR) should thenGo(
+          showVatFlag = true,
+          showCgtFlag = true)(authorisedAgent)(HMRCPIR) should thenGo(
           IdentifyClientPersonal(HMRCPIR)
         )
       }
@@ -114,14 +134,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = false,
-            showVatFlag = true)(authorisedAgent)(HMRCPIR)
+            showVatFlag = true,
+            showCgtFlag = true)(authorisedAgent)(HMRCPIR)
         }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is VAT and feature flag is on" in {
         given(SelectServicePersonal(availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
-          showVatFlag = true)(authorisedAgent)(HMRCMTDVAT) should thenGo(
+          showVatFlag = true,
+          showCgtFlag = true)(authorisedAgent)(HMRCMTDVAT) should thenGo(
           IdentifyClientPersonal(HMRCMTDVAT)
         )
       }
@@ -130,8 +152,28 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           given(SelectServicePersonal(availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = true,
-            showVatFlag = false)(authorisedAgent)(HMRCMTDVAT)
+            showVatFlag = false,
+            showCgtFlag = true)(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
+      }
+
+      "transition to IdentifyClientPersonal when service is CGT and feature flag is on" in {
+        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          showItsaFlag = true,
+          showPirFlag = true,
+          showVatFlag = true,
+          showCgtFlag = true)(authorisedAgent)(HMRCCGTPD) should thenGo(
+          IdentifyClientPersonal(HMRCCGTPD)
+        )
+      }
+      "throw an exception when service is CGT and the show cgt flag is switched off" in {
+        intercept[Exception] {
+          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+            showItsaFlag = true,
+            showPirFlag = true,
+            showVatFlag = false,
+            showCgtFlag = false)(authorisedAgent)(HMRCCGTPD)
+        }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
       }
     }
     "at state SelectServiceBusiness" should {
@@ -154,18 +196,23 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state SelectServiceTrust" should {
-      "transition to IdentifyClientTrust when YES is selected and feature flag is on" in {
-        given(SelectServiceTrust) when chosenTrustService(showTrustFlag = true)(authorisedAgent)(Confirmation(true)) should thenGo(
-          IdentifyClientTrust)
+      "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
+        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(
+          showTrustFlag = true,
+          showCgtFlag = true)(authorisedAgent)(TRUST) should thenGo(IdentifyClientTrust)
       }
-      "transition to ClientType when NO is selected and feature flag is on" in {
-        given(SelectServiceTrust) when chosenTrustService(showTrustFlag = true)(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
+
+      "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
+        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(
+          showTrustFlag = true,
+          showCgtFlag = true)(authorisedAgent)(HMRCCGTPD) should thenGo(IdentifyClientCgt)
       }
-      "throw an exception when YES is selected but the show vat flag is switched off" in {
+
+      "throw an exception when YES is selected but the show trust flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceTrust) when chosenTrustService(showTrustFlag = false)(authorisedAgent)(Confirmation(true))
+          given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(
+            showTrustFlag = false,
+            showCgtFlag = true)(authorisedAgent)(TRUST)
         }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
       }
     }
@@ -176,6 +223,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       val itsaClient = ItsaClient(nino, postCode)
       val irvClient = IrvClient(nino, dob)
       val vatClient = VatClient(vrn, vatRegDate)
+      val cgtClient = CgtClient(cgtRef)
 
       "transition to ConfirmClientItsa when postcode matches" in {
         def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
@@ -282,6 +330,16 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             hasActiveRelationships)(authorisedAgent)(VatClient(vrn, ""))
         }.getMessage shouldBe "Vat registration date expected but none found"
       }
+
+      "transition to ConfirmPostcodeCgt for cgt for UK based clients" in {
+        given(IdentifyClientPersonal(HMRCCGTPD)) when submitIdentifyClientCgt(getCgtSubscription())(authorisedAgent)(
+          cgtClient) should thenGo(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"))
+      }
+
+      "transition to ConfirmCountryCodeCgt for cgt for non-UK based clients" in {
+        given(IdentifyClientPersonal(HMRCCGTPD)) when submitIdentifyClientCgt(getCgtSubscription("FR"))(
+          authorisedAgent)(cgtClient) should thenGo(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"))
+      }
     }
 
     "at state IdentifyClientBusiness" should {
@@ -328,6 +386,32 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         def getTrustName(utr: Utr): Future[TrustResponse] = Future(TrustNotFoundResponse)
         given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustName)(authorisedAgent)(trustClient) should thenGo(
           TrustNotFound)
+      }
+    }
+
+    "at state ConfirmPostcodeCgt" should {
+      "transition to ConfirmClientCgt for cgt" in {
+        given(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(
+          getCgtSubscription())(authorisedAgent)(Postcode("BN13 1FN")) should thenGo(
+          ConfirmClientCgt(cgtRef, "firstName lastName"))
+      }
+
+      "transition to KnownFactNotMatched if postcodes do not match" in {
+        given(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(
+          getCgtSubscription())(authorisedAgent)(Postcode("AAA")) should thenGo(KnownFactNotMatched)
+      }
+    }
+
+    "at state ConfirmCountryCodeCgt" should {
+      "transition to ConfirmClientCgt for cgt" in {
+        given(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(
+          getCgtSubscription())(authorisedAgent)(CountryCode("FR")) should thenGo(
+          ConfirmClientCgt(cgtRef, "firstName lastName"))
+      }
+
+      "transition to KnownFactNotMatched if country codes do not match" in {
+        given(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(
+          getCgtSubscription())(authorisedAgent)(CountryCode("FRX")) should thenGo(KnownFactNotMatched)
       }
     }
 

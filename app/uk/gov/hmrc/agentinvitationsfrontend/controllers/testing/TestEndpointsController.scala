@@ -28,7 +28,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuth
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
-import uk.gov.hmrc.agentinvitationsfrontend.repository.AgentSessionCache
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
@@ -40,7 +39,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class TestEndpointsController @Inject()(
   val messagesApi: play.api.i18n.MessagesApi,
   pirRelationshipConnector: PirRelationshipConnector,
-  agentSessionCache: AgentSessionCache,
   val authConnector: AuthConnector,
   val env: Environment,
   val withVerifiedPasscode: PasscodeVerification)(

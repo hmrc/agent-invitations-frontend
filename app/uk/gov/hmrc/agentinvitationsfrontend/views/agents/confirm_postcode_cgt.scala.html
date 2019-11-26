@@ -22,9 +22,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@submitUrl = @{if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode else routes.AgentInvitationJourneyController.submitConfirmCgtPostcode}
+@submitUrl = @{ if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode
+                else if(isDeAuth) routes.AgentLedDeauthJourneyController.submitConfirmCgtPostcode
+                else routes.AgentInvitationJourneyController.submitConfirmCgtPostcode
+              }
 
 @uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-postcode-cgt.header"), "cgt"))) {
 
