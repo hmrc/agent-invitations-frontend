@@ -62,11 +62,11 @@ class SuspendedServicesSpec extends UnitSpec {
     "isSuspended helper method" should {
 
       "return true when the service is suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCMTDIT) shouldBe true
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCMTDIT) shouldBe true
       }
 
       "return false when the service is not suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCCGTPD) shouldBe false
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCCGTPD) shouldBe false
       }
     }
   }

@@ -157,7 +157,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getPendingInvitationIdsAndExpiryDates, getSuspendedForItsa)(
               authorisedIndividualClient) should
-            thenGo(SuspendedAgent(Set("HMRC-MTD-IT")))
+            thenGo(SuspendedAgent(Set("HMRC-MTD-IT"), Set()))
         }
       }
       "submitting intent to decline" should {

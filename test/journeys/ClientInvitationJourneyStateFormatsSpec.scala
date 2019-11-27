@@ -69,7 +69,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "SuspendedAgent" in {
-        val state = SuspendedAgent(Set("itsa", "vat"))
+        val state = SuspendedAgent(Set("itsa", "vat"), Set())
         val json = Json.parse("""{"state":"SuspendedAgent","properties":{"suspendedServices": ["itsa", "vat"]}}""")
 
         Json.toJson(state) shouldBe json

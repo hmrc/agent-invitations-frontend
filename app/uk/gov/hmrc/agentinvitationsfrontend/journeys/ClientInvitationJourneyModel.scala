@@ -78,7 +78,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     case object TrustNotClaimed extends State
 
-    case class SuspendedAgent(suspendedServices: Set[String]) extends State
+    case class SuspendedAgent(suspendedServices: Set[String], nonSuspendedServices: Set[String]) extends State
   }
 
   object Transitions {
@@ -156,10 +156,14 @@ object ClientInvitationJourneyModel extends JourneyModel {
                   getSuspensionStatus(arn).flatMap { suspendedServices =>
                     val consentServices: Set[String] =
                       consents.map(consent => consent.service).toSet
-                    if (suspendedServices.isAllSuspended(consentServices)) goto(SuspendedAgent(consentServices))
+                    if (suspendedServices.isSuspended(consentServices))
+                      goto(
+                        SuspendedAgent(
+                          suspendedServices.getSuspendedServices(consentServices),
+                          suspendedServices.getNonSuspendedServices(consentServices)))
                     else {
                       val nonSuspendedConsents =
-                        consents.filter(consent => !suspendedServices.isSuspended(consent.service))
+                        consents.filter(consent => !suspendedServices.isSuspendedService(consent.service))
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
                     }
                   }

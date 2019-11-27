@@ -421,15 +421,18 @@ warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someo
 warm-up.link=I do not want to appoint {0}
 
 # suspended agent
-suspended-agent.header=There is a problem
-suspended-agent.p1.single=You cannot appoint this tax agent to {0}.
-suspended-agent.p1.multi=You cannot appoint this tax agent for the following services:
+suspended-agent.header=You cannot appoint this tax agent
+suspended-agent.semi.header=You cannot appoint this tax agent for a service they want to deal with
+suspended-agent.p1.single=This tax agent cannot {0} at this time.
+suspended-agent.p1.multi=This tax agent cannot act on your behalf for the following services at this time:
 suspended-agent.p1.HMRC-MTD-IT=send your Income Tax updates through software
 suspended-agent.p1.HMRC-MTD-VAT=submit your VAT returns through software
 suspended-agent.p1.PERSONAL-INCOME-RECORD=view your personal income records
 suspended-agent.p1.HMRC-TERS-ORG=maintain a trust or an estate
 suspended-agent.p1.HMRC-CGT-PD=manage your Capital Gains Tax on UK property disposals
 suspended-agent.p2=If you have any questions, contact the tax agent who sent you this request.
+suspended-agent.p3=You can continue without this service, or 
+suspended-agent.finish=finish and sign out
 
 # Invitation Declined
 invitation-declined.header=You declined this request

@@ -18,26 +18,40 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(suspendedServices: Set[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SuspendedAgentPageConfig
+@(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), suspendedServices.toString()))) {
-
-    <h1 class="heading-xlarge">@Messages("suspended-agent.header")</h1>
-
-    @if(suspendedServices.size == 1) {
-        <p>
-            @Messages("suspended-agent.p1.single", Messages(s"suspended-agent.p1.${suspendedServices.head}"))
-        </p>
-    } else {
-        <p>@Messages("suspended-agent.p1.multi")</p>
-     <ul class="list list-bullet">
-      @for(suspendedService <- suspendedServices) {
-      <li>@Messages(s"suspended-agent.p1.$suspendedService")</li>
-     }
-</ul>
+@pageBody = {
+@if(pageConfig.isOneSuspendedService) {
+    <p>
+    @Messages("suspended-agent.p1.single", Messages(s"suspended-agent.p1.${pageConfig.suspendedServices.head}"))
+    </p>
+} else {
+    <p>@Messages("suspended-agent.p1.multi")</p>
+    <ul class="list list-bullet">
+    @for(suspendedService <- pageConfig.suspendedServices) {
+        <li>@Messages(s"suspended-agent.p1.$suspendedService")</li>
     }
-
+    </ul>
+}
     <p>@Messages("suspended-agent.p2")</p>
+}
 
-  <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("finish.button")</a>
+@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
+
+    @if(pageConfig.isAllSuspended) {
+        <h1 class="heading-xlarge">@Messages("suspended-agent.header")</h1>
+
+        @pageBody
+
+        <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("finish.button")</a>
+    } else {
+        <h1 class="heading-xlarge">@Messages("suspended-agent.semi.header")</h1>
+
+        @pageBody
+
+        <p>@Html(Messages("suspended-agent.p3")) &nbsp;
+            <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
+        <button>@Messages("continue.button")</button>
+    }
 }

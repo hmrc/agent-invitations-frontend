@@ -140,7 +140,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       (serviceEnabled, agentSuspensionEnabled) match {
         case (true, true) =>
           getSuspensionStatus(arn).flatMap { suspendedServices =>
-            if (suspendedServices.isSuspended(service)) goto(suspendedState) else goto(identifyClientState)
+            if (suspendedServices.isSuspendedService(service)) goto(suspendedState) else goto(identifyClientState)
           }
         case (true, false) => goto(identifyClientState)
         case (false, _)    => fail(new Exception(s"Service: $service feature flag is switched off"))

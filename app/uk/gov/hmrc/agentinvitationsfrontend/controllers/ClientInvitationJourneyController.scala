@@ -20,11 +20,10 @@ import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.Results.{Forbidden, InternalServerError}
 import play.api.mvc._
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentSuspensionConnector, IdentityVerificationConnector, InvitationsConnector, PdvError, PdvValidationFailure, PdvValidationNoNino, PdvValidationNotFound, PersonalDetailsValidationConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -58,10 +57,10 @@ class ClientInvitationJourneyController @Inject()(
     with I18nSupport {
 
   import ClientInvitationJourneyController._
+  import agentSuspensionConnector._
   import authActions._
   import invitationsConnector._
   import invitationsService._
-  import agentSuspensionConnector._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
@@ -420,8 +419,8 @@ class ClientInvitationJourneyController @Inject()(
         else Call("GET", externalUrls.agentClientManagementUrl)
       Ok(trust_not_claimed(backLink))
 
-    case SuspendedAgent(suspendedServices) =>
-      Ok(suspended_agent(suspendedServices))
+    case SuspendedAgent(suspendedServices, nonSuspendedServices) =>
+      Ok(suspended_agent(SuspendedAgentPageConfig(suspendedServices, nonSuspendedServices)))
   }
 }
 
