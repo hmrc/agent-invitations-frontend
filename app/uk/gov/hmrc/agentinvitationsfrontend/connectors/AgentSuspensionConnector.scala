@@ -41,8 +41,6 @@ case class SuspensionResponse(services: Set[String]) {
 
   def getSuspendedServices(s: Set[String]): Set[String] = s.intersect(services)
 
-  def getNonSuspendedServices(s: Set[String]): Set[String] = s.diff(services)
-
   def isAllSuspended(s: Set[String]): Boolean =
     s.diff(services) == Set.empty
 
