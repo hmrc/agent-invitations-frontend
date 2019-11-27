@@ -210,7 +210,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /cannot-appoint" should {
     "display the agent suspended page" in {
       def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
-      journeyState.set(SuspendedAgent(Set("HMRC-MTD-IT", "HMRC-MTD-VAT")), Nil)
+      journeyState.set(SuspendedAgent(personal, "uid", "name", Set("HMRC-MTD-IT", "HMRC-MTD-VAT"), Seq()), Nil)
 
       val result = controller.showSuspendedAgent(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200

@@ -157,7 +157,25 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getPendingInvitationIdsAndExpiryDates, getSuspendedForItsa)(
               authorisedIndividualClient) should
-            thenGo(SuspendedAgent(Set("HMRC-MTD-IT")))
+            thenGo(SuspendedAgent(personal, uid, agentName, Set("HMRC-MTD-IT"), Seq()))
+        }
+      }
+      "submitting from suspension" should {
+        "transition to MultiConsent with the nonsuspended consents" in {
+          given(
+            SuspendedAgent(
+              personal,
+              uid,
+              agentName,
+              Set(HMRCMTDVAT),
+              Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))) when submitSuspension(
+            authorisedIndividualClient) should
+            thenGo(
+              MultiConsent(
+                personal,
+                uid,
+                agentName,
+                Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
       }
       "submitting intent to decline" should {
