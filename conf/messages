@@ -282,7 +282,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, y
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to submit VAT returns through software for {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
-cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisation, you will not be able to manage Capital Gains Tax on UK property disposals on behalf of {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisation, you will not be able to manage Capital Gains Tax on UK property disposals for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
@@ -294,7 +294,7 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1}
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD={0} is no longer authorised to view their PAYE income record.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT={0} is no longer authorised by {1} to submit their VAT returns through software.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
-cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property disposals on behalf of {1}.
+cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property disposals for {1}.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client’s VAT returns through software?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client’s VAT returns through software
@@ -318,7 +318,7 @@ not-authorised.HMRC-MTD-IT.p=This person has not authorised you to send their In
 not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
 not-authorised.HMRC-MTD-VAT.p=This person or business has not authorised you to submit their VAT returns through software.
 not-authorised.HMRC-TERS-ORG.p=This business has not authorised you to maintain a trust or an estate.
-not-authorised.HMRC-CGT-PD.p=This person or business has not authorised you to maintain Capital Gains Tax returns on UK property.
+not-authorised.HMRC-CGT-PD.p=This person or trust has not authorised you to manage Capital Gains Tax on UK property disposals.
 not-authorised.button=Start over
 
 #Delete
