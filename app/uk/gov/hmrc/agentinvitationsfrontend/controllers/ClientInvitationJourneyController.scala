@@ -117,6 +117,12 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
+  val submitSuspendedAgent = {
+    action { implicit request =>
+      whenAuthorised(AsClient)(Transitions.submitSuspension)(redirect)
+    }
+  }
+
   val showConsent = actionShowStateWhenAuthorised(AsClient) {
     case _: MultiConsent =>
   }
@@ -419,8 +425,8 @@ class ClientInvitationJourneyController @Inject()(
         else Call("GET", externalUrls.agentClientManagementUrl)
       Ok(trust_not_claimed(backLink))
 
-    case SuspendedAgent(suspendedServices, nonSuspendedServices) =>
-      Ok(suspended_agent(SuspendedAgentPageConfig(suspendedServices, nonSuspendedServices)))
+    case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
+      Ok(suspended_agent(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
   }
 }
 

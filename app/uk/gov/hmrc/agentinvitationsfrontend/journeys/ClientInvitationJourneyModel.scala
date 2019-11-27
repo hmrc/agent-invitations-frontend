@@ -78,7 +78,13 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     case object TrustNotClaimed extends State
 
-    case class SuspendedAgent(suspendedServices: Set[String], nonSuspendedServices: Set[String]) extends State
+    case class SuspendedAgent(
+      clientType: ClientType,
+      uid: String,
+      agentName: String,
+      suspendedServices: Set[String],
+      nonSuspendedConsents: Seq[ClientConsent])
+        extends State
   }
 
   object Transitions {
@@ -156,14 +162,17 @@ object ClientInvitationJourneyModel extends JourneyModel {
                   getSuspensionStatus(arn).flatMap { suspendedServices =>
                     val consentServices: Set[String] =
                       consents.map(consent => consent.service).toSet
+                    val nonSuspendedConsents =
+                      consents.filter(consent => !suspendedServices.isSuspendedService(consent.service))
                     if (suspendedServices.isSuspended(consentServices))
                       goto(
                         SuspendedAgent(
+                          clientType,
+                          uid,
+                          agentName,
                           suspendedServices.getSuspendedServices(consentServices),
-                          suspendedServices.getNonSuspendedServices(consentServices)))
+                          nonSuspendedConsents))
                     else {
-                      val nonSuspendedConsents =
-                        consents.filter(consent => !suspendedServices.isSuspendedService(consent.service))
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
                     }
                   }
@@ -173,6 +182,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
             }
           }
       }
+
+    def submitSuspension(client: AuthorisedClient) = Transition {
+      case SuspendedAgent(clientType, uid, agentName, _, nonSuspendedConsents) =>
+        goto(MultiConsent(clientType, uid, agentName, nonSuspendedConsents))
+    }
 
     def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
       Transition {

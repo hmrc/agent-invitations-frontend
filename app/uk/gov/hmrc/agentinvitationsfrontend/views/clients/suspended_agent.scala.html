@@ -17,6 +17,9 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.play.views.html.helpers.form
+
 
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SuspendedAgentPageConfig
 @(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -52,6 +55,11 @@
 
         <p>@Html(Messages("suspended-agent.p3")) &nbsp;
             <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
-        <button>@Messages("continue.button")</button>
+
+        @form(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
+            <div class="form-group">
+                <button class="button" type="submit" id="continueFromSuspendedAgent">@Messages("continue.button")</button>
+            </div>
+        }
     }
 }
