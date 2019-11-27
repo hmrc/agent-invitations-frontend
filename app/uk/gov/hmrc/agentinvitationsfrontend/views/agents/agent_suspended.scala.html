@@ -37,7 +37,7 @@
         <a href="@routes.AgentInvitationJourneyController.agentsRoot().url" class="button">@Messages("start-again.button")</a>
     }else {
         <p>@Html(Messages("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
-        <a href="@backLink" class="button">@Messages("continue.button")</a>
+        <a href='@routes.AgentInvitationJourneyController.showReviewAuthorisations' class="button">@Messages("continue.button")</a>
     }
 
 }

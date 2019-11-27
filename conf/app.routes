@@ -187,6 +187,7 @@ GET         /keep-alive                                                 @uk.gov.
 GET         /locked-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.lockedOut
 GET         /pdv-complete                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)
 GET         /cannot-appoint                                             @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSuspendedAgent
+POST        /cannot-appoint                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSuspendedAgent
 
 GET         /trust-not-claimed                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /:clientType/:uid/:agentName                                @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)

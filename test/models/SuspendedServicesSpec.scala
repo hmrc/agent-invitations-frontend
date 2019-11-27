@@ -60,13 +60,22 @@ class SuspendedServicesSpec extends UnitSpec {
     }
 
     "isSuspended helper method" should {
+      "return true if the agent is suspended for any service in the consents" in {
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(Set(HMRCMTDIT)) shouldBe true
+      }
+      "return false if the agent is not suspended for any service in the consents" in {
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(Set(HMRCCGTPD)) shouldBe false
+      }
+    }
+
+    "isSuspendedService helper method" should {
 
       "return true when the service is suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCMTDIT) shouldBe true
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCMTDIT) shouldBe true
       }
 
       "return false when the service is not suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(HMRCCGTPD) shouldBe false
+        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCCGTPD) shouldBe false
       }
     }
   }
