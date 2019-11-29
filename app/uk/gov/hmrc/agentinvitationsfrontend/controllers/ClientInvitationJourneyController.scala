@@ -25,7 +25,7 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyService, MongoDBCachedClientInvitationJourneyService}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -46,6 +46,7 @@ class ClientInvitationJourneyController @Inject()(
   identityVerificationConnector: IdentityVerificationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
   authActions: AuthActions,
+  mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService)(
   implicit configuration: Configuration,
@@ -216,6 +217,20 @@ class ClientInvitationJourneyController @Inject()(
       .localFriendlyUrl(env, config)(successUrl, request.host)
     Future successful Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl"))
   }
+
+  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+    journeyService.initialState
+      .map { state =>
+        val result = state match {
+          case State.MissingJourneyHistory => signed_out(toLocalFriendly(externalUrls.agentClientManagementUrl))
+          case s: State                    => signed_out(s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}")
+        }
+        Forbidden(result).withNewSession
+      }
+  }
+
+  private def toLocalFriendly(url: String)(implicit request: Request[_]): String =
+    CallOps.localFriendlyUrl(env, config)(url, request.host)
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(

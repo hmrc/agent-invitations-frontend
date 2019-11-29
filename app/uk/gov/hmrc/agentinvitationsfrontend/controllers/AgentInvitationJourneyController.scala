@@ -30,8 +30,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.signed_out
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -301,6 +303,16 @@ class AgentInvitationJourneyController @Inject()(
 
   def showAgentSuspended: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: AgentSuspended =>
+  }
+
+  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+    journeyService.initialState
+      .map { is =>
+        val uri = getCallFor(is).url
+        val continueUrl = CallOps
+          .localFriendlyUrl(env, config)(uri, request.host)
+        Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
+      }
   }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */

@@ -33,6 +33,18 @@
 
     @serviceInfoContent = {}
 
+        @agentOrClient = @{
+            if(isAgent){"agent"} else {"client"}
+        }
+
+        @logoutUrl = @{
+            if(isAgent){
+                routes.AgentInvitationJourneyController.signedOut()
+             } else {
+                routes.ClientInvitationJourneyController.signedOut()
+            }
+        }
+
     @sidebar = {
     @if(sidebarLinks.isDefined) {
         @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
@@ -51,8 +63,8 @@
             messageSeconds: "@Messages("timeout-dialog.seconds")",
             messageMinutes: "@Messages("timeout-dialog.minutes")",
             messageMinute: "@Messages("timeout-dialog.minute")",
-            logout_url: '@routes.ClientInvitationJourneyController.handleIVTimeout()',
-            message: "@Messages("timeout-dialog.p1")",
+            logout_url: '@logoutUrl',
+            message: "@Messages(s"timeout-dialog.p1.$agentOrClient")",
             keep_alive_button_text: "@Messages("timeout-dialog.button")"
         });
         </script>

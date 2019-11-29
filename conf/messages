@@ -864,10 +864,11 @@ timeout-dialog.seconds=seconds
 timeout-dialog.minutes=minutes
 timeout-dialog.minute=minute
 timeout-dialog.button=Stay signed in
-timeout-dialog.p1=For security reasons, you will be signed out of your Agent services account in
-
+timeout-dialog.p1.agent=For security reasons, you will be signed out of your Agent services account in
+timeout-dialog.p1.client=For security reasons, you will be signed out in
 
 #Signed out
 signed-out.header=You have been signed out
 signed-out.p1=You have not done anything for 15 minutes, so we have signed you out to keep your account secure.
 signed-out.p2=<a href="{0}">Sign in again</a> to use this service.
+signed-out.button=start again
