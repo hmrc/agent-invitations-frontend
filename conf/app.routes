@@ -64,6 +64,7 @@ GET         /agents/all-create-authorisation-failed                     @uk.gov.
 GET         /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSomeAuthorisationsFailed
 POST        /agents/some-create-authorisation-failed                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSomeAuthorisationsFailed
 GET         /agents/access-removed                                      @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAgentSuspended
+GET         /agents/signed-out                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.signedOut
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                          @uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
@@ -182,7 +183,8 @@ POST        /some-responses-failed                                      @uk.gov.
 GET         /not-authorised-as-client                                   @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent
 GET         /cannot-confirm-identity                                    @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity(journeyId: Option[String] ?= None, success: Option[String] ?= None)
 GET         /session-timeout                                            @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
-GET         /signed-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.handleIVTimeout(success: Option[String] ?= None)
+GET         /from-iv-signed-out                                         @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.handleIVTimeout(success: Option[String] ?= None)
+GET         /signed-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signedOut
 GET         /keep-alive                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.keepAlive
 GET         /locked-out                                                 @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.lockedOut
 GET         /pdv-complete                                               @uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)

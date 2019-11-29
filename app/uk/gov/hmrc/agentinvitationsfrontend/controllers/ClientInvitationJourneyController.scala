@@ -25,7 +25,7 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyService, MongoDBCachedClientInvitationJourneyService}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -46,6 +46,7 @@ class ClientInvitationJourneyController @Inject()(
   identityVerificationConnector: IdentityVerificationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
   authActions: AuthActions,
+  mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService)(
   implicit configuration: Configuration,
@@ -215,6 +216,21 @@ class ClientInvitationJourneyController @Inject()(
     val continueUrl = CallOps
       .localFriendlyUrl(env, config)(successUrl, request.host)
     Future successful Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl"))
+  }
+
+  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+    journeyService.initialState
+      .map { is =>
+        val url = getCallFor(is).url
+        val continueUrl = CallOps.localFriendlyUrl(env, config)(url, request.host)
+        Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
+      }
+      .recover {
+        case _ => {
+          val continueUrl = CallOps.localFriendlyUrl(env, config)(externalUrls.agentClientManagementUrl, request.host)
+          Forbidden(signed_out(s"$continueUrl"))
+        }
+      }
   }
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
