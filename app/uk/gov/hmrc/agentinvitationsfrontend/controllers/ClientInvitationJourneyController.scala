@@ -220,18 +220,17 @@ class ClientInvitationJourneyController @Inject()(
 
   def signedOut: Action[AnyContent] = Action.async { implicit request =>
     journeyService.initialState
-      .map { is =>
-        val url = getCallFor(is).url
-        val continueUrl = CallOps.localFriendlyUrl(env, config)(url, request.host)
-        Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
-      }
-      .recover {
-        case _ => {
-          val continueUrl = CallOps.localFriendlyUrl(env, config)(externalUrls.agentClientManagementUrl, request.host)
-          Forbidden(signed_out(s"$continueUrl"))
+      .map { state =>
+        val result = state match {
+          case State.MissingJourneyHistory => signed_out(toLocalFriendly(externalUrls.agentClientManagementUrl))
+          case s: State                    => signed_out(s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}")
         }
+        Forbidden(result).withNewSession
       }
   }
+
+  private def toLocalFriendly(url: String)(implicit request: Request[_]): String =
+    CallOps.localFriendlyUrl(env, config)(url, request.host)
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(

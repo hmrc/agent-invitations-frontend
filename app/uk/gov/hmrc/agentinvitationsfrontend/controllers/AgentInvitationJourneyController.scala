@@ -313,14 +313,6 @@ class AgentInvitationJourneyController @Inject()(
           .localFriendlyUrl(env, config)(uri, request.host)
         Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
       }
-      .recover {
-        case _ => {
-          val url = routes.AgentInvitationJourneyController.agentsRoot.url
-          val continueUrl = CallOps
-            .localFriendlyUrl(env, config)(url, request.host)
-          Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
-        }
-      }
   }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
