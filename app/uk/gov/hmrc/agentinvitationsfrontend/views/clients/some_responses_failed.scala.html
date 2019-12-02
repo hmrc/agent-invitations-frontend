@@ -31,7 +31,7 @@
 
   @if(config.consents.map(_.serviceKey).length == 1){
 
-    <p>@Messages(s"some-responses-failed.${if(config.consents.head.serviceKey == "cgt") s"cgt.${config.clientType}" else config.consents.head.serviceKey}")</p>
+    <p>@Messages(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
 
   } else {
       <p>@Messages("some-responses-failed.p1")</p>
@@ -39,7 +39,7 @@
       <ul class="list list-bullet">
       @for(serviceKey <- config.consents.map(_.serviceKey)) {
           <li>
-          @Messages(s"some-responses-failed.li.${if(serviceKey == "cgt")  s"cgt.${config.clientType}" else serviceKey}")
+          @Messages(s"some-responses-failed.li.$serviceKey")
           </li>
 
       }

@@ -143,7 +143,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       checkHtmlResultWithBodyMsgs(
         resultPageThree,
-        "recent-invitations.invitation.service.HMRC-CGT-PD.personal",
+        "recent-invitations.invitation.service.HMRC-CGT-PD",
         "recent-invitations.invitation.service.HMRC-TERS-ORG")
 
       val parseHtmlPageThree = Jsoup.parse(contentAsString(resultPageThree))

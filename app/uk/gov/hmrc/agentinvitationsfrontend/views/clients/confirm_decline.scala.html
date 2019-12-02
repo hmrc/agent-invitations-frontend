@@ -31,17 +31,12 @@
 @legend = {
     <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
     @if(config.serviceKeys.length == 1){
-        @defining({
-            val serviceKey = config.serviceKeys.head
-            val messageKey =  if(serviceKey == "cgt") s"cgt.${config.clientType}" else serviceKey
-            messageKey
-        }) { messageKey => <p>@Messages(s"confirm-decline.$messageKey.sub-header", config.agencyName)</p>
-        }
+        <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
     } else {
         <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
         <ul class="list list-bullet">
        @for(key <- config.serviceKeys){
-            <li>@Messages(s"confirm-decline.${if(key == "cgt") s"cgt.${config.clientType}" else key}.service-name")</li>
+            <li>@Messages(s"confirm-decline.$key.service-name")</li>
        }
         </ul>
     }

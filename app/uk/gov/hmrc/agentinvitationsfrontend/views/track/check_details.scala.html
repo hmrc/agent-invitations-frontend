@@ -53,7 +53,7 @@
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}${if(config.fastTrackRequest.service== "HMRC-CGT-PD") "." + config.fastTrackRequest.clientType.getOrElse(personal) else ""}")</p>
+    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 

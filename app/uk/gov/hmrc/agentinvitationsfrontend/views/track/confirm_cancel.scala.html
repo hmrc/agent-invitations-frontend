@@ -28,7 +28,7 @@
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
-@subHeaderKey = @{if(service == "HMRC-CGT-PD") s"confirm-cancel.subheader.HMRC-CGT-PD.$clientType" else s"confirm-cancel.subheader.$service"}
+@subHeaderKey = @{s"confirm-cancel.subheader.$service"}
 
 @legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p class="hint-text">""" + Messages(subHeaderKey) + """</p>"""}

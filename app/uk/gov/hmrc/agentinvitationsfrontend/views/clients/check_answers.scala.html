@@ -37,7 +37,7 @@
     @for(consent <- pageConfig.consents) {
         <div>
             <dt class="cya-question">
-            @Messages(s"check-answers.service.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}")
+            @Messages(s"check-answers.service.${consent.serviceKey}")
             </dt>
             <dd class="cya-answer" id="client-identifier">
             @Messages(s"check-answers.consent.${consent.consent}")
@@ -47,7 +47,7 @@
               <button type="submit" class="button--link-style">@Messages("check-answers.change-link")</button>
             }
 
-             <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}")</span>
+             <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${consent.serviceKey}")</span>
             </dd>
         </div>
     }

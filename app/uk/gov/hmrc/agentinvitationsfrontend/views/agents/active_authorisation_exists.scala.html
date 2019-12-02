@@ -28,11 +28,7 @@
 
   <h1 class="heading-xlarge margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
 
-  @if(service == "HMRC-CGT-PD") {
-    <p>@Messages(s"active-authorisation-exists.p1.$service.$clientType")</p>
-  } else {
-    <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
-  }
+  <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
 
   <p>@Messages("active-authorisation-exists.p2")</p>
 

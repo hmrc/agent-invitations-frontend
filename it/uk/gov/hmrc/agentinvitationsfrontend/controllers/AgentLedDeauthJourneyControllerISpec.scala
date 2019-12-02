@@ -252,7 +252,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("identify-cgt-client.header.personal"),
+        htmlEscapedMessage("identify-cgt-client.header"),
         htmlEscapedMessage("identify-cgt-client.hint"))
     }
 
@@ -285,7 +285,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-cgt-client.header.personal",
+        "identify-cgt-client.header",
         "identify-cgt-client.p1",
         "identify-cgt-client.p2")
     }

@@ -475,7 +475,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.heading"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.service.itsa"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.service.cgt.personal"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.service.cgt"))
     }
   }
 
@@ -627,7 +627,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.sub-header", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.sub-header", "My Agency"))
     }
 
     "display the confirm decline page for multi consent" in {
@@ -648,7 +648,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.sub-header", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.itsa.service-name"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.personal.service-name"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.cgt.service-name"))
     }
   }
 
@@ -771,7 +771,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.cgt.business.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.cgt.p1", "My Agency"))
     }
   }
   "GET /declined" should {
@@ -808,7 +808,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.cgt.personal.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.multi.cgt.p1", "My Agency"))
     }
   }
   "GET /warm-up/all-failed" should {
@@ -852,7 +852,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.li.itsa"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.li.cgt.personal"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.li.cgt"))
     }
   }
 

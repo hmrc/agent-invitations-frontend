@@ -202,29 +202,9 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
-    journeyService.currentState.map(p => p.map(_._1)).flatMap {
-      case Some(s) =>
-        val clientType = s match {
-          case _: IdentifyPersonalClient => Some(personal)
-          case _: IdentifyTrustClient    => Some(business)
-          case p =>
-            Logger.warn(s"unexpected state ($p) for identifying CGT client")
-            None
-        }
-
-        clientType match {
-          case Some(ct) =>
-            whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(ct))(
-              Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
-            )
-          case None =>
-            Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
-        }
-
-      case _ =>
-        Logger.warn("expecting some state here, but missing")
-        Future.successful(Redirect(routes.AgentInvitationJourneyController.showClientType()))
-    }
+    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
+      Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+    )
   }
 
   def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -427,8 +407,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
       Ok(
         identify_client_cgt(
-          business,
-          formWithErrors.or(CgtClientForm.form(business)),
+          formWithErrors.or(CgtClientForm.form()),
           routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )
@@ -464,8 +443,7 @@ class AgentInvitationJourneyController @Inject()(
     case IdentifyPersonalClient(Services.HMRCCGTPD, _) =>
       Ok(
         identify_client_cgt(
-          personal,
-          formWithErrors.or(CgtClientForm.form(personal)),
+          formWithErrors.or(CgtClientForm.form),
           routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )
