@@ -271,6 +271,16 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             authorisedAgent)("personal") should
           thenGo(ConfirmCountryCodeCgt(fastTrackRequest, fastTrackRequest, None, "FR", "firstName lastName"))
       }
+
+      "transition to IdentifyCgtClient when changing is true" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+
+        given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None, isChanging = true)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(getCgtSubscription("FR"))(
+            authorisedAgent)("personal") should
+          thenGo(IdentifyCgtClient(fastTrackRequest, fastTrackRequest, None))
+      }
     }
 
     "at ConfirmPostcodeCgt" should {
