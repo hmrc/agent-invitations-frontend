@@ -58,6 +58,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
         extends State
+
     case class CheckDetailsNoClientTypeVat(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -126,8 +127,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     case class SelectClientTypeCgt(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
-      continueUrl: Option[String])
-        extends State
+      continueUrl: Option[String],
+      isChanging: Boolean = false
+    ) extends State
 
     case class IdentifyPersonalClient(
       originalFastTrackRequest: AgentFastTrackRequest,
@@ -392,11 +394,25 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       cgtClient: CgtClient): Transition =
       Transition {
         case IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
-          goto(
-            SelectClientTypeCgt(
-              originalFastTrackRequest,
-              fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
-              continueUrl))
+          getCgtSubscription(CgtRef(fastTrackRequest.clientIdentifier)) map {
+            case Some(subscription) => {
+              if (subscription.isUKBasedClient)
+                ConfirmPostcodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.postCode,
+                  subscription.name)
+              else
+                ConfirmCountryCodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.countryCode,
+                  subscription.name)
+            }
+            case None => CgtRefNotFound(CgtRef(fastTrackRequest.clientIdentifier))
+          }
       }
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition = {
@@ -429,7 +445,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsCompleteCgt(originalFtr, ftr, continueUrl) =>
-          goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
+          goto(SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging = true))
 
         case CheckDetailsNoPostcode(originalFtr, ftr, continueUrl) =>
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))
@@ -749,23 +765,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
             else checkedDetailsNoKnownFact(getCgtSubscription)(agent).apply(newState)
           }
 
-        case SelectClientTypeCgt(originalFtr, ftr, continueUrl) =>
+        case SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging) =>
           getCgtSubscription(CgtRef(ftr.clientIdentifier)).map {
             case Some(subscription) =>
-              if (subscription.isUKBasedClient) {
-                ConfirmPostcodeCgt(
-                  originalFtr,
-                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
-                  continueUrl,
-                  subscription.postCode,
-                  subscription.name)
+              val newFtr = ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal))
+              if (isChanging) {
+                IdentifyCgtClient(originalFtr, newFtr, continueUrl)
+              } else if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(originalFtr, newFtr, continueUrl, subscription.postCode, subscription.name)
               } else {
-                ConfirmCountryCodeCgt(
-                  originalFtr,
-                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
-                  continueUrl,
-                  subscription.countryCode,
-                  subscription.name)
+                ConfirmCountryCodeCgt(originalFtr, newFtr, continueUrl, subscription.countryCode, subscription.name)
               }
             case None =>
               CgtRefNotFound(CgtRef(ftr.clientIdentifier))

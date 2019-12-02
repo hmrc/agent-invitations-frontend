@@ -445,7 +445,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         ))
 
-    case SelectClientTypeCgt(_, _, _) =>
+    case SelectClientTypeCgt(_, _, _, _) =>
       Ok(
         client_type(
           formWithErrors.or(ClientTypeForm.cgtClientTypeForm),
