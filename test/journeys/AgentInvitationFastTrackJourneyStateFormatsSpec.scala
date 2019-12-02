@@ -502,7 +502,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |      "clientIdentifier": "ClientId",
                                 |      "knownFact": "KnownFact"
                                 |    },
-                                |    "continueUrl": "continue/url"
+                                |    "continueUrl": "continue/url",
+                                |    "isChanging": false
                                 |  }
                                 |}""".stripMargin)
 

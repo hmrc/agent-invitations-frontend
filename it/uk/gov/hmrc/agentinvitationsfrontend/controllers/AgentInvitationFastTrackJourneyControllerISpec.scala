@@ -669,9 +669,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("POST", "/agents/to-identify-client")
 
     "redirect to identify client" in {
-      val ftr = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
       journeyState
-        .set(CheckDetailsNoClientTypeVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+        .set(CheckDetailsNoVatRegDate(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToIdentifyClient(authorisedAsValidAgent(request, arn.value))
 

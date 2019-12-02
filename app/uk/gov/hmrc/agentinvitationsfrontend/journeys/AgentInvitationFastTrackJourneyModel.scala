@@ -120,7 +120,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String],
-      changing: Boolean = false)
+      isChanging: Boolean = false)
         extends State
 
     case class SelectClientTypeCgt(
@@ -441,7 +441,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           gotoIdentifyClient(originalFtr, ftr, continueUrl)
 
         case CheckDetailsNoClientTypeVat(originalFtr, ftr, continueUrl) =>
-          goto(SelectClientTypeVat(originalFtr, ftr, continueUrl, true))
+          goto(SelectClientTypeVat(originalFtr, ftr, continueUrl, isChanging = true))
       }
     }
 
@@ -725,7 +725,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       suppliedClientType: String) =
       Transition {
-        case SelectClientTypeVat(originalFtr, ftr, continueUrl, changing) =>
+        case SelectClientTypeVat(originalFtr, ftr, continueUrl, isChanging) =>
           val isKnownFactRequired = ftr.knownFact.isDefined
           if (isKnownFactRequired) {
             val completeState =
@@ -740,24 +740,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
               getAgentLink)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(agent)(Confirmation(true))
               .apply(newState)
           } else {
-            if (changing) {
-              val newState =
-                CheckDetailsNoVatRegDate(
-                  originalFtr,
-                  ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
-                  continueUrl)
-
-              checkedDetailsChangeInformation(agent).apply(newState)
-            } else {
-              val newState =
-                CheckDetailsNoVatRegDate(
-                  originalFtr,
-                  ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
-                  continueUrl)
-
-              checkedDetailsNoKnownFact(getCgtSubscription)(agent)
-                .apply(newState)
-            }
+            val newState =
+              CheckDetailsNoVatRegDate(
+                originalFtr,
+                ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
+                continueUrl)
+            if (isChanging) checkedDetailsChangeInformation(agent).apply(newState)
+            else checkedDetailsNoKnownFact(getCgtSubscription)(agent).apply(newState)
           }
 
         case SelectClientTypeCgt(originalFtr, ftr, continueUrl) =>

@@ -602,12 +602,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           authorisedAgent) should
           thenGo(IdentifyPersonalClient(fastTrackRequest, fastTrackRequest, None))
       }
-      "transition to IdentifyNoClientTypeClient for VAT with no client type when changing information" in {
+      "transition to SelectClientTypeVat for VAT with no client type when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
 
         given(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsChangeInformation(
           authorisedAgent) should
-          thenGo(IdentifyNoClientTypeClient(fastTrackRequest, fastTrackRequest, None))
+          thenGo(SelectClientTypeVat(fastTrackRequest, fastTrackRequest, None, isChanging = true))
       }
       "transition to SelectClientType when there is no client type in the request" in {
         val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, postCode)
@@ -766,6 +766,18 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(getCgtSubscription())(
             authorisedAgent)("personal") should
           thenGo(NoVatRegDate(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
+      }
+
+      "transition to IdentifyClientVat when changing answers" in {
+        val fastTrackRequest = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
+
+        given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None, isChanging = true)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
+            getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(getCgtSubscription())(
+            authorisedAgent)("personal") should
+          thenGo(
+            IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
       }
     }
 
