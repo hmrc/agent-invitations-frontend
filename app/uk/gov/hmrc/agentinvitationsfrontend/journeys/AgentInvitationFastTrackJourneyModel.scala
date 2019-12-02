@@ -245,31 +245,26 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       fastTrackRequest: AgentFastTrackRequest)(implicit request: Request[Any], hc: HeaderCarrier) = Transition {
       case _ =>
         fastTrackRequest match {
-          case AgentFastTrackRequest(_, HMRCMTDIT, _, _, _) =>
+          case AgentFastTrackRequest(_, HMRCMTDIT, _, _, knownFact) =>
             val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
             goto(
-              fastTrackRequest.knownFact.fold(
+              knownFact.fold(
                 CheckDetailsNoPostcode(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
                 CheckDetailsCompleteItsa(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-          case AgentFastTrackRequest(_, HMRCPIR, _, _, _) =>
+          case AgentFastTrackRequest(_, HMRCPIR, _, _, knownFact) =>
             val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
             goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
+              knownFact.fold(CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
                 CheckDetailsCompleteIrv(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-          case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, _) =>
-            goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-                CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+          case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, knownFact) =>
+            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+              CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
-          case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, _) =>
-            goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-                CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+          case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, knownFact) =>
+            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+              CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
           case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
             goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
@@ -445,7 +440,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsCompleteCgt(originalFtr, ftr, continueUrl) =>
-          goto(SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging = true))
+          if (ftr.clientType.isEmpty) goto(SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging = true))
+          else goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoPostcode(originalFtr, ftr, continueUrl) =>
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))

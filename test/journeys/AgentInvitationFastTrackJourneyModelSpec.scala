@@ -226,12 +226,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
         CgtRef => Future(Some(cgtSubscription(countryCode)))
 
-      "transition to SelectClientTypeCgt" in {
+      "transition to ConfirmPostcodeCgt" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
 
         given(IdentifyCgtClient(fastTrackRequest, fastTrackRequest, None)) when identifyCgtClient(getCgtSubscription())(
           authorisedAgent)(CgtClient(cgtRef)) should
-          thenGo(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None))
+          thenGo(ConfirmPostcodeCgt(fastTrackRequest, fastTrackRequest, None, Some("BN13 1FN"), "firstName lastName"))
       }
     }
 
