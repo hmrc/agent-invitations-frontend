@@ -36,7 +36,7 @@
   }
 
   <h1 class="heading-xlarge margin-bottom-20">@Messages("confirm-authorisation-cancelled.header")</h1>
-  <p>@Messages(s"confirm-authorisation-cancelled.p1.${if(service == "HMRC-CGT-PD") s"HMRC-CGT-PD.$clientType" else s"$service"}")</p>
+  <p>@Messages(s"confirm-authorisation-cancelled.p1.$service")</p>
 
 
   @form(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){

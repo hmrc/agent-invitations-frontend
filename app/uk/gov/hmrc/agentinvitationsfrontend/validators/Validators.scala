@@ -101,8 +101,8 @@ object Validators {
   def validUtr(): Constraint[String] =
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
-  def validCgtRef(clientType: ClientType): Constraint[String] =
-    patternConstraint(CgtRef.cgtRegex, s"error.cgt.required.$clientType", s"enter-cgt.invalid-format.$clientType")
+  def validCgtRef(): Constraint[String] =
+    patternConstraint(CgtRef.cgtRegex, s"error.cgt.required", s"enter-cgt.invalid-format")
 
   private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>

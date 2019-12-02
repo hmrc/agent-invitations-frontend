@@ -47,11 +47,7 @@
               @request.clientName
               </dt>
               <dd class="cya-answer" id="client-identifier">
-                  @if(request.invitation.service == "HMRC-CGT-PD") {
-                   @Messages(s"create-auth-failed.HMRC-CGT-PD.${request.invitation.clientType.getOrElse(personal)}")
-                  } else {
-                   @Messages(s"create-auth-failed.${request.invitation.service}")
-                  }
+                  @Messages(s"create-auth-failed.${request.invitation.service}")
               </dd>
           </div>
       }

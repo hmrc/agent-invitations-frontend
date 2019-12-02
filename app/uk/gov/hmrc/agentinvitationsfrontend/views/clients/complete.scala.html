@@ -31,11 +31,7 @@
 
     <h2 class="heading-medium">@Messages("client-complete.p.title")</h2>
     @if(config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
-        @defining({
-            val serviceKey = config.consents.filter(_.consent == true).map(_.serviceKey).head
-            val messageKey =  if(serviceKey == "cgt") s"cgt.${config.clientType}" else serviceKey
-            messageKey
-            }) { messageKey => <p>@Messages(s"client-complete.$messageKey.p1", config.agencyName)</p>}
+        <p>@Messages(s"client-complete.${config.consents.filter(_.consent == true).map(_.serviceKey).head}.p1", config.agencyName)</p>
     } else {
         <p>@Messages(s"client-complete.multi.p1.head", config.agencyName)</p>
         <ul class="list list-bullet">

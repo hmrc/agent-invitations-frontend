@@ -476,7 +476,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-cgt-client.header.personal",
+        "identify-cgt-client.header",
         "identify-cgt-client.p1",
         "identify-cgt-client.p2",
         "identify-cgt-client.hint",
@@ -503,7 +503,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-cgt-client.header.business",
+        "identify-cgt-client.header",
         "identify-cgt-client.p1",
         "identify-cgt-client.p2",
         "identify-cgt-client.hint",
@@ -1818,7 +1818,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.continue",
-        "create-auth-failed.HMRC-CGT-PD.business"
+        "create-auth-failed.HMRC-CGT-PD"
       )
     }
   }
@@ -1839,7 +1839,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "create-auth-failed.header",
         "create-auth-failed.button.try",
-        "create-auth-failed.HMRC-CGT-PD.business"
+        "create-auth-failed.HMRC-CGT-PD"
       )
     }
   }
@@ -1858,7 +1858,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         status(result) shouldBe 200
 
-        val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD.personal" else s"active-authorisation-exists.p1.$service"
+        val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD" else s"active-authorisation-exists.p1.$service"
 
         checkHtmlResultWithBodyMsgs(
           result,

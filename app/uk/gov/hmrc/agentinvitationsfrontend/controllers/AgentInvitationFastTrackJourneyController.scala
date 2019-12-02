@@ -165,23 +165,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   val submitIdentifyCgtClient = action { implicit request =>
-    journeyService.currentState.map(p => p.map(_._1)).flatMap {
-      case Some(s) =>
-        val clientType = s match {
-          case p: IdentifyCgtClient => p.originalFastTrackRequest.clientType
-          case p =>
-            Logger.warn(s"unexpected state ($p) for identifying CGT client")
-            None
-        }
-
-        whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(clientType.getOrElse(personal)))(
-          Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
-        )
-
-      case _ =>
-        Logger.warn("expecting some state here, but missing")
-        Future.successful(Redirect(routes.AgentInvitationFastTrackJourneyController.showClientType()))
-    }
+    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
+      Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+    )
   }
 
   val progressToKnownFact = action { implicit request =>
@@ -514,11 +500,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       )
 
     case IdentifyCgtClient(_, ftr, _) =>
-      val clientType = ftr.clientType.getOrElse(personal)
       Ok(
         identify_client_cgt(
-          clientType,
-          formWithErrors.or(CgtClientForm.form(clientType)),
+          formWithErrors.or(CgtClientForm.form()),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
         )

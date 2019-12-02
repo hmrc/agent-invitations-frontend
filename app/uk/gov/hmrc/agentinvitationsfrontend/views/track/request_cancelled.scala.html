@@ -32,7 +32,7 @@
   <h1 class="transaction-banner__heading">@Messages("request-cancelled.header")</h1>
  </div>
 
- <p>@Messages(s"request-cancelled.p1.${pageConfig.service}${if(pageConfig.service == "HMRC-CGT-PD") "."+ pageConfig.clientType else ""}")</p>
+ <p>@Messages(s"request-cancelled.p1.${pageConfig.service}")</p>
 
     <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
         <p>@Messages("request-cancelled.panel", pageConfig.hideClientName)</p>

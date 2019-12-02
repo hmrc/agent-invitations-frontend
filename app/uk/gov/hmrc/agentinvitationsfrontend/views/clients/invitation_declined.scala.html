@@ -29,12 +29,7 @@
       </div>
 
         @if(config.serviceKeys.length == 1) {
-            @defining({
-                val serviceKey = config.serviceKeys.head
-                val messageKey =  if(serviceKey == "cgt") s"cgt.${config.clientType}" else serviceKey
-                messageKey
-            }) { messageKey => <p>@Messages(s"invitation-declined.multi.$messageKey.p1", config.agencyName)</p>
-            }
+            <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
         } else {
             <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
             <ul class="list list-bullet">

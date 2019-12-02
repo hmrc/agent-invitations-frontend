@@ -63,11 +63,7 @@
                 <div class="table-cell serviceInfo">
                     <h3 class="context">@Messages("recent-invitations.table-row-header.service")</h3>
                     <span>
-                        @if(invitationOrRelationship.service == "HMRC-CGT-PD") {
-                          @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}.${invitationOrRelationship.clientType.getOrElse(personal)}")
-                        } else {
-                          @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
-                        }
+                       @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
                     </span>
                 </div>
                 <div class="table-cell status">

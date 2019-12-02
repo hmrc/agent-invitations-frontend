@@ -24,9 +24,9 @@ import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 
 object CgtClientForm {
 
-  def form(clientType: ClientType): Form[CgtClient] = Form(
+  def form(): Form[CgtClient] = Form(
     mapping(
-      "cgtRef" -> normalizedText.verifying(validCgtRef(clientType))
+      "cgtRef" -> normalizedText.verifying(validCgtRef())
     )(x => CgtClient.apply(CgtRef(x)))(x => Some(x.cgtRef.value))
   )
 

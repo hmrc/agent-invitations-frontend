@@ -140,7 +140,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form(ClientType.personal))(submitIdentifyClientCgt(cgtRef =>
+    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(submitIdentifyClientCgt(cgtRef =>
       invitationsConnector.getCgtSubscription(cgtRef)))
   }
 
@@ -317,8 +317,7 @@ class AgentLedDeauthJourneyController @Inject()(
         case HMRCCGTPD =>
           Ok(
             identify_client_cgt(
-              personal,
-              formWithErrors.or(CgtClientForm.form(personal)),
+              formWithErrors.or(CgtClientForm.form()),
               routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
@@ -346,8 +345,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientCgt =>
       Ok(
         identify_client_cgt(
-          personal,
-          formWithErrors.or(CgtClientForm.form(personal)),
+          formWithErrors.or(CgtClientForm.form()),
           routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true

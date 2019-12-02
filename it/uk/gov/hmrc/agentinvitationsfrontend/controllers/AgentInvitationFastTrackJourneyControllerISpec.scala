@@ -455,7 +455,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "check-details.heading",
-        "check-details.p.HMRC-CGT-PD.business",
+        "check-details.p.HMRC-CGT-PD",
         "check-details.client-type.business.HMRC-CGT-PD")
     }
 
@@ -470,7 +470,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "check-details.heading",
-        "check-details.p.HMRC-CGT-PD.personal",
+        "check-details.p.HMRC-CGT-PD",
         "check-details.client-type.personal")
     }
 
@@ -761,7 +761,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "identify-cgt-client.header.business", "identify-cgt-client.p1", "identify-cgt-client.p2", "identify-cgt-client.hint")
+      checkHtmlResultWithBodyMsgs(result, "identify-cgt-client.header", "identify-cgt-client.p1", "identify-cgt-client.p2", "identify-cgt-client.hint")
     }
 
     "show the client-details page when there is no client type for VAT" in {
