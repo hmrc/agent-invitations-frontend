@@ -669,9 +669,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("POST", "/agents/to-identify-client")
 
     "redirect to identify client" in {
-      val ftr = AgentFastTrackRequest(None, HMRCMTDVAT, "vrn", vrn, None)
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, None)
       journeyState
-        .set(CheckDetailsNoClientTypeVat(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+        .set(CheckDetailsNoVatRegDate(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
@@ -940,7 +940,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/client-details-cgt" should {
     val request = FakeRequest("POST", "/agents/client-details-cgt")
 
-    "redirect to /agents/select-client-type" in new CgtHappyScenario {
+    "redirect to /agents/client-postcode" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
@@ -959,7 +959,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showClientType().url)
+        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode().url)
     }
   }
 

@@ -58,6 +58,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       fastTrackRequest: AgentFastTrackRequest,
       continueUrl: Option[String])
         extends State
+
     case class CheckDetailsNoClientTypeVat(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
@@ -119,14 +120,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     case class SelectClientTypeVat(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
-      continueUrl: Option[String])
+      continueUrl: Option[String],
+      isChanging: Boolean = false)
         extends State
 
     case class SelectClientTypeCgt(
       originalFastTrackRequest: AgentFastTrackRequest,
       fastTrackRequest: AgentFastTrackRequest,
-      continueUrl: Option[String])
-        extends State
+      continueUrl: Option[String],
+      isChanging: Boolean = false
+    ) extends State
 
     case class IdentifyPersonalClient(
       originalFastTrackRequest: AgentFastTrackRequest,
@@ -242,31 +245,26 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       fastTrackRequest: AgentFastTrackRequest)(implicit request: Request[Any], hc: HeaderCarrier) = Transition {
       case _ =>
         fastTrackRequest match {
-          case AgentFastTrackRequest(_, HMRCMTDIT, _, _, _) =>
+          case AgentFastTrackRequest(_, HMRCMTDIT, _, _, knownFact) =>
             val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
             goto(
-              fastTrackRequest.knownFact.fold(
+              knownFact.fold(
                 CheckDetailsNoPostcode(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
                 CheckDetailsCompleteItsa(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-          case AgentFastTrackRequest(_, HMRCPIR, _, _, _) =>
+          case AgentFastTrackRequest(_, HMRCPIR, _, _, knownFact) =>
             val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
             goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
+              knownFact.fold(CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
                 CheckDetailsCompleteIrv(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-          case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, _) =>
-            goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-                CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+          case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, knownFact) =>
+            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+              CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
-          case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, _) =>
-            goto(
-              fastTrackRequest.knownFact.fold(
-                CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-                CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+          case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, knownFact) =>
+            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+              CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
           case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
             goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
@@ -391,11 +389,25 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       cgtClient: CgtClient): Transition =
       Transition {
         case IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, continueUrl) =>
-          goto(
-            SelectClientTypeCgt(
-              originalFastTrackRequest,
-              fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value),
-              continueUrl))
+          getCgtSubscription(CgtRef(fastTrackRequest.clientIdentifier)) map {
+            case Some(subscription) => {
+              if (subscription.isUKBasedClient)
+                ConfirmPostcodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.postCode,
+                  subscription.name)
+              else
+                ConfirmCountryCodeCgt(
+                  originalFastTrackRequest,
+                  fastTrackRequest,
+                  continueUrl,
+                  subscription.countryCode,
+                  subscription.name)
+            }
+            case None => CgtRefNotFound(CgtRef(fastTrackRequest.clientIdentifier))
+          }
       }
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition = {
@@ -428,7 +440,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsCompleteCgt(originalFtr, ftr, continueUrl) =>
-          goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
+          if (ftr.clientType.isEmpty) goto(SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging = true))
+          else goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
 
         case CheckDetailsNoPostcode(originalFtr, ftr, continueUrl) =>
           goto(IdentifyPersonalClient(originalFtr, ftr, continueUrl))
@@ -440,7 +453,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
           gotoIdentifyClient(originalFtr, ftr, continueUrl)
 
         case CheckDetailsNoClientTypeVat(originalFtr, ftr, continueUrl) =>
-          gotoIdentifyClient(originalFtr, ftr, continueUrl)
+          goto(SelectClientTypeVat(originalFtr, ftr, continueUrl, isChanging = true))
       }
     }
 
@@ -728,7 +741,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       hasActiveRelationship: HasActiveRelationship)(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       suppliedClientType: String) =
       Transition {
-        case SelectClientTypeVat(originalFtr, ftr, continueUrl) =>
+        case SelectClientTypeVat(originalFtr, ftr, continueUrl, isChanging) =>
           val isKnownFactRequired = ftr.knownFact.isDefined
           if (isKnownFactRequired) {
             val completeState =
@@ -748,28 +761,20 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                 originalFtr,
                 ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))),
                 continueUrl)
-
-            checkedDetailsNoKnownFact(getCgtSubscription)(agent)
-              .apply(newState)
+            if (isChanging) checkedDetailsChangeInformation(agent).apply(newState)
+            else checkedDetailsNoKnownFact(getCgtSubscription)(agent).apply(newState)
           }
 
-        case SelectClientTypeCgt(originalFtr, ftr, continueUrl) =>
+        case SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging) =>
           getCgtSubscription(CgtRef(ftr.clientIdentifier)).map {
             case Some(subscription) =>
-              if (subscription.isUKBasedClient) {
-                ConfirmPostcodeCgt(
-                  originalFtr,
-                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
-                  continueUrl,
-                  subscription.postCode,
-                  subscription.name)
+              val newFtr = ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal))
+              if (isChanging) {
+                IdentifyCgtClient(originalFtr, newFtr, continueUrl)
+              } else if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(originalFtr, newFtr, continueUrl, subscription.postCode, subscription.name)
               } else {
-                ConfirmCountryCodeCgt(
-                  originalFtr,
-                  ftr.copy(clientType = Some(if (suppliedClientType == "trust") business else personal)),
-                  continueUrl,
-                  subscription.countryCode,
-                  subscription.name)
+                ConfirmCountryCodeCgt(originalFtr, newFtr, continueUrl, subscription.countryCode, subscription.name)
               }
             case None =>
               CgtRefNotFound(CgtRef(ftr.clientIdentifier))
