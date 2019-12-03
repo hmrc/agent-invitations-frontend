@@ -47,6 +47,7 @@ case class SelectServicePageConfigCancel(
       case Seq(cgt, vat, itsa)      => Seq(itsa, vat, cgt)
       case Seq(vat, itsa)           => Seq(itsa, vat)
       case Seq(cgt)                 => Seq(cgt)
+      case Seq()                    => Seq()
     }
   }
 
