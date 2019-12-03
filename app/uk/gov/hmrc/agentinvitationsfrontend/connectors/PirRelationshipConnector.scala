@@ -20,26 +20,27 @@ import java.net.URL
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PirRelationshipConnector @Inject()(
-  @Named("agent-fi-relationship-baseUrl") baseUrl: URL,
-  http: HttpGet with HttpPost with HttpPut with HttpDelete,
-  metrics: Metrics)
+class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  val baseUrl = new URL(appConfig.afiBaseUrl)
 
   def createRelationship(arn: Arn, service: String, clientId: String)(
     implicit hc: HeaderCarrier,

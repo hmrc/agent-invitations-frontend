@@ -33,9 +33,6 @@ import uk.gov.hmrc.http.logging.SessionId
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
-  override implicit lazy val app: Application = appBuilder(featureFlags.copy(enableTrackCancelAuth = true))
-    .build()
-
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 

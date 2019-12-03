@@ -107,7 +107,7 @@ object Validators {
   private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>
       val formattedField = fieldValue.replace(" ", "").trim
-      Constraints.nonEmpty(formattedField) match {
+      Constraints.nonEmpty.apply(formattedField) match {
         case _: Invalid => Invalid(ValidationError(nonEmptyFailure))
         case _ if formattedField.matches(pattern) =>
           Valid

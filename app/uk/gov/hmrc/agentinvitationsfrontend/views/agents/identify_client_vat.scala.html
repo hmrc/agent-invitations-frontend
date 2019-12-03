@@ -16,12 +16,19 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+)
 
 @(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -34,23 +41,23 @@
 }
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "vat"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "vat"))) {
 
     @back_link(backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
   <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
   <p>@Messages("identify-client.vat.p1")</p>
 
- @form(
+ @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
 
          <div class="form-group">
-             @input(
+            @uiInput(
                  agentInvitationsForm("clientIdentifier"),
                  '_label -> Messages("identify-client.vrn.label"),
                  '_inputClass -> "form-control",
@@ -62,7 +69,7 @@
 
 
          <div class="@noJsDateFieldsError">
-             @dateFieldsFreeInlineLegend(agentInvitationsForm, "registrationDate",
+             @uiDateFields(agentInvitationsForm, "registrationDate",
                  '_legend -> Messages("identify-client.vat-registration-date.label"),
                  '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
                  '_legendSpanClass -> "form-label",

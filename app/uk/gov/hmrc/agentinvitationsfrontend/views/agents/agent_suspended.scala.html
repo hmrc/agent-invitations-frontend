@@ -20,6 +20,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 
+@this(
+    mainTemplate: main_template
+)
+
 @(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @heading = @{
@@ -27,7 +31,7 @@
   else Messages("agent-suspended.heading.multi")
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", heading, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s""), ""))) {
+@mainTemplate(title = Messages("generic.title", heading, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s""), ""))) {
 
     <h1 class="heading-xlarge">@heading</h1>
     <p>@Messages("agent-suspended.p1", Messages(s"agent-suspended.p1.$service"))</p>

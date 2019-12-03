@@ -12,10 +12,6 @@ import uk.gov.hmrc.http.logging.SessionId
 
 class AgentCancelAuthActionOffFlagISpec extends BaseISpec {
 
-  override implicit lazy val app: Application =
-    appBuilder(featureFlags)
-      .build()
-
   lazy val requestTrackingController: AgentsRequestTrackingController =
     app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))

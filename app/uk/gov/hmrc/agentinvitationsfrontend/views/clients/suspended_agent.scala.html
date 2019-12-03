@@ -19,9 +19,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.helpers.form
-
-
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SuspendedAgentPageConfig
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
 @(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @pageBody = {
@@ -40,7 +46,7 @@
     <p>@Messages("suspended-agent.p2")</p>
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
 
     @if(pageConfig.isAllSuspended) {
         <h1 class="heading-xlarge">@Messages("suspended-agent.header")</h1>
@@ -56,7 +62,7 @@
         <p>@Html(Messages("suspended-agent.p3")) &nbsp;
             <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
 
-        @form(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
+        @uiFormHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
             <div class="form-group">
                 <button class="button" type="submit" id="continueFromSuspendedAgent">@Messages("continue.button")</button>
             </div>

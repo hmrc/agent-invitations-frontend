@@ -14,14 +14,10 @@
  * limitations under the License.
  *@
 
-@(field: Field,
-elementOptions: Seq[(String, String)],
-displayEmptyValue: Boolean,
-args: (Symbol,Any)*
-)(implicit messages: Messages)
-
 @import play.api.i18n._
 @import views.html.helper._
+
+@(field: Field,elementOptions: Seq[(String, String)],displayEmptyValue: Boolean,args: (Symbol,Any)*)(implicit messages: Messages)
 
 @elements = @{ new FieldElements(field.id, field, null, args.toMap, messages) }
 

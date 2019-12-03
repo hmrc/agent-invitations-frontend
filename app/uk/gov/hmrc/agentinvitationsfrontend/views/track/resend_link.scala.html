@@ -25,6 +25,11 @@
 @import org.joda.time.DateTimeZone
 @import org.joda.time.Days
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+
+@this(
+    mainTemplate: main_template
+)
+
 @(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @displayDate = @{
@@ -32,7 +37,7 @@
     else config.expiryDateAsLocalDate.toString("dd MMMM yyyy", messages.lang.locale)
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some("InviteSent")) {
+@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some("InviteSent")) {
 
     @back_link_referer(request)
 

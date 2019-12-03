@@ -18,29 +18,31 @@ package uk.gov.hmrc.agentinvitationsfrontend.config
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import javax.inject.{Inject, Named, Singleton}
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
-class ExternalUrls @Inject()(
-  @Named("company-auth-frontend.external-url") val companyAuthUrl: String,
-  @Named("company-auth-frontend.sign-out.path") val companyAuthSignOutPath: String,
-  @Named("business-tax-account.external-url") val businessTaxAccountUrl: String,
-  @Named("agent-services-account-frontend.external-url") val agentServicesAccountUrl: String,
-  @Named("contact-frontend.external-url") val contactFrontendUrl: String,
-  @Named("feedback-survey-frontend.external-url") val exitSurveyUrl: String,
-  @Named("survey.feedbackSurveyURNWithoutOriginToken") val invitationExitSurvey: String,
-  @Named("survey.originTokenIdentifier.agent") val agentOriginTokenIdentifier: String,
-  @Named("survey.originTokenIdentifier.client") val clientOriginTokenIdentifier: String,
-  @Named("agent-subscription-frontend.external-url") val subscriptionURL: String,
-  @Named("agent-client-management-frontend.external-url") val agentClientManagementUrl: String,
-  @Named("privacy-policy.external-url") val privacypolicyUrl: String,
-  @Named("agent-invitations-frontend.external-url") val agentInvitationsExternalUrl: String,
-  @Named("vat-online-service-helpline.external-url") val vatOnlineServiceHelplineUrl: String,
-  @Named("sa-online-service-helpline.external-url") val saOnlineServiceHelplineUrl: String,
-  @Named("personal-details-validation-frontend.external-url") val pdvFrontendUrl: String,
-  @Named("timeoutDialog.timeout-seconds") val timeout: Int,
-  @Named("timeoutDialog.timeout-countdown-seconds") val timeoutCountdown: Int
-) {
+class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
+
+  val companyAuthUrl = appConfig.companyAuthFrontendExternalUrl
+  val companyAuthSignOutPath = appConfig.companyAuthFrontendSignoutPath
+  val businessTaxAccountUrl = appConfig.btaExternalUrl
+  val agentServicesAccountUrl = appConfig.asaFrontendExternalUrl
+  val contactFrontendUrl = appConfig.contactFrontendExternalUrl
+  val exitSurveyUrl = appConfig.feedbackSurveyFrontendExternalUrl
+  val invitationExitSurvey = appConfig.feedbackSurveyOriginToken
+  val agentOriginTokenIdentifier = appConfig.feedbackSurveyagentIdentifier
+  val clientOriginTokenIdentifier = appConfig.feedbackSurveyClientIdentifier
+
+  val pdvFrontendUrl = appConfig.pdvFrontendExternalUrl
+  val subscriptionURL = appConfig.agentSubscriptionFrontendExternalUrl
+  val agentClientManagementUrl = appConfig.acmExternalUrl
+  val agentInvitationsExternalUrl = appConfig.agentInvitationsFrontendExternalUrl
+  val privacypolicyUrl = appConfig.privacyPolicyExternalUrl
+  val vatOnlineServiceHelplineUrl = appConfig.vatOnlineHelplineExternalUrl
+  val saOnlineServiceHelplineUrl = appConfig.saOnlineHelplineFrontendExternalUrl
+  val timeout = appConfig.timeoutDialogTimeoutSeconds
+  val timeoutCountdown = appConfig.timeoutDialogCountdownSeconds
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
 

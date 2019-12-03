@@ -14,10 +14,24 @@
  * limitations under the License.
  *@
 
-@import layouts.{govuk_template => hmrcGovUkTemplate}
 @import uk.gov.hmrc.play.views.html.{helpers => uiHelpers, layouts => uiLayouts}
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import play.twirl.api.HtmlFormat
+
+@this(
+    govUkTemplate: views.html.layouts.GovUkTemplate,
+    uiHead: uk.gov.hmrc.play.views.html.layouts.Head,
+    uiHeaderNav: uk.gov.hmrc.play.views.html.layouts.HeaderNav,
+    uiFooter: uk.gov.hmrc.play.views.html.layouts.Footer,
+    uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
+    uiMainContentHeader: uk.gov.hmrc.play.views.html.layouts.MainContentHeader,
+    uiMainContent: uk.gov.hmrc.play.views.html.layouts.MainContent,
+    uiFooterLinks: uk.gov.hmrc.play.views.html.layouts.FooterLinks,
+    helperReportAProblemLink: uk.gov.hmrc.play.views.html.helpers.ReportAProblemLink,
+    uiBetaBanner: uk.gov.hmrc.play.views.html.layouts.BetaBanner
+)
+
 @(title: String,
         mainClass: Option[String] = None,
         mainDataAttributes: Option[Html] = None,
@@ -35,13 +49,13 @@
         completedInviteGoSurvey: Option[Boolean] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @head = {
-@uiLayouts.head(
+@uiHead(
     linkElem = None,
     headScripts = Some(headScripts))
     <meta name="format-detection" content="telephone=no"/>
 }
 
-@googleTagManagerId = {@configuration.getString("google-tag-manager.id")}
+@googleTagManagerId = {@configuration.get[String]("google-tag-manager.id")}
 
 @headScripts = {
     <script type="text/javascript">
@@ -76,7 +90,7 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=@googleTagManagerId"
                       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    @uiLayouts.header_nav(
+    @uiHeaderNav(
         navTitle = Some(Messages(bannerTitle)),
         navTitleLink = None,
         showBetaLink = false,
@@ -86,12 +100,12 @@
 @afterHeader = {}
 
 @gaJS = {
-@gaCode.map(Html(_))
+ @gaCode.map(Html(_))
 }
 
 @bodyEnd = {
-@uiLayouts.footer(analyticsToken = configuration.getString("google-analytics.token"),
-    analyticsHost = configuration.getString("google-analytics.host").get,
+@uiFooter(analyticsToken = Some(configuration.get[String]("google-analytics.token")),
+    analyticsHost = configuration.get[String]("google-analytics.host"),
     ssoUrl = None,
     scriptElem = Some(scriptElement),
     gaCalls = gaCalls,
@@ -101,25 +115,28 @@
 @footerTop = {}
 @footerLinks = {}
 
+@betaBanner = {
+}
+
 @serviceInfo = {
-@uiLayouts.serviceInfo(
-    betaBanner = HtmlFormat.empty,
+@uiServiceInfo(
+    betaBanner = betaBanner,
     includeGridWrapper = false,
-    Some(serviceInfoContent))
+    serviceInfoContent = Some(serviceInfoContent))
 }
 
 @mainContentHeader = {
 @if(contentHeader.isDefined) {
-    @uiLayouts.main_content_header(contentHeader.get)
+    @uiMainContentHeader(contentHeader.get)
 }
 }
 
 @getHelpForm = @{
-    uiHelpers.reportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))
+    helperReportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))
 }
 
 @content = {
-@uiLayouts.main_content(article = mainContent,
+@uiMainContent(article = mainContent,
     mainClass = mainClass,
     mainDataAttributes = mainDataAttributes,
     mainContentHeader = mainContentHeader,
@@ -128,4 +145,4 @@
     sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), nav = true)(content)
+@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiFooterLinks(additionalLinks = Some(footerLinks))), nav = true)(content)

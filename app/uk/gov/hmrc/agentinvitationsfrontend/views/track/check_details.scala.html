@@ -28,6 +28,16 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
@@ -43,12 +53,12 @@
     else 4
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), config.serviceMessageKey))) {
+@mainTemplate(title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), config.serviceMessageKey))) {
 
     @config.backLinkUrl.map(url => back_link(url))
 
     @if(confirmForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
+        @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
     }
 
     <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
@@ -120,33 +130,33 @@
 
     @if(config.needClientType) {
 
-        @form(config.changeDetailsCall) {
+        @uiFormHelper(config.changeDetailsCall) {
             <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
         }
         <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
-      @form(config.clientTypeUrl) {
+      @uiFormHelper(config.clientTypeUrl) {
           <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
       }
     }else {
         @if(config.needKnownFact) {
-            @form(config.changeDetailsCall) {
+            @uiFormHelper(config.changeDetailsCall) {
                 <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
             }
             <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
-          @form(config.knownFactUrl){
+          @uiFormHelper(config.knownFactUrl){
             <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
             }
 
         } else {
 
-            @form(
+            @uiFormHelper(
                 config.submitFormCall,
                 'class -> "margin-top-30"
             ) {
 
-                @input_radio_group(
+                @uiInputRadioGroup(
                     confirmForm("accepted"),
                     Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
                     '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),

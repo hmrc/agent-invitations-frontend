@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
+import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.data.Forms.{mapping, optional, single, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.ConfirmClientForm
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{CgtClientForm, ClientTypeForm, CountrycodeForm, PostcodeForm, TrustClientForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -43,12 +44,10 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class AgentInvitationFastTrackJourneyController @Inject()(
-  @Named("invitation.expiryDuration") expiryDuration: String,
   invitationsService: InvitationsService,
   invitationsConnector: InvitationsConnector,
   asaConnector: AgentServicesAccountConnector,
@@ -56,13 +55,31 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   authActions: AuthActionsImpl,
   val redirectUrlActions: RedirectUrlActions,
   override val journeyService: AgentInvitationFastTrackJourneyService,
-  countryNamesLoader: CountryNamesLoader)(
+  countryNamesLoader: CountryNamesLoader,
+  clientTypeView: client_type,
+  cgtRefNotFoundView: cgtRef_notFound,
+  activeAuthExistsView: active_authorisation_exists,
+  checkDetailsView: check_details,
+  knownFactsView: known_fact,
+  identifyClientItsaView: identify_client_itsa,
+  identifyClientIrvView: identify_client_irv,
+  identifyClientVatView: identify_client_vat,
+  identifyClientTrustView: identify_client_trust,
+  identifyClientCgtView: identify_client_cgt,
+  confirmClientView: confirm_client,
+  confirmCountryCodeCgtView: confirm_countryCode_cgt,
+  confirmPostcodeCgtView: confirm_postcode_cgt,
+  notMatchedView: not_matched,
+  pendingAuthExistsView: pending_authorisation_exists,
+  invitationSentView: invitation_sent,
+  notSignedupView: not_signed_up)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  val messagesApi: play.api.i18n.MessagesApi,
-  ec: ExecutionContext)
-    extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
+  ec: ExecutionContext,
+  val cc: MessagesControllerComponents,
+  val appConfig: AppConfig)
+    extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationFastTrackJourneyController._
   import asaConnector._
@@ -77,8 +94,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   //TODO Add local date service to provide flexibility for testing
-  private val invitationExpiryDuration = Duration(expiryDuration.replace('_', ' '))
-  def inferredExpiryDate = LocalDate.now().plusDays(invitationExpiryDuration.toDays.toInt)
+  def inferredExpiryDate = LocalDate.now().plusDays(appConfig.invitationExpirationDuration.toDays.toInt)
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
@@ -333,7 +349,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       }
 
     Ok(
-      check_details(
+      checkDetailsView(
         checkDetailsForm,
         CheckDetailsPageConfig(
           fastTrackRequest,
@@ -354,6 +370,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case s: Prologue => Redirect(getCallFor(s))
 
     case CheckDetailsCompleteItsa(_, ftr, _) =>
+      println(ftr)
       gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
     case CheckDetailsCompleteIrv(_, ftr, _) =>
@@ -385,7 +402,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case NoPostcode(_, ftr, _) =>
       Ok(
-        known_fact(
+        knownFactsView(
           formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
             ftr.service,
@@ -397,7 +414,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case NoDob(_, ftr, _) =>
       Ok(
-        known_fact(
+        knownFactsView(
           formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
             ftr.service,
@@ -409,7 +426,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case NoVatRegDate(_, ftr, _) =>
       Ok(
-        known_fact(
+        knownFactsView(
           formWithErrors.or(getKnownFactFormForService(ftr.service)),
           KnownFactPageConfig(
             ftr.service,
@@ -421,7 +438,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case SelectClientTypeVat(_, _, _, _) =>
       Ok(
-        client_type(
+        clientTypeView(
           formWithErrors.or(ClientTypeForm.fastTrackForm),
           ClientTypePageConfig(
             backLinkFor(breadcrumbs).url,
@@ -433,7 +450,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case SelectClientTypeCgt(_, _, _, _) =>
       Ok(
-        client_type(
+        clientTypeView(
           formWithErrors.or(ClientTypeForm.cgtClientTypeForm),
           ClientTypePageConfig(
             backLinkFor(breadcrumbs).url,
@@ -445,7 +462,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ConfirmClientTrust(_, ftr, _, trustName) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           trustName,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
@@ -456,7 +473,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDIT =>
       Ok(
-        identify_client_itsa(
+        identifyClientItsaView(
           formWithErrors.or(IdentifyItsaClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient(),
           backLinkFor(breadcrumbs).url
@@ -465,7 +482,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDVAT =>
       Ok(
-        identify_client_vat(
+        identifyClientVatView(
           formWithErrors.or(IdentifyVatClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
@@ -474,7 +491,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCPIR =>
       Ok(
-        identify_client_irv(
+        identifyClientIrvView(
           formWithErrors.or(IdentifyIrvClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient(),
           backLinkFor(breadcrumbs).url
@@ -483,7 +500,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyBusinessClient(_, _, _) =>
       Ok(
-        identify_client_vat(
+        identifyClientVatView(
           formWithErrors.or(IdentifyVatClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
@@ -492,7 +509,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyTrustClient(_, _, _) =>
       Ok(
-        identify_client_trust(
+        identifyClientTrustView(
           formWithErrors.or(IdentifyTrustClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url
@@ -501,7 +518,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyCgtClient(_, ftr, _) =>
       Ok(
-        identify_client_cgt(
+        identifyClientCgtView(
           formWithErrors.or(CgtClientForm.form()),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url
@@ -510,7 +527,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case IdentifyNoClientTypeClient(_, _, _) =>
       Ok(
-        identify_client_vat(
+        identifyClientVatView(
           formWithErrors.or(IdentifyVatClientForm),
           routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url
@@ -519,7 +536,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ConfirmClientCgt(_, ftr, _, name) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           name,
           formWithErrors.or(ConfirmClientForm),
           backLinkFor(breadcrumbs).url,
@@ -530,7 +547,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ConfirmPostcodeCgt(_, ftr, _, _, _) =>
       Ok(
-        confirm_postcode_cgt(
+        confirmPostcodeCgtView(
           ftr.clientType.getOrElse(personal),
           formWithErrors.or(PostcodeForm.form),
           backLinkFor(breadcrumbs).url,
@@ -539,7 +556,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ConfirmCountryCodeCgt(_, ftr, _, _, _) =>
       Ok(
-        confirm_countryCode_cgt(
+        confirmCountryCodeCgtView(
           ftr.clientType.getOrElse(personal),
           countries,
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
@@ -550,7 +567,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
       Ok(
-        invitation_sent(
+        invitationSentView(
           InvitationSentPageConfig(
             invitationLink,
             continueUrl,
@@ -561,7 +578,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, service) =>
       Ok(
-        invitation_sent(
+        invitationSentView(
           InvitationSentPageConfig(
             invitationLink,
             continueUrl,
@@ -573,7 +590,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case KnownFactNotMatched(_, _, _) =>
       Ok(
-        not_matched(
+        notMatchedView(
           hasJourneyCache = false,
           tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
           reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
@@ -581,7 +598,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case TrustNotFound(_, _, _) =>
       Ok(
-        not_matched(
+        notMatchedView(
           hasJourneyCache = false,
           tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
           reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
@@ -589,7 +606,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case CgtRefNotFound(cgtRef) =>
       Ok(
-        cgtRef_notFound(
+        cgtRefNotFoundView(
           false,
           routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
           Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
@@ -598,7 +615,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
       Ok(
-        active_authorisation_exists(
+        activeAuthExistsView(
           authRequestsExist = false,
           agentFastTrackRequest.service,
           agentFastTrackRequest.clientType.getOrElse(personal),
@@ -609,7 +626,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case PendingInvitationExists(_, _) =>
       Ok(
-        pending_authorisation_exists(
+        pendingAuthExistsView(
           PendingAuthorisationExistsPageConfig(
             authRequestsExist = false,
             backLinkFor(breadcrumbs).url,
@@ -619,7 +636,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )))
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
-      Ok(not_signed_up(fastTrackRequest.service, hasRequests = false))
+      Ok(notSignedupView(fastTrackRequest.service, hasRequests = false))
   }
 }
 

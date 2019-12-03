@@ -18,9 +18,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 @import uk.gov.hmrc.play.views.html.helpers.form
+
+@this(
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_])
 
-@form(
+@uiFormHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
     'id -> s"resendLink-${index}",
     'class -> "form js-form actionButtons"
@@ -35,7 +40,7 @@
         index}">@Messages("recent-invitations.invitations.actions.pending")</button></div>
 }
 
-@form(
+@uiFormHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
     'id -> s"postToConfirmCancel-$index",
     'class -> "form js-form"

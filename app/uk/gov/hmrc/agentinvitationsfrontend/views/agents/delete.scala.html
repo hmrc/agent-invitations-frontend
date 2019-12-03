@@ -20,8 +20,17 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, input_radio_group, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
-
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = {
@@ -29,13 +38,13 @@
     <span class="form-hint margin-bottom-10">@Messages(s"delete.subheading.${config.clientDetail.invitation.service}")</span>
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"delete.heading", "Your client"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"delete.heading", "Your client"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
 
     @back_link_referer(request)
 
-    @form(config.submitDelete) {
+    @uiFormHelper(config.submitDelete) {
 
-        @input_radio_group(
+        @uiInputRadioGroup(
             deleteForm("accepted"),
             Seq(("true", Messages("delete.radio-yes")), ("false", Messages("delete.radio-no"))),
             '_groupClass -> "inline",

@@ -18,12 +18,17 @@
 @import uk.gov.hmrc.play.views.html.helpers.form
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 @import org.joda.time.LocalDate
+
+@this(
+    mainTemplate: main_template,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
-@form(
+@uiFormHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
     'id -> s"cancelAuthorisation-$index",
     'class -> "form js-form"

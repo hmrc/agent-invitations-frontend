@@ -16,23 +16,22 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonalDetailsValidationConnector @Inject()(
-  @Named("personal-details-validation-baseUrl") baseUrl: URL,
+class PersonalDetailsValidationConnector @Inject()(http: HttpClient)(
+  implicit appConfig: AppConfig,
   metrics: Metrics,
-  http: HttpGet,
   env: Environment,
   config: Configuration)
     extends HttpAPIMonitor {
@@ -42,7 +41,7 @@ class PersonalDetailsValidationConnector @Inject()(
   def getPdvResult(
     validationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[PdvError, Nino]] =
     monitor("ConsumedAPI-Client-Get-PDVResult-GET") {
-      val url = s"${baseUrl.toString}/personal-details-validation/$validationId"
+      val url = s"${appConfig.personalDetailsValidationBaseUrl}/personal-details-validation/$validationId"
       http
         .GET[HttpResponse](url)
         .map { response =>
@@ -57,10 +56,9 @@ class PersonalDetailsValidationConnector @Inject()(
           }
         }
         .recover {
-          case e: NotFoundException => {
+          case e: NotFoundException =>
             Logger.warn(s"personal details validation did not recognise the validation id $validationId $e")
             Left(PdvValidationNotFound)
-          }
         }
     }
 }

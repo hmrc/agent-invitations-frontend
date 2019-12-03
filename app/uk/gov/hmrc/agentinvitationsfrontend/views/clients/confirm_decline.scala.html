@@ -20,12 +20,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
-
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @legend = {
@@ -42,17 +50,17 @@
     }
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = error_prefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
 
     @back_link(config.backLink.url)
 
     @if(confirmDeclineForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
+        @uiErrorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
     }
 
-    @form(config.submitUrl){
+    @uiFormHelper(config.submitUrl){
 
-        @input_radio_group(
+        @uiInputRadioGroup(
             confirmDeclineForm("accepted"),
             Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
             '_legend -> legend,

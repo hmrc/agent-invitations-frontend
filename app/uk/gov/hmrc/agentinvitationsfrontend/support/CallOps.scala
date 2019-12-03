@@ -18,7 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import java.net.{URI, URLEncoder}
 
-import play.api.{Configuration, Environment, Mode}
+import play.api.{Environment, Mode}
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
 object CallOps {
 
@@ -39,10 +40,9 @@ object CallOps {
     * Absolute URLs are unaffected
     * Just passes through the URL as normal if running in a non-local environment
     * */
-  def localFriendlyUrl(env: Environment, config: Configuration)(url: String, hostAndPort: String) = {
+  def localFriendlyUrl(env: Environment, appConfig: AppConfig)(url: String, hostAndPort: String) = {
     val isLocalEnv = {
-      if (env.mode.equals(Mode.Test)) false
-      else config.getString("run.mode").forall(Mode.Dev.toString.equals)
+      if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.equals("Dev")
     }
 
     val uri = new URI(url)

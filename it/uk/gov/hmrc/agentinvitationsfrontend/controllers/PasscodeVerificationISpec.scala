@@ -22,22 +22,20 @@ import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Results.Ok
-import play.api.test.{FakeApplication, FakeRequest}
+import play.api.test.FakeRequest
 import play.api.{Configuration, Environment, Mode, Play}
-import uk.gov.hmrc.agentinvitationsfrontend.support.AkkaMaterializerSpec
-import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector, Unauthorised}
+import uk.gov.hmrc.agentinvitationsfrontend.support.{AkkaMaterializerSpec, BaseISpec}
+import uk.gov.hmrc.auth.otac.{Authorised, Unauthorised}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMaterializerSpec with BeforeAndAfterAll {
+class PasscodeVerificationISpec extends BaseISpec with MockitoSugar with BeforeAndAfterAll {
 
   val hc: HeaderCarrier = HeaderCarrier()
-  val ec: ExecutionContext = concurrent.ExecutionContext.Implicits.global
+  override val ec: ExecutionContext = concurrent.ExecutionContext.Implicits.global
   val environment = Environment.apply(new File("."), this.getClass.getClassLoader, Mode.Prod)
   val body = (b: Boolean) => Future.successful(Ok(b.toString))
-  lazy val app = FakeApplication()
 
   protected override def beforeAll() =
     Play.start(app)
@@ -49,10 +47,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
 
     "passcodeAuthentication disabled" should {
       "execute function with 'true'" in {
-        val otacAuthConnector = mock[OtacAuthConnector]
+        val otacAuthConnector = mock[OtacAuthConnectorImpl]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          Configuration.from(
-            Map("passcodeAuthentication.enabled" -> false, "passcodeAuthentication.regime" -> "fooRegime")),
           environment,
           otacAuthConnector
         )
@@ -69,9 +65,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
         Map("passcodeAuthentication.enabled" -> true, "passcodeAuthentication.regime" -> "fooRegime"))
 
       "execute function with 'false' if not otac param nor session key present" in {
-        val otacAuthConnector = mock[OtacAuthConnector]
+        val otacAuthConnector = mock[OtacAuthConnectorImpl]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          configuration,
           environment,
           otacAuthConnector
         )
@@ -81,9 +76,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
         bodyOf(result) shouldBe "false"
       }
       "redirect to otac verification if otac param present" in {
-        val otacAuthConnector = mock[OtacAuthConnector]
+        val otacAuthConnector = mock[OtacAuthConnectorImpl]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          configuration,
           environment,
           otacAuthConnector
         )
@@ -93,9 +87,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
         result.header.headers.get("Location") shouldBe Some("/verification/otac/login?p=otac123")
       }
       "call auth service if otac session key present and execute body with true if authorised" in {
-        val otacAuthConnector = mock[OtacAuthConnector]
+        val otacAuthConnector = mock[OtacAuthConnectorImpl]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          configuration,
           environment,
           otacAuthConnector
         )
@@ -107,9 +100,8 @@ class PasscodeVerificationISpec extends UnitSpec with MockitoSugar with AkkaMate
         bodyOf(result) shouldBe "true"
       }
       "call auth service if otac session key present and execute body with false if unauthorised" in {
-        val otacAuthConnector = mock[OtacAuthConnector]
+        val otacAuthConnector = mock[OtacAuthConnectorImpl]
         val withMaybePasscode = new FrontendPasscodeVerification(
-          configuration,
           environment,
           otacAuthConnector
         )

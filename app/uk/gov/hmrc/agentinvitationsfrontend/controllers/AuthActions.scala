@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
@@ -41,11 +41,14 @@ class AuthActionsImpl @Inject()(
   val externalUrls: ExternalUrls,
   val env: Environment,
   val config: Configuration,
-  val authConnector: AuthConnector
+  val authConnector: AuthConnector,
+  val appConfig: AppConfig
 ) extends AuthActions
 
 @ImplementedBy(classOf[AuthActionsImpl])
 trait AuthActions extends AuthorisedFunctions with AuthRedirects {
+
+  val appConfig: AppConfig
 
   def withVerifiedPasscode: PasscodeVerification
 
@@ -54,12 +57,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   val pdvStartUrl = s"${externalUrls.pdvFrontendUrl}/start"
 
   val isDevEnv: Boolean =
-    if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
-
-  private val authenticationRedirect: String = config
-    .getString("authentication.login-callback.url")
-    .getOrElse(
-      throw new IllegalStateException(s"No value found for configuration property: authentication.login-callback.url"))
+    if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.contains("Dev")
 
   private def getArn(enrolments: Enrolments) =
     for {
@@ -151,7 +149,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
     }
 
   private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
-    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
+    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, appConfig) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
     val rawFailureUrl =
       toLocalFriendlyUrl(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url, request.host)
@@ -171,7 +169,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
 
   private def redirectToPersonalDetailsValidation[A]()(implicit request: Request[A]): Future[Result] = {
 
-    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, config) _
+    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, appConfig) _
 
     val targetUrl = toLocalFriendlyUrl(request.uri, request.host)
     val completeUrlBase = toLocalFriendlyUrl(routes.ClientInvitationJourneyController.pdvComplete().url, request.host)
@@ -189,7 +187,7 @@ trait AuthActions extends AuthorisedFunctions with AuthRedirects {
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
     implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession ⇒ {
-      val url = localFriendlyUrl(env, config)(request.uri, request.host)
+      val url = localFriendlyUrl(env, appConfig)(request.uri, request.host)
       val ggContinueUrl = journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
       toGGLogin(ggContinueUrl)
     }

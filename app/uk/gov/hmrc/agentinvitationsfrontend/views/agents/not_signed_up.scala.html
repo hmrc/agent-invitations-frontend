@@ -19,12 +19,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
+@this(
+    mainTemplate: main_template
+)
+
+
 @(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("problem.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.p1.$serviceId"), serviceId))) {
+@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("problem.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.p1.$serviceId"), serviceId))) {
 
     @back_link_referer(request)
 

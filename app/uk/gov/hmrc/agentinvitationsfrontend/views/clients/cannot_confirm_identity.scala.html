@@ -20,9 +20,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@(title: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@this(
+  mainTemplate: main_template
+)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", title.getOrElse(Messages("cannot-confirm-identity.header")), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@(titleKey: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(titleKey.getOrElse("cannot-confirm-identity.header")), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
  @if(html.isDefined) {
      @html.get

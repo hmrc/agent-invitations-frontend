@@ -20,9 +20,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.custom_check_box
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
 
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig, changingConsent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -121,16 +129,16 @@
    if(changingConsent) Messages("change.consent.heading") else Messages("confirm-terms.multi.heading")
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title =  error_prefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
+@mainTemplate(bannerTitle = "banner.clients", title =  errorPrefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
     @back_link(pageConfig.backLink.url)
 
     @if(confirmTermsForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
+        @uiErrorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
     }
 
-      @form(pageConfig.submitUrl
+      @uiFormHelper(pageConfig.submitUrl
       ) {
         <fieldset>
             <legend>

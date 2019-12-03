@@ -22,9 +22,16 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
+@mainTemplate(bannerTitle = "banner.clients", title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
 
     @back_link(pageConfig.backLink.url)
@@ -43,7 +50,7 @@
             @Messages(s"check-answers.consent.${consent.consent}")
             </dd>
             <dd class="app-check-your-answers__change">
-                @form(pageConfig.changeCall(consent.serviceKey)) {
+                @uiFormHelper(pageConfig.changeCall(consent.serviceKey)) {
               <button type="submit" class="button--link-style">@Messages("check-answers.change-link")</button>
             }
 
@@ -53,7 +60,7 @@
     }
     </dl>
 
-    @form(Call("POST", pageConfig.submitCall.url)){
+    @uiFormHelper(Call("POST", pageConfig.submitCall.url)){
 
         <div class="form-group">
             <button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button>

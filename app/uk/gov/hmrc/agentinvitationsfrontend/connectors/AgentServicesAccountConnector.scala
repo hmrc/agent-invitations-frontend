@@ -16,35 +16,32 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
-import javax.inject.{Inject, Named, Singleton}
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsPath, Json, Reads}
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.RedirectUrlActions
-import uk.gov.hmrc.agentinvitationsfrontend.models.CustomerDetails
-import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentServicesAccountConnector @Inject()(
-  @Named("agent-services-account-baseUrl") baseUrl: URL,
-  http: HttpGet,
-  metrics: Metrics)
+class AgentServicesAccountConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
+  val baseUrl = appConfig.agentServicesAccountBaseUrl
+
   def getAgencyName(arn: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
-      http.GET[AgencyName](new URL(baseUrl, s"/agent-services-account/client/agency-name/$arn").toString).map(_.name)
+      http.GET[AgencyName](s"$baseUrl/agent-services-account/client/agency-name/$arn").map(_.name)
     } recoverWith {
       case _: NotFoundException => Future failed AgencyNameNotFound()
     }
@@ -52,7 +49,7 @@ class AgentServicesAccountConnector @Inject()(
   def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     monitor("ConsumerAPI-Get-AgencyEmail-GET") {
       http
-        .GET[HttpResponse](new URL(baseUrl, "/agent-services-account/agent/agency-email").toString)
+        .GET[HttpResponse](s"$baseUrl/agent-services-account/agent/agency-email")
         .map(response =>
           response.status match {
             case 200 => Json.parse(response.body).as[AgencyEmail].email
@@ -91,7 +88,7 @@ class AgentServicesAccountConnector @Inject()(
       }
     }
 
-  private def craftUrl(location: String) = new URL(baseUrl, location)
+  private def craftUrl(location: String) = s"$baseUrl$location"
 
   private def getTradingNameWithNino(nino: Nino): String =
     s"/agent-services-account/client/trading-name/nino/${nino.value}"

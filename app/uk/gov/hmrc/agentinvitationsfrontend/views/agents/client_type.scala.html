@@ -19,24 +19,32 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
 
 @(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@mainTemplate(title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(config.backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))
+        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))
     }
 
-    @form(
+    @uiFormHelper(
         action = config.submitCall,
         'class -> "form js-form") {
 
-        @input_radio_group(
+        @uiInputRadioGroup(
             agentInvitationsForm("clientType"),
             config.clientTypes,
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("client-type.header") + """</h1>""" +

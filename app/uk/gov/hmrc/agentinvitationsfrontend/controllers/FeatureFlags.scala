@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
 @Singleton
-case class FeatureFlags @Inject()(
-  @Named("features.show-hmrc-mtd-it") showHmrcMtdIt: Boolean = true,
-  @Named("features.show-personal-income") showPersonalIncome: Boolean = true,
-  @Named("features.show-hmrc-mtd-vat") showHmrcMtdVat: Boolean = true,
-  @Named("features.show-hmrc-trust") showHmrcTrust: Boolean = false,
-  @Named("features.show-hmrc-cgt") showHmrcCgt: Boolean = false,
-  @Named("features.enable-track-cancel-auth-action") enableTrackCancelAuth: Boolean = false,
-  @Named("features.show-agent-led-de-auth") showAgentLedDeAuth: Boolean = true,
-  @Named("features.enable-agent-suspension") agentSuspensionEnabled: Boolean = false) {}
+case class FeatureFlags @Inject()(appConfig: AppConfig) {
 
-object FeatureFlags {
-  def apply(): FeatureFlags = new FeatureFlags()
+  val showHmrcMtdIt = appConfig.featuresMtdIt
+  val showPersonalIncome = appConfig.featuresPersonalIncome
+  val showHmrcMtdVat = appConfig.featuresMtdVat
+  val showHmrcTrust = appConfig.featuresTrust
+  val showHmrcCgt = appConfig.featuresCgt
+  val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
+  val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
+  val agentSuspensionEnabled = appConfig.featuresAgentSuspension
+
 }

@@ -5,7 +5,7 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -22,6 +22,8 @@ class AuthActionsISpec extends BaseISpec {
     override def env: Environment = app.injector.instanceOf[Environment]
     override def withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
 
+    implicit override val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
+
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
@@ -32,8 +34,7 @@ class AuthActionsISpec extends BaseISpec {
         Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
       })
 
-    override def externalUrls: ExternalUrls =
-      new ExternalUrls("", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "", "", "", "", pdvFrontendUrl = "", timeoutCountdown = 0, timeout = 0)
+    override def externalUrls: ExternalUrls = new ExternalUrls()
   }
 
   "withAuthorisedAsAgent" should {

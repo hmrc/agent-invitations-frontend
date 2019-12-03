@@ -23,6 +23,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uidropDown: uk.gov.hmrc.play.views.html.helpers.Dropdown
+)
+
 @(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @submitUrl = @{if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode
@@ -30,12 +39,12 @@
                 else routes.AgentInvitationJourneyController.submitConfirmCgtCountryCode
                }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
+@mainTemplate(title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
 
     @back_link(backLinkUrl)
 
     @if(countryCodeForm.hasErrors){
-        @errorSummary(Messages("error.summary.heading"), countryCodeForm, Seq.empty, Some("confirm-countryCode-cgt"))
+        @uiErrorSummary(Messages("error.summary.heading"), countryCodeForm, Seq.empty, Some("confirm-countryCode-cgt"))
     }
 
     <h1 class="heading-xlarge margin-bottom-10">@Messages("confirm-countryCode-cgt.header")</h1>
@@ -44,9 +53,9 @@
 
     <p class="hint-text">@Messages("confirm-countryCode-cgt.hint")</p>
 
-    @form(action = submitUrl, 'class -> "form js-form") {
+    @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
         <div class="form-group">
-            @country_dropdown(
+            @uidropDown(
                 countryCodeForm("countryCode"),
                 countries.toSeq,
                 true,

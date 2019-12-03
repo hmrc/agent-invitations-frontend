@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AgentSuspensionConnector @Inject()(@Named("agent-suspension-baseUrl") baseUrl: URL, http: HttpGet) {
+class AgentSuspensionConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig) {
 
   def getSuspendedServices(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionResponse] = {
-    http
-      .GET[SuspensionResponse](
-        new URL(baseUrl, s"/agent-suspension/status/arn/${arn.value}").toString
-      )
+    val url = s"${appConfig.agentSuspensionBaseUrl}/agent-suspension/status/arn/${arn.value}"
+    http.GET[SuspensionResponse](url)
   } recoverWith {
     case _: NotFoundException => Future successful SuspensionResponse(Set.empty)
   }

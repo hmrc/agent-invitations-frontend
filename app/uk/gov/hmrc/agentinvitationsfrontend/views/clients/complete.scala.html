@@ -19,9 +19,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CompletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
+@this(
+    mainTemplate: main_template
+)
+
 @(config: CompletePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), ""))) {
 
         <div class="transaction-banner--complete">
             <h1 class="transaction-banner__heading">@Messages("client-complete.multi.header")</h1>

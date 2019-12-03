@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder(featureFlags)
+  override implicit lazy val app: Application = appBuilder
     .overrides(new TestClientInvitationJourneyModule)
     .build()
 

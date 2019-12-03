@@ -18,12 +18,11 @@ package journeys
 
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -50,7 +49,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
   val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
-  val featureFlags = FeatureFlags()
 
   val nino = "AB123456A"
   val arn = Arn("TARN0000001")

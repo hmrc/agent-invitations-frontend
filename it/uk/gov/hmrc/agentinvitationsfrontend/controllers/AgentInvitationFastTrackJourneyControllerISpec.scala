@@ -21,21 +21,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  override implicit lazy val app: Application = appBuilder(featureFlags)
-    .overrides(new TestAgentInvitationFastTrackJourneyModule)
-    .build()
-
-  implicit lazy val appOpposite: Application = appBuilder(oppositeFeatureFlags)
-    .overrides(new TestAgentInvitationFastTrackJourneyModule)
-    .build()
-
   lazy val journeyState = app.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
-  lazy val appOppositeJourneyState = appOpposite.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
 
   lazy val controller: AgentInvitationFastTrackJourneyController =
     app.injector.instanceOf[AgentInvitationFastTrackJourneyController]
-
-  lazy val oppositeController = appOpposite.injector.instanceOf[AgentInvitationFastTrackJourneyController]
 
   import journeyState.model.State._
 

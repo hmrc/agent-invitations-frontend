@@ -15,14 +15,15 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.repository
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.modules.reactivemongo.ReactiveMongoComponent
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class SessionCacheRepository @Inject()(
-  @Named("mongodb.session.expireAfterSeconds") expireAfterSeconds: Int,
-  mongo: ReactiveMongoComponent)(implicit ec: ExecutionContext)
-    extends CacheMongoRepository("sessions", expireAfterSeconds)(mongo.mongoConnector.db, ec)
+class SessionCacheRepository @Inject()(mongo: ReactiveMongoComponent)(
+  implicit ec: ExecutionContext,
+  appConfig: AppConfig)
+    extends CacheMongoRepository("sessions", appConfig.mongoSessionExpireAfterSeconds)(mongo.mongoConnector.db, ec)

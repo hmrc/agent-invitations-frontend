@@ -16,12 +16,12 @@
 
 package binders
 
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentinvitationsfrontend.binders.{ErrorConstants, UrlBinders}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.play.test.UnitSpec
 
-class UrlBindersSpec extends UnitSpec with OneAppPerSuite {
+class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
 
   private val error = Left(ErrorConstants.InvitationIdNotFound)
 

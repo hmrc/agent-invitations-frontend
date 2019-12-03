@@ -19,11 +19,20 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, dateFieldsFreeInlineLegend}
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.play.views.html.helpers.input
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
+
+@this(
+  mainTemplate: main_template,
+  errorPrefix: error_prefix,
+  uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+  uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+  uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+  uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+)
+
 @(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @noJsDateFieldsError = @{
@@ -36,21 +45,19 @@
 @pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${config.service}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${config.service}.heading"), config.serviceMessageKey))) {
+@mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${config.service}.heading"), config.serviceMessageKey))) {
 
  @back_link(s"${config.backLinkUrl}")
 
  @if(knownFactForm.hasErrors) {
-  @errorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
+  @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
  }
 
- @form(
-  action = config.submitKFCall,
-  'class -> "form js-form") {
+ @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
 
   @if(config.service == "HMRC-MTD-IT") {
    <div class="form-group">
-   @input(
+  @uiInput(
     knownFactForm("knownFact"),
     '_label -> Html(pageHeading),
     '_inputClass -> "form-control",
@@ -60,7 +67,7 @@
    </div>
   }else {
    <div class="@noJsDateFieldsError">
-   @dateFieldsFreeInlineLegend(knownFactForm, "knownFact",
+   @uiDateFields(knownFactForm, "knownFact",
     '_legend -> Html(pageHeading),
     '_inputHint -> Messages(s"known-fact.${config.service}.helper")
    )

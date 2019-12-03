@@ -23,18 +23,27 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.ConfirmCancelPageConfig
 
+@this(
+   mainTemplate: main_template,
+   errorPrefix: error_prefix,
+   uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+   uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+   uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+   uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
+@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
 @back_link(config.backLink)
 
 @if(choiceForm.hasErrors) {
-@errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("cancel-authorisation.confirm-cancel"))
+  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("cancel-authorisation.confirm-cancel"))
 }
 
-@form(action = config.submitCall, 'class -> "form js-form" ) {
- @input_radio_group(
+@uiFormHelper(action = config.submitCall, 'class -> "form js-form" ) {
+ @uiInputRadioGroup(
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> Messages("cancel-authorisation.confirm-cancel.no")),
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-cancel.header") + s"""</h1>""" +
