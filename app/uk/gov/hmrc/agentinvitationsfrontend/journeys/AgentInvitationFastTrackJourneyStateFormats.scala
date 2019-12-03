@@ -19,7 +19,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.play.fsm.JsonStateFormats
+import play.api.libs.functional.syntax._
 
 object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[State] {
 
@@ -112,8 +114,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "NoPostcode"                      => NoPostcodeFormat.reads(properties)
     case "NoDob"                           => NoDobFormat.reads(properties)
     case "NoVatRegDate"                    => NoVatRegDateFormat.reads(properties)
-    case "SelectClientTypeVat"             => SelectClientTypeVatFormat.reads(properties)
-    case "SelectClientTypeCgt"             => SelectClientTypeCgtFormat.reads(properties)
+    case "SelectClientTypeVat"             => properties.validate(selectClientTypeVatCustomReads)
+    case "SelectClientTypeCgt"             => properties.validate(selectClientTypeCgtCustomReads)
     case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
     case "IdentifyTrustClient"             => IdentifyTrustClientFormat.reads(properties)
@@ -135,4 +137,16 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 
+  //temporary backward compatible reads, can be removed when has been released for over an hour (session records expire)
+  val selectClientTypeVatCustomReads: Reads[SelectClientTypeVat] =
+    ((JsPath \ "originalFastTrackRequest").read[AgentFastTrackRequest] and
+      (JsPath \ "fastTrackRequest").read[AgentFastTrackRequest] and
+      (JsPath \ "continueUrl").readNullable[String] and
+      (JsPath \ "isChanging").readNullable[Boolean].map(_.getOrElse(false)))(SelectClientTypeVat.apply _)
+
+  val selectClientTypeCgtCustomReads: Reads[SelectClientTypeCgt] =
+    ((JsPath \ "originalFastTrackRequest").read[AgentFastTrackRequest] and
+      (JsPath \ "fastTrackRequest").read[AgentFastTrackRequest] and
+      (JsPath \ "continueUrl").readNullable[String] and
+      (JsPath \ "isChanging").readNullable[Boolean].map(_.getOrElse(false)))(SelectClientTypeCgt.apply _)
 }
