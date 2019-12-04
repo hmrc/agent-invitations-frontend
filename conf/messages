@@ -123,7 +123,8 @@ select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to send 
 
 select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage this client’s Capital Gains Tax on UK property disposals?
 select-single-service.HMRC-CGT-PD.business.header=Do you want to manage this client’s Capital Gains Tax on UK property disposals?
-select-single-service.HMRC-CGT-PD.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property disposals
+select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property disposals
+select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property disposals
 
 # Agent suspended
 agent-suspended.heading.multi=We could not create one of your requests
