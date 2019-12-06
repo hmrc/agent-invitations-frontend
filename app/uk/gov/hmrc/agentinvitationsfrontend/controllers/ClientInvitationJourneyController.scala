@@ -46,7 +46,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
-  authActions: AuthActions,
+  authActions: AuthActionsImpl,
   mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService,

@@ -21,6 +21,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  override implicit lazy val app: Application = appBuilder
+    .overrides(new TestAgentInvitationFastTrackJourneyModule)
+    .build()
+
   lazy val journeyState = app.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
 
   lazy val controller: AgentInvitationFastTrackJourneyController =

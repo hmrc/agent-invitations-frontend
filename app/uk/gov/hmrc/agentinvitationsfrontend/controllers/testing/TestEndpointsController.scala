@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
@@ -37,6 +37,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
+  val authActions: AuthActionsImpl,
   pirRelationshipConnector: PirRelationshipConnector,
   val authConnector: AuthConnector,
   val env: Environment,
@@ -49,7 +50,7 @@ class TestEndpointsController @Inject()(
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
   val appConfig: AppConfig)
-    extends FrontendController(cc) with I18nSupport with AuthActions {
+    extends FrontendController(cc) with I18nSupport {
 
   import TestEndpointsController._
 
@@ -94,8 +95,8 @@ class TestEndpointsController @Inject()(
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      Future successful Ok(testFastTrackView(testCurrentAuthorisationRequestForm, isDevEnv))
+    authActions.withAuthorisedAsAgent { _ =>
+      Future successful Ok(testFastTrackView(testCurrentAuthorisationRequestForm, authActions.isDevEnv))
     }
   }
 }

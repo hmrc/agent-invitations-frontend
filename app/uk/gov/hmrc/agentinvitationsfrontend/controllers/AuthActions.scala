@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
@@ -42,17 +41,8 @@ class AuthActionsImpl @Inject()(
   val env: Environment,
   val config: Configuration,
   val authConnector: AuthConnector,
-  val appConfig: AppConfig
-) extends AuthActions
-
-@ImplementedBy(classOf[AuthActionsImpl])
-trait AuthActions extends AuthorisedFunctions with AuthRedirects {
-
-  val appConfig: AppConfig
-
-  def withVerifiedPasscode: PasscodeVerification
-
-  def externalUrls: ExternalUrls
+  val appConfig: AppConfig)
+    extends AuthorisedFunctions with AuthRedirects {
 
   val pdvStartUrl = s"${externalUrls.pdvFrontendUrl}/start"
 

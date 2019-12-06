@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.Configuration
@@ -370,7 +369,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case s: Prologue => Redirect(getCallFor(s))
 
     case CheckDetailsCompleteItsa(_, ftr, _) =>
-      println(ftr)
       gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
     case CheckDetailsCompleteIrv(_, ftr, _) =>

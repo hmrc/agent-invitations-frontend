@@ -109,14 +109,14 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
   def getInactiveCgtRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[CgtTrackRelationship]] =
     getInactiveRelationshipsForService[CgtTrackRelationship]("HMRC-CGT-PD")
 
-  def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
+  private def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     if (isServiceEnabled(service)) {
       monitor(s"ConsumedAPI-DELETE-${serviceShortNames(service)}Relationship-DELETE") {
         val url = getRelationshipUrlFor(service, arn, identifier)
 
-        http.DELETE[Option[Boolean]](url).map(_ => Some(true))
+        http.DELETE[HttpResponse](url).map(_ => Some(true))
       }.recover {
         case _: NotFoundException => Some(false)
         case _                    => None
