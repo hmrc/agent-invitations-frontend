@@ -42,9 +42,6 @@
 
 @flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
 
-@pageHeading = @{"""<h1 class="heading-xlarge margin-bottom-30"""+ flushHeading  + """">""" + Messages(s"known-fact.${config.service}.heading") + """</h1>""" + """<p>""" + Messages("known-fact.p1") + """</p>"""}
-
-
 @mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${config.service}.heading"), config.serviceMessageKey))) {
 
  @back_link(s"${config.backLinkUrl}")
@@ -53,13 +50,15 @@
   @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
  }
 
+<h1 class="heading-xlarge margin-bottom-30" flushHeading>@Messages(s"known-fact.${config.service}.heading")</h1>
+<p>@Messages("known-fact.p1")</p>
+
  @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
 
   @if(config.service == "HMRC-MTD-IT") {
    <div class="form-group">
   @uiInput(
     knownFactForm("knownFact"),
-    '_label -> Html(pageHeading),
     '_inputClass -> "form-control",
     '_inputHint -> Messages(s"known-fact.${config.service}.helper"),
     '_labelClass -> "soft--ends"
@@ -68,7 +67,6 @@
   }else {
    <div class="@noJsDateFieldsError">
    @uiDateFields(knownFactForm, "knownFact",
-    '_legend -> Html(pageHeading),
     '_inputHint -> Messages(s"known-fact.${config.service}.helper")
    )
    </div>
