@@ -138,8 +138,7 @@
         @uiErrorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
     }
 
-      @uiFormHelper(pageConfig.submitUrl
-      ) {
+      @uiFormHelper(pageConfig.submitUrl) {
         <fieldset>
             <legend>
                 <h1 class="heading-xlarge margin-bottom-20">@{if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl.url)){
