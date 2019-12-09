@@ -63,7 +63,8 @@ lazy val root = (project in file("."))
     scoverageSettings,
     unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
     scalafmtOnCompile in Compile := true,
-    scalafmtOnCompile in Test := true
+    scalafmtOnCompile in Test := true,
+    routesGenerator := InjectedRoutesGenerator
   )
   .configs(IntegrationTest)
   .settings(
