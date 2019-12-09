@@ -52,6 +52,7 @@
 
 <h1 class="heading-xlarge margin-bottom-30" flushHeading>@Messages(s"known-fact.${config.service}.heading")</h1>
 <p>@Messages("known-fact.p1")</p>
+<span class="form-hint">@Messages(s"known-fact.${config.service}.helper")</span>
 
  @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
 
@@ -60,14 +61,12 @@
   @uiInput(
     knownFactForm("knownFact"),
     '_inputClass -> "form-control",
-    '_inputHint -> Messages(s"known-fact.${config.service}.helper"),
     '_labelClass -> "soft--ends"
    )
    </div>
   }else {
    <div class="@noJsDateFieldsError">
-   @uiDateFields(knownFactForm, "knownFact",
-    '_inputHint -> Messages(s"known-fact.${config.service}.helper")
+   @uiDateFields(knownFactForm, "knownFact"
    )
    </div>
   }
