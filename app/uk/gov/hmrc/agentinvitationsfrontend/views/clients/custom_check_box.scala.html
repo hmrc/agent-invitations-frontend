@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@(field: play.api.data.Field, args: (Symbol,Any)*)(implicit messages: Messages)
+@(field: play.api.data.Field, args: (Symbol, Any)*)(implicit messages: Messages)
 
 @import views.html.helper._
 
@@ -28,7 +28,7 @@
             @elements.errors.map { error =>
                 <span id="@{elements.field.id}--error" class="error-notification">@Messages(error)</span>
             }
-            @elements.label
+            @Html(elements.label.toString)
         </label>
     </div>
 </div>

@@ -20,11 +20,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CannotCreateRequestConfig
 
-
+@this(
+ mainTemplate: main_template
+)
 
 @(config: CannotCreateRequestConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cannot-create-request.header"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cannot-create-request.header"), ""))) {
 
 @back_link(config.backLink)
 

@@ -25,24 +25,34 @@
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
+@mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
 
   @back_link_referer(request)
 
   @if(confirmForm.hasErrors) {
-   @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
+   @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
   }
 
   <h1 class="heading-xlarge margin-bottom-20">@Messages("confirm-authorisation-cancelled.header")</h1>
   <p>@Messages(s"confirm-authorisation-cancelled.p1.$service")</p>
 
 
-  @form(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
+  @uiFormHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
     <div class="govuk-radios--inline">
-     @input_radio_group(
+     @uiInputRadioGroup(
       confirmForm("confirmCancelAuthorisation"),
       Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
         '_legend -> Html("""<p class="panel panel-border-wide">""" + Messages("confirm-authorisation-cancelled.warning")+ """</p>"""),

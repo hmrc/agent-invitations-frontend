@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}

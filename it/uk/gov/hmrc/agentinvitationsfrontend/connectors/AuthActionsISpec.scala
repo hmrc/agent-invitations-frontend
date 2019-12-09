@@ -5,35 +5,33 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, PasscodeVerification}
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, PasscodeVerification}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AuthActionsISpec extends BaseISpec {
 
-  object TestController extends AuthActions {
+  val authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+  val config: Configuration = app.injector.instanceOf[Configuration]
+  val env: Environment = app.injector.instanceOf[Environment]
+  val withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
+  val externalUrls: ExternalUrls = app.injector.instanceOf[ExternalUrls]
 
-    override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
-    override def config: Configuration = app.injector.instanceOf[Configuration]
-    override def env: Environment = app.injector.instanceOf[Environment]
-    override def withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
-
-    import scala.concurrent.ExecutionContext.Implicits.global
-
+  object TestController
+      extends AuthActionsImpl(withVerifiedPasscode, externalUrls, env, config, authConnector, appConfig) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
         Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
       })
-
-    override def externalUrls: ExternalUrls =
-      new ExternalUrls("", "", "", "", "", "", "", "", "", "fooSubscriptionUrl", "", "", "", "", "", pdvFrontendUrl = "", timeoutCountdown = 0, timeout = 0)
   }
 
   "withAuthorisedAsAgent" should {
@@ -57,7 +55,7 @@ class AuthActionsISpec extends BaseISpec {
       givenUnauthorisedForInsufficientEnrolments()
       val result = await(TestController.testWithAuthorisedAsAgent)
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("fooSubscriptionUrl")
+      redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
     }
 
     "throw Forbidden when expected agent's identifier missing" in {

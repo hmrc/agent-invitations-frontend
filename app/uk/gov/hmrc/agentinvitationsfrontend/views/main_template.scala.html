@@ -18,6 +18,14 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+    govukWrapper: govuk_wrapper,
+    uiSidebar: uk.gov.hmrc.play.views.html.layouts.Sidebar,
+    uiArticle: uk.gov.hmrc.play.views.html.layouts.Article
+)
+
 @(title: String,
         sidebarLinks: Option[Html] = None,
         contentHeader: Option[Html] = None,
@@ -45,11 +53,14 @@
             }
         }
 
-    @sidebar = {
-    @if(sidebarLinks.isDefined) {
-        @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
-    }
-    }
+        @sidebar = {
+            @sidebarLinks match {
+                case Some(links) => {
+                @uiSidebar(links, Some("sidebar"))
+                }
+                case None => {}
+                }
+        }
 
         @scriptElements = {
             @scriptElem
@@ -71,12 +82,12 @@
             }
         }
 
-    @govuk_wrapper(title,
+    @govukWrapper(title,
         mainClass,
         bodyClasses = bodyClasses,
         sidebar = sidebar,
         contentHeader = contentHeader,
-        mainContent = layouts.article(mainContent),
+        mainContent = uiArticle(mainContent),
         serviceInfoContent = serviceInfoContent,
         scriptElem = Some(scriptElements),
         cookies = Some(request.cookies),

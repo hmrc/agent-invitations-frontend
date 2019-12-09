@@ -22,6 +22,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @submitUrl = @{ if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode
@@ -29,21 +38,21 @@
                 else routes.AgentInvitationJourneyController.submitConfirmCgtPostcode
               }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = error_prefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-postcode-cgt.header"), "cgt"))) {
+@mainTemplate(title = errorPrefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-postcode-cgt.header"), "cgt"))) {
 
     @back_link(backLinkUrl)
 
     @if(postcodeForm.hasErrors){
-        @errorSummary(Messages("error.summary.heading"), postcodeForm, Seq.empty, Some("confirm-postcode-cgt"))
+        @uiErrorSummary(Messages("error.summary.heading"), postcodeForm, Seq.empty, Some("confirm-postcode-cgt"))
     }
 
     <h1 class="heading-xlarge margin-bottom-10">@Messages("confirm-postcode-cgt.header")</h1>
 
     <p class="hint-text">@Messages("confirm-postcode-cgt.p1")</p>
 
-    @form(action = submitUrl, 'class -> "form js-form") {
+    @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
     <div class="form-group">
-        @input(
+        @uiInput(
         postcodeForm("postcode"),
         '_label -> Messages("confirm-postcode-cgt.label"),
         '_inputClass -> "form-control",

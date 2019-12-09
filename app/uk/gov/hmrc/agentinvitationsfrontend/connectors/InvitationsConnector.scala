@@ -20,28 +20,31 @@ import java.net.URL
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logger
-import play.api.libs.json.JsObject
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsObject, JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, SimpleObjectReads}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.controllers.RestFormats.{dateTimeFormats, localDateFormats}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsConnector @Inject()(
-  @Named("agent-client-authorisation-baseUrl") baseUrl: URL,
-  http: HttpGet with HttpPost with HttpPut,
-  metrics: Metrics)
+class InvitationsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  val baseUrl: URL = new URL(appConfig.agentClientAuthorisationBaseUrl)
 
   import Reads._
 
@@ -405,11 +408,6 @@ class InvitationsConnector @Inject()(
   }
 
   object Reads {
-
-    import play.api.libs.functional.syntax._
-    import play.api.libs.json.{JsPath, Reads}
-    import uk.gov.hmrc.domain.SimpleObjectReads
-    import uk.gov.hmrc.http.controllers.RestFormats.dateTimeFormats
 
     implicit val reads: Reads[StoredInvitation] = {
 

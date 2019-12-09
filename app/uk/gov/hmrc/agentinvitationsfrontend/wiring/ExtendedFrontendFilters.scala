@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.wiring
 
 import akka.stream.Materializer
 import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Configuration
 import play.api.http.HttpFilters
 import play.api.http.HttpVerbs.POST
@@ -39,7 +38,7 @@ class ExtendedFrontendFilters @Inject()(
   object CSRFExceptionsFilter extends Filter {
 
     lazy val whitelist: Set[String] = configuration
-      .getStringSeq("csrfexceptions.whitelist")
+      .get[Option[Seq[String]]]("csrfexceptions.whitelist")
       .getOrElse(Seq.empty)
       .toSet
 
@@ -49,7 +48,7 @@ class ExtendedFrontendFilters @Inject()(
 
       def filteredHeaders(rh: RequestHeader): RequestHeader =
         if (rh.method == POST && whitelist.contains(rh.path))
-          rh.copy(headers = rh.headers.add("Csrf-Token" -> "nocheck"))
+          rh.withHeaders(rh.headers.add("Csrf-Token" -> "nocheck"))
         else rh
 
       f(filteredHeaders(rh))

@@ -16,26 +16,24 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
-import com.google.inject.name.Named
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet}
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SsoConnector @Inject()(http: HttpGet, @Named("sso-baseUrl") baseUrl: URL, metrics: Metrics)
-    extends HttpAPIMonitor {
+class SsoConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def getWhitelistedDomains()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
     monitor("ConsumedAPI-SSO-getExternalDomains-GET") {
-      val url = new URL(baseUrl, "/sso/domains")
+      val url = s"${appConfig.ssoBaseUrl}/sso/domains"
       http
         .GET[JsObject](url.toString)
         .map(jsObj => {

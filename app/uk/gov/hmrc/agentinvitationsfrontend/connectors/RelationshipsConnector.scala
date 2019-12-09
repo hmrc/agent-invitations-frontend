@@ -20,26 +20,28 @@ import java.net.URL
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelationshipsConnector @Inject()(
-  @Named("agent-client-relationships-baseUrl") baseUrl: URL,
-  http: HttpGet with HttpDelete,
-  metrics: Metrics,
-  featureFlags: FeatureFlags)
+class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFlags)(
+  implicit appConfig: AppConfig,
+  metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  val baseUrl = new URL(appConfig.acrBaseUrl)
 
   // TODO when Service becomes a sealed trait, move these to that class
   private val serviceShortNames = Map(
@@ -107,14 +109,14 @@ class RelationshipsConnector @Inject()(
   def getInactiveCgtRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[CgtTrackRelationship]] =
     getInactiveRelationshipsForService[CgtTrackRelationship]("HMRC-CGT-PD")
 
-  def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
+  private def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     if (isServiceEnabled(service)) {
       monitor(s"ConsumedAPI-DELETE-${serviceShortNames(service)}Relationship-DELETE") {
         val url = getRelationshipUrlFor(service, arn, identifier)
 
-        http.DELETE(url).map(_ => Some(true))
+        http.DELETE[HttpResponse](url).map(_ => Some(true))
       }.recover {
         case _: NotFoundException => Some(false)
         case _                    => None

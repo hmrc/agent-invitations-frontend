@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class BusinessSelectServicePageConfig(
   basket: Basket = Set.empty,
-  featureFlags: FeatureFlags = FeatureFlags.apply(),
+  featureFlags: FeatureFlags,
   services: Set[String] = Set(HMRCMTDVAT),
   submitCall: Call,
   backLink: String,

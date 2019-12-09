@@ -23,17 +23,26 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
 
     @back_link(backLinkUrl)
 
     @if(trustClientForm.hasErrors) {
-         @errorSummary(Messages("error.summary.heading"), trustClientForm, Seq.empty, Some("identify-trust-client"))
+         @uiErrorSummary(Messages("error.summary.heading"), trustClientForm, Seq.empty, Some("identify-trust-client"))
     }
 
     <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-trust-client.header")</h1>
@@ -42,10 +51,10 @@
 
     <span class="form-hint">@Html(Messages("identify-trust-client.p2"))</span>
 
-    @form(action = submitFormCall, 'class -> "form js-form") {
+    @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
 
         <div class="form-group margin-top-30">
-            @input(
+            @uiInput(
             trustClientForm("utr"),
             '_inputClass -> "form-control",
             '_labelClass -> "soft--ends"

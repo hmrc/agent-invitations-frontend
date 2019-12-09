@@ -21,11 +21,9 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
@@ -35,11 +33,9 @@ import scala.util.control.NonFatal
 @Singleton
 class InvitationsService @Inject()(
   val invitationsConnector: InvitationsConnector,
-  featureFlags: FeatureFlags,
   val agentServicesAccountConnector: AgentServicesAccountConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
-  auditService: AuditService,
-  externalUrls: ExternalUrls)
+  auditService: AuditService)
     extends GetClientName {
 
   def createInvitation(arn: Arn, invitation: Invitation)(

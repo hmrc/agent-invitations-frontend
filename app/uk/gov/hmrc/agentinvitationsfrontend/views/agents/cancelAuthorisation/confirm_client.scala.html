@@ -22,6 +22,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @clientIdentifierText = @{clientIdType match {
@@ -30,16 +39,16 @@
                             case _      => ""
                            }
                          }
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
+@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
 @back_link(backLinkUrl)
 
 @if(choiceForm.hasErrors) {
-  @errorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
+  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 }
 
-@form(action = submitCall, 'class -> "form js-form") {
- @input_radio_group(
+@uiFormHelper(action = submitCall, 'class -> "form js-form") {
+ @uiInputRadioGroup(
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-client.header") +

@@ -34,6 +34,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, Relati
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service, trust_select_service}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -45,14 +46,32 @@ class AgentLedDeauthJourneyController @Inject()(
   authActions: AuthActionsImpl,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
-  countryNamesLoader: CountryNamesLoader
+  countryNamesLoader: CountryNamesLoader,
+  clientTypeView: client_type,
+  businessSelectServiceView: business_select_service,
+  identifyClientItsaView: identify_client_itsa,
+  identifyClientIrvView: identify_client_irv,
+  identifyClientVatView: identify_client_vat,
+  identifyClientTrustView: identify_client_trust,
+  identifyClientCgtView: identify_client_cgt,
+  confirmClientView: confirm_client,
+  confirmCountryCodeCgtView: confirm_countryCode_cgt,
+  confirmPostcodeCgtView: confirm_postcode_cgt,
+  authCancelledView: authorisation_cancelled,
+  notAuthorisedView: not_authorised,
+  selectServiceView: select_service,
+  noClientFoundView: no_client_found,
+  trustSelectServiceView: trust_select_service,
+  notSignedupView: not_signed_up,
+  responseFailedView: response_failed,
+  confirmCancelView: confirm_cancel
 )(
   implicit ec: ExecutionContext,
   configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  val messagesApi: play.api.i18n.MessagesApi)
-    extends FrontendController with JourneyController[HeaderCarrier] with I18nSupport {
+  val cc: MessagesControllerComponents)
+    extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   override def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -244,7 +263,7 @@ class AgentLedDeauthJourneyController @Inject()(
           getCallFor(_).url)
 
       Ok(
-        client_type(
+        clientTypeView(
           formWithErrors.or(ClientTypeForm.deAuthorisationForm),
           ClientTypePageConfig(
             backLinkForClientType,
@@ -254,7 +273,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case SelectServicePersonal(enabledServices) =>
       Ok(
-        select_service(
+        selectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfigCancel(
             featureFlags,
@@ -266,7 +285,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case SelectServiceBusiness =>
       Ok(
-        business_select_service(
+        businessSelectServiceView(
           formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business)),
           routes.AgentLedDeauthJourneyController.submitBusinessService(),
           backLinkFor(breadcrumbs).url
@@ -275,7 +294,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case SelectServiceTrust(enabledServices) =>
       Ok(
-        trust_select_service(
+        trustSelectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfigCancel(
             featureFlags,
@@ -290,7 +309,7 @@ class AgentLedDeauthJourneyController @Inject()(
       service match {
         case HMRCMTDIT =>
           Ok(
-            identify_client_itsa(
+            identifyClientItsaView(
               ItsaClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
               backLinkFor(breadcrumbs).url,
@@ -298,7 +317,7 @@ class AgentLedDeauthJourneyController @Inject()(
             ))
         case HMRCPIR =>
           Ok(
-            identify_client_irv(
+            identifyClientIrvView(
               IrvClientForm.form,
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
               backLinkFor(breadcrumbs).url,
@@ -307,7 +326,7 @@ class AgentLedDeauthJourneyController @Inject()(
           )
         case HMRCMTDVAT =>
           Ok(
-            identify_client_vat(
+            identifyClientVatView(
               formWithErrors.or(VatClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
               backLinkFor(breadcrumbs).url,
@@ -316,7 +335,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
         case HMRCCGTPD =>
           Ok(
-            identify_client_cgt(
+            identifyClientCgtView(
               formWithErrors.or(CgtClientForm.form()),
               routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
               backLinkFor(breadcrumbs).url,
@@ -326,7 +345,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case IdentifyClientBusiness =>
       Ok(
-        identify_client_vat(
+        identifyClientVatView(
           formWithErrors.or(VatClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
           backLinkFor(breadcrumbs).url,
@@ -335,7 +354,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case IdentifyClientTrust =>
       Ok(
-        identify_client_trust(
+        identifyClientTrustView(
           formWithErrors.or(TrustClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url,
@@ -344,7 +363,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case IdentifyClientCgt =>
       Ok(
-        identify_client_cgt(
+        identifyClientCgtView(
           formWithErrors.or(CgtClientForm.form()),
           routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
           backLinkFor(breadcrumbs).url,
@@ -353,7 +372,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientItsa(clientName, nino) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -364,7 +383,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientIrv(clientName, nino) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -375,7 +394,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientPersonalVat(clientName, vrn) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -386,7 +405,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientBusiness(clientName, vrn) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -397,7 +416,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientTrust(trustName, utr) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           trustName,
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -408,7 +427,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case _: ConfirmCountryCodeCgt =>
       Ok(
-        confirm_countryCode_cgt(
+        confirmCountryCodeCgtView(
           personal,
           countries,
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
@@ -418,7 +437,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case _: ConfirmPostcodeCgt =>
       Ok(
-        confirm_postcode_cgt(
+        confirmPostcodeCgtView(
           personal,
           formWithErrors.or(PostcodeForm.form),
           backLinkFor(breadcrumbs).url,
@@ -427,7 +446,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmClientCgt(cgtRef, clientName) =>
       Ok(
-        confirm_client(
+        confirmClientView(
           clientName,
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
@@ -438,7 +457,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case ConfirmCancel(service, clientName, _) =>
       Ok(
-        confirm_cancel(
+        confirmCancelView(
           formWithErrors.or(confirmCancelForm),
           ConfirmCancelPageConfig(
             service,
@@ -450,28 +469,28 @@ class AgentLedDeauthJourneyController @Inject()(
     case AuthorisationCancelled(service, clientName, agencyName) =>
       journeyService.cleanBreadcrumbs(_ => Nil)
       Ok(
-        authorisation_cancelled(
+        authCancelledView(
           service,
           clientName.getOrElse(""),
           agencyName,
           s"${externalUrls.agentServicesAccountUrl}/agent-services-account"))
 
     case KnownFactNotMatched =>
-      Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case TrustNotFound =>
-      Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case CgtRefNotFound(_) =>
-      Ok(no_client_found(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>
-      Ok(not_signed_up(service, hasRequests = false, isDeAuthJourney = true))
+      Ok(notSignedupView(service, hasRequests = false, isDeAuthJourney = true))
 
     case NotAuthorised(service) =>
-      Ok(not_authorised(service, routes.AgentLedDeauthJourneyController.showClientType(), isDeAuthJourney = true))
+      Ok(notAuthorisedView(service, routes.AgentLedDeauthJourneyController.showClientType(), isDeAuthJourney = true))
 
-    case _: ResponseFailed => Ok(response_failed(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
+    case _: ResponseFailed => Ok(responseFailedView(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
 
   }
 }

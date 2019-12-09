@@ -16,25 +16,32 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
 
 @(cgtClientForm : Form[CgtClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"identify-cgt-client.header"), "cgt"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"identify-cgt-client.header"), "cgt"))) {
 
     @back_link(backLinkUrl)
 
     @if(cgtClientForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), cgtClientForm, Seq.empty, Some("identify-cgt-client"))
+        @uiErrorSummary(Messages("error.summary.heading"), cgtClientForm, Seq.empty, Some("identify-cgt-client"))
     }
 
     <!-- TODO use client type here (personal or trust) -->
@@ -47,10 +54,10 @@
 
     <span class="form-hint margin-bottom-0">@Html(Messages("identify-cgt-client.hint"))</span>
 
-    @form(action = submitFormCall, 'class -> "form js-form") {
+    @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
 
         <div class="form-group margin-top-20">
-        @input(
+        @uiInput(
             cgtClientForm("cgtRef"),
             '_inputClass -> "form-control",
             '_labelClass -> "soft--ends"

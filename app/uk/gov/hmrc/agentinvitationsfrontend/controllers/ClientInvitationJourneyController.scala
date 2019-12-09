@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import akka.http.scaladsl.model.headers.LinkParams.title
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyService, MongoDBCachedClientInvitationJourneyService}
@@ -45,16 +46,34 @@ class ClientInvitationJourneyController @Inject()(
   invitationsConnector: InvitationsConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
-  authActions: AuthActions,
+  authActions: AuthActionsImpl,
   mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   pdvConnector: PersonalDetailsValidationConnector,
-  override val journeyService: ClientInvitationJourneyService)(
+  override val journeyService: ClientInvitationJourneyService,
+  notAuthorisedAsClientView: not_authorised_as_client,
+  signedOutView: signed_out,
+  cannotConfirmIdentityView: cannot_confirm_identity,
+  lockedOutView: locked_out,
+  failedIv5xxView: failed_iv_5xx,
+  sessionLostView: session_lost,
+  notFoundInvitationView: not_found_invitation,
+  warmupView: warm_up,
+  confirmTermsMultiView: confirm_terms_multi,
+  checkAnswersView: check_answers,
+  confirmDeclineView: confirm_decline,
+  completeView: complete,
+  invitationDeclinedView: invitation_declined,
+  allResponsesFailedView: all_responses_failed,
+  someResponsesFailedView: some_responses_failed,
+  trustNotClaimedView: trust_not_claimed,
+  suspendedAgentView: suspended_agent)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
-  val messagesApi: play.api.i18n.MessagesApi,
+  val mcc: MessagesControllerComponents,
   featureFlags: FeatureFlags,
-  ec: ExecutionContext)
-    extends FrontendController with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier]
+  ec: ExecutionContext,
+  val appConfig: AppConfig)
+    extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier]
     with I18nSupport {
 
   import ClientInvitationJourneyController._
@@ -203,7 +222,7 @@ class ClientInvitationJourneyController @Inject()(
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      Future successful Forbidden(not_authorised_as_client())
+      Future successful Forbidden(notAuthorisedAsClientView())
     }
   }
 
@@ -214,34 +233,34 @@ class ClientInvitationJourneyController @Inject()(
   def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps
-      .localFriendlyUrl(env, config)(successUrl, request.host)
-    Future successful Forbidden(signed_out(s"$ggLoginUrl?continue=$continueUrl"))
+      .localFriendlyUrl(env, appConfig)(successUrl, request.host)
+    Future successful Forbidden(signedOutView(s"$ggLoginUrl?continue=$continueUrl"))
   }
 
   def signedOut: Action[AnyContent] = Action.async { implicit request =>
     journeyService.initialState
       .map { state =>
         val result = state match {
-          case State.MissingJourneyHistory => signed_out(toLocalFriendly(externalUrls.agentClientManagementUrl))
-          case s: State                    => signed_out(s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}")
+          case State.MissingJourneyHistory => signedOutView(toLocalFriendly(externalUrls.agentClientManagementUrl))
+          case s: State                    => signedOutView(s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}")
         }
         Forbidden(result).withNewSession
       }
   }
 
   private def toLocalFriendly(url: String)(implicit request: Request[_]): String =
-    CallOps.localFriendlyUrl(env, config)(url, request.host)
+    CallOps.localFriendlyUrl(env, appConfig)(url, request.host)
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(
-      cannot_confirm_identity(title = Some(Messages("locked-out.header")), html = Some(locked_out())))
+      cannotConfirmIdentityView(titleKey = Some("locked-out.header"), html = Some(lockedOutView())))
   }
 
   def showCannotConfirmIdentity(journeyId: Option[String], success: Option[String]): Action[AnyContent] = Action.async {
     implicit request =>
       journeyId
         .fold(
-          Future.successful(Forbidden(cannot_confirm_identity()))
+          Future.successful(Forbidden(cannotConfirmIdentityView()))
         )(
           id =>
             identityVerificationConnector
@@ -291,19 +310,18 @@ class ClientInvitationJourneyController @Inject()(
         InternalServerError(s"failed to get PDV result: data for validationId $validationId not found")
       case PdvValidationNoNino =>
         InternalServerError(s"failed to get PDV result: No NINO in response for $validationId")
-      case PdvValidationFailure => Forbidden(cannot_confirm_identity())
+      case PdvValidationFailure => Forbidden(cannotConfirmIdentityView())
     }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
-    reason.fold(Forbidden(cannot_confirm_identity())) {
+    reason.fold(Forbidden(cannotConfirmIdentityView())) {
       case TechnicalIssue =>
-        Forbidden(
-          cannot_confirm_identity(title = Some(Messages("technical-issues.header")), html = Some(failed_iv_5xx())))
+        Forbidden(cannotConfirmIdentityView(titleKey = Some("technical-issues.header"), html = Some(failedIv5xxView())))
       case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
-        Forbidden(cannot_confirm_identity())
+        Forbidden(cannotConfirmIdentityView())
       case UserAborted | TimedOut => Redirect(routes.ClientInvitationJourneyController.handleIVTimeout(success))
       case LockedOut              => Redirect(routes.ClientInvitationJourneyController.lockedOut)
-      case _                      => Forbidden(cannot_confirm_identity())
+      case _                      => Forbidden(cannotConfirmIdentityView())
     }
 
   def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
@@ -338,11 +356,11 @@ class ClientInvitationJourneyController @Inject()(
     implicit request: Request[_]): Result = state match {
 
     case MissingJourneyHistory =>
-      Ok(session_lost())
+      Ok(sessionLostView())
 
     case WarmUp(clientType, uid, _, agentName, _) =>
       Ok(
-        warm_up(
+        warmupView(
           WarmUpPageConfig(
             agentName,
             clientType,
@@ -353,12 +371,12 @@ class ClientInvitationJourneyController @Inject()(
 
     case NotFoundInvitation =>
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(not_found_invitation(serviceMessageKey))
+      Ok(notFoundInvitationView(serviceMessageKey))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)
       Ok(
-        confirm_terms_multi(
+        confirmTermsMultiView(
           formWithErrors.or(confirmTermsMultiForm),
           ConfirmTermsPageConfig(
             agentName,
@@ -375,7 +393,7 @@ class ClientInvitationJourneyController @Inject()(
 
     case SingleConsent(clientType, uid, agentName, consent, consents) =>
       Ok(
-        confirm_terms_multi(
+        confirmTermsMultiView(
           formWithErrors.or(confirmTermsMultiForm),
           ConfirmTermsPageConfig(
             agentName,
@@ -391,7 +409,7 @@ class ClientInvitationJourneyController @Inject()(
 
     case CheckAnswers(clientType, uid, agentName, consents) =>
       Ok(
-        check_answers(
+        checkAnswersView(
           CheckAnswersPageConfig(
             consents,
             agentName,
@@ -405,7 +423,7 @@ class ClientInvitationJourneyController @Inject()(
 
     case ConfirmDecline(clientType, uid, agentName, consents) =>
       Ok(
-        confirm_decline(
+        confirmDeclineView(
           formWithErrors.or(confirmDeclineForm),
           ConfirmDeclinePageConfig(
             agentName,
@@ -418,16 +436,18 @@ class ClientInvitationJourneyController @Inject()(
         ))
 
     case InvitationsAccepted(agentName, consents, clientType) =>
-      Ok(complete(CompletePageConfig(agentName, consents, clientType)))
+      Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
 
     case InvitationsDeclined(agentName, consents, clientType) =>
-      Ok(invitation_declined(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
+      Ok(
+        invitationDeclinedView(
+          InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
 
-    case AllResponsesFailed => Ok(all_responses_failed())
+    case AllResponsesFailed => Ok(allResponsesFailedView())
 
     case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
       Ok(
-        some_responses_failed(
+        someResponsesFailedView(
           SomeResponsesFailedPageConfig(
             failedConsents,
             agentName,
@@ -438,10 +458,10 @@ class ClientInvitationJourneyController @Inject()(
       val backLink =
         if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
         else Call("GET", externalUrls.agentClientManagementUrl)
-      Ok(trust_not_claimed(backLink))
+      Ok(trustNotClaimedView(backLink))
 
     case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
-      Ok(suspended_agent(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
+      Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
   }
 }
 

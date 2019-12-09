@@ -20,11 +20,11 @@ import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
@@ -37,27 +37,32 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
-  val messagesApi: play.api.i18n.MessagesApi,
+  val authActions: AuthActionsImpl,
   pirRelationshipConnector: PirRelationshipConnector,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification)(
+  val withVerifiedPasscode: PasscodeVerification,
+  deleteRelationshipView: delete_relationship,
+  createRelationshipView: create_relationship,
+  testFastTrackView: test_fast_track)(
   implicit val config: Configuration,
   val externalUrls: ExternalUrls,
-  ec: ExecutionContext)
-    extends FrontendController with I18nSupport with AuthActions {
+  ec: ExecutionContext,
+  val cc: MessagesControllerComponents,
+  val appConfig: AppConfig)
+    extends FrontendController(cc) with I18nSupport {
 
   import TestEndpointsController._
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(delete_relationship(testRelationshipForm))
+    Future successful Ok(deleteRelationshipView(testRelationshipForm))
   }
 
   def submitDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
     testRelationshipForm
       .bindFromRequest()
       .fold(
-        formWithErrors => Future successful BadRequest(delete_relationship(formWithErrors)),
+        formWithErrors => Future successful BadRequest(deleteRelationshipView(formWithErrors)),
         validFormData => {
           pirRelationshipConnector
             .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
@@ -70,14 +75,14 @@ class TestEndpointsController @Inject()(
   }
 
   def getCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Ok(create_relationship(testRelationshipForm))
+    Future successful Ok(createRelationshipView(testRelationshipForm))
   }
 
   def submitCreateRelationship: Action[AnyContent] = Action.async { implicit request =>
     testRelationshipForm
       .bindFromRequest()
       .fold(
-        formWithErrors ⇒ Future successful BadRequest(create_relationship(formWithErrors)),
+        formWithErrors ⇒ Future successful BadRequest(createRelationshipView(formWithErrors)),
         validFormData => {
           pirRelationshipConnector
             .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
@@ -90,8 +95,8 @@ class TestEndpointsController @Inject()(
   }
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
-      Future successful Ok(test_fast_track(testCurrentAuthorisationRequestForm, isDevEnv))
+    authActions.withAuthorisedAsAgent { _ =>
+      Future successful Ok(testFastTrackView(testCurrentAuthorisationRequestForm, authActions.isDevEnv))
     }
   }
 }

@@ -19,7 +19,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   val enabledServices: Set[String] = Set(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, HMRCCGTPD)
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override implicit lazy val app: Application = appBuilder(featureFlags)
+  override implicit lazy val app: Application = appBuilder
     .overrides(new TestAgentLedDeauthJourneyModule)
     .build()
 

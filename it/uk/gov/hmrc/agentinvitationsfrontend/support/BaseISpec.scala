@@ -7,7 +7,7 @@ import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.google.inject.AbstractModule
 import org.scalatest.Assertion
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -17,7 +17,7 @@ import play.api.test.Helpers.{contentType, _}
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -27,21 +27,11 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 
 abstract class BaseISpec
-    extends UnitSpec with OneAppPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
+    extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
     with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
 
-  val featureFlags: FeatureFlags = new FeatureFlags()
-
-  val oppositeFeatureFlags: FeatureFlags = featureFlags.copy(
-    showHmrcMtdIt = !featureFlags.showHmrcMtdIt,
-    showPersonalIncome = !featureFlags.showPersonalIncome,
-    showHmrcMtdVat = !featureFlags.showHmrcMtdVat,
-    enableTrackCancelAuth = !featureFlags.enableTrackCancelAuth,
-    showAgentLedDeAuth = !featureFlags.showAgentLedDeAuth
-  )
-
-  override implicit lazy val app: Application = appBuilder(featureFlags).build()
+  override implicit lazy val app: Application = appBuilder.build()
 
   val pdvFrontendUrl = "http://localhost:9968"
   val companyAuthUrl = "https://company-auth-url"
@@ -54,7 +44,7 @@ abstract class BaseISpec
 
   val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
 
-  protected def appBuilder(featureFlags: FeatureFlags): GuiceApplicationBuilder =
+  protected def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port"                                         -> wireMockPort,
@@ -93,14 +83,14 @@ abstract class BaseISpec
         "metrics.logback"                                                         -> false,
         "passcodeAuthentication.enabled"                                          -> false,
         "track-requests-per-page"                                                 -> 10,
-        "features.show-hmrc-mtd-it"                                               -> featureFlags.showHmrcMtdIt,
-        "features.show-personal-income"                                           -> featureFlags.showPersonalIncome,
-        "features.show-hmrc-mtd-vat"                                              -> featureFlags.showHmrcMtdVat,
+        "features.show-hmrc-mtd-it"                                               -> true,
+        "features.show-personal-income"                                           -> true,
+        "features.show-hmrc-mtd-vat"                                              -> true,
         "features.show-hmrc-trust"                                                -> true,
         "features.show-hmrc-cgt"                                                  -> true,
         "features.enable-agent-suspension"                                        -> true,
-        "features.enable-track-cancel-auth-action"                                -> featureFlags.enableTrackCancelAuth,
-        "features.show-agent-led-de-auth"                                         -> featureFlags.showAgentLedDeAuth,
+        "features.enable-track-cancel-auth-action"                                -> true,
+        "features.show-agent-led-de-auth"                                         -> true,
         "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
@@ -108,6 +98,8 @@ abstract class BaseISpec
       .overrides(new TestGuiceModule)
 
   def commonStubs(): Seq[StubMapping] = givenAuditConnector()
+
+  implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
 
   protected implicit val materializer: Materializer = app.materializer
 

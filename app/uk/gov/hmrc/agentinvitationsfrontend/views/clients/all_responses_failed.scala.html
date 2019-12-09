@@ -21,9 +21,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 
+@this(
+    mainTemplate: main_template
+)
+
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.clients"), title = Messages("generic.title", Messages("all-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
+@mainTemplate(bannerTitle = Messages("banner.clients"), title = Messages("generic.title", Messages("all-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
 
     <h1 class="heading-xlarge">@Messages("all-responses-failed.header")</h1>
 

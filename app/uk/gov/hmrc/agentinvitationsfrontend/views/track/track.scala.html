@@ -20,14 +20,22 @@
 
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{new_request_form, pending_form, cancel_authorisation_form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.TrackPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
+
+@this(
+    mainTemplate: main_template,
+    pendingForm: pending_form,
+    cancelAuthForm: cancel_authorisation_form,
+    newRequestForm: new_request_form
+)
+
 @(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
+@mainTemplate(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
     @back_link(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
 
@@ -75,11 +83,11 @@
                     <h3 class="context">@Messages("recent-invitations.table-row-header.actions")</h3>
                     @{
                         invitationOrRelationship.status match {
-                            case "Pending" => pending_form(invitationOrRelationship, index)
+                            case "Pending" => pendingForm(invitationOrRelationship, index)
                             case "Accepted" => if(config.cancelAuthActionFlag) {
-                                cancel_authorisation_form(invitationOrRelationship, index)
+                                  cancelAuthForm(invitationOrRelationship, index)
                             }
-                            case _ => new_request_form(invitationOrRelationship, index)
+                            case _ => newRequestForm(invitationOrRelationship, index)
                         }
                     }
                 </div>

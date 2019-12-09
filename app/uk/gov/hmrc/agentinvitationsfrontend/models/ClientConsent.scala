@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.http.controllers.RestFormats.localDateFormats
 
 case class ClientConsent(
   invitationId: InvitationId,

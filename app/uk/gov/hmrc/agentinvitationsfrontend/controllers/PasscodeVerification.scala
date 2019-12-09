@@ -16,18 +16,21 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.Inject
-
+import com.google.inject.ImplementedBy
+import javax.inject.{Inject, Singleton}
+import play.api.Environment
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment, Mode}
-import uk.gov.hmrc.auth.otac.{Authorised, OtacAuthConnector}
-import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.auth.otac.{Authorised, PlayOtacAuthConnector}
+import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PasscodeVerificationException(msg: String) extends RuntimeException(msg)
 
+@ImplementedBy(classOf[FrontendPasscodeVerification])
 trait PasscodeVerification {
   def apply[A](body: Boolean => Future[Result])(
     implicit request: Request[A],
@@ -35,25 +38,26 @@ trait PasscodeVerification {
     ec: ExecutionContext): Future[Result]
 }
 
-class FrontendPasscodeVerification @Inject()(
-  configuration: Configuration,
-  environment: Environment,
-  otacAuthConnector: OtacAuthConnector)
+@Singleton
+class OtacAuthConnectorImpl @Inject()(val httpClient: HttpClient)(implicit appConfig: AppConfig)
+    extends PlayOtacAuthConnector {
+  override val serviceUrl: String = appConfig.authBaseUrl
+  override def http: CoreGet = httpClient
+}
+
+@Singleton
+class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthConnector: OtacAuthConnectorImpl)(
+  implicit appConfig: AppConfig)
     extends PasscodeVerification {
 
   val tokenParam = "p"
   val passcodeEnabledKey = "passcodeAuthentication.enabled"
   val passcodeRegimeKey = "passcodeAuthentication.regime"
 
-  lazy val passcodeEnabled: Boolean =
-    configuration.getBoolean(passcodeEnabledKey).getOrElse(throwConfigNotFound(passcodeEnabledKey))
-  lazy val passcodeRegime: String =
-    configuration.getString(passcodeRegimeKey).getOrElse(throwConfigNotFound(passcodeRegimeKey))
-  lazy val env: String =
-    if (environment.mode.equals(Mode.Test)) "Test" else configuration.getString("run.mode").getOrElse("Dev")
-  lazy val verificationURL: String =
-    configuration.getString(s"govuk-tax.$env.url.verification-frontend.redirect").getOrElse("/verification")
-  lazy val logoutUrl = s"$verificationURL/otac/logout/$passcodeRegime"
+  lazy val passcodeEnabled: Boolean = appConfig.passcodeAuthEnabled
+  lazy val passcodeRegime: String = appConfig.passcodeAuthRegime
+  lazy val verificationURL: String = appConfig.passcodeVerificationUrl
+  lazy val logoutUrl = s"${appConfig.passcodeVerificationUrl}/otac/logout/$passcodeRegime"
 
   def loginUrl[A](queryParam: String) = s"$verificationURL/otac/login$queryParam"
 
@@ -66,7 +70,7 @@ class FrontendPasscodeVerification @Inject()(
         .addingToSession("otacTokenParam" -> token)
 
   def buildRedirectUrl[A](req: Request[A]): String =
-    if (env != "Prod") s"http${if (req.secure) "s" else ""}://${req.host}${req.path}" else req.path
+    if (appConfig.runMode.env != "Prod") s"http${if (req.secure) "s" else ""}://${req.host}${req.path}" else req.path
 
   def apply[A](body: Boolean => Future[Result])(
     implicit request: Request[A],

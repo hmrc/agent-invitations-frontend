@@ -22,8 +22,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
@@ -33,18 +42,18 @@
 @legend = @{"""<h1 class="heading-xlarge margin-bottom-10""" + marginTop + """">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p class="hint-text">""" + Messages(subHeaderKey) + """</p>"""}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
+@mainTemplate(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 
     @back_link_referer(request)
 
     @if(confirmForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
+        @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
     }
 
-    @form(routes.AgentsRequestTrackingController.submitConfirmCancel){
+    @uiFormHelper(routes.AgentsRequestTrackingController.submitConfirmCancel){
 
         <div class="govuk-radios--inline">
-        @input_radio_group(
+        @uiInputRadioGroup(
             confirmForm("confirmCancel"),
             Seq(("true", Messages("confirm-cancel.radio.yes")),("false",Messages("confirm-cancel.radio.no"))),
             '_legend -> Html(legend),

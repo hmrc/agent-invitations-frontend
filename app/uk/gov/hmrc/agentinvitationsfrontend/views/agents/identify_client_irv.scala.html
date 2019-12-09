@@ -16,12 +16,21 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
-
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup,
+    uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+)
+
 @(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
@@ -32,15 +41,15 @@
         "nojs-date-fields-error"
 }
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "afi"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "afi"))) {
 
     @back_link(backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors) {
-        @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
-    @form(
+    @uiFormHelper(
         action = submitFormCall, 'class -> "form js-form") {
 
             @Html("""<h1 class="heading-xlarge margin-bottom-10">""" + Messages("identify-client.header") + """</h1>""")
@@ -48,7 +57,7 @@
             <p class="hint-text">@Messages("identify-client.itsa.p1")</p>
 
             <div class="form-group">
-            @input(
+            @uiInput(
                 agentInvitationsForm("clientIdentifier"),
                 '_label -> Messages("identify-client.nino.label"),
                 '_inputClass -> "form-control",
@@ -59,7 +68,7 @@
             </div>
 
             <div class="@noJsDateFieldsError">
-            @dateFieldsFreeInlineLegend(agentInvitationsForm, "dob",
+            @uiDateFields(agentInvitationsForm, "dob",
                 '_legend -> Messages("identify-client.irv-date-of-birth.label"),
                 '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
                 '_legendSpanClass -> "form-label",

@@ -23,11 +23,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.play.views.html.helpers.{form, input, errorSummary, dateFieldsFreeInlineLegend}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationCreationFailedPageConfig
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
 
     <h1 class="heading-xlarge">@Messages("create-auth-failed.header")</h1>
 
@@ -56,7 +65,7 @@
   @if(config.isAll) {
   <p>@Html(Messages("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
 
-    @form(
+    @uiFormHelper(
         action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
         'id -> "tryAgainInvitationCreation"
     ) {
@@ -64,7 +73,7 @@
         <div><button class="button" type="submit" id="resendRequest">@Messages("create-auth-failed.button.try")</button></div>
     }
   }else {
-      @form(
+      @uiFormHelper(
           action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
           'id -> "tryAgainInvitationCreation"
       ) {
@@ -78,7 +87,7 @@
           </p>
       }
 
-      @form(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
+      @uiFormHelper(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
           <div class="form-group">
               <button class="button" type="submit" id="continue">@Messages("create-auth-failed.button.continue")</button>
           </div>

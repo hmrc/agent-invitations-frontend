@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import com.google.inject.name.Named
 import javax.inject.{Inject, Singleton}
-import play.api.http.HeaderNames.CACHE_CONTROL
-import play.api.http.HttpErrorHandler
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.http.HeaderNames
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
 import play.api.{Configuration, Environment, Logger}
+import play.twirl.api.Html
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template, error_template_5xx}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
@@ -31,35 +30,34 @@ import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.{AuthRedirects, HttpAuditEvent}
+import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ErrorHandler @Inject()(
   val env: Environment,
-  val messagesApi: MessagesApi,
   val auditConnector: AuditConnector,
-  @Named("appName") val appName: String)(
+  errorTemplate: error_template,
+  errorTemplate5xx: error_template_5xx)(
   implicit val config: Configuration,
   ec: ExecutionContext,
-  externalUrls: ExternalUrls)
-    extends HttpErrorHandler with I18nSupport with AuthRedirects with ErrorAuditing {
+  externalUrls: ExternalUrls,
+  appConfig: AppConfig,
+  val messagesApi: MessagesApi)
+    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
 
     val response = statusCode match {
       case 400 if message.equals(ErrorConstants.InvitationIdNotFound) =>
-        Redirect(routes.ClientInvitationJourneyController.showNotFoundInvitation())
+        Future.successful(Redirect(routes.ClientInvitationJourneyController.showNotFoundInvitation()))
       case _ =>
-        Status(statusCode)(
-          error_template(
-            Messages(s"global.error.$statusCode.title"),
-            Messages(s"global.error.$statusCode.heading"),
-            Messages(s"global.error.$statusCode.message")))
+        super.onClientError(request, statusCode, message)
     }
 
-    Future.successful(response)
+    response
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
@@ -70,17 +68,24 @@ class ErrorHandler @Inject()(
       case ex: OtacFailureThrowable =>
         Logger(getClass).warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(
-          error_template(
+          errorTemplate(
             Messages("global.error.passcode.title"),
             Messages("global.error.passcode.heading"),
             Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
 
       case ex =>
         Logger(getClass).warn(s"There has been a failure", ex)
-        InternalServerError(error_template_5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
+        InternalServerError(errorTemplate5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
     }
     Future.successful(response)
   }
+
+  override def appName: String = appConfig.appName
+
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(
+    implicit request: Request[_]): Html =
+    errorTemplate(pageTitle, heading, message)
+
 }
 
 object EventTypes {
@@ -103,6 +108,7 @@ trait ErrorAuditing extends HttpAuditEvent {
   private val badRequestError = "Request bad format exception"
 
   def auditServerError(request: RequestHeader, ex: Throwable)(implicit ec: ExecutionContext): Unit = {
+
     val eventType = ex match {
       case _: NotFoundException     => ResourceNotFound
       case _: JsValidationException => ServerValidationError

@@ -21,9 +21,19 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ReviewAuthorisationsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group}
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = Messages("generic.title",  Messages("review-authorisations.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("review-authorisations.heading"), ""))) {
+@mainTemplate(title = Messages("generic.title",  Messages("review-authorisations.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("review-authorisations.heading"), ""))) {
 
     @back_link(backLinkUrl)
 
@@ -60,13 +70,13 @@
     }
     </dl>
 
-    @form(config.submitCall){
+    @uiFormHelper(config.submitCall){
 
         @if(config.basketFull) {
             <input type="hidden" name="accepted" value="false" />
             <br />
         } else {
-            @input_radio_group(
+            @uiInputRadioGroup(
                 reviewAuthorisationsForm("accepted"),
                 Seq(("true", Messages("review-authorisations.radio.yes")), ("false", Messages("review-authorisations.radio.no"))),
                 '_legend -> Html("""<h2>""" + Messages("review-authorisations.subheader") + """</h2>"""),

@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
 import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
@@ -32,9 +32,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PageInfo, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{confirm_cancel, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.track.{RequestCancelledPageConfig, ResendLinkPageConfig, TrackPageConfig}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -51,8 +51,7 @@ case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
 class AgentsRequestTrackingController @Inject()(
-  val messagesApi: play.api.i18n.MessagesApi,
-  val authActions: AuthActions,
+  val authActions: AuthActionsImpl,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,
@@ -60,36 +59,42 @@ class AgentsRequestTrackingController @Inject()(
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
   agentServicesAccountConnector: AgentServicesAccountConnector,
-  @Named("track-requests-show-last-days") val trackRequestsShowLastDays: Int,
-  @Named("track-requests-per-page") val trackRequestsPerPage: Int,
-  @Named("agent-invitations-frontend.external-url") externalUrl: String)(
+  trackView: track,
+  resendLinkView: resend_link,
+  confirmCancelView: confirm_cancel,
+  requestCancelledView: request_cancelled,
+  confirmCancelAuthView: confirm_cancel_authorisation,
+  authorisationCancelledView: authorisation_cancelled,
+  cancelAuthProblemView: cancel_authorisation_problem)(
   implicit val externalUrls: ExternalUrls,
   configuration: Configuration,
-  ec: ExecutionContext)
-    extends FrontendController with I18nSupport {
+  ec: ExecutionContext,
+  val cc: MessagesControllerComponents,
+  appConfig: AppConfig)
+    extends FrontendController(cc) with I18nSupport {
   import authActions._
 
   def showTrackRequests(page: Int): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
-      val pageInfo = PageInfo(math.max(page, 1), trackRequestsPerPage)
+      val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
       for {
         trackResultsPage <- trackService.bindInvitationsAndRelationships(
                              agent.arn,
                              agent.isWhitelisted,
-                             trackRequestsShowLastDays,
+                             appConfig.trackRequestsShowLastDays,
                              pageInfo)
       } yield {
         val config = TrackPageConfig(
           trackResultsPage.results,
-          trackRequestsShowLastDays,
+          appConfig.trackRequestsShowLastDays,
           featureFlags.enableTrackCancelAuth,
           pageInfo,
           trackResultsPage.totalResults)
         if (trackResultsPage.totalResults > 0 && page > config.numberOfPages) {
           Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
         } else {
-          Ok(track(config))
+          Ok(trackView(config))
         }
       }
 
@@ -111,8 +116,8 @@ class AgentsRequestTrackingController @Inject()(
               agencyEmail <- agentServicesAccountConnector.getAgencyEmail()
             } yield
               Ok(
-                resend_link(ResendLinkPageConfig(
-                  externalUrl,
+                resendLinkView(ResendLinkPageConfig(
+                  appConfig.agentInvitationsFrontendExternalUrl,
                   agentLink,
                   data.clientType.map(ClientType.fromEnum).getOrElse(""),
                   data.expiryDate,
@@ -148,7 +153,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-      Future successful Ok(confirm_cancel(service, clientType, confirmCancelForm))
+      Future successful Ok(confirmCancelView(service, clientType, confirmCancelForm))
     }
   }
 
@@ -164,7 +169,7 @@ class AgentsRequestTrackingController @Inject()(
             .bindFromRequest()
             .fold(
               formWithErrors => {
-                Future successful Ok(confirm_cancel(service, clientType, formWithErrors))
+                Future successful Ok(confirmCancelView(service, clientType, formWithErrors))
               },
               data => {
                 if (data.value.getOrElse(true)) {
@@ -190,7 +195,7 @@ class AgentsRequestTrackingController @Inject()(
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      Future successful Ok(request_cancelled(RequestCancelledPageConfig(service, clientType, clientName)))
+      Future successful Ok(requestCancelledView(RequestCancelledPageConfig(service, clientType, clientName)))
     }
   }
 
@@ -218,7 +223,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-      Future successful Ok(confirm_cancel_authorisation(confirmCancelAuthorisationForm, service, clientType))
+      Future successful Ok(confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType))
     }
   }
 
@@ -230,13 +235,13 @@ class AgentsRequestTrackingController @Inject()(
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
-          formWithErrors => Future successful Ok(confirm_cancel_authorisation(formWithErrors, service, clientType)),
+          formWithErrors => Future successful Ok(confirmCancelAuthView(formWithErrors, service, clientType)),
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, agent.arn, clientId).map {
                 case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
                 case Some(false) => NotFound
-                case _           => Ok(cancel_authorisation_problem())
+                case _           => Ok(cancelAuthProblemView())
               }
             } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         )
@@ -249,7 +254,7 @@ class AgentsRequestTrackingController @Inject()(
       val clientName = request.session.get("clientName").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
       val clientId = request.session.get("clientId").getOrElse("")
-      Future successful Ok(authorisation_cancelled(service, clientId, clientName, clientType))
+      Future successful Ok(authorisationCancelledView(service, clientId, clientName, clientType))
     }
   }
 

@@ -21,6 +21,11 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 
+@this(
+    mainTemplate: main_template,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
 @(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @gaCallsWithoutName(analyticsHost: String, token: String) = {
@@ -30,7 +35,7 @@
     ga('send', 'pageview', { 'anonymizeIp': true });
 }
 
-@main_template(
+@mainTemplate(
     title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")),
     bodyClasses = None,
     isAgent = false,
@@ -46,11 +51,11 @@
 
     <div class="panel panel-border-wide margin-bottom-30">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
-    @form(pageConfig.getConfirmTermsCall) {
+    @uiFormHelper(pageConfig.getConfirmTermsCall) {
         <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
 
-    @form(pageConfig.getConfirmDeclineCall) {
+    @uiFormHelper(pageConfig.getConfirmDeclineCall) {
         <button type="submit" class="button--link-style margin-top-20"  id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</button>
     }
 

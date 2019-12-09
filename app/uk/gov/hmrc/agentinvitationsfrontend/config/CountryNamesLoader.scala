@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.config
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class CountryNamesLoader @Inject()(@Named("country.list.location") location: String) {
+class CountryNamesLoader @Inject()(implicit val appConfig: AppConfig) {
+
+  val location = appConfig.countryListLocation
 
   def load: Map[String, String] =
     Try {

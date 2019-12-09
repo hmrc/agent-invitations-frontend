@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,18 +47,15 @@ object Citizen {
 }
 
 @Singleton
-class CitizenDetailsConnector @Inject()(
-  @Named("citizen-details-baseUrl") baseUrl: URL,
-  http: HttpGet with HttpDelete,
-  metrics: Metrics)
+class CitizenDetailsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def getCitizenDetails(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Citizen] =
     monitor(s"ConsumedAPI-CitizenDetails-GET") {
-      val url = new URL(baseUrl, s"/citizen-details/nino/${nino.value}")
-      http.GET[Citizen](url.toString).recover {
+      val url = s"${appConfig.cidBaseUrl}/citizen-details/nino/${nino.value}"
+      http.GET[Citizen](url).recover {
         case _: NotFoundException => Citizen(None, None, None)
       }
     }

@@ -22,22 +22,29 @@
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form, input_radio_group}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages("banner.agents.de-auth"), title = error_prefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
+@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
 @back_link(config.backLink)
 
 @if(agentForm.hasErrors) {
-    @errorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("select-service"))
+    @uiErrorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("select-service"))
 }
 
-@form(
-action = config.submitCall,
-'class -> "form js-form") {
+@uiFormHelper(action = config.submitCall,'class -> "form js-form") {
 
 <div class="form-group">
-    @input_radio_group(
+    @uiInputRadioGroup(
     agentForm("serviceType"),
         config.enabledPersonalServices,
     '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>""" +

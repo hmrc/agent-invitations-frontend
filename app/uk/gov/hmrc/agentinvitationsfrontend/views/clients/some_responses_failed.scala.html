@@ -22,9 +22,18 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.play.views.html.helpers.form
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
 
     <h1 class="heading-xlarge">@Messages("some-responses-failed.header")</h1>
 
@@ -50,7 +59,7 @@
 
   <p>@Messages("some-responses-failed.advice", config.agencyName)</p>
 
-    @form(config.acceptInvitationCall) {
+    @uiFormHelper(config.acceptInvitationCall) {
         <button id="continueToComplete" class="button" type="submit">@Messages("continue.button")</button>
     }
 }

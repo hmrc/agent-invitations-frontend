@@ -22,27 +22,36 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(agentInvitationsForm : Form[ItsaClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(bannerTitle = Messages(banner), title = error_prefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "itsa"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "itsa"))) {
 
     @back_link(backLinkUrl)
 
     @if(agentInvitationsForm.hasErrors){
-        @errorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
   <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
   <p class="hint-text">@Messages("identify-client.itsa.p1")</p>
 
- @form(
+ @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
      <div class="form-group">
-     @input(
+     @uiInput(
          agentInvitationsForm("clientIdentifier"),
          '_label -> Messages("identify-client.nino.label"),
          '_inputClass -> "form-control",
@@ -53,7 +62,7 @@
      </div>
 
          <div class="form-group">
-         @input(
+         @uiInput(
              agentInvitationsForm("postcode"),
              '_label -> Messages("identify-client.postcode.label"),
              '_inputClass -> "form-control",

@@ -21,6 +21,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 @import uk.gov.hmrc.play.views.html.helpers.{form, input}
 @import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.{main_template, error_prefix}
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+)
+
 @(fastTrackForm: Form[AgentFastTrackRequest], isDev: Boolean)(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
 @postToInvitations = @{
@@ -32,35 +43,35 @@
 }
 
 
-@uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template(title = "Test Only: Fast Track Invitation", isAgent = true) {
+@mainTemplate(title = "Test Only: Fast Track Invitation", isAgent = true) {
   <h1>Test Only: Fast Track Invitation</h1>
 
-  @form(action = Call("POST", postToInvitations)) {
+  @uiFormHelper(action = Call("POST", postToInvitations)) {
     <fieldset class="form-field-group">
       <div class="form-group">
-        @input(
+       @uiInput(
           fastTrackForm("clientType"),
           '_label -> "Enter Client Type",
           '_inputClass -> "input--medium input--cleared")
 
-        @input(
+       @uiInput(
           fastTrackForm("service"),
           '_label -> "Enter Service",
           '_inputClass -> "input--medium input--cleared"
         )
-        @input(
+       @uiInput(
           fastTrackForm("clientIdentifier"),
           '_label -> "Enter ClientId",
           '_inputClass -> "input--medium input--cleared"
         )
 
-        @input(
+       @uiInput(
           fastTrackForm("clientIdentifierType"),
           '_label -> "Enter ClientIdType",
           '_inputClass -> "input--medium input--cleared"
         )
 
-          @input(
+         @uiInput(
           fastTrackForm("knownFact"),
           '_label -> "Enter Known Fact",
           '_inputClass -> "input--medium input--cleared"
