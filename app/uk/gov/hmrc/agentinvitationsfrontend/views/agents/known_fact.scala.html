@@ -50,29 +50,24 @@
   @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
  }
 
-<h1 class="heading-xlarge margin-bottom-30" flushHeading>@Messages(s"known-fact.${config.service}.heading")</h1>
+<label for="knownFact"> <h1 class="heading-xlarge margin-bottom-30" flushHeading>@Messages(s"known-fact.${config.service}.heading")</h1></label>
 <p>@Messages("known-fact.p1")</p>
 <span class="form-hint">@Messages(s"known-fact.${config.service}.helper")</span>
 
  @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
-
   @if(config.service == "HMRC-MTD-IT") {
    <div class="form-group">
-  @uiInput(
-    knownFactForm("knownFact"),
-    '_inputClass -> "form-control",
-    '_labelClass -> "soft--ends"
-   )
+       <!--don't use play-ui's Input element as it sends an empty label which will be an issue for DAC accessibility -->
+       <input type="text" class="form-control" name="knownFact" id="knownFact" value=""/>
    </div>
   }else {
    <div class="@noJsDateFieldsError">
-   @uiDateFields(knownFactForm, "knownFact"
-   )
+        @uiDateFields(knownFactForm, "knownFact")
    </div>
   }
 
   <div class="form-group">
-   <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+      <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
   </div>
 
  }
