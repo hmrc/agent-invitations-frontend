@@ -26,7 +26,8 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val appName = "agent-invitations-frontend"
 
-  private def baseUrl(serviceName: String) = servicesConfig.baseUrl("auth")
+  private def baseUrl(serviceName: String) = servicesConfig.baseUrl(serviceName)
+
   private def getConfString(config: String) =
     servicesConfig.getConfString(config, throw new RuntimeException(s"config $config not found"))
 
