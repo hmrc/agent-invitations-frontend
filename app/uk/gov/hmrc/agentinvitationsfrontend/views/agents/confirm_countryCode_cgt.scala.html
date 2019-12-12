@@ -27,9 +27,7 @@
     mainTemplate: main_template,
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uidropDown: uk.gov.hmrc.play.views.html.helpers.Dropdown
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 @(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -55,7 +53,7 @@
 
     @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
         <div class="form-group">
-            @uidropDown(
+            @country_dropdown(
                 countryCodeForm("countryCode"),
                 countries.toSeq,
                 true,
