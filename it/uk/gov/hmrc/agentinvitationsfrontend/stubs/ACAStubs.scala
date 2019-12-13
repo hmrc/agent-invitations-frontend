@@ -6,7 +6,7 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ACAStubs {
@@ -886,4 +886,166 @@ trait ACAStubs {
         "invitations": $embedded
       }
     }""".stripMargin
+
+  def givenGetAgencyNameClientStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyName" : "My Agency"
+                         |}""".stripMargin)))
+
+  def givenGetAgencyNameNotFoundClientStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenGetAgencyNameAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/agency-name"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyName" : "My Agency"
+                         |}""".stripMargin)))
+
+  def givenGetAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/agency-email"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |{
+                         |  "agencyEmail" : "abc@xyz.com"
+                         |}""".stripMargin)))
+
+  def givenNoContentAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(204)))
+
+  def givenNotFoundAgencyEmailAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/agency-email"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenAgencyNameNotFoundClientStub(arn: Arn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/agency-name/${encodePathSegment(arn.value)}"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenAgencyNameNotFoundAgentStub =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/agency-name"))
+        .willReturn(aResponse()
+          .withStatus(404)))
+
+  def givenTradingName(nino: Nino, tradingName: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/trading-name/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"tradingName": "$tradingName"}""")
+        ))
+
+  def givenTradingNameMissing(nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/trading-name/nino/$nino"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{}""")
+        ))
+
+  def givenTradingNameNotFound(nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/trading-name/nino/${nino.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        ))
+
+  def givenClientDetails(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"organisationName": "Gadgetron",
+                         |"individual" : {
+                         |    "title": "Mr",
+                         |    "firstName": "Winston",
+                         |    "middleName": "H",
+                         |    "lastName": "Greenburg"
+                         |    },
+                         |"tradingName": "GDT"
+                         |}""".stripMargin)
+        ))
+
+  def givenClientDetailsNotFound(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{}""".stripMargin)
+        ))
+
+  def givenClientDetailsOnlyTrading(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"tradingName": "GDT"}""".stripMargin)
+        ))
+
+  def givenClientDetailsOnlyOrganisation(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"organisationName": "Gadgetron"}""".stripMargin)
+        ))
+
+  def givenClientDetailsOnlyPersonal(vrn: Vrn) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"individual" : {
+                         |    "title": "Mr",
+                         |    "firstName": "Winston",
+                         |    "middleName": "H",
+                         |    "lastName": "Greenburg"
+                         |    }
+                         |}""".stripMargin)
+        ))
+
+  def givenNinoForMtdItId(mtdItId: MtdItId, nino: Nino) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/mtdItId/${mtdItId.value}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         | {
+                         |    "nino":"${nino.value}"
+                         | }
+               """.stripMargin)
+        )
+    )
 }

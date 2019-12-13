@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, Citizen, CitizenDetailsConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -27,9 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait GetClientName {
 
-  def agentServicesAccountConnector: AgentServicesAccountConnector
   def citizenDetailsConnector: CitizenDetailsConnector
-  def invitationsConnector: InvitationsConnector
+  def acaConnector: AgentClientAuthorisationConnector
 
   def getClientNameByService(
     invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
@@ -48,7 +47,7 @@ trait GetClientName {
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    agentServicesAccountConnector
+    acaConnector
       .getTradingName(nino)
       .flatMap {
         case name if name.isDefined => Future successful name
@@ -62,14 +61,14 @@ trait GetClientName {
     citizenDetailsConnector.getCitizenDetails(nino)
 
   def getVatName(vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>
+    acaConnector.getCustomerDetails(vrn).map { customerDetails =>
       customerDetails.tradingName
         .orElse(customerDetails.organisationName)
         .orElse(customerDetails.individual.map(_.name))
     }
 
   def getTrustName(utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    invitationsConnector.getTrustName(utr).map(_.response).map {
+    acaConnector.getTrustName(utr).map(_.response).map {
       case Right(trustName) => Some(trustName.name)
       case Left(invalidTrust) =>
         Logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
@@ -77,7 +76,7 @@ trait GetClientName {
     }
 
   def getCgtClientName(cgtRef: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    invitationsConnector.getCgtSubscription(cgtRef).map {
+    acaConnector.getCgtSubscription(cgtRef).map {
       case Some(cgtSubscription) => Some(cgtSubscription.name)
       case None =>
         Logger.warn(s"no cgtSubscription found to retrieve name for reference: ${cgtRef.value}")

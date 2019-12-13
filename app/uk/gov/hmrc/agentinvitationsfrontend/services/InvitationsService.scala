@@ -32,8 +32,7 @@ import scala.util.control.NonFatal
 
 @Singleton
 class InvitationsService @Inject()(
-  val invitationsConnector: InvitationsConnector,
-  val agentServicesAccountConnector: AgentServicesAccountConnector,
+  val acaConnector: AgentClientAuthorisationConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
   auditService: AuditService)
     extends GetClientName {
@@ -47,15 +46,15 @@ class InvitationsService @Inject()(
       AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
 
     (for {
-      locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-      invitation <- invitationsConnector
+      locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
+      invitation <- acaConnector
                      .getInvitation(locationOpt.getOrElse {
                        throw new Exception("Invitation location expected; but missing.")
                      })
     } yield invitation)
       .map(storedInvitation => {
         val id = storedInvitation.selfUrl.toString.split("/").toStream.last
-        invitationsConnector
+        acaConnector
           .getAgentReferenceRecord(storedInvitation.arn)
           .map(agentRefRecord =>
             auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
@@ -82,15 +81,15 @@ class InvitationsService @Inject()(
           authRequest.invitation.clientId)
 
       (for {
-        locationOpt <- invitationsConnector.createInvitation(arn, agentInvitation)
-        invitation <- invitationsConnector
+        locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
+        invitation <- acaConnector
                        .getInvitation(locationOpt.getOrElse {
                          throw new Exception("Invitation location expected; but missing.")
                        })
       } yield invitation)
         .map(invitation => {
           val id = invitation.selfUrl.toString.split("/").toStream.last
-          invitationsConnector
+          acaConnector
             .getAgentReferenceRecord(invitation.arn)
             .map(agentRefRecord =>
               auditService
@@ -111,7 +110,7 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[String] =
     clientType
       .map(ct =>
-        invitationsConnector.createAgentLink(arn, ClientType.fromEnum(ct)).map {
+        acaConnector.createAgentLink(arn, ClientType.fromEnum(ct)).map {
           case Some(multiInv) => multiInv
           case None           => throw new Exception("Creating multi-invitation link failed")
       })
@@ -120,40 +119,40 @@ class InvitationsService @Inject()(
   def acceptITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.acceptITSAInvitation(mtdItId, invitationId)
+    acaConnector.acceptITSAInvitation(mtdItId, invitationId)
 
   def rejectITSAInvitation(invitationId: InvitationId, mtdItId: MtdItId)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.rejectITSAInvitation(mtdItId, invitationId)
+    acaConnector.rejectITSAInvitation(mtdItId, invitationId)
 
   def acceptAFIInvitation(invitationId: InvitationId, nino: Nino)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.acceptAFIInvitation(nino, invitationId)
+    acaConnector.acceptAFIInvitation(nino, invitationId)
 
   def rejectAFIInvitation(invitationId: InvitationId, nino: Nino)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.rejectAFIInvitation(nino, invitationId)
+    acaConnector.rejectAFIInvitation(nino, invitationId)
 
   def acceptVATInvitation(invitationId: InvitationId, vrn: Vrn)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.acceptVATInvitation(vrn, invitationId)
+    acaConnector.acceptVATInvitation(vrn, invitationId)
 
   def rejectVATInvitation(invitationId: InvitationId, vrn: Vrn)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    invitationsConnector.rejectVATInvitation(vrn, invitationId)
+    acaConnector.rejectVATInvitation(vrn, invitationId)
 
   def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[StoredInvitation] =
-    invitationsConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
+    acaConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
-    agentServicesAccountConnector.getAgencyName(arn.value).map {
+    acaConnector.getAgencyName(arn.value).map {
       case Some(name) => name
       case None       => throw new Exception("Agency name not found")
     }
@@ -161,17 +160,17 @@ class InvitationsService @Inject()(
   def checkPostcodeMatches(nino: Nino, postcode: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    invitationsConnector.checkPostcodeForClient(nino, postcode)
+    acaConnector.checkPostcodeForClient(nino, postcode)
 
   def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Int]] =
-    invitationsConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
+    acaConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
-    invitationsConnector.checkCitizenRecord(nino, dob)
+    acaConnector.checkCitizenRecord(nino, dob)
 
   private def determineInvitationResponse(
     invitationId: InvitationId,
@@ -182,26 +181,26 @@ class InvitationsService @Inject()(
       result <- Services.determineServiceMessageKey(invitationId) match {
                  case "itsa" =>
                    if (response == "Accepted")
-                     invitationsConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)
-                   else invitationsConnector.rejectITSAInvitation(MtdItId(si.clientId), invitationId)
+                     acaConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)
+                   else acaConnector.rejectITSAInvitation(MtdItId(si.clientId), invitationId)
 
                  case "afi" =>
-                   if (response == "Accepted") invitationsConnector.acceptAFIInvitation(Nino(si.clientId), invitationId)
-                   else invitationsConnector.rejectAFIInvitation(Nino(si.clientId), invitationId)
+                   if (response == "Accepted") acaConnector.acceptAFIInvitation(Nino(si.clientId), invitationId)
+                   else acaConnector.rejectAFIInvitation(Nino(si.clientId), invitationId)
 
                  case "vat" =>
-                   if (response == "Accepted") invitationsConnector.acceptVATInvitation(Vrn(si.clientId), invitationId)
-                   else invitationsConnector.rejectVATInvitation(Vrn(si.clientId), invitationId)
+                   if (response == "Accepted") acaConnector.acceptVATInvitation(Vrn(si.clientId), invitationId)
+                   else acaConnector.rejectVATInvitation(Vrn(si.clientId), invitationId)
 
                  case "trust" =>
                    if (response == "Accepted")
-                     invitationsConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
-                   else invitationsConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
+                     acaConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
+                   else acaConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
 
                  case "cgt" =>
                    if (response == "Accepted")
-                     invitationsConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)
-                   else invitationsConnector.rejectCgtInvitation(CgtRef(si.clientId), invitationId)
+                     acaConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)
+                   else acaConnector.rejectCgtInvitation(CgtRef(si.clientId), invitationId)
                }
 
       _ <- auditService.sendAgentInvitationResponse(
@@ -217,7 +216,7 @@ class InvitationsService @Inject()(
   def acceptInvitation(invitationId: InvitationId)(
     agentName: String)(implicit request: Request[_], hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
-      invitation <- invitationsConnector.getInvitation(invitationId)
+      invitation <- acaConnector.getInvitation(invitationId)
       result: Boolean <- invitation match {
                           case None =>
                             Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
@@ -228,7 +227,7 @@ class InvitationsService @Inject()(
   def rejectInvitation(invitationId: InvitationId)(
     agentName: String)(implicit request: Request[_], hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     for {
-      invitation <- invitationsConnector.getInvitation(invitationId)
+      invitation <- acaConnector.getInvitation(invitationId)
       result: Boolean <- invitation match {
                           case None =>
                             Future.failed(new NotFoundException(s"Invitation ${invitationId.value} not found"))
@@ -240,7 +239,7 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     for {
-      hasPendingInvitations <- invitationsConnector
+      hasPendingInvitations <- acaConnector
                                 .getAllPendingInvitationsForClient(arn, clientId, service)
                                 .map(s => s.nonEmpty)
     } yield hasPendingInvitations

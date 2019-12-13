@@ -25,7 +25,7 @@ import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logger
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsObject, JsPath, Reads}
+import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
@@ -39,7 +39,7 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InvitationsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
+class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -406,6 +406,54 @@ class InvitationsConnector @Inject()(http: HttpClient)(implicit val appConfig: A
         }
     }
   }
+
+  def getAgencyName(arn: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    monitor(s"ConsumedAPI-Get-AgencyName-GET") {
+      http.GET[AgencyName](s"$baseUrl/agent-client-authorisation/client/agency-name/$arn").map(_.name)
+    } recoverWith {
+      case _: NotFoundException => Future failed AgencyNameNotFound()
+    }
+
+  def getAgencyEmail()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
+    monitor("ConsumerAPI-Get-AgencyEmail-GET") {
+      http
+        .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/agent/agency-email")
+        .map(response =>
+          response.status match {
+            case 200 => Json.parse(response.body).as[AgencyEmail].email
+            case 204 => throw AgencyEmailNotFound("No email found in the record for this agent")
+        })
+    } recoverWith {
+      case _: NotFoundException => Future failed AgencyEmailNotFound("No record found for this agent")
+    }
+
+  def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    monitor(s"ConsumedAPI-Get-TradingName-POST") {
+      http
+        .GET[JsObject](s"$baseUrl/agent-client-authorisation/client/trading-name/nino/${nino.value}")
+        .map(obj => (obj \ "tradingName").asOpt[String])
+    }.recover {
+      case _: NotFoundException => None
+    }
+
+  def getCustomerDetails(vrn: Vrn)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[CustomerDetails] =
+    monitor(s"ConsumedAPI-Get-VatOrgName-POST") {
+      http
+        .GET[CustomerDetails](s"$baseUrl/agent-client-authorisation/client/vat-customer-details/vrn/${vrn.value}")
+    }.recover {
+      case _: NotFoundException => CustomerDetails(None, None, None)
+    }
+
+  def getNinoForMtdItId(mtdItId: MtdItId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Nino]] =
+    monitor(s"ConsumedAPI-Get-NinoForMtdItId-GET") {
+      http
+        .GET[JsObject](s"$baseUrl/agent-client-authorisation/client/mtdItId/${mtdItId.value}")
+        .map(obj => (obj \ "nino").asOpt[Nino])
+    }.recover {
+      case e =>
+        Logger(getClass).error(s"Unable to translate MtdItId: ${e.getMessage}")
+        None
+    }
 
   object Reads {
 

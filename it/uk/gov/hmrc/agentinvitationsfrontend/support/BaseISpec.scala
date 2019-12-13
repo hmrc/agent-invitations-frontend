@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 
 abstract class BaseISpec
-    extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs with ASAStubs
+    extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
     with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
 
@@ -50,7 +50,6 @@ abstract class BaseISpec
         "microservice.services.auth.port"                                         -> wireMockPort,
         "microservice.services.agent-client-authorisation.port"                   -> wireMockPort,
         "microservice.services.agent-client-relationships.port"                   -> wireMockPort,
-        "microservice.services.agent-services-account.port"                       -> wireMockPort,
         "microservice.services.company-auth.login-url"                            -> wireMockHost,
         "microservice.services.company-auth.port"                                 -> wireMockPort,
         "microservice.services.des.port"                                          -> wireMockPort,

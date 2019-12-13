@@ -155,12 +155,12 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr =>
-      invitationsConnector.getTrustName(utr)))
+      acaConnector.getTrustName(utr)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(submitIdentifyClientCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showPostcodeCgt: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -169,7 +169,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(confirmPostcodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showCountryCodeCgt: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -178,7 +178,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(confirmCountryCodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
