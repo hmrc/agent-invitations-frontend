@@ -43,7 +43,7 @@ import scala.util.Success
 @Singleton
 class ClientInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
-  invitationsConnector: InvitationsConnector,
+  invitationsConnector: AgentClientAuthorisationConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
   authActions: AuthActionsImpl,
@@ -123,7 +123,8 @@ class ClientInvitationJourneyController @Inject()(
               request))
         case _ =>
           apply(
-            Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName),
+            Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(
+              invitationsService.getAgencyName),
             display)
       }
     }

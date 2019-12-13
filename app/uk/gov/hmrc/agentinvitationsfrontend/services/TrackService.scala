@@ -29,10 +29,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TrackService @Inject()(
-  val invitationsConnector: InvitationsConnector,
   relationshipsConnector: RelationshipsConnector,
   pirRelationshipConnector: PirRelationshipConnector,
-  val agentServicesAccountConnector: AgentServicesAccountConnector,
+  val acaConnector: AgentClientAuthorisationConnector,
   val citizenDetailsConnector: CitizenDetailsConnector)
     extends GetClientName {
 
@@ -40,7 +39,7 @@ class TrackService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     now: LocalDate): Future[Seq[TrackedInvitation]] =
-    invitationsConnector
+    acaConnector
       .getAllInvitations(arn, now.minusDays(showLastDays))
       .map { invitations =>
         invitations
@@ -68,7 +67,7 @@ class TrackService @Inject()(
 
                           case ItsaInactiveTrackRelationship(_, dateTo, clientId) =>
                             for {
-                              nino <- agentServicesAccountConnector.getNinoForMtdItId(MtdItId(clientId))
+                              nino <- acaConnector.getNinoForMtdItId(MtdItId(clientId))
                             } yield
                               InactiveClient(
                                 Some("personal"),
@@ -113,7 +112,7 @@ class TrackService @Inject()(
   def getTradingName(
     clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
-      case Some(s) => agentServicesAccountConnector.getTradingName(s)
+      case Some(s) => acaConnector.getTradingName(s)
       case None    => Future successful None
     }
 
@@ -128,7 +127,7 @@ class TrackService @Inject()(
     clientIdentifier: Option[Vrn])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier
       .map { vrn =>
-        agentServicesAccountConnector.getCustomerDetails(vrn).map { customerDetails =>
+        acaConnector.getCustomerDetails(vrn).map { customerDetails =>
           customerDetails.tradingName
             .orElse(customerDetails.organisationName)
             .orElse(customerDetails.individual.map(_.name))

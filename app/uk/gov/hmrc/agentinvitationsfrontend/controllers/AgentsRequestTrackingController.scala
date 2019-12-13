@@ -25,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, InvitationsConnector, PirRelationshipConnector, RelationshipsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
@@ -55,10 +55,9 @@ class AgentsRequestTrackingController @Inject()(
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,
-  val invitationsConnector: InvitationsConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
-  agentServicesAccountConnector: AgentServicesAccountConnector,
+  acaConnector: AgentClientAuthorisationConnector,
   trackView: track,
   resendLinkView: resend_link,
   confirmCancelView: confirm_cancel,
@@ -113,7 +112,7 @@ class AgentsRequestTrackingController @Inject()(
           data => {
             for {
               agentLink   <- invitationsService.createAgentLink(agent.arn, data.clientType)
-              agencyEmail <- agentServicesAccountConnector.getAgencyEmail()
+              agencyEmail <- acaConnector.getAgencyEmail()
             } yield
               Ok(
                 resendLinkView(ResendLinkPageConfig(
@@ -173,7 +172,7 @@ class AgentsRequestTrackingController @Inject()(
               },
               data => {
                 if (data.value.getOrElse(true)) {
-                  invitationsConnector
+                  acaConnector
                     .cancelInvitation(agent.arn, invitationId)
                     .map {
                       case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())

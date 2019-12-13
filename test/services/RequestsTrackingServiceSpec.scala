@@ -34,17 +34,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class RequestsTrackingServiceSpec extends UnitSpec {
 
-  val invitationsConnector = mock(classOf[InvitationsConnector])
-  val agentServicesAccountConnector = mock(classOf[AgentServicesAccountConnector])
+  val acaConnector = mock(classOf[AgentClientAuthorisationConnector])
   val citizenDetailsConnector = mock(classOf[CitizenDetailsConnector])
   val relationshipsConnector = mock(classOf[RelationshipsConnector])
   val pirRelationshipConnector = mock(classOf[PirRelationshipConnector])
-  val tested = new TrackService(
-    invitationsConnector,
-    relationshipsConnector,
-    pirRelationshipConnector,
-    agentServicesAccountConnector,
-    citizenDetailsConnector)
+  val tested = new TrackService(relationshipsConnector, pirRelationshipConnector, acaConnector, citizenDetailsConnector)
 
   val vrn = Vrn("101747696")
   val nino = Nino("AB123456A")
@@ -60,7 +54,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
       "return trading name first if available" in {
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future.successful(
@@ -74,7 +68,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return business name if trading name not available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future.successful(
@@ -88,7 +82,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return full individual name if others not available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(
             CustomerDetails(None, Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None)))
@@ -98,7 +92,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return partial individual name if others not available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(
             CustomerDetails(None, Some(IndividualDetails(None, Some("Bb2"), None, Some("Bb4"))), None)))
@@ -108,7 +102,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return none if none available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(CustomerDetails(None, None, None)))
 
@@ -120,7 +114,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return trading name if available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Some("Aaa")))
 
@@ -134,7 +128,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(Future.successful(Citizen(Some("String"), Some("Pearson"), Some(nino.value))))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(None))
 
@@ -148,7 +142,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(Future.successful(Citizen(None, None, None)))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(None))
 
@@ -190,12 +184,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return proper name according to the service name" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Some("Aaa Itsa Trader")))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future.successful(
@@ -250,12 +244,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return updated invitation if name available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Some("Aaa Itsa Trader")))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future.successful(
@@ -273,12 +267,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return unchanged invitation if name not available" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(None))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(CustomerDetails(None, None, None)))
 
@@ -305,7 +299,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return empty tracked invitations when none supplied" in {
         when(
-          invitationsConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(
+          acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(
             any(classOf[HeaderCarrier]),
             any(classOf[ExecutionContext]))).thenReturn(Future.successful(Seq()))
 
@@ -316,12 +310,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       "return tracked invitations updated with clients names" in {
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getTradingName(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Some("Aaa Itsa Trader")))
 
         when(
-          agentServicesAccountConnector
+          acaConnector
             .getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future.successful(
@@ -336,7 +330,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(Future.successful(Citizen(Some("Foo"), Some("Bar"))))
 
         when(
-          invitationsConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(
+          acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(
             any(classOf[HeaderCarrier]),
             any(classOf[ExecutionContext]))).thenReturn(
           Future.successful(

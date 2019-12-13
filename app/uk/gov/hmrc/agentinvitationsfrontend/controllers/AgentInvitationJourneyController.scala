@@ -23,7 +23,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentServicesAccountConnector, AgentSuspensionConnector, InvitationsConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, AgentSuspensionConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -43,9 +43,8 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
-  invitationsConnector: InvitationsConnector,
   relationshipsService: RelationshipsService,
-  asaConnector: AgentServicesAccountConnector,
+  acaConnector: AgentClientAuthorisationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
   val authActions: AuthActionsImpl,
   override val journeyService: AgentInvitationJourneyService,
@@ -85,7 +84,7 @@ class AgentInvitationJourneyController @Inject()(
 
   import AgentInvitationJourneyController._
   import agentSuspensionConnector._
-  import asaConnector._
+  import acaConnector._
   import authActions._
   import invitationsService._
   import journeyService.model.State._
@@ -182,7 +181,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showConfirmCgtCountryCode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -191,14 +190,14 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
-        createAgentLink)(getAgencyEmail)
+        invitationsService.createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -206,7 +205,7 @@ class AgentInvitationJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(VatClientForm.form)(
       Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
-        createAgentLink)(getAgencyEmail)
+        invitationsService.createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -214,19 +213,19 @@ class AgentInvitationJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(
         relationshipsService.hasActiveRelationshipFor)(getClientNameByService)(createMultipleInvitations)(
-        createAgentLink)(getAgencyEmail)
+        invitationsService.createAgentLink)(getAgencyEmail)
     )
   }
 
   def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(utr => invitationsConnector.getTrustName(utr))
+      Transitions.identifiedTrustClient(utr => acaConnector.getTrustName(utr))
     )
   }
 
   def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
-      Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+      Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef))
     )
   }
 
@@ -240,8 +239,9 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
-      Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
+      Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(
+        invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+        relationshipsService.hasActiveRelationshipFor)
     )
   }
 
@@ -252,7 +252,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitReviewAuthorisations: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
-      Transitions.authorisationsReviewed(createMultipleInvitations)(createAgentLink)(getAgencyEmail))
+      Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail))
   }
 
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] = action { implicit request =>
