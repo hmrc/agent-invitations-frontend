@@ -55,7 +55,6 @@ class AgentsRequestTrackingController @Inject()(
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,
-  val invitationsConnector: AgentClientAuthorisationConnector,
   val relationshipsConnector: RelationshipsConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
   acaConnector: AgentClientAuthorisationConnector,
@@ -173,7 +172,7 @@ class AgentsRequestTrackingController @Inject()(
               },
               data => {
                 if (data.value.getOrElse(true)) {
-                  invitationsConnector
+                  acaConnector
                     .cancelInvitation(agent.arn, invitationId)
                     .map {
                       case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())

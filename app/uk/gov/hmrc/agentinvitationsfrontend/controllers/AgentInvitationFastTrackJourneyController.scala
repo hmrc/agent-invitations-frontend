@@ -48,7 +48,6 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsService: InvitationsService,
-  invitationsConnector: AgentClientAuthorisationConnector,
   relationshipsService: RelationshipsService,
   acaConnector: AgentClientAuthorisationConnector,
   authActions: AuthActionsImpl,
@@ -176,17 +175,17 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val submitIdentifyTrustClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr =>
-      invitationsConnector.getTrustName(utr)))
+      acaConnector.getTrustName(utr)))
   }
 
   val submitIdentifyCgtClient = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
-      Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+      Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef))
     )
   }
 
   val progressToKnownFact = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.checkedDetailsNoKnownFact(invitationsConnector.getCgtSubscription(_)))(redirect)
+    whenAuthorised(AsAgent)(Transitions.checkedDetailsNoKnownFact(acaConnector.getCgtSubscription(_)))(redirect)
   }
 
   val showConfirmTrustClient = actionShowStateWhenAuthorised(AsAgent) {
@@ -240,14 +239,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.fastTrackForm)(
       Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
         invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(hasActiveRelationshipFor)(invitationsConnector.getCgtSubscription(_)))
+        hasPendingInvitationsFor)(hasActiveRelationshipFor)(acaConnector.getCgtSubscription(_)))
   }
 
   val submitClientTypeCgt = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ClientTypeForm.cgtClientTypeForm)(
       Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
         invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(hasActiveRelationshipFor)(invitationsConnector.getCgtSubscription(_)))
+        hasPendingInvitationsFor)(hasActiveRelationshipFor)(acaConnector.getCgtSubscription(_)))
   }
 
   val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {

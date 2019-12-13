@@ -43,7 +43,6 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
-  invitationsConnector: AgentClientAuthorisationConnector,
   relationshipsService: RelationshipsService,
   acaConnector: AgentClientAuthorisationConnector,
   agentSuspensionConnector: AgentSuspensionConnector,
@@ -182,7 +181,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showConfirmCgtCountryCode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -191,7 +190,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt(cgtRef =>
-      invitationsConnector.getCgtSubscription(cgtRef)))
+      acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
@@ -220,13 +219,13 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(utr => invitationsConnector.getTrustName(utr))
+      Transitions.identifiedTrustClient(utr => acaConnector.getTrustName(utr))
     )
   }
 
   def submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
-      Transitions.identifyCgtClient(cgtRef => invitationsConnector.getCgtSubscription(cgtRef))
+      Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef))
     )
   }
 
