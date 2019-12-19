@@ -42,10 +42,12 @@
   <p>@Messages("not-enrolled.p3.start") <a target="_blank" href="https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat">@Messages("not-enrolled.p3.link")</a></p>
 
   @if(hasRequests) {
-   <a href=@routes.AgentInvitationJourneyController.showReviewAuthorisations() class="button">@Messages("review-auths.link")</a>
+   <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button">@Messages("review-auths.link")</a>
+  }else {@if(!isDeAuthJourney){
+   <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button">@Messages("new-request.button")</a>
   }else {
-   <a href=@routes.AgentInvitationJourneyController.showClientType() class="button">@Messages("new-request.button")</a>
-  }
+        <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button">@Messages("new-request.button")</a>
+    }}
 
 
 
