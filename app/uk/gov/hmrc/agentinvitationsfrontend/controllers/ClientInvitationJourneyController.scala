@@ -246,7 +246,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def timedOut: Action[AnyContent] = Action.async { implicit request =>
-    signOutUrl.map(url => Forbidden(url).withNewSession)
+    signOutUrl.map(url => Forbidden(timedOutView(url)).withNewSession)
   }
 
   private def toLocalFriendly(url: String)(implicit request: Request[_]): String =
