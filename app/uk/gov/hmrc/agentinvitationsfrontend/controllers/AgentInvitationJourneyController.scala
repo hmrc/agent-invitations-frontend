@@ -311,7 +311,7 @@ class AgentInvitationJourneyController @Inject()(
   private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
       .map { is =>
-        val uri = getCallFor(is).url
+        val uri = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
         val continueUrl = CallOps
           .localFriendlyUrl(env, appConfig)(uri, request.host)
         s"$ggLoginUrl?continue=$continueUrl"
