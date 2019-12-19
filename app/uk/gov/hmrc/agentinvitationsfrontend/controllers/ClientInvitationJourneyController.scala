@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -51,7 +52,7 @@ class ClientInvitationJourneyController @Inject()(
   pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService,
   notAuthorisedAsClientView: not_authorised_as_client,
-  signedOutView: signed_out,
+  timedOutView: timed_out,
   cannotConfirmIdentityView: cannot_confirm_identity,
   lockedOutView: locked_out,
   failedIv5xxView: failed_iv_5xx,
@@ -227,26 +228,25 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def keepAlive = Action.async { implicit request =>
-    Future successful Ok("OK")
-  }
-
   def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps
       .localFriendlyUrl(env, appConfig)(successUrl, request.host)
-    Future successful Forbidden(signedOutView(s"$ggLoginUrl?continue=$continueUrl"))
+    Future successful Forbidden(timedOutView(s"$ggLoginUrl?continue=$continueUrl"))
   }
 
-  def signedOut: Action[AnyContent] = Action.async { implicit request =>
-    journeyService.initialState
-      .map { state =>
-        val result = state match {
-          case State.MissingJourneyHistory => signedOutView(toLocalFriendly(externalUrls.agentClientManagementUrl))
-          case s: State                    => signedOutView(s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}")
-        }
-        Forbidden(result).withNewSession
-      }
+  private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
+    journeyService.initialState map {
+      case State.MissingJourneyHistory => toLocalFriendly(externalUrls.agentClientManagementUrl)
+      case s: State                    => s"$ggLoginUrl?continue=${toLocalFriendly(getCallFor(s).url)}"
+    }
+
+  def signOut: Action[AnyContent] = Action.async { implicit request =>
+    signOutUrl.map(url => Redirect(url).withNewSession)
+  }
+
+  def timedOut: Action[AnyContent] = Action.async { implicit request =>
+    signOutUrl.map(url => Forbidden(url).withNewSession)
   }
 
   private def toLocalFriendly(url: String)(implicit request: Request[_]): String =

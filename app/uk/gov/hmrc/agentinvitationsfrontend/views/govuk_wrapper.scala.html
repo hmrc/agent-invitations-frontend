@@ -18,6 +18,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 @this(
     govUkTemplate: views.html.layouts.GovUkTemplate,
@@ -46,9 +47,52 @@
         cookies: Option[Cookies] = None,
         isAgent: Boolean,
         bannerTitle: String = "banner.agents.auth",
-        completedInviteGoSurvey: Option[Boolean] = None)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+        completedInviteGoSurvey: Option[Boolean] = None, hasTimeout: Boolean = true)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@timedOutUrl = @{
+    if(isAgent){
+        routes.AgentInvitationJourneyController.timedOut()
+    } else {
+        routes.ClientInvitationJourneyController.timedOut()
+    }
+}
+
+  @signOutUrl = @{
+      if(isAgent){
+          routes.AgentInvitationJourneyController.signOut()
+      } else {
+          routes.ClientInvitationJourneyController.signOut()
+      }
+  }
+
+    @agentOrClient = @{
+        if(isAgent) {
+            "agent"
+        } else {
+            "client"
+        }
+    }
 
 @head = {
+    <script>
+            window.getCookie = function (name) {
+                var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                if (match) return match[2];
+            };
+            window.jsConfig = window.jsConfig || {};
+            window.jsConfig.lang = window.getCookie("PLAY_LANG") || "en";
+    </script>
+    @if(hasTimeout) {
+        <script id="timeoutDialog">
+            window.jsConfig.timeoutEnabled = true;
+            window.jsConfig.timeout = @{externalUrls.timeout};
+            window.jsConfig.countdown = @{externalUrls.timeoutCountdown};
+            window.jsConfig.keep_alive_url = "@{routes.TimeoutController.keepAlive().url}";
+            window.jsConfig.message = "@{Messages(s"timeout-dialog.p1.$agentOrClient")}";
+            window.jsConfig.timed_out_url = "@timedOutUrl";
+            window.jsConfig.logout_url = "@signOutUrl";
+    </script>
+    }
 @uiHead(
     linkElem = None,
     headScripts = Some(headScripts))
@@ -73,6 +117,8 @@
     <script src="@controllers.routes.Assets.at("javascripts/scripts.js")" type="text/javascript"></script>
     <script src="@controllers.routes.Assets.at("javascripts/ga-events.js")" type="text/javascript"></script>
     <script src="@controllers.routes.Assets.at("javascripts/accessible-autocomplete.min.js")" type="text/javascript"></script>
+    <script src="@controllers.routes.Assets.at("javascripts/session-timeout.js")" type="text/javascript"></script>
+    <script src="@controllers.routes.Assets.at("javascripts/ai-fe.js")" type="text/javascript"></script>
 }
 
 
