@@ -876,6 +876,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         htmlEscapedMessage("not-enrolled.p1.HMRC-MTD-IT"),
         htmlEscapedMessage("not-enrolled.p2"))
+      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"))
     }
   }
   "GET /agents/cancel-authorisation/not-authorised" should {
