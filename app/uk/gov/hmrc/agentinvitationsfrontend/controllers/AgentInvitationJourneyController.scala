@@ -33,12 +33,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{confirm_client, _}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.signed_out
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentInvitationJourneyController @Inject()(
@@ -64,7 +64,7 @@ class AgentInvitationJourneyController @Inject()(
   notMatchedView: not_matched,
   pendingAuthExistsView: pending_authorisation_exists,
   invitationSentView: invitation_sent,
-  signedOutView: signed_out,
+  timedOutView: timed_out,
   selectFromServicesView: select_from_services,
   selectSingleServiceView: select_single_service,
   reviewAuthView: review_authorisations,
@@ -308,14 +308,21 @@ class AgentInvitationJourneyController @Inject()(
     case _: AgentSuspended =>
   }
 
-  def signedOut: Action[AnyContent] = Action.async { implicit request =>
+  private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
       .map { is =>
         val uri = getCallFor(is).url
         val continueUrl = CallOps
           .localFriendlyUrl(env, appConfig)(uri, request.host)
-        Forbidden(signedOutView(s"$ggLoginUrl?continue=$continueUrl")).withNewSession
+        s"$ggLoginUrl?continue=$continueUrl"
       }
+
+  def signOut: Action[AnyContent] = Action.async { implicit request =>
+    signOutUrl(request).map(Redirect(_).withNewSession)
+  }
+
+  def timedOut: Action[AnyContent] = Action.async { implicit request =>
+    signOutUrl(request).map(url => Forbidden(timedOutView(url)).withNewSession)
   }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */

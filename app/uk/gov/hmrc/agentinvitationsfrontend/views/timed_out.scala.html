@@ -29,12 +29,17 @@
     if(continueUrl.contains("agent"))true else false
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("signed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = isAgent, mainDataAttributes = Some(gaPageEvent(Messages("es-failed.header"), "")), hasTimeout = false) {
+@timeString=@{
+    val timeout = externalUrls.timeout
+    if(timeout < 60) s"$timeout seconds" else s"${timeout/60} minutes"
+}
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("signed-out.header")</h1>
-    <p>@Messages("signed-out.p1")</p>
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("timed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = isAgent, mainDataAttributes = Some(gaPageEvent(Messages("es-failed.header"), "")), hasTimeout = false) {
+
+    <h1 class="heading-xlarge margin-bottom-30">@Messages("timed-out.header")</h1>
+    <p>@Messages("timed-out.p1", timeString)</p>
             @if(isAgent){
-                <p>@Html(Messages("signed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" href="@continueUrl">@Messages("signed-out.button")</a>}
+                <p>@Html(Messages("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" href="@continueUrl">@Messages("timed-out.button")</a>}
 
 
 }
