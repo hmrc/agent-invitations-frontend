@@ -133,7 +133,7 @@ class ClientInvitationJourneyController @Inject()(
       whenAuthorised(AsClient)(
         Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
           getAllClientInvitationsInfoForAgentAndStatus,
-          getAgencySuspensionDetails))(redirect)
+          getSuspensionDetails))(redirect)
     }
   }
 
@@ -179,7 +179,7 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(
       Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
         getAllClientInvitationsInfoForAgentAndStatus,
-        getAgencySuspensionDetails))(redirect)
+        getSuspensionDetails))(redirect)
   }
 
   def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {

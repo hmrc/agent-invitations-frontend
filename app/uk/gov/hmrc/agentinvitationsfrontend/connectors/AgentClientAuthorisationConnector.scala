@@ -427,8 +427,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       case _: NotFoundException => Future failed AgencyEmailNotFound("No record found for this agent")
     }
 
-  def getAgencySuspensionDetails(
-    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
+  def getAgencySuspensionDetails()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
     monitor("ConsumerAPI-Get-AgencySuspensionDetails-GET") {
       http
         .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/agent/suspension-details")
@@ -439,6 +438,14 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         })
     } recoverWith {
       case _: NotFoundException => Future failed SuspensionDetailsNotFound("No record found for this agent")
+    }
+
+  def getSuspensionDetails(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
+    monitor(s"ConsumedAPI-Get-AgencyName-GET") {
+      http.GET[SuspensionDetails](s"$baseUrl/agent-client-authorisation/client/suspension-details/${arn.value}")
+    } recoverWith {
+      case _: NotFoundException =>
+        Future failed SuspensionDetailsNotFound("No suspension details found in the record for this agent")
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

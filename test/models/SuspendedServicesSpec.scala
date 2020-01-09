@@ -17,8 +17,8 @@
 package models
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT}
+import uk.gov.hmrc.agentinvitationsfrontend.models.SuspensionDetails
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -40,42 +40,34 @@ class SuspendedServicesSpec extends UnitSpec {
 
   "getSuspendedServices helper method" should {
 
-    "getSuspendedServices helper method" should {
+    "getSuspendedRegimes helper method" should {
 
-      "return only the suspended services" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).getSuspendedServices(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set(
-          HMRCMTDIT)
+      "return only the suspended regimes" in {
+        SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC")))
+          .getSuspendedRegimes(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe Set("ITSA")
       }
     }
 
-    "isAllSuspended helper method" should {
-
-      "return true if all the services are suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCMTDVAT)) shouldBe true
-      }
-
-      "return false if not all the services are suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isAllSuspended(Set(HMRCMTDIT, HMRCCGTPD)) shouldBe false
-      }
-    }
-
-    "isSuspended helper method" should {
-      "return true if the agent is suspended for any service in the consents" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(Set(HMRCMTDIT)) shouldBe true
+    "isAgentSuspended helper method" should {
+      "return true if the agent is suspended for any regimes in the consents" in {
+        SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC")))
+          .isAgentSuspended(Set(HMRCMTDIT)) shouldBe true
       }
       "return false if the agent is not suspended for any service in the consents" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspended(Set(HMRCCGTPD)) shouldBe false
+        SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC")))
+          .isAgentSuspended(Set(HMRCCGTPD)) shouldBe false
       }
     }
 
-    "isSuspendedService helper method" should {
+    "isRegimeSuspended helper method" should {
 
-      "return true when the service is suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCMTDIT) shouldBe true
+      "return true when the regime is suspended" in {
+        SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC"))).isRegimeSuspended(HMRCMTDIT) shouldBe true
       }
 
-      "return false when the service is not suspended" in {
-        SuspensionResponse(Set(HMRCMTDVAT, HMRCMTDIT)).isSuspendedService(HMRCCGTPD) shouldBe false
+      "return false when the regime is not suspended" in {
+        SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC")))
+          .isRegimeSuspended(HMRCCGTPD) shouldBe false
       }
     }
   }

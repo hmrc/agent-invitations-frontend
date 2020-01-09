@@ -81,7 +81,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       clientType: ClientType,
       uid: String,
       agentName: String,
-      suspendedServices: Set[String],
+      suspendedRegimes: Set[String],
       nonSuspendedConsents: Seq[ClientConsent])
         extends State
   }
@@ -162,14 +162,14 @@ object ClientInvitationJourneyModel extends JourneyModel {
                     val consentServices: Set[String] =
                       consents.map(consent => consent.service).toSet
                     val nonSuspendedConsents =
-                      consents.filter(consent => !suspensionDetails.isServiceSuspended(consent.service))
-                    if (suspensionDetails.isServiceSuspended(consentServices))
+                      consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
+                    if (suspensionDetails.isAgentSuspended(consentServices))
                       goto(
                         SuspendedAgent(
                           clientType,
                           uid,
                           agentName,
-                          suspensionDetails.getSuspendedServices(consentServices),
+                          suspensionDetails.getSuspendedRegimes(consentServices),
                           nonSuspendedConsents))
                     else {
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
