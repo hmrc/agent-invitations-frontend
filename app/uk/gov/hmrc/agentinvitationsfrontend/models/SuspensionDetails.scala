@@ -20,24 +20,24 @@ import play.api.libs.json.{Json, OFormat}
 
 case class SuspensionDetails(suspensionStatus: Boolean, regimes: Option[Set[String]]) {
 
+  private val validSuspensionRegimes = Set("ITSA", "VATC", "TRS", "CGT")
+
+  val suspendedRegimes: Set[String] =
+    this.regimes.fold(Set.empty[String])(rs => if (rs.contains("ALL")) validSuspensionRegimes else rs)
+
   private val serviceToRegime: Map[String, String] =
-    Map(
-      "HMRC-MTD-IT"            -> "ITSA",
-      "HMRC-MTD-VAT"           -> "VATC",
-      "HMRC-TERS-ORG"          -> "TRS",
-      "HMRC-CGT-PD"            -> "CGT",
-      "PERSONAL-INCOME-RECORD" -> "PIR")
+    Map("HMRC-MTD-IT" -> "ITSA", "HMRC-MTD-VAT" -> "VATC", "HMRC-TERS-ORG" -> "TRS", "HMRC-CGT-PD" -> "CGT")
 
   def isRegimeSuspended(service: String): Boolean = {
     val regime = serviceToRegime(service)
-    this.regimes.fold(false)(r => r.contains(regime))
+    suspendedRegimes.contains(regime)
   }
 
   def isAgentSuspended(s: Set[String]): Boolean = getSuspendedRegimes(s).nonEmpty
 
   def getSuspendedRegimes(services: Set[String]): Set[String] = {
     val r: Set[String] = services map (service => serviceToRegime(service))
-    regimes.fold(Set.empty[String])(rs => rs.intersect(r))
+    suspendedRegimes.intersect(r)
   }
 }
 

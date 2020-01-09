@@ -434,7 +434,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         .map(response =>
           response.status match {
             case 200 => Json.parse(response.body).as[SuspensionDetails]
-            case 204 => throw SuspensionDetailsNotFound("No suspension details found in the record for this agent")
+            case 204 => SuspensionDetails(suspensionStatus = false, None)
         })
     } recoverWith {
       case _: NotFoundException => Future failed SuspensionDetailsNotFound("No record found for this agent")
@@ -442,7 +442,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   def getSuspensionDetails(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
-      http.GET[SuspensionDetails](s"$baseUrl/agent-client-authorisation/client/suspension-details/${arn.value}")
+      http
+        .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/client/suspension-details/${arn.value}")
+        .map(response =>
+          response.status match {
+            case 200 => Json.parse(response.body).as[SuspensionDetails]
+            case 204 => SuspensionDetails(suspensionStatus = false, None)
+        })
     } recoverWith {
       case _: NotFoundException =>
         Future failed SuspensionDetailsNotFound("No suspension details found in the record for this agent")
