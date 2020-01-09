@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -118,7 +117,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = Utr => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
-    type GetSuspensionStatus = Arn => Future[SuspensionResponse]
+    type GetSuspensionStatus = Arn => Future[SuspensionDetails]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -139,8 +138,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
       suspendedState: State): Future[State] =
       (serviceEnabled, agentSuspensionEnabled) match {
         case (true, true) =>
-          getSuspensionStatus(arn).flatMap { suspendedServices =>
-            if (suspendedServices.isSuspendedService(service)) goto(suspendedState) else goto(identifyClientState)
+          getSuspensionStatus(arn).flatMap { suspensionDetails =>
+            if (suspensionDetails.isServiceSuspended(service)) goto(suspendedState) else goto(identifyClientState)
           }
         case (true, false) => goto(identifyClientState)
         case (false, _)    => fail(new Exception(s"Service: $service feature flag is switched off"))

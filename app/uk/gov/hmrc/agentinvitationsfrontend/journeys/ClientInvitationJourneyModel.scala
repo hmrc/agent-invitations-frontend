@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
@@ -96,7 +95,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type GetPendingInvitationIdsAndExpiryDates = (String, InvitationStatus) => Future[Seq[InvitationIdAndExpiryDate]]
     type AcceptInvitation = InvitationId => String => Future[Boolean]
     type RejectInvitation = InvitationId => String => Future[Boolean]
-    type GetSuspensionStatus = Arn => Future[SuspensionResponse]
+    type GetSuspensionDetails = Arn => Future[SuspensionDetails]
 
     def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
       getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -131,14 +130,14 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     def submitWarmUp(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
-      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
+      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
       transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
         getPendingInvitationIdsAndExpiryDates,
         getSuspensionStatus)(client)
 
     def submitWarmUpToDecline(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
-      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
+      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
       transitionFromWarmup(agentSuspensionEnabled, idealTargetState = ConfirmDecline.apply)(
         getPendingInvitationIdsAndExpiryDates,
         getSuspensionStatus)(client)
@@ -147,7 +146,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
       agentSuspensionEnabled: Boolean,
       idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
       getPendingInvitationIdsAndExpiryDates: GetPendingInvitationIdsAndExpiryDates,
-      getSuspensionStatus: GetSuspensionStatus)(client: AuthorisedClient) =
+      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
         case WarmUp(clientType, uid, arn, agentName, _) =>
           getConsents(getPendingInvitationIdsAndExpiryDates)(agentName, uid).flatMap { consents =>
@@ -159,18 +158,18 @@ object ClientInvitationJourneyModel extends JourneyModel {
             } else {
               consents match {
                 case _ if consents.nonEmpty && agentSuspensionEnabled =>
-                  getSuspensionStatus(arn).flatMap { suspendedServices =>
+                  getSuspensionDetails(arn).flatMap { suspensionDetails =>
                     val consentServices: Set[String] =
                       consents.map(consent => consent.service).toSet
                     val nonSuspendedConsents =
-                      consents.filter(consent => !suspendedServices.isSuspendedService(consent.service))
-                    if (suspendedServices.isSuspended(consentServices))
+                      consents.filter(consent => !suspensionDetails.isServiceSuspended(consent.service))
+                    if (suspensionDetails.isServiceSuspended(consentServices))
                       goto(
                         SuspendedAgent(
                           clientType,
                           uid,
                           agentName,
-                          suspendedServices.getSuspendedServices(consentServices),
+                          suspensionDetails.getSuspendedServices(consentServices),
                           nonSuspendedConsents))
                     else {
                       goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))

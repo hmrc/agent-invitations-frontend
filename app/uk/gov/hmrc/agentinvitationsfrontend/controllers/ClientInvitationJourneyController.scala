@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ class ClientInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: AgentClientAuthorisationConnector,
   identityVerificationConnector: IdentityVerificationConnector,
-  agentSuspensionConnector: AgentSuspensionConnector,
   authActions: AuthActionsImpl,
   mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   pdvConnector: PersonalDetailsValidationConnector,
@@ -78,7 +77,6 @@ class ClientInvitationJourneyController @Inject()(
     with I18nSupport {
 
   import ClientInvitationJourneyController._
-  import agentSuspensionConnector._
   import authActions._
   import invitationsConnector._
   import invitationsService._
@@ -135,7 +133,7 @@ class ClientInvitationJourneyController @Inject()(
       whenAuthorised(AsClient)(
         Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
           getAllClientInvitationsInfoForAgentAndStatus,
-          getSuspendedServices))(redirect)
+          getAgencySuspensionDetails))(redirect)
     }
   }
 
@@ -181,7 +179,7 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(
       Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
         getAllClientInvitationsInfoForAgentAndStatus,
-        getSuspendedServices))(redirect)
+        getAgencySuspensionDetails))(redirect)
   }
 
   def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {

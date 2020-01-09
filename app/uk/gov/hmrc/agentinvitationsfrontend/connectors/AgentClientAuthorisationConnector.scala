@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -425,6 +425,20 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         })
     } recoverWith {
       case _: NotFoundException => Future failed AgencyEmailNotFound("No record found for this agent")
+    }
+
+  def getAgencySuspensionDetails(
+    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
+    monitor("ConsumerAPI-Get-AgencySuspensionDetails-GET") {
+      http
+        .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/agent/suspension-details")
+        .map(response =>
+          response.status match {
+            case 200 => Json.parse(response.body).as[SuspensionDetails]
+            case 204 => throw SuspensionDetailsNotFound("No suspension details found in the record for this agent")
+        })
+    } recoverWith {
+      case _: NotFoundException => Future failed SuspensionDetailsNotFound("No record found for this agent")
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

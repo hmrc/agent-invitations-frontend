@@ -16,18 +16,22 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
-import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import play.api.libs.json.{Json, OFormat}
 
-object RedirectUrlJsonFormat {
+case class SuspensionDetails(suspensionStatus: Boolean, regimes: Option[Set[String]]) {
 
-  private val redirectUrlWrites: Writes[RedirectUrl] =
-    (__ \ "continueUrl").write[String].contramap(_.get(UnsafePermitAll).url)
+  private val serviceToRegime: Map[String, String] =
+    Map("HMRC-MTD-IT" -> "ITSA", "HMRC-MTD-VAT" -> "VATC", "HMRC-TERS-ORG" -> "TRS", "HMRC-CGT-PD" -> "CGT")
 
-  private val redirectUrlReads: Reads[RedirectUrl] =
-    (__ \ "continueUrl").read[String].map(RedirectUrl.apply)
+  def isServiceSuspended(service: String): Boolean = {
+    val regime = serviceToRegime(service)
+    this.regimes.fold(false)(r => r.contains(regime))
+  }
+}
 
-  implicit val redirectUrlFormat = Format[RedirectUrl](redirectUrlReads, redirectUrlWrites)
+case class SuspensionDetailsNotFound(message: String) extends Exception(message)
+
+object SuspensionDetails {
+  implicit val formats: OFormat[SuspensionDetails] = Json.format
+
 }
