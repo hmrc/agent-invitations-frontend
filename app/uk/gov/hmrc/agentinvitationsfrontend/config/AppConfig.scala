@@ -41,7 +41,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val ivFrontendBaseUrl: String = baseUrl("identity-verification-frontend")
   val ivBackendBaseUrl: String = baseUrl("identity-verification")
   val personalDetailsValidationBaseUrl: String = baseUrl("personal-details-validation")
-  val agentSuspensionBaseUrl: String = baseUrl("agent-suspension")
 
   //Strings
   val authLoginCallbackUrl: String = servicesConfig.getString("authentication.login-callback.url")
