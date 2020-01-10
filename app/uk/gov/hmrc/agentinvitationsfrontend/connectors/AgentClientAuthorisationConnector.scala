@@ -451,7 +451,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         })
     } recoverWith {
       case _: NotFoundException =>
-        Future failed SuspensionDetailsNotFound("No suspension details found in the record for this agent")
+        Future failed SuspensionDetailsNotFound("No record found for this agent")
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
