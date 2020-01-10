@@ -10,11 +10,9 @@ import play.api.Application
 import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.AgentSuspensionStubs._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -130,7 +128,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]): Unit = {
 
       "redirect to consent page if the invitation is found" in {
-        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
+        givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
@@ -149,7 +147,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
-        givenSuspensionStatus(arn, SuspensionResponse(Set("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD", "HMRC-MTD-VAT")))
+        givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC"))))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
@@ -210,7 +208,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /cannot-appoint" should {
     "display the agent suspended page" in {
       def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
-      journeyState.set(SuspendedAgent(personal, "uid", "name", Set("HMRC-MTD-IT", "HMRC-MTD-VAT"), Seq()), Nil)
+      journeyState.set(SuspendedAgent(personal, "uid", "name", Set("ITSA", "VATC"), Seq()), Nil)
 
       val result = controller.showSuspendedAgent(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
@@ -219,8 +217,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         result,
         "suspended-agent.header",
         "suspended-agent.p1.multi",
-        "suspended-agent.p1.HMRC-MTD-IT",
-        "suspended-agent.p1.HMRC-MTD-VAT")
+        "suspended-agent.p1.ITSA",
+        "suspended-agent.p1.VATC")
     }
   }
 
@@ -241,7 +239,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     def warmupSubmitDecline(request: () => FakeRequest[AnyContentAsEmpty.type]) = {
       "redirect to confirm decline" in {
-        givenSuspensionStatus(arn, SuspensionResponse(Set.empty))
+        givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 

@@ -3,8 +3,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{put, status, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.joda.time.LocalDate
+import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -898,6 +899,14 @@ trait ACAStubs {
                          |  "agencyName" : "My Agency"
                          |}""".stripMargin)))
 
+  def givenGetSuspensionDetailsClientStub(arn: Arn, suspensionDetails: SuspensionDetails) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/suspension-details/${encodePathSegment(arn.value)}"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(Json.toJson(suspensionDetails).toString)))
+
   def givenGetAgencyNameNotFoundClientStub(arn: Arn) =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/client/agency-name/${encodePathSegment(arn.value)}"))
@@ -914,6 +923,14 @@ trait ACAStubs {
                          |{
                          |  "agencyName" : "My Agency"
                          |}""".stripMargin)))
+
+  def givenGetSuspensionDetailsAgentStub(suspensionDetails: SuspensionDetails) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agent/suspension-details"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(Json.toJson(suspensionDetails).toString())))
 
   def givenGetAgencyEmailAgentStub =
     stubFor(

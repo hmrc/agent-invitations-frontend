@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logger
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.SuspensionResponse
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -118,7 +117,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = Utr => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
-    type GetSuspensionStatus = Arn => Future[SuspensionResponse]
+    type GetSuspensionDetails = () => Future[SuspensionDetails]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -132,15 +131,19 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def gotoIdentify(
       serviceEnabled: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionStatus: GetSuspensionStatus,
+      getSuspensionDetails: GetSuspensionDetails,
       arn: Arn,
       service: String,
       identifyClientState: State,
       suspendedState: State): Future[State] =
       (serviceEnabled, agentSuspensionEnabled) match {
         case (true, true) =>
-          getSuspensionStatus(arn).flatMap { suspendedServices =>
-            if (suspendedServices.isSuspendedService(service)) goto(suspendedState) else goto(identifyClientState)
+          getSuspensionDetails().flatMap { suspensionDetails =>
+            if (suspensionDetails.isRegimeSuspended(service)) {
+              goto(suspendedState)
+            } else {
+              goto(identifyClientState)
+            }
           }
         case (true, false) => goto(identifyClientState)
         case (false, _)    => fail(new Exception(s"Service: $service feature flag is switched off"))
@@ -152,7 +155,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       showVatFlag: Boolean,
       showCgtFlag: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) = Transition {
+      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
 
       case SelectPersonalService(services, basket) =>
         if (service.isEmpty) { // user selected "no" to final service
@@ -167,7 +170,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
           gotoIdentify(
             flag,
             agentSuspensionEnabled,
-            getSuspensionStatus,
+            getSuspensionDetails,
             agent.arn,
             service,
             IdentifyPersonalClient(service, basket),
@@ -178,13 +181,13 @@ object AgentInvitationJourneyModel extends JourneyModel {
     def selectedBusinessService(
       showVatFlag: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) = Transition {
+      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
       case SelectBusinessService =>
         if (service.nonEmpty) {
           gotoIdentify(
             showVatFlag,
             agentSuspensionEnabled,
-            getSuspensionStatus,
+            getSuspensionDetails,
             agent.arn,
             HMRCMTDVAT,
             IdentifyBusinessClient,
@@ -198,7 +201,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
       showTrustsFlag: Boolean,
       showCgtFlag: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionStatus: GetSuspensionStatus)(agent: AuthorisedAgent)(service: String) =
+      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
       Transition {
         case SelectTrustService(services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
@@ -215,7 +218,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
             gotoIdentify(
               flag,
               agentSuspensionEnabled,
-              getSuspensionStatus,
+              getSuspensionDetails,
               agent.arn,
               service,
               IdentifyTrustClient(service, basket),

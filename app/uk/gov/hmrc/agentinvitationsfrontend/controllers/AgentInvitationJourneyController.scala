@@ -23,7 +23,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, AgentSuspensionConnector}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
@@ -45,7 +45,6 @@ class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   acaConnector: AgentClientAuthorisationConnector,
-  agentSuspensionConnector: AgentSuspensionConnector,
   val authActions: AuthActionsImpl,
   override val journeyService: AgentInvitationJourneyService,
   countryNamesLoader: CountryNamesLoader,
@@ -83,7 +82,6 @@ class AgentInvitationJourneyController @Inject()(
     extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationJourneyController._
-  import agentSuspensionConnector._
   import acaConnector._
   import authActions._
   import invitationsService._
@@ -128,7 +126,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdVat,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspendedServices
+        getAgencySuspensionDetails
       ))
   }
 
@@ -140,13 +138,17 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcMtdVat,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspendedServices
+        getAgencySuspensionDetails
       ))
   }
 
   def submitBusinessSelectService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(Transitions
-      .selectedBusinessService(featureFlags.showHmrcMtdVat, featureFlags.agentSuspensionEnabled, getSuspendedServices))
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(
+      Transitions
+        .selectedBusinessService(
+          featureFlags.showHmrcMtdVat,
+          featureFlags.agentSuspensionEnabled,
+          getAgencySuspensionDetails))
   }
 
   def submitTrustSelectSingle(service: String): Action[AnyContent] = action { implicit request =>
@@ -155,7 +157,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcTrust,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspendedServices))
+        getAgencySuspensionDetails))
   }
 
   // this is only for multi-select option forms
@@ -165,7 +167,7 @@ class AgentInvitationJourneyController @Inject()(
         featureFlags.showHmrcTrust,
         featureFlags.showHmrcCgt,
         featureFlags.agentSuspensionEnabled,
-        getSuspendedServices))
+        getAgencySuspensionDetails))
   }
 
   def identifyClientRedirect: Action[AnyContent] =
