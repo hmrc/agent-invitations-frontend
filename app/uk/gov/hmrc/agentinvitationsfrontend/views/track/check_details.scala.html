@@ -161,7 +161,8 @@
                     Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
                     '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),
                     '_groupDivClass -> "form-group soft--ends",
-                    '_fieldsetAttributes -> Html("""id='checkDetails'""")
+                    '_fieldsetAttributes -> Html("""id='checkDetails'"""),
+                    '_errorPrefix -> Messages("error.prefix")
                 )
 
                 <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>

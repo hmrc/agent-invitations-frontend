@@ -54,7 +54,8 @@
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-client.header") +
       s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span>$clientIdentifierText</div>"""),
   '_groupDivClass -> "form-group soft--ends",
-  '_fieldsetAttributes -> Html("""id='choice'""")
+  '_fieldsetAttributes -> Html("""id='choice'"""),
+        '_errorPrefix -> Messages("error.prefix")
   )
   <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
  }

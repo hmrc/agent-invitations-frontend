@@ -50,7 +50,8 @@
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("client-type.header") + """</h1>""" +
                 """<p>""" + Messages("client-type.p1") + """</p> """),
             '_groupDivClass -> "form-group soft--ends margin-bottom-10",
-            '_fieldsetAttributes -> Html("""id='clientType'""")
+            '_fieldsetAttributes -> Html("""id='clientType'"""),
+            '_errorPrefix -> Messages("error.prefix")
     )
 
     <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>

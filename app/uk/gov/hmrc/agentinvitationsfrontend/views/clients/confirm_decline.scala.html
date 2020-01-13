@@ -62,11 +62,12 @@
 
         @uiInputRadioGroup(
             confirmDeclineForm("accepted"),
-            Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
+            Seq(("true", Messages("confirm-decline.radio1")),("false", Messages("confirm-decline.radio2"))),
             '_legend -> legend,
             '_legendClass -> "form-label",
             '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='accepted'""")
+            '_fieldsetAttributes -> Html("""id='accepted'"""),
+            '_errorPrefix -> Messages("error.prefix")
         )
 
         <div class="form-group">

@@ -57,7 +57,8 @@
       Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
         '_legend -> Html("""<p class="panel panel-border-wide">""" + Messages("confirm-authorisation-cancelled.warning")+ """</p>"""),
       '_groupDivClass -> "form-group soft--ends",
-      '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
+      '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'"""),
+        '_errorPrefix -> Messages("error.prefix")
      )
     </div>
 

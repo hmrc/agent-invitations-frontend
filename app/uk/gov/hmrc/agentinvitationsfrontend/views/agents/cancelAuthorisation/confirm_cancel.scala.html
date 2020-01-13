@@ -49,7 +49,8 @@
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-cancel.header") + s"""</h1>""" +
     """<p>""" + Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName) + """</p>"""),
   '_groupDivClass -> "form-group soft--ends",
-  '_fieldsetAttributes -> Html("""id='choice'""")
+  '_fieldsetAttributes -> Html("""id='choice'"""),
+  '_errorPrefix -> Messages("error.prefix")
  )
  <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
  }
