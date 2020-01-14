@@ -68,7 +68,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         journeyState.clear(hc, ec)
 
         behave like itShowsClientTypePage(
-          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+          withBackLinkUrl = externalUrls.agentServicesAccountUrl)
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }
@@ -77,7 +77,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         journeyState.set(SelectClientType(emptyBasket), List.empty)
 
         behave like itShowsClientTypePage(
-          withBackLinkUrl = s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+          withBackLinkUrl = externalUrls.agentServicesAccountUrl)
 
         journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
       }

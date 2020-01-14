@@ -259,8 +259,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case SelectClientType =>
       def backLinkForClientType(implicit request: Request[_]): String =
-        breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
-          getCallFor(_).url)
+        breadcrumbs.headOption.fold(externalUrls.agentServicesAccountUrl)(getCallFor(_).url)
 
       Ok(
         clientTypeView(
@@ -468,12 +467,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case AuthorisationCancelled(service, clientName, agencyName) =>
       journeyService.cleanBreadcrumbs(_ => Nil)
-      Ok(
-        authCancelledView(
-          service,
-          clientName.getOrElse(""),
-          agencyName,
-          s"${externalUrls.agentServicesAccountUrl}/agent-services-account"))
+      Ok(authCancelledView(service, clientName.getOrElse(""), agencyName, externalUrls.agentServicesAccountUrl))
 
     case KnownFactNotMatched =>
       Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
