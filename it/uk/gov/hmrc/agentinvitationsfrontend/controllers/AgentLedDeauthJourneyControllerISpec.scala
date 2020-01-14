@@ -63,7 +63,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           htmlEscapedMessage("cancel-authorisation.client-type.header"),
           hasMessage("cancel-authorisation.client-type.p1")
         )
-        checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account")
+        checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account/home")
       }
       "there is no state or breadcrumbs redirect to the client type page" in {
         journeyState.clear(hc, ec)
