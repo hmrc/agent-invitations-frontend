@@ -27,7 +27,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val companyAuthUrl = appConfig.companyAuthFrontendExternalUrl
   val companyAuthSignOutPath = appConfig.companyAuthFrontendSignoutPath
   val businessTaxAccountUrl = appConfig.btaExternalUrl
-  val agentServicesAccountUrl = appConfig.asaFrontendExternalUrl
+  val agentServicesAccountUrl = s"${appConfig.asaFrontendExternalUrl}/agent-services-account/home"
   val contactFrontendUrl = appConfig.contactFrontendExternalUrl
   val exitSurveyUrl = appConfig.feedbackSurveyFrontendExternalUrl
   val invitationExitSurvey = appConfig.feedbackSurveyOriginToken
@@ -52,7 +52,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
     val continueUrl = if (isAgent) {
       if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
-      else s"$agentServicesAccountUrl/agent-services-account"
+      else agentServicesAccountUrl
     } else {
       if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
       else s"$businessTaxAccountUrl/business-account"

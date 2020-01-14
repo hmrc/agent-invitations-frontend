@@ -31,7 +31,7 @@ case class InvitationSentPageConfig(
 
   val continueUrl: String = continueUrlOpt match {
     case Some(url) => url
-    case None      => s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+    case None      => externalUrls.agentServicesAccountUrl
   }
 
   val trackUrl: Call = routes.AgentsRequestTrackingController.showTrackRequests()
