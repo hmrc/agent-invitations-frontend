@@ -37,7 +37,7 @@
 
 @mainTemplate(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
-    @back_link(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")
+    @back_link(externalUrls.agentServicesAccountUrl)
 
     <div class="text">
         <h1 class="heading-xlarge margin-bottom-40">@Messages(s"recent-invitations.header")</h1>

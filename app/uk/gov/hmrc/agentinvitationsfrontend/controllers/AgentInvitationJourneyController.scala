@@ -313,7 +313,7 @@ class AgentInvitationJourneyController @Inject()(
   private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
       .map { is =>
-        val uri = s"${externalUrls.agentServicesAccountUrl}/agent-services-account"
+        val uri = externalUrls.agentServicesAccountUrl
         val continueUrl = CallOps
           .localFriendlyUrl(env, appConfig)(uri, request.host)
         s"$ggLoginUrl?continue=$continueUrl"
@@ -371,8 +371,7 @@ class AgentInvitationJourneyController @Inject()(
 
     case SelectClientType(_) =>
       def backLinkForClientType(implicit request: Request[_]): String =
-        breadcrumbs.headOption.fold(s"${externalUrls.agentServicesAccountUrl}/agent-services-account")(
-          getCallFor(_).url)
+        breadcrumbs.headOption.fold(externalUrls.agentServicesAccountUrl)(getCallFor(_).url)
 
       Ok(
         clientTypeView(
