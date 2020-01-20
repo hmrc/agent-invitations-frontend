@@ -114,6 +114,7 @@ GET         /agents/no-match                                            uk.gov.h
 GET         /agents/no-match-try-again                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact
 GET         /agents/authorisation-already-requested                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
 GET         /agents/already-authorised                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
+GET         /agents/suspended                                           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showSuspended
 
 # agent led deauth FSM
 GET         /agents/cancel-authorisation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.agentLedDeauthRoot

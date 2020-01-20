@@ -219,6 +219,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       clientName: String)
         extends State
 
+    case class SuspendedAgent(service: String, continueUrl: Option[String]) extends State
+
     case class CgtRefNotFound(cgtRef: CgtRef) extends State
   }
 
@@ -236,46 +238,57 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
     type GetAgencyEmail = () => Future[String]
 
     type GetTrustName = Utr => Future[TrustResponse]
+    type GetSuspensionDetails = () => Future[SuspensionDetails]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
     }
 
-    def start(continueUrl: Option[String])(agent: AuthorisedAgent)(
+    def start(agentSuspensionEnabled: Boolean, getSuspensionDetails: GetSuspensionDetails)(continueUrl: Option[String])(
+      agent: AuthorisedAgent)(
       fastTrackRequest: AgentFastTrackRequest)(implicit request: Request[Any], hc: HeaderCarrier) = Transition {
       case _ =>
-        fastTrackRequest match {
-          case AgentFastTrackRequest(_, HMRCMTDIT, _, _, knownFact) =>
-            val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
-            goto(
-              knownFact.fold(
-                CheckDetailsNoPostcode(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
-                CheckDetailsCompleteItsa(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
-
-          case AgentFastTrackRequest(_, HMRCPIR, _, _, knownFact) =>
-            val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
-            goto(
-              knownFact.fold(CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
-                CheckDetailsCompleteIrv(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
-
-          case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, knownFact) =>
-            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-              CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
-
-          case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, knownFact) =>
-            goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
-              CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
-
-          case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
-            goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
-
-          case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
-            goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
-
-          case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
-            goto(CheckDetailsCompleteCgt(fastTrackRequest, fastTrackRequest, continueUrl))
+        if (agentSuspensionEnabled) getSuspensionDetails().flatMap { suspensionDetails =>
+          suspensionDetails.isRegimeSuspended(fastTrackRequest.service) match {
+            case true  => goto(SuspendedAgent(fastTrackRequest.service, continueUrl))
+            case false => getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
+          }
+        } else {
+          getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
         }
     }
+
+    def getStateForNonSuspendedAgent(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) =
+      fastTrackRequest match {
+        case AgentFastTrackRequest(_, HMRCMTDIT, _, _, knownFact) =>
+          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
+          goto(
+            knownFact.fold(CheckDetailsNoPostcode(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(
+              _ => CheckDetailsCompleteItsa(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
+
+        case AgentFastTrackRequest(_, HMRCPIR, _, _, knownFact) =>
+          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(personal))
+          goto(
+            knownFact.fold(CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
+              CheckDetailsCompleteIrv(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
+
+        case AgentFastTrackRequest(Some(ClientType.personal), HMRCMTDVAT, _, _, knownFact) =>
+          goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+            CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+
+        case AgentFastTrackRequest(Some(ClientType.business), HMRCMTDVAT, _, _, knownFact) =>
+          goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
+            CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
+
+        case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
+          goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
+
+        case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
+          goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+
+        case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
+          goto(CheckDetailsCompleteCgt(fastTrackRequest, fastTrackRequest, continueUrl))
+      }
 
     def checkIfPendingOrActiveAndGoto(
       fastTrackRequest: AgentFastTrackRequest,

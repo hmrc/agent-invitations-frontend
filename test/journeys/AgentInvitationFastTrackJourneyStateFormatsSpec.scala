@@ -966,6 +966,15 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "SuspendedAgent" in {
+        val state = SuspendedAgent(HMRCMTDIT, Some("continue/url"))
+        val json = Json.parse(
+          """{"state": "SuspendedAgent", "properties": {"service": "HMRC-MTD-IT", "continueUrl" : "continue/url"}}"""
+        )
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
   }
 }

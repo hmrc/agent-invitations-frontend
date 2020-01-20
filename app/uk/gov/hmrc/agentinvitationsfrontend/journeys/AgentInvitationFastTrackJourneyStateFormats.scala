@@ -56,6 +56,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
   val TrustNotFoundFormat = Json.format[TrustNotFound]
   val CgtRefNotFoundFormat = Json.format[CgtRefNotFound]
+  val SuspendedAgentFormat = Json.format[SuspendedAgent]
 
   val ConfirmClientCgtFormat: OFormat[ConfirmClientCgt] = Json.format
   val ConfirmCgtPostcodeFormat: OFormat[ConfirmPostcodeCgt] = Json.format
@@ -95,6 +96,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: ConfirmClientCgt                => ConfirmClientCgtFormat.writes(s)
     case s: ConfirmPostcodeCgt              => ConfirmCgtPostcodeFormat.writes(s)
     case s: ConfirmCountryCodeCgt           => ConfirmCgtCountryCodeFormat.writes(s)
+    case s: SuspendedAgent                  => SuspendedAgentFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -132,6 +134,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "ConfirmClientCgt"                => ConfirmClientCgtFormat.reads(properties)
     case "ConfirmPostcodeCgt"              => ConfirmCgtPostcodeFormat.reads(properties)
     case "ConfirmCountryCodeCgt"           => ConfirmCgtCountryCodeFormat.reads(properties)
+    case "SuspendedAgent"                  => SuspendedAgentFormat.reads(properties)
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 

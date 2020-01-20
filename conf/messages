@@ -137,6 +137,20 @@ agent-suspended.p1.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property d
 agent-suspended.p2.single=You can start a new authorisation request for a different service.
 agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
+#Agent suspended fast-track
+
+agent-suspended.fastrack.heading=We have temporarily limited your use of this service
+agent-suspended.fastrack.p1=We did this because we have suspended your agent code. We sent you a letter to confirm this.
+agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
+agent-suspended.fastrack.p2.HMRC-MTD-IT=send their Income Tax updates through software.
+agent-suspended.fastrack.p2.HMRC-MTD-VAT=submit a client’s VAT returns through software.
+agent-suspended.fastrack.p2.HMRC-MTD-ORG=maintain their trust or estate.
+agent-suspended.fastrack.p2.HMRC-MTD-PD=maintain their Capital Gains Tax on UK property disposals.
+
+
+agent-suspended.fastrack.p3=You can still access any other service available to you.
+agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
+
 ## Identify Trust Client
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.header=What is the Unique Taxpayer Reference of the trust or estate?

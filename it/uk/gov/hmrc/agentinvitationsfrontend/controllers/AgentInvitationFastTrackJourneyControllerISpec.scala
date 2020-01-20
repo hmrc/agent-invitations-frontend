@@ -35,6 +35,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]
 
+
   before {
     journeyState.clear
   }
@@ -45,10 +46,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to check-details if all values in request are valid with no continue url" when {
 
       "submitted NINO is uppercase" in {
+        givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
         checkAgentFastTract(submittedNinoStr = "AB123456A")
       }
 
       "submitted NINO is lowercase (APB-3634)" in {
+        givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
         checkAgentFastTract(submittedNinoStr = "ab123456a")
       }
 
@@ -76,6 +79,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       givenWhitelistedDomains
       val request = FakeRequest(
         "POST",
@@ -96,6 +100,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details when there is a referer in the header" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest(
         "POST",
@@ -121,6 +126,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is IRV" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -137,7 +143,26 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
 
+    "redirect to agent suspended when service is IRV and agent has been suspended for this service" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("PIR"))))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "personal",
+            "service"              -> "PERSONAL-INCOME-RECORD",
+            "clientIdentifierType" -> "ni",
+            "clientIdentifier"     -> nino,
+            "knownFact"            -> dateOfBirth),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
+    }
+
     "redirect to check details when service is personal VAT" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -155,6 +180,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is business VAT" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -172,6 +198,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is Trust" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -187,7 +214,25 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
 
+    "redirect to agent suspended when service is Trust and agent has been suspended for this service" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("TRS"))))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-TERS-ORG",
+            "clientIdentifierType" -> "utr",
+            "clientIdentifier"     -> validUtr.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
+    }
+
     "redirect to check details when service is CGT" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -203,7 +248,25 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
 
+    "redirect to agent suspended when service is CGT and agent has been suspended for this service" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("CGT"))))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-CGT-PD",
+            "clientIdentifierType" -> "CGTPDRef",
+            "clientIdentifier"     -> cgtRef.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
+    }
+
     "redirect to check details when service is ITSA with no postcode" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -220,6 +283,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is IRV with no date of birth" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -236,6 +300,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is VAT with no vat reg date" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -252,6 +317,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is VAT with no vat reg date or client type" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -265,6 +331,24 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
+
+    "redirect to agent suspended when service is VAT and agent has been suspended for this service" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("VATC"))))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "service"              -> "HMRC-MTD-VAT",
+            "clientIdentifierType" -> "vrn",
+            "clientIdentifier"     -> vrn),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
+    }
+
+
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
       givenWhitelistedDomains
