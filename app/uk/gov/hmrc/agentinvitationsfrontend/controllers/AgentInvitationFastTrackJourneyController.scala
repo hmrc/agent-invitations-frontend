@@ -70,7 +70,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   notMatchedView: not_matched,
   pendingAuthExistsView: pending_authorisation_exists,
   invitationSentView: invitation_sent,
-  notSignedupView: not_signed_up)(
+  notSignedupView: not_signed_up,
+  suspendedView: agent_suspended_fastrack)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -109,7 +110,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
             whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
-              Transitions.start(redirectUrl))
+              Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl))
           }
         }
       }
@@ -137,6 +138,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val progressToIdentifyClient = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)
+  }
+
+  val showSuspended = actionShowStateWhenAuthorised(AsAgent) {
+    case _: SuspendedAgent =>
   }
 
   val identifyClientRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()))
@@ -338,6 +343,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
     case _: TrustNotFound  => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
     case _: CgtRefNotFound => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _: SuspendedAgent => routes.AgentInvitationFastTrackJourneyController.showSuspended()
     case _                 => throw new Exception(s"Link not found for $state")
   }
 
@@ -637,6 +643,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
       Ok(notSignedupView(fastTrackRequest.service, hasRequests = false))
+
+    case SuspendedAgent(service, continueUrl) => Ok(suspendedView(service, continueUrl))
   }
 }
 

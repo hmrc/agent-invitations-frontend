@@ -1,0 +1,41 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+
+@this(mainTemplate: main_template)
+
+
+@(service: String, continueUrl: Option[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+
+@mainTemplate(title = Messages("generic.title", Messages(s"agent-suspended.fastrack.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s""), ""))) {
+
+
+  <h1 class="heading-xlarge margin-bottom-20">@Messages("agent-suspended.fastrack.heading")</h1>
+
+  <p>@Messages("agent-suspended.fastrack.p1")</p>
+   <p>@Messages("agent-suspended.fastrack.p2",Messages(s"agent-suspended.fastrack.p2.$service"))</p>
+    <p>@Messages("agent-suspended.fastrack.p3")</p>
+     <p>@Messages("agent-suspended.fastrack.p4")</p>
+
+          @if(continueUrl.isDefined) {
+  <a href="@continueUrl.get" class="button">@Messages("continue.button")</a>
+ }
+}
