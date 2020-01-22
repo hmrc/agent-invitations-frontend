@@ -144,8 +144,8 @@ agent-suspended.fastrack.p1=We did this because we have suspended your agent cod
 agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
 agent-suspended.fastrack.p2.HMRC-MTD-IT=send their Income Tax updates through software.
 agent-suspended.fastrack.p2.HMRC-MTD-VAT=submit a client’s VAT returns through software.
-agent-suspended.fastrack.p2.HMRC-MTD-ORG=maintain their trust or estate.
-agent-suspended.fastrack.p2.HMRC-MTD-PD=maintain their Capital Gains Tax on UK property disposals.
+agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
+agent-suspended.fastrack.p2.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property disposals.
 
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
