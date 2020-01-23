@@ -428,8 +428,9 @@ warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someo
 warm-up.link=I do not want to appoint {0}
 
 # suspended agent
-suspended-agent.header=You cannot appoint this tax agent
-suspended-agent.semi.header=You cannot appoint this tax agent for a service they want to deal with
+suspended-agent.all.header=You cannot appoint this tax agent
+suspended-agent.single.header=You cannot appoint this tax agent for a service they want to deal with
+suspended-agent.multi.header=You cannot appoint this tax agent for some services they want to deal with
 suspended-agent.p1.single=This tax agent cannot {0} at this time.
 suspended-agent.p1.multi=This tax agent cannot act on your behalf for the following services at this time:
 suspended-agent.p1.ITSA=send your Income Tax updates through software

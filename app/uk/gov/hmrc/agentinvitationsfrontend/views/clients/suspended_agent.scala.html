@@ -46,20 +46,24 @@
     <p>@Messages("suspended-agent.p2")</p>
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
 
     @if(pageConfig.isAllSuspended) {
-        <h1 class="heading-xlarge">@Messages("suspended-agent.header")</h1>
+        <h1 class="heading-xlarge">@Messages("suspended-agent.all.header")</h1>
 
         @pageBody
 
         <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("finish.button")</a>
     } else {
-        <h1 class="heading-xlarge">@Messages("suspended-agent.semi.header")</h1>
+        @if(pageConfig.isOneSuspendedService) {
+            <h1 class="heading-xlarge">@Messages("suspended-agent.single.header")</h1>
+        } else {
+            <h1 class="heading-xlarge">@Messages("suspended-agent.multi.header")</h1>
+        }
 
         @pageBody
 
-        <p>@Html(Messages("suspended-agent.p3")) &nbsp;
+        <p>@Html(Messages("suspended-agent.p3"))
             <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
 
         @uiFormHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){

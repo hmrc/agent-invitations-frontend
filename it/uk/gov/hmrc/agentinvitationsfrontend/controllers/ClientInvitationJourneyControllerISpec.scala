@@ -215,7 +215,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyMsgs(
         result,
-        "suspended-agent.header",
+        "suspended-agent.all.header",
         "suspended-agent.p1.multi",
         "suspended-agent.p1.ITSA",
         "suspended-agent.p1.VATC")
