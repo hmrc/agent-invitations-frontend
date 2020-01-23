@@ -617,7 +617,7 @@ not-signed-up.p2=Contact the tax agent who sent you this request if you still wa
 
 #Not Authorised
 not-authorised.header=You cannot access this page
-not-authorised.description.p1=You do not have permission to access this page. Only your client can access this page.
+not-authorised.description.p1=This page can only be accessed by your client.
 not-authorised.description.p2=Ask your client to go to the link that you tried to access, so they can accept your authorisation request.
 
 not-authorised-vat.title=You’re not able to use this service
@@ -654,30 +654,30 @@ incorrect-client-type.button=Sign out and try again
 # Cannot confirm identity
 cannot-confirm-identity.header=We could not confirm your identity
 cannot-confirm-identity.p1=The information you have entered does not match our records.
-cannot-confirm-identity.p2=Use the ‘Get help with this page’ link if you need help with confirming your identity.
+cannot-confirm-identity.p2=If you need help with confirming your identity, use the ‘Get help with this page’ link.
 cannot-confirm-identity.button=Try again
 
 # Locked-out
 locked-out.header=We could not confirm your identity
 locked-out.p1=You have entered information that does not match our records too many times.
 locked-out.p2=For security reasons, you must wait 24 hours and then sign in to try again.
-locked-out.p3=Use the ‘Get help with this page’ link if you need help with confirming your identity.
+locked-out.p3=If you need help with confirming your identity, use the ‘Get help with this page’ link.
 
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
 some-responses-failed.p1=We could not save your response for the following services:
-some-responses-failed.li.itsa=Send your Income Tax updates through software
-some-responses-failed.li.afi=View your PAYE income record
-some-responses-failed.li.vat=Submit your VAT returns through software
-some-responses-failed.li.trust=Maintain a trust or an estate
-some-responses-failed.li.cgt=manage your Capital Gains Tax on UK property disposals.
+some-responses-failed.li.itsa=send your Income Tax updates through software
+some-responses-failed.li.afi=view your PAYE income record
+some-responses-failed.li.vat=submit your VAT returns through software
+some-responses-failed.li.trust=maintain a trust
+some-responses-failed.li.cgt=manage your Capital Gains Tax on UK property disposals
 some-responses-failed.itsa=We could not save your response for sending your Income Tax updates through software.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for submitting your VAT returns through software
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
 some-responses-failed.cgt=We could not save your response for managing your Capital Gains Tax on UK property disposals.
 some-responses-failed.try-again=You can continue without these services, or try again later.
-some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
+some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link.
 
 
 technical-issues.header=Sorry, there is a problem with the service
@@ -697,7 +697,7 @@ all-responses-failed.p3=If you have any questions, use the ‘get help with this
 session-lost-client.header=Sorry, you will need to start again
 session-lost-client.description.1=For your security, we have signed you out of the service.
 session-lost-client.description.2=We may not have saved your answers.
-session-lost-client.description.3=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
+session-lost-client.description.3=If you have any questions, use the ‘Get help with this page’ link.
 session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
