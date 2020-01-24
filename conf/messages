@@ -678,7 +678,7 @@ some-responses-failed.vat=We could not save your response for submitting your VA
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
 some-responses-failed.cgt=We could not save your response for managing your Capital Gains Tax on UK property disposals.
 some-responses-failed.try-again=You can continue without these services, or try again later.
-some-responses-failed.advice=If you have any questions, use the ‘get help with this page’ link.
+some-responses-failed.advice=If you have any questions, use the ‘Get help with this page’ link.
 
 
 technical-issues.header=Sorry, there is a problem with the service
@@ -692,7 +692,7 @@ all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p1=Try again later.
 all-responses-failed.p2=We may not have saved your responses.
 all-responses-failed.check=You can <a href = {0}>check who can deal with HMRC for you</a>.
-all-responses-failed.p3=If you have any questions, use the ‘get help with this page’ link at the bottom of each page in the service.
+all-responses-failed.p3=If you have any questions, use the ‘get help with this page’ link.
 
 # Client session expired/lost
 session-lost-client.header=Sorry, you will need to start again
