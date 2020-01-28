@@ -327,7 +327,7 @@ not-authorised.HMRC-MTD-IT.p=This individual has not authorised you to send thei
 not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
 not-authorised.HMRC-MTD-VAT.p=This individual or business has not authorised you to submit their VAT returns through software.
 not-authorised.HMRC-TERS-ORG.p=This trust has not authorised you to maintain a trust or an estate.
-not-authorised.HMRC-CGT-PD.p=This individual or trust has not authorised you to manage Capital Gains Tax on UK property disposals.
+not-authorised.HMRC-CGT-PD.p=This individual or trust has not authorised you to manage their Capital Gains Tax on UK property disposals.
 not-authorised.button=Start over
 
 #Delete
