@@ -1541,8 +1541,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showClientNotSignedUp(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("problem.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p1.HMRC-MTD-IT"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p", "signed up."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
+      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+
     }
   }
 

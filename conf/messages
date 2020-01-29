@@ -350,20 +350,37 @@ known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 
 # Not Enrolled
-not-enrolled.p1.HMRC-MTD-IT=This client has not signed up to send their Income Tax updates through software.
-not-enrolled.p1.HMRC-MTD-VAT=This client has not signed up to Making Tax Digital for VAT.
-not-enrolled.p2=They cannot authorise you for this service until they have signed up.
-not-enrolled.p3.start=Find out how to
-not-enrolled.p3.link=sign up your client to Making Tax Digital for VAT (opens in a new window or tab).
-not-enrolled.button=Back to your account
-not-enrolled.vat.button=Back to your account
+not-enrolled.HMRC-MTD-IT=Self Assessment
+not-enrolled.HMRC-MTD-VAT=VAT
+
+not-enrolled.title=This client has not {0}
+not-enrolled.title.HMRC-MTD-IT=signed up to Making Tax Digital for Income Tax
+not-enrolled.title.HMRC-MTD-VAT=signed up to Making Tax Digital for VAT
+not-enrolled.title.HMRC-TERS-ORG=claimed a trust
+
+not-enrolled.p=They cannot authorise you for this service until they have {0}
+not-enrolled.p.HMRC-MTD-IT=signed up.
+not-enrolled.p.HMRC-MTD-VAT=signed up.
+not-enrolled.p.HMRC-TERS-ORG=claimed a trust.
+
+not-enrolled.existing.header=Existing {0} clients
+not-enrolled.existing.p=If you copied an existing {0} authorisation for this client to your agent services account, you can {1}
+not-enrolled.existing.p.HMRC-MTD-IT=<a target="_blank" href="{0}">sign them up to Making Tax Digital pilot for Income Tax (opens in a new window or tab).</a>
+not-enrolled.existing.p.HMRC-MTD-VAT=<a target="_blank" href="{0}">sign them up to Making Tax Digital for VAT (opens in a new window or tab).</a>
+
+not-enrolled.mapping.p=Find out how to {0}
+not-enrolled.mapping.link=<a href="{0}">copy across an existing authorisation</a>
+
+not-enrolled.new.header=New {0} clients
+not-enrolled.new.HMRC-MTD-IT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital pilot for Income Tax (opens in a new window or tab).</a> You cannot do this step for them.
+not-enrolled.new.HMRC-MTD-VAT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital for VAT (opens in a new window or tab).</a> You cannot do this step for them.
 
 # Not Matched
-not-matched.header=There is a problem
-not-matched.description = The details you entered do not match to a client.
-not-matched.advice = Check them and try again.
-not-matched.button = Try again
-review-auths.link = Return to your authorisation requests
+not-matched.header=We could not find your client
+not-matched.description =We could not find a client in our records using the details you gave us.
+not-matched.advice =Check the details and try again.
+not-matched.button =Try again
+review-auths.link =Return to your authorisation requests
 
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request

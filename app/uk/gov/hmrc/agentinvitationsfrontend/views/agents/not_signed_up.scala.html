@@ -18,38 +18,39 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models.NotSignedUpPageUrls
+
 
 @this(
     mainTemplate: main_template
 )
 
 
-@(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false, htmlPartial: Option[Html])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("problem.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s"not-enrolled.p1.$serviceId"), serviceId))) {
+@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), serviceId))) {
 
     @back_link_referer(request)
 
-  <h1 class="heading-xlarge">@Messages("problem.header")</h1>
+        <h1 class="margin-bottom-50 heading-xlarge">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
 
-  <p>@Messages(s"not-enrolled.p1.$serviceId")</p>
+        <p class="">@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
 
-  <p>@Messages(s"not-enrolled.p2")</p>
-
-  <p>@Messages("not-enrolled.p3.start") <a target="_blank" href="https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat">@Messages("not-enrolled.p3.link")</a></p>
-
-  @if(hasRequests) {
-   <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button">@Messages("review-auths.link")</a>
-  }else {@if(!isDeAuthJourney){
-   <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button">@Messages("new-request.button")</a>
-  }else {
-        <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button">@Messages("new-request.button")</a>
-    }}
+    @htmlPartial.getOrElse("")
 
 
 
-
+        @if(hasRequests) {
+            <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button">@Messages("review-auths.link")</a>
+        } else {
+            @if(!isDeAuthJourney) {
+                <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button">@Messages("new-request.button")</a>
+            } else {
+                <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button">@Messages("new-request.button")</a>
+            }
+        }
 }
+

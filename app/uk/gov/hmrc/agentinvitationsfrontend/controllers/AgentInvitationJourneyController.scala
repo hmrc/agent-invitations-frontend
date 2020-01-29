@@ -47,6 +47,7 @@ class AgentInvitationJourneyController @Inject()(
   acaConnector: AgentClientAuthorisationConnector,
   val authActions: AuthActionsImpl,
   override val journeyService: AgentInvitationJourneyService,
+  notSignedUpPageConfig: NotSignedUpPageConfig,
   countryNamesLoader: CountryNamesLoader,
   clientTypeView: client_type,
   cgtRefNotFoundView: cgtRef_notFound,
@@ -681,8 +682,10 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showClientType()
           )))
 
-    case ClientNotSignedUp(service, basket) =>
-      Ok(notSignedupView(service, basket.nonEmpty))
+    case ClientNotSignedUp(service, basket) => {
+      val pageConfig = notSignedUpPageConfig.render(service)
+      Ok(notSignedupView(service, basket.nonEmpty, false, pageConfig))
+    }
 
     case AllAuthorisationsRemoved =>
       Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType()))
@@ -692,6 +695,13 @@ class AgentInvitationJourneyController @Inject()(
 
     case _ => throw new Exception(s"Cannot render a page for unexpected state: $state")
 
+  }
+
+  private def guidanceUrlsForService(service: String): Option[NotSignedUpPageUrls] = service match {
+    case HMRCMTDVAT =>
+      Some(NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew))
+    case HMRCMTDIT => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew))
+    case _         => None
   }
 }
 
@@ -704,4 +714,5 @@ object AgentInvitationJourneyController {
   val ReviewAuthorisationsForm: Form[Confirmation] = confirmationForm("error.review-authorisation.required")
 
   val DeleteAuthorisationForm: Form[Confirmation] = confirmationForm("error.delete.radio")
+
 }

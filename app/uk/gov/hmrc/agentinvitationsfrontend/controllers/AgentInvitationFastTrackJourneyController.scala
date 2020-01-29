@@ -53,6 +53,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   authActions: AuthActionsImpl,
   val redirectUrlActions: RedirectUrlActions,
   override val journeyService: AgentInvitationFastTrackJourneyService,
+  notSignedUpPageConfig: NotSignedUpPageConfig,
   countryNamesLoader: CountryNamesLoader,
   clientTypeView: client_type,
   cgtRefNotFoundView: cgtRef_notFound,
@@ -642,7 +643,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )))
 
     case ClientNotSignedUp(fastTrackRequest, _) =>
-      Ok(notSignedupView(fastTrackRequest.service, hasRequests = false))
+      Ok(
+        notSignedupView(
+          fastTrackRequest.service,
+          hasRequests = false,
+          isDeAuthJourney = false,
+          htmlPartial = notSignedUpPageConfig.render(fastTrackRequest.service)))
 
     case SuspendedAgent(service, continueUrl) => Ok(suspendedView(service, continueUrl))
   }
