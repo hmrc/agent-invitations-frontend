@@ -696,13 +696,6 @@ class AgentInvitationJourneyController @Inject()(
     case _ => throw new Exception(s"Cannot render a page for unexpected state: $state")
 
   }
-
-  private def guidanceUrlsForService(service: String): Option[NotSignedUpPageUrls] = service match {
-    case HMRCMTDVAT =>
-      Some(NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew))
-    case HMRCMTDIT => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew))
-    case _         => None
-  }
 }
 
 object AgentInvitationJourneyController {
