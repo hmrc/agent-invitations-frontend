@@ -242,8 +242,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode")
 
-  private[connectors] def getAllClientInvitationsInfoForAgentAndStatusUrl(uid: String, status: InvitationStatus) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid?status=${status.value}")
+  private[connectors] def getAllClientInvitationsInfoForAgentUrl(uid: String) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid")
 
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
     implicit hc: HeaderCarrier,
@@ -363,13 +363,12 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       case _: NotFoundException                                      => None
     }
 
-  def getAllClientInvitationsInfoForAgentAndStatus(uid: String, status: InvitationStatus)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[InvitationIdAndExpiryDate]] =
+  def getAllClientInvitationsInfoForAgent(
+    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationDetails]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
-      val url = getAllClientInvitationsInfoForAgentAndStatusUrl(uid, status)
+      val url = getAllClientInvitationsInfoForAgentUrl(uid)
       http
-        .GET[Seq[InvitationIdAndExpiryDate]](url.toString)
+        .GET[Seq[InvitationDetails]](url.toString)
     }
 
   def getTrustName(utr: Utr)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[TrustResponse] = {

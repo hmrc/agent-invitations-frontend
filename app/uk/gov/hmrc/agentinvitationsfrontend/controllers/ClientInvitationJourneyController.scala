@@ -57,6 +57,10 @@ class ClientInvitationJourneyController @Inject()(
   failedIv5xxView: failed_iv_5xx,
   sessionLostView: session_lost,
   notFoundInvitationView: not_found_invitation,
+  requestCancelledView: request_cancelled,
+  invitationExpiredView: invitation_expired,
+  invitationAlreadyRespondedView: invitation_already_responded,
+  cannotViewRequestView: cannot_view_request,
   warmupView: warm_up,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
@@ -132,7 +136,7 @@ class ClientInvitationJourneyController @Inject()(
     action { implicit request =>
       whenAuthorised(AsClient)(
         Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
-          getAllClientInvitationsInfoForAgentAndStatus,
+          getAllClientInvitationsInfoForAgent,
           getSuspensionDetails))(redirect)
     }
   }
@@ -149,6 +153,22 @@ class ClientInvitationJourneyController @Inject()(
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
+  }
+
+  val showRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
+    case AllRequestsCancelled =>
+  }
+
+  val showRequestExpired = actionShowStateWhenAuthorised(AsClient) {
+    case AllRequestsExpired =>
+  }
+
+  val showInvitationAlreadyResponded = actionShowStateWhenAuthorised(AsClient) {
+    case InvitationAlreadyResponded =>
+  }
+
+  val showCannotViewRequest = actionShowStateWhenAuthorised(AsClient) {
+    case CannotViewRequest =>
   }
 
   def submitConsent = action { implicit request =>
@@ -178,7 +198,7 @@ class ClientInvitationJourneyController @Inject()(
   def submitWarmUpConfirmDecline = action { implicit request =>
     whenAuthorised(AsClient)(
       Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
-        getAllClientInvitationsInfoForAgentAndStatus,
+        getAllClientInvitationsInfoForAgent,
         getSuspensionDetails))(redirect)
   }
 
@@ -336,18 +356,22 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case NotFoundInvitation     => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
-    case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
-    case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline()
-    case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted()
-    case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined()
-    case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
-    case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
-    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
-    case _: SuspendedAgent      => routes.ClientInvitationJourneyController.showSuspendedAgent()
-    case _                      => throw new Exception(s"Link not found for $state")
+    case NotFoundInvitation         => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
+    case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
+    case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
+    case CannotViewRequest          => routes.ClientInvitationJourneyController.showCannotViewRequest()
+    case _: MultiConsent            => routes.ClientInvitationJourneyController.showConsent()
+    case _: SingleConsent           => routes.ClientInvitationJourneyController.showConsentChange()
+    case _: CheckAnswers            => routes.ClientInvitationJourneyController.showCheckAnswers()
+    case _: ConfirmDecline          => routes.ClientInvitationJourneyController.showConfirmDecline()
+    case _: InvitationsAccepted     => routes.ClientInvitationJourneyController.showInvitationsAccepted()
+    case _: InvitationsDeclined     => routes.ClientInvitationJourneyController.showInvitationsDeclined()
+    case AllResponsesFailed         => routes.ClientInvitationJourneyController.showAllResponsesFailed()
+    case _: SomeResponsesFailed     => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
+    case TrustNotClaimed            => routes.ClientInvitationJourneyController.showTrustNotClaimed()
+    case _: SuspendedAgent          => routes.ClientInvitationJourneyController.showSuspendedAgent()
+    case _                          => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -371,6 +395,22 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation =>
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
       Ok(notFoundInvitationView(serviceMessageKey))
+
+    case AllRequestsCancelled =>
+      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+      Ok(requestCancelledView(serviceMessageKey))
+
+    case AllRequestsExpired =>
+      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+      Ok(invitationExpiredView(serviceMessageKey))
+
+    case InvitationAlreadyResponded =>
+      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+      Ok(invitationAlreadyRespondedView(serviceMessageKey))
+
+    case CannotViewRequest =>
+      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+      Ok(cannotViewRequestView(serviceMessageKey))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)

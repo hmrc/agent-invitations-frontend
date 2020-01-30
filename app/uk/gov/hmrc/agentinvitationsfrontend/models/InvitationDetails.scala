@@ -22,8 +22,8 @@ import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
-case class InvitationIdAndExpiryDate(invitationId: InvitationId, expiryDate: LocalDate)
+case class InvitationDetails(invitationId: InvitationId, expiryDate: LocalDate, status: InvitationStatus)
 
-object InvitationIdAndExpiryDate {
-  implicit val format: Format[InvitationIdAndExpiryDate] = Json.format[InvitationIdAndExpiryDate]
+object InvitationDetails {
+  implicit val format: Format[InvitationDetails] = Json.format[InvitationDetails]
 }
