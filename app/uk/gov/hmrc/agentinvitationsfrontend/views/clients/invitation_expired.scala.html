@@ -26,7 +26,11 @@
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-expired.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("invitation-expired.heading"), serviceMessageKey))) {
 
-  <h1 class="heading-xlarge">@Messages("invitation-expired.heading")</h1>
+ <h1 class="heading-xlarge">@Messages("invitation-expired.heading")</h1>
 
-  <p>@Messages("invitation-expired.description")</p>
+ <p>@Messages("invitation-expired.p1")</p>
+
+ <p>@Messages("invitation-expired.p2")</p>
+
+ <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("invitation-expired.button")</a>
 }

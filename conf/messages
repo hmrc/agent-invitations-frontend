@@ -310,8 +310,8 @@ cancel-authorisation.error.business-service.required=Select yes if you want to c
 cancel-authorisation.trust-select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client’s tax returns through software
 
-cancel-authorisation.not-matched.header=There is a problem
-cancel-authorisation.not-matched.description=We could not find any clients matching these details.
+cancel-authorisation.not-matched.header=We could not find your client
+cancel-authorisation.not-matched.description=We could not find a client in our records using the details you gave us.
 cancel-authorisation.not-matched.advice=Check the details and try again.
 
 cancel-authorisation.start-over.button=Start over
@@ -322,11 +322,12 @@ cancel-authorisation.response-failed.tryAgain=Try again
 
 
 #Not authorisation to de-auth
-not-authorised.HMRC-MTD-IT.p=This person has not authorised you to send their Income Tax updates through software.
-not-authorised.PERSONAL-INCOME-RECORD.p=This individual has not authorised you to view their PAYE income record.
-not-authorised.HMRC-MTD-VAT.p=This person or business has not authorised you to submit their VAT returns through software.
-not-authorised.HMRC-TERS-ORG.p=This business has not authorised you to maintain a trust or an estate.
-not-authorised.HMRC-CGT-PD.p=This person or trust has not authorised you to manage Capital Gains Tax on UK property disposals.
+not-authorised.h1=You have not been authorised
+not-authorised.HMRC-MTD-IT.p=This client has not authorised you to send their Income Tax updates through software.
+not-authorised.PERSONAL-INCOME-RECORD.p=This client has not authorised you to view their PAYE income record.
+not-authorised.HMRC-MTD-VAT.p=This client has not authorised you to submit their VAT returns through software.
+not-authorised.HMRC-TERS-ORG.p=This client has not authorised you to maintain a trust or an estate.
+not-authorised.HMRC-CGT-PD.p=This client has not authorised you to manage their Capital Gains Tax on UK property disposals.
 not-authorised.button=Start over
 
 #Delete
@@ -596,8 +597,11 @@ check-answers.change-link=Change
 check-answers.continue.button=Confirm and send response
 
 #Invitation Expired
-invitation-expired.heading=Invitation Expired
-invitation-expired.description=This invitation is no longer available. Contact the agent who sent you the invitation
+invitation-expired.heading=This page is no longer available
+invitation-expired.p1=The link you tried to access has expired.
+invitation-expired.p2=If you still want to appoint this tax agent, ask them to send you another request.
+invitation-expired.button=Finish and sign out
+
 
 # Complete
 client-complete.header=Approval complete
@@ -654,11 +658,17 @@ incorrect-invitation.description=The request you accepted might be meant for som
 not-found-invitation.header=Page not found
 not-found-invitation.description.1=If you typed the web address, check it is correct.
 not-found-invitation.description.2=If you pasted the web address, check you copied the entire address.
-not-found-invitation.description.3=If the web address is correct, contact the tax agent who sent you the request if you still want to authorise them.
+not-found-invitation.description.3=If the web address is correct or you selected a link or button, contact the tax agent who sent you the request if you still want to authorise them.
 
 # Invitation Already Responded
-invitation-already-responded.header=There is a problem
-invitation-already-responded.description=Someone has already responded to this request. If you think this is wrong, contact the tax agent who sent you the request.
+invitation-already-responded.header=You have already responded to this request
+invitation-already-responded.description=If you think this is wrong, contact the tax agent who sent you the request.
+invitation-already-responded.button=Finish and sign out
+
+# Cannot View Invitation
+cannot-view-request.header=You cannot view this request
+cannot-view-request.p1=Contact the tax agent who sent you the request if you still want to authorise them.
+cannot-view-request.button=Finish and sign out
 
 # Wrong Client Type
 incorrect-client-type.header=There is a problem

@@ -887,7 +887,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("problem.header"),
+        htmlEscapedMessage("not-authorised.h1"),
         htmlEscapedMessage("not-authorised.HMRC-MTD-IT.p"))
     }
   }

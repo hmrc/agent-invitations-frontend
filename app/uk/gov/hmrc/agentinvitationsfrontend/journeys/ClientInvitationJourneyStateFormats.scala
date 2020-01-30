@@ -47,19 +47,23 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "MissingJourneyHistory" => JsSuccess(MissingJourneyHistory)
-    case "WarmUp"                => WarmUpFormat.reads(properties)
-    case "NotFoundInvitation"    => JsSuccess(NotFoundInvitation)
-    case "MultiConsent"          => MultiConsentFormat.reads(properties)
-    case "SingleConsent"         => SingleConsentFormat.reads(properties)
-    case "CheckAnswers"          => CheckAnswersFormat.reads(properties)
-    case "InvitationsAccepted"   => InvitationsAcceptedFormat.reads(properties)
-    case "InvitationsDeclined"   => InvitationsDeclinedFormat.reads(properties)
-    case "SomeResponsesFailed"   => SomeResponsesFailedFormat.reads(properties)
-    case "AllResponsesFailed"    => JsSuccess(AllResponsesFailed)
-    case "ConfirmDecline"        => ConfirmDeclineFormat.reads(properties)
-    case "TrustNotClaimed"       => JsSuccess(TrustNotClaimed)
-    case "SuspendedAgent"        => SuspendedAgentFormat.reads(properties)
+    case "MissingJourneyHistory"      => JsSuccess(MissingJourneyHistory)
+    case "WarmUp"                     => WarmUpFormat.reads(properties)
+    case "NotFoundInvitation"         => JsSuccess(NotFoundInvitation)
+    case "AllRequestsCancelled"       => JsSuccess(AllRequestsCancelled)
+    case "AllRequestsExpired"         => JsSuccess(AllRequestsExpired)
+    case "InvitationAlreadyResponded" => JsSuccess(InvitationAlreadyResponded)
+    case "CannotViewRequest"          => JsSuccess(CannotViewRequest)
+    case "MultiConsent"               => MultiConsentFormat.reads(properties)
+    case "SingleConsent"              => SingleConsentFormat.reads(properties)
+    case "CheckAnswers"               => CheckAnswersFormat.reads(properties)
+    case "InvitationsAccepted"        => InvitationsAcceptedFormat.reads(properties)
+    case "InvitationsDeclined"        => InvitationsDeclinedFormat.reads(properties)
+    case "SomeResponsesFailed"        => SomeResponsesFailedFormat.reads(properties)
+    case "AllResponsesFailed"         => JsSuccess(AllResponsesFailed)
+    case "ConfirmDecline"             => ConfirmDeclineFormat.reads(properties)
+    case "TrustNotClaimed"            => JsSuccess(TrustNotClaimed)
+    case "SuspendedAgent"             => SuspendedAgentFormat.reads(properties)
   }
 
 }

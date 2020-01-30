@@ -24,12 +24,12 @@
 
 @(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-already-responded.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("invitiation-already-responded.header"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("cannot-view-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("cannot_view_request.header"), serviceMessageKey))) {
 
-  <h1 class="heading-xlarge">@Messages("invitation-already-responded.header")</h1>
+  <h1 class="heading-xlarge">@Messages("cannot-view-request.header")</h1>
 
-  <p>@Messages("invitation-already-responded.description")</p>
+  <p>@Messages("cannot-view-request.p1")</p>
 
-  <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("invitiation-already-responded.button")</a>
+  <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("cannot-view-request.button")</a>
 
 }

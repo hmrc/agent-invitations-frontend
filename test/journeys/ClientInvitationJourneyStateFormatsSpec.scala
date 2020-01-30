@@ -68,6 +68,34 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+      "InvitationAlreadyResponded" in {
+        val state = InvitationAlreadyResponded
+        val json = Json.parse("""{"state":"InvitationAlreadyResponded"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "AllRequestsCancelled" in {
+        val state = AllRequestsCancelled
+        val json = Json.parse("""{"state":"AllRequestsCancelled"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "AllRequestsExpired" in {
+        val state = AllRequestsExpired
+        val json = Json.parse("""{"state":"AllRequestsExpired"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "CannotViewRequest" in {
+        val state = CannotViewRequest
+        val json = Json.parse("""{"state":"CannotViewRequest"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
       "SuspendedAgent" in {
         val state = SuspendedAgent(personal, "uid", "agent name", Set("ITSA", "VATC"), Seq())
         val json = Json.parse(
