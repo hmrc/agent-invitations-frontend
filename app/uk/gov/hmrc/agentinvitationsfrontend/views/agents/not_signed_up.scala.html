@@ -41,11 +41,6 @@
 
     @htmlPartial.getOrElse("")
 
-    <p>request @request.cookies.get("mdtp").fold(false)(cookie => cookie.value.contains("authToken=Bearer+"))</p>
-    <p>cookie value @request.cookies.get("mdtp").get.value</p>
-
-
-
         @if(hasRequests) {
             <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button">@Messages("review-auths.link")</a>
         } else {
