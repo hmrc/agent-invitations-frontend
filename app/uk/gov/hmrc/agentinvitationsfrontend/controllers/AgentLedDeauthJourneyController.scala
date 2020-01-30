@@ -31,7 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, NotSignedUpPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service, trust_select_service}
@@ -47,6 +47,7 @@ class AgentLedDeauthJourneyController @Inject()(
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   countryNamesLoader: CountryNamesLoader,
+  notSignedUpPageConfig: NotSignedUpPageConfig,
   clientTypeView: client_type,
   businessSelectServiceView: business_select_service,
   identifyClientItsaView: identify_client_itsa,
@@ -479,7 +480,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
 
     case NotSignedUp(service) =>
-      Ok(notSignedupView(service, hasRequests = false, isDeAuthJourney = true))
+      Ok(notSignedupView(service, hasRequests = false, isDeAuthJourney = true, notSignedUpPageConfig.render(service)))
 
     case NotAuthorised(service) =>
       Ok(notAuthorisedView(service, routes.AgentLedDeauthJourneyController.showClientType(), isDeAuthJourney = true))

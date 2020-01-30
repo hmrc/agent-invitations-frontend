@@ -66,6 +66,8 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val countryListLocation: String = servicesConfig.getString("country.list.location")
 
   val invitationExpirationDuration: Duration = servicesConfig.getDuration("invitation.expiryDuration")
+  val agentMappingFrontendExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
+  val govUkGuidanceExternalUrl: String = getConfString("gov-uk-guidance.external-url")
 
   //Ints
   val trackRequestsShowLastDays: Int = servicesConfig.getInt("track-requests-show-last-days")

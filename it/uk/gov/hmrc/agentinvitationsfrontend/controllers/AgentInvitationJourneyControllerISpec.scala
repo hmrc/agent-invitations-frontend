@@ -1902,12 +1902,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "problem.header",
-        "not-enrolled.p1.HMRC-MTD-IT",
-        "not-enrolled.p2"
-      )
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p", "signed up."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
+      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+
     }
   }
 

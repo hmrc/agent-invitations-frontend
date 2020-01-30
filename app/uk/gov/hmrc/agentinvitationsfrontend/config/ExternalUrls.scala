@@ -41,8 +41,13 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val privacypolicyUrl = appConfig.privacyPolicyExternalUrl
   val vatOnlineServiceHelplineUrl = appConfig.vatOnlineHelplineExternalUrl
   val saOnlineServiceHelplineUrl = appConfig.saOnlineHelplineFrontendExternalUrl
+  val agentMappingFrontendUrl = s"${appConfig.agentMappingFrontendExternalUrl}/agent-mapping/start"
   val timeout = appConfig.timeoutDialogTimeoutSeconds
   val timeoutCountdown = appConfig.timeoutDialogCountdownSeconds
+  val guidanceUrlVatExisting = s"${appConfig.govUkGuidanceExternalUrl}/sign-up-for-making-tax-digital-for-vat"
+  val guidanceUrlVatNew = s"${appConfig.govUkGuidanceExternalUrl}/sign-your-business-up-for-making-tax-digital-for-vat"
+  val guidanceUrlSaExisting = s"${appConfig.govUkGuidanceExternalUrl}/agents-use-software-to-send-income-tax-updates"
+  val guidanceUrlSaNew = s"${appConfig.govUkGuidanceExternalUrl}/use-software-to-send-income-tax-updates"
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
 

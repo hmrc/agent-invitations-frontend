@@ -872,11 +872,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-signed-up")
       val result = controller.showNotSignedUp(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        htmlEscapedMessage("not-enrolled.p1.HMRC-MTD-IT"),
-        htmlEscapedMessage("not-enrolled.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p", "signed up."))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
       checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"))
+      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
     }
   }
   "GET /agents/cancel-authorisation/not-authorised" should {

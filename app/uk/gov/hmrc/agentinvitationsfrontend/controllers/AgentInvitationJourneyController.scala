@@ -47,6 +47,7 @@ class AgentInvitationJourneyController @Inject()(
   acaConnector: AgentClientAuthorisationConnector,
   val authActions: AuthActionsImpl,
   override val journeyService: AgentInvitationJourneyService,
+  notSignedUpPageConfig: NotSignedUpPageConfig,
   countryNamesLoader: CountryNamesLoader,
   clientTypeView: client_type,
   cgtRefNotFoundView: cgtRef_notFound,
@@ -681,8 +682,10 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showClientType()
           )))
 
-    case ClientNotSignedUp(service, basket) =>
-      Ok(notSignedupView(service, basket.nonEmpty))
+    case ClientNotSignedUp(service, basket) => {
+      val pageConfig = notSignedUpPageConfig.render(service)
+      Ok(notSignedupView(service, basket.nonEmpty, false, pageConfig))
+    }
 
     case AllAuthorisationsRemoved =>
       Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType()))
@@ -704,4 +707,5 @@ object AgentInvitationJourneyController {
   val ReviewAuthorisationsForm: Form[Confirmation] = confirmationForm("error.review-authorisation.required")
 
   val DeleteAuthorisationForm: Form[Confirmation] = confirmationForm("error.delete.radio")
+
 }
