@@ -62,7 +62,7 @@ trait ACAStubs {
 
   def givenAllInvitationIdsByStatus(uid: String, status: String): StubMapping =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -72,19 +72,56 @@ trait ACAStubs {
                          |    "invitationId": {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
-                         |    "expiryDate": "9999-11-01"
+                         |    "expiryDate": "9999-11-01",
+                         |    "status": "$status"
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
-                         |     "expiryDate": "9999-03-05"
+                         |    "expiryDate": "9999-03-05",
+                         |    "status": "$status"
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
-                         |    "expiryDate": "9999-12-25"
+                         |    "expiryDate": "9999-12-25",
+                         |    "status": "$status"
+                         |  }
+                         |]
+                         |""".stripMargin)
+        )
+    )
+
+  def givenAllInvitationIdsWithMixedStatus(uid: String): StubMapping =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""
+                         |[
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "AG1UGUKTPNJ7W"
+                         |    },
+                         |    "expiryDate": "9999-11-01",
+                         |    "status": "Accepted"
+                         |  },
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "B9SCS2T4NZBAX"
+                         |    },
+                         |    "expiryDate": "9999-03-05",
+                         |    "status": "Cancelled"
+                         |  },
+                         |  {
+                         |    "invitationId": {
+                         |      "value": "CZTW1KY6RTAAT"
+                         |    },
+                         |    "expiryDate": "9999-12-25",
+                         |    "status": "Cancelled"
                          |  }
                          |]
                          |""".stripMargin)
@@ -93,7 +130,7 @@ trait ACAStubs {
 
   def givenAllInvitationIdsWithTrustByStatus(uid: String, status: String): StubMapping =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -103,25 +140,29 @@ trait ACAStubs {
                          |    "invitationId": {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
-                         |    "expiryDate": "9999-11-01"
+                         |    "expiryDate": "9999-11-01",
+                         |    "status": "$status"
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
-                         |     "expiryDate": "9999-03-05"
+                         |     "expiryDate": "9999-03-05",
+                         |    "status": "$status"
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
-                         |    "expiryDate": "9999-12-25"
+                         |    "expiryDate": "9999-12-25",
+                         |    "status": "$status"
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "DF99K6PXSBHTF"
                          |    },
-                         |    "expiryDate": "9999-12-25"
+                         |    "expiryDate": "9999-12-25",
+                         |    "status": "$status"
                          |  }
                          |]
                          |""".stripMargin)
@@ -231,9 +272,9 @@ trait ACAStubs {
         )
     )
 
-  def givenAllInvitationIdsByStatusReturnsEmpty(uid: String, status: String): StubMapping =
+  def givenAllInvitationIdsByStatusReturnsEmpty(uid: String): StubMapping =
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid?status=$status"))
+      get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
         .willReturn(
           aResponse()
             .withStatus(200)

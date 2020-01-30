@@ -16,14 +16,59 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-trait InvitationStatus {
-  val value: String
+import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+
+sealed trait InvitationStatus {
+
+  def toEither: Either[String, InvitationStatus] = this match {
+    case Unknown(status) => Left(status)
+    case status          => Right(status)
+  }
+
+  def leftMap[X](f: String => X) =
+    toEither.left.map(f)
+
+  override def toString = InvitationStatus.unapply(this).getOrElse("Unknown")
 }
 
-object Pending extends InvitationStatus {
-  val value = "Pending"
-}
+case object Pending extends InvitationStatus
 
-object Rejected extends InvitationStatus {
-  val value = "Rejected"
+case object Expired extends InvitationStatus
+
+case object Rejected extends InvitationStatus
+
+case object Accepted extends InvitationStatus
+
+case object Cancelled extends InvitationStatus
+
+case class Unknown(attempted: String) extends InvitationStatus
+
+object InvitationStatus {
+  def unapply(status: InvitationStatus): Option[String] = status match {
+    case Pending   => Some("Pending")
+    case Rejected  => Some("Rejected")
+    case Accepted  => Some("Accepted")
+    case Cancelled => Some("Cancelled")
+    case Expired   => Some("Expired")
+    case _         => None
+  }
+
+  def apply(status: String): InvitationStatus = status.toLowerCase match {
+    case "pending"   => Pending
+    case "rejected"  => Rejected
+    case "accepted"  => Accepted
+    case "cancelled" => Cancelled
+    case "expired"   => Expired
+    case _           => Unknown(status)
+  }
+
+  implicit val invitationStatusFormat = new Format[InvitationStatus] {
+    override def reads(json: JsValue): JsResult[InvitationStatus] = apply(json.as[String]) match {
+      case Unknown(value) => JsError(s"Status of [$value] is not a valid InvitationStatus")
+      case value          => JsSuccess(value)
+    }
+
+    override def writes(o: InvitationStatus): JsValue =
+      unapply(o).map(JsString).getOrElse(throw new IllegalArgumentException)
+  }
 }

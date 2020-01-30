@@ -138,12 +138,48 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
 
       "redirect to not found invitation if the invitation is not found" in {
-        givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
+        givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
+
+      "redirect to already responded if the invitation has status of Accepted or Rejected" in {
+        givenAllInvitationIdsByStatus(uid, "Accepted")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationAlreadyResponded().url)
+      }
+
+      "redirect to request cancelled if the invitation has status of Cancelled" in {
+        givenAllInvitationIdsByStatus(uid, "Cancelled")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showRequestCancelled().url)
+      }
+
+      "redirect to request expired if the invitation has status of Expired" in {
+        givenAllInvitationIdsByStatus(uid, "Expired")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showRequestExpired().url)
+      }
+
+      "redirect to cannot view request if the invitation has mixed statuses, none of which are Pending" in {
+        givenAllInvitationIdsWithMixedStatus(uid)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCannotViewRequest().url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -249,7 +285,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
 
       "redirect to not found invitation" in {
-        givenAllInvitationIdsByStatusReturnsEmpty(uid, "Pending")
+        givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
@@ -894,6 +930,74 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showMissingJourneyHistory(FakeRequest("GET", "/session-timeout"))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+    }
+  }
+
+  "GET /not-found" should {
+    def request = requestWithJourneyIdInCookie("GET", "/not-found")
+    "display the page as expected" in {
+      journeyState.set(NotFoundInvitation, Nil)
+
+      val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
+    }
+  }
+
+  "GET /already-responded" should {
+    def request = requestWithJourneyIdInCookie("GET", "/already-responded")
+    "display the page as expected" in {
+      journeyState.set(InvitationAlreadyResponded, Nil)
+
+      val result = controller.showInvitationAlreadyResponded(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
+    }
+  }
+
+  "GET /request-cancelled" should {
+    def request = requestWithJourneyIdInCookie("GET", "/request-cancelled")
+    "display the page as expected" in {
+      journeyState.set(AllRequestsCancelled, Nil)
+
+      val result = controller.showRequestCancelled(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-request-cancelled.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-request-cancelled.p"))
+    }
+  }
+
+  "GET /request-expired" should {
+    def request = requestWithJourneyIdInCookie("GET", "/request-expired")
+    "display the page as expected" in {
+      journeyState.set(AllRequestsExpired, Nil)
+
+      val result = controller.showRequestExpired(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.heading"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.p2"))
+    }
+  }
+
+  "GET /cannot-view-request" should {
+    def request = requestWithJourneyIdInCookie("GET", "/cannot-view-request")
+    "display the page as expected" in {
+      journeyState.set(CannotViewRequest, Nil)
+
+      val result = controller.showCannotViewRequest(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-view-request.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-view-request.p1"))
     }
   }
 
