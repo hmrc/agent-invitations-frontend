@@ -24,24 +24,16 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.NotSignedUpPageUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.not_signed_up_partial
 
-class NotSignedUpPageConfig @Inject()(notSignUpPartial: not_signed_up_partial)(
+class NotSignedUpPageConfig @Inject()(notSignedUpPartial: not_signed_up_partial)(
   implicit externalUrls: ExternalUrls,
   messages: MessagesApi) {
 
-  def render(serviceId: String)(implicit externalUrls: ExternalUrls, messages: Messages): Option[Html] =
-    serviceId match {
-      case HMRCMTDVAT => {
-        Some(
-          notSignUpPartial(
-            serviceId,
-            NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew)))
-      }
-      case HMRCMTDIT => {
-        Some(
-          notSignUpPartial(
-            serviceId,
-            NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew)))
-      }
-      case _ => None
+  def render(serviceId: String)(implicit externalUrls: ExternalUrls, messages: Messages): Option[Html] = {
+    val urls = serviceId match {
+      case HMRCMTDVAT => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew))
+      case HMRCMTDIT  => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew))
+      case _          => None
     }
+    urls.map(v => notSignedUpPartial(serviceId, v))
+  }
 }
