@@ -242,7 +242,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def checkPostcodeUrl(nino: Nino, postcode: String) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/nino/${nino.value}/sa/postcode/$postcode")
 
-  private[connectors] def getAllClientInvitationsInfoForAgentUrl(uid: String) =
+  private[connectors] def getAllInvitationDetailsUrl(uid: String) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid")
 
   def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
@@ -363,10 +363,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       case _: NotFoundException                                      => None
     }
 
-  def getAllClientInvitationsInfoForAgent(
+  def getAllClientInvitationDetailsForAgent(
     uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationDetails]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
-      val url = getAllClientInvitationsInfoForAgentUrl(uid)
+      val url = getAllInvitationDetailsUrl(uid)
       http
         .GET[Seq[InvitationDetails]](url.toString)
     }

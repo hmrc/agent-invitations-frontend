@@ -136,7 +136,7 @@ class ClientInvitationJourneyController @Inject()(
     action { implicit request =>
       whenAuthorised(AsClient)(
         Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
-          getAllClientInvitationsInfoForAgent,
+          getAllClientInvitationDetailsForAgent,
           getSuspensionDetails))(redirect)
     }
   }
@@ -198,7 +198,7 @@ class ClientInvitationJourneyController @Inject()(
   def submitWarmUpConfirmDecline = action { implicit request =>
     whenAuthorised(AsClient)(
       Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
-        getAllClientInvitationsInfoForAgent,
+        getAllClientInvitationDetailsForAgent,
         getSuspensionDetails))(redirect)
   }
 
