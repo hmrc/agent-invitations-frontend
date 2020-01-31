@@ -1585,7 +1585,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.no-requests.p")
+      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.header")
+      checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.p")
       checkHtmlResultWithBodyMsgs(result, "pending-authorisation-exists.track.button")
     }
   }

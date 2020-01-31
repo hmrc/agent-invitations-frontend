@@ -1882,10 +1882,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       checkHtmlResultWithBodyMsgs(
         result,
-        "problem.header",
-        "pending-authorisation-exists.no-requests.p",
-        "pending-authorisation-exists.track.button",
-        "pending-authorisation-exists.new-request.link"
+        "pending-authorisation-exists.header",
+        "pending-authorisation-exists.p",
+        "pending-authorisation-exists.new-request.button"
       )
     }
   }
