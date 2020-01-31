@@ -864,12 +864,11 @@ cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 cancel-auth-problem.button=Try again
 
 #Pending authorisation already exists
-problem.header=There is a problem
-pending-authorisation-exists.p=You have already added the same authorisation request for this client.
+pending-authorisation-exists.header=You already created an authorisation request for this service
+pending-authorisation-exists.p=Ask the client to respond to the request you have already created.
 pending-authorisation-exists.button=Return to your authorisation requests
-pending-authorisation-exists.no-requests.p=You already created an authorisation request for this client. They have not yet responded to this request.
 pending-authorisation-exists.track.button=Track your authorisation requests
-pending-authorisation-exists.new-request.link=Start a new request
+pending-authorisation-exists.new-request.button=Start a new request
 
 #Active authorisation exists
 active-authorisation-exists.header=You are already authorised
