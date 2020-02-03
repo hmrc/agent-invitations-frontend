@@ -24,7 +24,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
   "uk.gov.hmrc" %% "play-fsm" % "0.48.0-play-26",
   "uk.gov.hmrc" %% "govuk-template" % "5.45.0-play-26",
-  "uk.gov.hmrc" %% "play-ui" % "8.3.0-play-26",
+  "uk.gov.hmrc" %% "play-ui" % "8.8.0-play-26",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.17.0-play-26",
   "uk.gov.hmrc" %% "auth-client" % "2.31.0-play-26",
   "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.3.0",
