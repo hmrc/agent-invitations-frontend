@@ -40,7 +40,7 @@
         <p>@Messages(s"client-complete.multi.p1.head", config.agencyName)</p>
         <ul class="list list-bullet">
         @for(key <- config.consents.filter(_.consent == true).map(_.serviceKey)){
-            <li>@Messages(s"client-complete.multi.p1.${if(key == "cgt") s"cgt.${config.clientType}" else key}")</li>
+            <li>@Messages(s"client-complete.multi.p1.$key")</li>
         }
         </ul>
     }
