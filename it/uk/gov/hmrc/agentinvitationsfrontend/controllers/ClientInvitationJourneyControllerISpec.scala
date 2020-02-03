@@ -789,7 +789,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.head", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.itsa"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.cgt.personal"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.p1.cgt"))
     }
 
     "display the accepted page for single consent" in {
