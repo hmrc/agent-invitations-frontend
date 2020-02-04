@@ -184,6 +184,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
         "foo1",
+        false,
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo1")
       )
       result(4) shouldBe StoredInvitation(
@@ -196,6 +197,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
         "foo5",
+        false,
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo5")
       )
       result(8) shouldBe StoredInvitation(
@@ -208,6 +210,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         DateTime.parse("2018-09-11T21:02:00.000Z"),
         LocalDate.parse("2017-12-18"),
         "foo8",
+        false,
         new URL(s"$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/foo8")
       )
     }
