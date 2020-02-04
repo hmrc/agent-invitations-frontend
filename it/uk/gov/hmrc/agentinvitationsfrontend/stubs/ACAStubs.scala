@@ -378,6 +378,7 @@ trait ACAStubs {
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
+                         |  "isRelationshipEnded": false,
                          |  "_links": {
                          |    	"self" : {
                          |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
@@ -405,6 +406,7 @@ trait ACAStubs {
                  |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                  |  "expiryDate" : "2017-12-18",
                  |  "invitationId": "$invitationId",
+                 |  "isRelationshipEnded": false,
                  |  "_links": {
                  |    	"self" : {
                  |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/invitations/${invitationId.value}"
@@ -440,6 +442,7 @@ trait ACAStubs {
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
+                         |  "isRelationshipEnded": false,
                          |  "_links": {
                          |    	"self" : {
                          |			  "href" : "/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
@@ -472,6 +475,7 @@ trait ACAStubs {
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
+                         |  "isRelationshipEnded": false,
                          |  "_links": {
                          |    	"self" : {
                          |			  "href" : "/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
@@ -504,6 +508,7 @@ trait ACAStubs {
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
+                         |  "isRelationshipEnded": false,
                          |  "_links": {
                          |    	"self" : {
                          |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}"
@@ -906,6 +911,7 @@ trait ACAStubs {
                               |  "lastUpdated" : "2018-09-11T21:02:00.000Z",
                               |  "expiryDate" : "$expiryDate",
                               |  "invitationId": "$invitationId",
+                              |  "isRelationshipEnded": false,
                               |  "_links": {
                               |    	"self" : {
                               |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"

@@ -499,8 +499,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         (JsPath \ "lastUpdated").read[DateTime] and
         (JsPath \ "expiryDate").read[LocalDate] and
         (JsPath \ "invitationId").read[String] and
+        (JsPath \ "isRelationshipEnded").read[Boolean] and
         (JsPath \ "_links" \ "self").read[URL])(
-        (a, b, c, d, e, f, g, h, i, j, k, l, m) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m)
+        (a, b, c, d, e, f, g, h, i, j, k, l, m, n) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m, n)
       )
     }
   }
