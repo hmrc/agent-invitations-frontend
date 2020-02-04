@@ -45,7 +45,12 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
-case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String)
+case class CancelAuthorisationForm(
+  service: String,
+  clientId: String,
+  clientType: String,
+  clientName: String,
+  invitationId: String)
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -207,13 +212,14 @@ class AgentsRequestTrackingController @Inject()(
             Logger(getClass).error("Error in form when redirecting to resend-link page.")
             Future successful BadRequest
           },
-          data =>
+          (data: CancelAuthorisationForm) =>
             Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm())
               .addingToSession(
-                "service"    -> data.service,
-                "clientId"   -> data.clientId,
-                "clientName" -> data.clientName,
-                "clientType" -> data.clientType)
+                "service"      -> data.service,
+                "clientId"     -> data.clientId,
+                "clientName"   -> data.clientName,
+                "clientType"   -> data.clientType,
+                "invitationId" -> data.invitationId)
         )
     }
   }
@@ -231,6 +237,7 @@ class AgentsRequestTrackingController @Inject()(
       val clientId = request.session.get("clientId").getOrElse("")
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
@@ -238,7 +245,10 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, agent.arn, clientId).map {
-                case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
+                case Some(true) => {
+                  acaConnector.cancelInvitation(agent.arn, invitationId)
+                  Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
+                }
                 case Some(false) => NotFound
                 case _           => Ok(cancelAuthProblemView())
               }
@@ -312,7 +322,8 @@ class AgentsRequestTrackingController @Inject()(
         "clientId" -> normalizedText.verifying(validateClientId),
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
-        "clientName" -> text
+        "clientName"   -> text,
+        "invitationId" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
 
