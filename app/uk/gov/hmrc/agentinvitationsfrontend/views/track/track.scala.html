@@ -85,7 +85,9 @@
                         invitationOrRelationship.status match {
                             case "Pending" => pendingForm(invitationOrRelationship, index)
                             case "Accepted" => if(config.cancelAuthActionFlag) {
+                                if(invitationOrRelationship.isRelationshipEnded == false) {
                                   cancelAuthForm(invitationOrRelationship, index)
+                                }
                             }
                             case _ => newRequestForm(invitationOrRelationship, index)
                         }

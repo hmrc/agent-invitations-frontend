@@ -152,7 +152,8 @@ class TrackService @Inject()(
                                    status,
                                    _,
                                    expiryDate,
-                                   invitationId) if status == "Pending" || status == "Expired" =>
+                                   invitationId,
+                                   isRelationshipEnded) if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
                                    clientType,
                                    service,
@@ -162,7 +163,8 @@ class TrackService @Inject()(
                                    status,
                                    None,
                                    Some(expiryDate),
-                                   Some(invitationId))
+                                   Some(invitationId),
+                                   isRelationshipEnded)
 
                                case TrackedInvitation(
                                    clientType,
@@ -172,7 +174,8 @@ class TrackService @Inject()(
                                    status,
                                    lastUpdated,
                                    _,
-                                   invitationId) =>
+                                   invitationId,
+                                   isRelationshipEnded) =>
                                  Future successful TrackInformationSorted(
                                    clientType,
                                    service,
@@ -182,9 +185,21 @@ class TrackService @Inject()(
                                    status,
                                    Some(LocalDate.parse(lastUpdated.toLocalDate.toString)),
                                    None,
-                                   Some(invitationId))
+                                   Some(invitationId),
+                                   isRelationshipEnded
+                                 )
                                case _ =>
-                                 Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None)
+                                 Future successful TrackInformationSorted(
+                                   None,
+                                   "",
+                                   "",
+                                   "",
+                                   None,
+                                   "",
+                                   None,
+                                   None,
+                                   None,
+                                   false)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
@@ -198,7 +213,8 @@ class TrackService @Inject()(
                                      "InvalidRelationship",
                                      dateTo,
                                      None,
-                                     None)
+                                     None,
+                                     true)
                                  case _ =>
                                    Future successful TrackInformationSorted(
                                      None,
@@ -209,7 +225,8 @@ class TrackService @Inject()(
                                      "",
                                      None,
                                      None,
-                                     None)
+                                     None,
+                                     true)
                                }
     } yield
       (trackInfoInvitations ++ trackInfoRelationships)

@@ -26,7 +26,7 @@
         <input type="checkbox" id="@elements.id" name="@elements.field.name" value="true" @if(elements.args.get('_value)){ checked="checked" } @if( elements.args.get('_inputClass) ){ class="@elements.args.get('_inputClass)" }>
         <label class="form-field-single @if(value == "true"){ selected } @if(elements.args.get('_labelClass)){ @elements.args.get('_labelClass) }" for="@elements.id">
             @elements.errors.map { error =>
-                <span id="@{elements.field.id}--error" class="error-notification">@Messages(error)</span>
+                <span id="@{elements.field.id}--error" class="error-notification"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(error)</span>
             }
             @Html(elements.label.toString)
         </label>

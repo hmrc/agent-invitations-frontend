@@ -58,7 +58,8 @@
             Seq(("true", Messages("confirm-cancel.radio.yes")),("false",Messages("confirm-cancel.radio.no"))),
             '_legend -> Html(legend),
             '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='confirmCancel'""")
+            '_fieldsetAttributes -> Html("""id='confirmCancel'"""),
+            '_errorPrefix -> Messages("error.prefix")
         )
         </div>
 

@@ -169,7 +169,8 @@ object TestEndpointsController {
         "clientId" -> normalizedText.verifying(validateClientId),
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
-        "clientName" -> text
+        "clientName"   -> text,
+        "invitationId" -> text
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
 }
