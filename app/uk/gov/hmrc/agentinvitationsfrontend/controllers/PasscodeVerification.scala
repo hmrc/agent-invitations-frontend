@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import play.api.Environment
+import play.api.{Environment, Logger}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
@@ -27,6 +27,7 @@ import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class PasscodeVerificationException(msg: String) extends RuntimeException(msg)
 
@@ -88,10 +89,17 @@ class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthC
             case _ => body(false)
           }
         ) { otacToken =>
-          otacAuthConnector.authorise(passcodeRegime, headerCarrier, Option(otacToken)).flatMap {
-            case Authorised => body(true)
-            case _          => body(false)
-          }
+          otacAuthConnector
+            .authorise(passcodeRegime, headerCarrier, Option(otacToken))
+            .flatMap {
+              case Authorised => body(true)
+              case _          => body(false)
+            }
+            .recoverWith {
+              case ex =>
+                Logger.warn("error during passcode authentication check", ex)
+                body(false)
+            }
         }
     } else {
       body(true)
