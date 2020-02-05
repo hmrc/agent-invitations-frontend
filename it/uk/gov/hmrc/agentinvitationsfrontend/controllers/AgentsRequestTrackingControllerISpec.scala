@@ -562,7 +562,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       }
     }
 
-    "return not found when yes is selected on confirm cancel authorisation page, but cancellation fails because relationship is not found" in {
+    "mark the relationship as ended in ACA and go to showAuthorisationCancelledPage even if relationship service returns 404" in {
       givenCancelledAuthorisationItsa(arn, validNino, 404)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
@@ -572,7 +572,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           arn.value
         ))
 
-      status(result) shouldBe 404
+      status(result) shouldBe 303
     }
 
     "go to problem page when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {

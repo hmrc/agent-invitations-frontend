@@ -245,12 +245,11 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, agent.arn, clientId).map {
-                case Some(true) => {
+                case Some(bool) => {
                   acaConnector.cancelInvitation(agent.arn, invitationId)
                   Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
                 }
-                case Some(false) => NotFound
-                case _           => Ok(cancelAuthProblemView())
+                case _ => Ok(cancelAuthProblemView())
               }
             } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         )
