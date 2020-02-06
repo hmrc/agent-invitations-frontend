@@ -945,8 +945,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.vat.link-text")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.it")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.it.link-text")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.itsa")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.itsa.link-text")))
       checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab).", newWin = true)
       checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new window or tab).", newWin = true)
     }

@@ -17,12 +17,13 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 @this(
     mainTemplate: main_template
 )
 
-@(clientType: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("not-found-invitation.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
 
@@ -39,16 +40,16 @@
         </div>
     </details>
 </div>
-    @if(clientType == "personal") {
+    @if(clientType == ClientType.personal) {
 
         <div class="form-group">
             <details>
                 <summary>
-                    <span class="summary">@Messages("not-found-invitation.summary", Messages("not-found-invitation.it"))</span>
+                    <span class="summary">@Messages("not-found-invitation.summary", Messages("not-found-invitation.itsa"))</span>
                 </summary>
                 <div class="panel panel-border-narrow" aria-hidden="true">
-                    <p>@Messages("not-found-invitation.details.p1", Messages("not-found-invitation.it.link-text"))</p>
-                    <p>@Html(Messages("not-found-invitation.details.p2", Html(Messages("not-found-invitation.details.link", externalUrls.guidanceUrlSaNew, Messages("not-found-invitation.it.link-text")))))</p>
+                    <p>@Messages("not-found-invitation.details.p1", Messages("not-found-invitation.itsa.link-text"))</p>
+                    <p>@Html(Messages("not-found-invitation.details.p2", Html(Messages("not-found-invitation.details.link", externalUrls.guidanceUrlSaNew, Messages("not-found-invitation.itsa.link-text")))))</p>
                 </div>
             </details>
         </div>

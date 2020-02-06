@@ -657,11 +657,11 @@ incorrect-invitation.description=The request you accepted might be meant for som
 # Not Found Invitation
 not-found-invitation.header=You need to take action before you can continue
 not-found-invitation.vat=submit VAT returns through software
-not-found-invitation.it=send your Income Tax updates through software
+not-found-invitation.itsa=send your Income Tax updates through software
 not-found-invitation.ters=maintain a trust or estate
 not-found-invitation.summary=If you want this agent to {0}
 not-found-invitation.vat.link-text=Making Tax Digital for VAT
-not-found-invitation.it.link-text=the Making Tax Digital pilot for Income Tax
+not-found-invitation.itsa.link-text=the Making Tax Digital pilot for Income Tax
 not-found-invitation.details.p1=Make sure you have signed up to {0}.
 not-found-invitation.details.p2=Find out how to {0}
 not-found-invitation.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new window or tab).</a>

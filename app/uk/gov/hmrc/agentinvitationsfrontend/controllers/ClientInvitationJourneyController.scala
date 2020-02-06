@@ -395,7 +395,7 @@ class ClientInvitationJourneyController @Inject()(
     //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
     case NotFoundInvitation(clientType) => {
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(notFoundInvitationView(clientType.toString, serviceMessageKey))
+      Ok(notFoundInvitationView(clientType, serviceMessageKey))
     }
 
     case AllRequestsCancelled =>
