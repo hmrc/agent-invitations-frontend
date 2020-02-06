@@ -310,13 +310,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
 
     "display the not found invitation page" in {
-      journeyState.set(NotFoundInvitation, Nil)
+      journeyState.set(NotFoundInvitation(personal), Nil)
 
       val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
+
     }
   }
   "GET /consent" should {
@@ -935,16 +936,33 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /not-found" should {
     def request = requestWithJourneyIdInCookie("GET", "/not-found")
-    "display the page as expected" in {
-      journeyState.set(NotFoundInvitation, Nil)
+    "display the page as expected for clientType=personal" in {
+      journeyState.set(NotFoundInvitation(personal), Nil)
 
       val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.vat.link-text")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.itsa")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.itsa.link-text")))
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab).", newWin = true)
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new window or tab).", newWin = true)
+    }
+    "display the page as expected for clientType=business" in {
+      journeyState.set(NotFoundInvitation(business), Nil)
+
+      val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.vat.link-text")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.ters")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.ters.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.ters.p2"))
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab).", newWin = true)
     }
   }
 

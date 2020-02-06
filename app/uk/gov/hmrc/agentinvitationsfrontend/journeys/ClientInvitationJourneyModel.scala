@@ -41,7 +41,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String)
         extends State
 
-    case object NotFoundInvitation extends State with IsError
+    case class NotFoundInvitation(clientType: ClientType) extends State with IsError
 
     case object AllRequestsCancelled extends State with IsError
 
@@ -111,13 +111,13 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case _ =>
           for {
             record <- getAgentReferenceRecord(uid)
+            clientType = ClientType.toEnum(clientTypeStr)
             result <- record match {
                        case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
-                         val clientType = ClientType.toEnum(clientTypeStr)
                          getAgencyName(r.arn).flatMap { name =>
                            goto(WarmUp(clientType, uid, r.arn, name, normalisedAgentName))
                          }
-                       case _ => goto(NotFoundInvitation)
+                       case _ => goto(NotFoundInvitation(clientType))
                      }
           } yield result
       }
@@ -155,7 +155,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty)
-              goto(NotFoundInvitation)
+              goto(NotFoundInvitation(clientType))
             else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected))
               goto(InvitationAlreadyResponded)
             else if (invitationDetails.forall(_.status == Cancelled))

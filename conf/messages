@@ -655,10 +655,19 @@ incorrect-invitation.header=There is a problem
 incorrect-invitation.description=The request you accepted might be meant for someone else. Contact the tax agent who sent you the request.
 
 # Not Found Invitation
-not-found-invitation.header=Page not found
-not-found-invitation.description.1=If you typed the web address, check it is correct.
-not-found-invitation.description.2=If you pasted the web address, check you copied the entire address.
-not-found-invitation.description.3=If the web address is correct or you selected a link or button, contact the tax agent who sent you the request if you still want to authorise them.
+not-found-invitation.header=You need to take action before you can continue
+not-found-invitation.vat=submit VAT returns through software
+not-found-invitation.itsa=send your Income Tax updates through software
+not-found-invitation.ters=maintain a trust or estate
+not-found-invitation.summary=If you want this agent to {0}
+not-found-invitation.vat.link-text=Making Tax Digital for VAT
+not-found-invitation.itsa.link-text=the Making Tax Digital pilot for Income Tax
+not-found-invitation.details.p1=Make sure you have signed up to {0}.
+not-found-invitation.details.p2=Find out how to {0}
+not-found-invitation.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new window or tab).</a>
+not-found-invitation.details.ters.p1=You will need to claim a trust or an estate before you can continue.
+not-found-invitation.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
+
 
 # Invitation Already Responded
 invitation-already-responded.header=You have already responded to this request
