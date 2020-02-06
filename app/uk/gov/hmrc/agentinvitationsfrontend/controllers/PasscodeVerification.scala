@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import play.api.Environment
+import play.api.{Environment, Logger}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
@@ -88,10 +88,17 @@ class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthC
             case _ => body(false)
           }
         ) { otacToken =>
-          otacAuthConnector.authorise(passcodeRegime, headerCarrier, Option(otacToken)).flatMap {
-            case Authorised => body(true)
-            case _          => body(false)
-          }
+          otacAuthConnector
+            .authorise(passcodeRegime, headerCarrier, Option(otacToken))
+            .flatMap {
+              case Authorised => body(true)
+              case _          => body(false)
+            }
+            .recoverWith {
+              case ex =>
+                Logger.warn("error during PassCodeVerification: IRV option may not be visible to the agents", ex)
+                body(false)
+            }
         }
     } else {
       body(true)
