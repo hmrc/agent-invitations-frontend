@@ -22,13 +22,53 @@
     mainTemplate: main_template
 )
 
-@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType: String, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("not-found-invitation.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
 
   <h1 class="heading-xlarge">@Messages("not-found-invitation.header")</h1>
 
-  <p>@Messages("not-found-invitation.description.1")</p>
-  <p>@Messages("not-found-invitation.description.2")</p>
-  <p>@Messages("not-found-invitation.description.3")</p>
+<div class="form-group">
+    <details>
+        <summary>
+            <span class="summary">@Messages("not-found-invitation.summary", Messages("not-found-invitation.vat"))</span>
+        </summary>
+        <div class="panel panel-border-narrow" aria-hidden="true">
+            <p>@Messages("not-found-invitation.details.p1", Messages("not-found-invitation.vat.link-text"))</p>
+            <p>@Html(Messages("not-found-invitation.details.p2", Html(Messages("not-found-invitation.details.link", externalUrls.guidanceUrlVatExisting, Messages("not-found-invitation.vat.link-text" )))))</p>
+        </div>
+    </details>
+</div>
+    @if(clientType == "personal") {
+
+        <div class="form-group">
+            <details>
+                <summary>
+                    <span class="summary">@Messages("not-found-invitation.summary", Messages("not-found-invitation.it"))</span>
+                </summary>
+                <div class="panel panel-border-narrow" aria-hidden="true">
+                    <p>@Messages("not-found-invitation.details.p1", Messages("not-found-invitation.it.link-text"))</p>
+                    <p>@Html(Messages("not-found-invitation.details.p2", Html(Messages("not-found-invitation.details.link", externalUrls.guidanceUrlSaNew, Messages("not-found-invitation.it.link-text")))))</p>
+                </div>
+            </details>
+        </div>
+    } else {
+
+        <div class="form-group">
+            <details>
+                <summary>
+                    <span class="summary">@Messages("not-found-invitation.summary", Messages("not-found-invitation.ters"))</span>
+                </summary>
+                <div class="panel panel-border-narrow" aria-hidden="true">
+                    <p>@Messages("not-found-invitation.details.ters.p1")</p>
+                    <p>@Messages("not-found-invitation.details.ters.p2")</p>
+                </div>
+            </details>
+        </div>
+
+    }
+
+    <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("invitation-already-responded.button")</a>
+
+
 }

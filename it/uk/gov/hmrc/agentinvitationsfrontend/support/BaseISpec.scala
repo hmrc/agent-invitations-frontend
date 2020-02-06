@@ -165,11 +165,14 @@ abstract class BaseISpec
     result: Future[Result],
     linkUrl: String,
     linkText: String,
-    clazz: Option[String] = None): Unit = {
+    clazz: Option[String] = None,
+    newWin: Boolean = false): Unit = {
+    val t = if(newWin) "target=" + "\"" + """_blank""" + "\"" else ""
+    val a = s"<a $t".trim
     val element = if (clazz.isDefined) {
-      s"""<a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
+      s"""$a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
     } else {
-      s"""<a href="$linkUrl">$linkText</a>"""
+      s"""$a href="$linkUrl">$linkText</a>"""
     }
     checkHtmlResultWithBodyText(result, element)
   }

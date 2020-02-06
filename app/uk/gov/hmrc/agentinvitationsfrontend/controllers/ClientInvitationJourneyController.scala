@@ -152,7 +152,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
-    case NotFoundInvitation =>
+    case _: NotFoundInvitation =>
   }
 
   val showRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
@@ -356,7 +356,7 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case NotFoundInvitation         => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case _: NotFoundInvitation      => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
     case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
     case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
@@ -392,9 +392,11 @@ class ClientInvitationJourneyController @Inject()(
             routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline()
           )))
 
-    case NotFoundInvitation =>
+    //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
+    case NotFoundInvitation(clientType) => {
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(notFoundInvitationView(serviceMessageKey))
+      Ok(notFoundInvitationView(clientType.toString, serviceMessageKey))
+    }
 
     case AllRequestsCancelled =>
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
