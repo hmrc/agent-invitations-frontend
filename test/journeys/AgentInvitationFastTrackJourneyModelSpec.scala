@@ -595,15 +595,16 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
-      "transition to ClientNotSignedUp when the client is not enrolled for afi service" in {
+      "transition to knownFactNotMatched when the client is not enrolled for afi service - as afi clients don't need any enrolment" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
 
-        given(CheckDetailsCompleteIrv(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+        given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(
             getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(
             Confirmation(true)) should
-          thenGo(ClientNotSignedUp(fastTrackRequest, None))
+          thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", vrn, vatRegDate)
