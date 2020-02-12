@@ -61,9 +61,17 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
+
       "NotFoundInvitation" in {
-        val state = NotFoundInvitation(personal)
-        val json = Json.parse("""{"state":"NotFoundInvitation", "properties": {"clientType": "personal"}}""")
+        val state = NotFoundInvitation
+        val json = Json.parse("""{"state":"NotFoundInvitation"}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+      "ActionRequired" in {
+        val state = ActionRequired(personal)
+        val json = Json.parse("""{"state":"ActionRequired", "properties": {"clientType": "personal"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

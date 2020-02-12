@@ -137,13 +137,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
       }
 
-      "redirect to not found invitation if the invitation is not found" in {
+      "redirect to action required if there are no invitations found" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showActionRequired().url)
       }
 
       "redirect to already responded if the invitation has status of Accepted or Rejected" in {
@@ -284,13 +284,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
       }
 
-      "redirect to not found invitation" in {
+      "redirect to action required" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showActionRequired().url)
       }
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
@@ -310,16 +310,34 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.showNotFoundInvitation)
 
     "display the not found invitation page" in {
-      journeyState.set(NotFoundInvitation(personal), Nil)
+      journeyState.set(NotFoundInvitation, Nil)
 
       val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
 
     }
   }
+
+  "GET /action-required" should {
+    def request = requestWithJourneyIdInCookie("GET", "warm-up/action-required")
+
+    behave like anActionHandlingSessionExpiry(controller.showActionRequired)
+
+    "display the action required page" in {
+      journeyState.set(ActionRequired(personal), Nil)
+
+      val result = controller.showActionRequired(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.header"))
+    }
+  }
+
   "GET /consent" should {
     def request = requestWithJourneyIdInCookie("GET", "/warm-up/consent")
 
@@ -936,34 +954,49 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /not-found" should {
     def request = requestWithJourneyIdInCookie("GET", "/not-found")
-    "display the page as expected for clientType=personal" in {
-      journeyState.set(NotFoundInvitation(personal), Nil)
+    "display the page as expected" in {
+      journeyState.set(NotFoundInvitation, Nil)
 
       val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.vat.link-text")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.itsa")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.itsa.link-text")))
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab).", newWin = true)
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new window or tab).", newWin = true)
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
+    }
+  }
+
+  "GET /action-required" should {
+    def request = requestWithJourneyIdInCookie("GET", "/action-required")
+    "display the page as expected for clientType=personal" in {
+      journeyState.set(ActionRequired(personal), Nil)
+
+      val result = controller.showActionRequired(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.summary", htmlEscapedMessage("action-required.vat")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.details.p1", htmlEscapedMessage("action-required.vat.link-text")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.summary", htmlEscapedMessage("action-required.itsa")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.details.p1", htmlEscapedMessage("action-required.itsa.link-text")))
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab)", newWin = true)
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new window or tab)", newWin = true)
     }
     "display the page as expected for clientType=business" in {
-      journeyState.set(NotFoundInvitation(business), Nil)
+      journeyState.set(ActionRequired(business), Nil)
 
-      val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
+      val result = controller.showActionRequired(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.vat")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.p1", htmlEscapedMessage("not-found-invitation.vat.link-text")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.summary", htmlEscapedMessage("not-found-invitation.ters")))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.ters.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.details.ters.p2"))
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab).", newWin = true)
-    }
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.header"))
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.summary", htmlEscapedMessage("action-required.vat")))
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.details.p1", htmlEscapedMessage("action-required.vat.link-text")))
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.summary", htmlEscapedMessage("action-required.ters")))
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.details.ters.p1"))
+    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-required.details.ters.p2"))
+    checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new window or tab)", newWin = true)
+  }
   }
 
   "GET /already-responded" should {

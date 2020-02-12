@@ -168,6 +168,7 @@ GET         /assets/*file                                               controll
 GET         /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
 GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
+GET         /action-required                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showActionRequired
 GET         /request-cancelled                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestCancelled
 GET         /request-expired                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestExpired
 GET         /already-responded                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationAlreadyResponded

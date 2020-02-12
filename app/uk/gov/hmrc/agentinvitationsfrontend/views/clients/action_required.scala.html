@@ -1,0 +1,75 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+
+@this(
+        mainTemplate: main_template
+)
+
+@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-required.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
+
+    <h1 class="heading-xlarge">@Messages("action-required.header")</h1>
+
+    <div class="form-group">
+        <details>
+            <summary>
+                <span class="summary">@Messages("action-required.summary", Messages("action-required.vat"))</span>
+            </summary>
+            <div class="panel panel-border-narrow" aria-hidden="true">
+                <p>@Messages("action-required.details.p1", Messages("action-required.vat.link-text"))</p>
+                <p>@Html(Messages("action-required.details.p2", Html(Messages("action-required.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-required.vat.link-text" )))))</p>
+            </div>
+        </details>
+    </div>
+    @if(clientType == ClientType.personal) {
+
+        <div class="form-group">
+            <details>
+                <summary>
+                    <span class="summary">@Messages("action-required.summary", Messages("action-required.itsa"))</span>
+                </summary>
+                <div class="panel panel-border-narrow" aria-hidden="true">
+                    <p>@Messages("action-required.details.p1", Messages("action-required.itsa.link-text"))</p>
+                    <p>@Html(Messages("action-required.details.p2", Html(Messages("action-required.details.link", externalUrls.guidanceUrlSaNew, Messages("action-required.itsa.link-text")))))</p>
+                </div>
+            </details>
+        </div>
+    } else {
+
+        <div class="form-group">
+            <details>
+                <summary>
+                    <span class="summary">@Messages("action-required.summary", Messages("action-required.ters"))</span>
+                </summary>
+                <div class="panel panel-border-narrow" aria-hidden="true">
+                    <p>@Messages("action-required.details.ters.p1")</p>
+                    <p>@Messages("action-required.details.ters.p2")</p>
+                </div>
+            </details>
+        </div>
+
+    }
+
+    <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("invitation-already-responded.button")</a>
+
+
+}
