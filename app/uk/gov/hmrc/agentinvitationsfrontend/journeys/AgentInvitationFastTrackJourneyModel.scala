@@ -503,8 +503,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                   PirInvitation(Nino(fastTrackRequest.clientIdentifier)),
                   continueUrl
                 )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
-              case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
-              case None        => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
+              case _ => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
             }
         } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
 
