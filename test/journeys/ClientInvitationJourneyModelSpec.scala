@@ -93,7 +93,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
           given(MissingJourneyHistory) when
             start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
-            thenGo(NotFoundInvitation(personal))
+            thenGo(NotFoundInvitation)
         }
 
         "the agency name in the agent reference record is different to the normalised agent name in the invitation link" in {
@@ -103,7 +103,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
           given(MissingJourneyHistory) when
             start("personal", "uid", normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
-            thenGo(NotFoundInvitation(personal))
+            thenGo(NotFoundInvitation)
         }
       }
     }
