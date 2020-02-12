@@ -41,7 +41,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String)
         extends State
 
-    case class ActionRequired(clientType: ClientType) extends State with IsError
+    case class ActionNeeded(clientType: ClientType) extends State with IsError
 
     case object NotFoundInvitation extends State with IsError
 
@@ -157,7 +157,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty)
-              goto(ActionRequired(clientType))
+              goto(ActionNeeded(clientType))
             else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected))
               goto(InvitationAlreadyResponded)
             else if (invitationDetails.forall(_.status == Cancelled))

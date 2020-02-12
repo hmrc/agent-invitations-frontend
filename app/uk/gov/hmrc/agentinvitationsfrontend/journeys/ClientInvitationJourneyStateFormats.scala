@@ -33,7 +33,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val SomeResponsesFailedFormat = Json.format[SomeResponsesFailed]
   val ConfirmDeclineFormat = Json.format[ConfirmDecline]
   val SuspendedAgentFormat = Json.format[SuspendedAgent]
-  val ActionRequiredFormat = Json.format[ActionRequired]
+  val ActionNeededFormat = Json.format[ActionNeeded]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp              => WarmUpFormat.writes(s)
@@ -45,14 +45,14 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: SomeResponsesFailed => SomeResponsesFailedFormat.writes(s)
     case s: ConfirmDecline      => ConfirmDeclineFormat.writes(s)
     case s: SuspendedAgent      => SuspendedAgentFormat.writes(s)
-    case s: ActionRequired      => ActionRequiredFormat.writes(s)
+    case s: ActionNeeded        => ActionNeededFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "MissingJourneyHistory"      => JsSuccess(MissingJourneyHistory)
     case "WarmUp"                     => WarmUpFormat.reads(properties)
     case "NotFoundInvitation"         => JsSuccess(NotFoundInvitation)
-    case "ActionRequired"             => ActionRequiredFormat.reads(properties)
+    case "ActionNeeded"               => ActionNeededFormat.reads(properties)
     case "AllRequestsCancelled"       => JsSuccess(AllRequestsCancelled)
     case "AllRequestsExpired"         => JsSuccess(AllRequestsExpired)
     case "InvitationAlreadyResponded" => JsSuccess(InvitationAlreadyResponded)

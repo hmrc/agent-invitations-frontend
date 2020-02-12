@@ -25,18 +25,18 @@
 
 @(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-required.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
 
-    <h1 class="heading-xlarge">@Messages("action-required.header")</h1>
+    <h1 class="heading-xlarge">@Messages("action-needed.header")</h1>
 
     <div class="form-group">
         <details>
             <summary>
-                <span class="summary">@Messages("action-required.summary", Messages("action-required.vat"))</span>
+                <span class="summary">@Messages("action-needed.summary", Messages("action-needed.vat"))</span>
             </summary>
             <div class="panel panel-border-narrow" aria-hidden="true">
-                <p>@Messages("action-required.details.p1", Messages("action-required.vat.link-text"))</p>
-                <p>@Html(Messages("action-required.details.p2", Html(Messages("action-required.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-required.vat.link-text" )))))</p>
+                <p>@Messages("action-needed.details.p1", Messages("action-needed.vat.link-text"))</p>
+                <p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-needed.vat.link-text" )))))</p>
             </div>
         </details>
     </div>
@@ -45,11 +45,11 @@
         <div class="form-group">
             <details>
                 <summary>
-                    <span class="summary">@Messages("action-required.summary", Messages("action-required.itsa"))</span>
+                    <span class="summary">@Messages("action-needed.summary", Messages("action-needed.itsa"))</span>
                 </summary>
                 <div class="panel panel-border-narrow" aria-hidden="true">
-                    <p>@Messages("action-required.details.p1", Messages("action-required.itsa.link-text"))</p>
-                    <p>@Html(Messages("action-required.details.p2", Html(Messages("action-required.details.link", externalUrls.guidanceUrlSaNew, Messages("action-required.itsa.link-text")))))</p>
+                    <p>@Messages("action-needed.details.p1", Messages("action-needed.itsa.link-text"))</p>
+                    <p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlSaNew, Messages("action-needed.itsa.link-text")))))</p>
                 </div>
             </details>
         </div>
@@ -58,11 +58,11 @@
         <div class="form-group">
             <details>
                 <summary>
-                    <span class="summary">@Messages("action-required.summary", Messages("action-required.ters"))</span>
+                    <span class="summary">@Messages("action-needed.summary", Messages("action-needed.ters"))</span>
                 </summary>
                 <div class="panel panel-border-narrow" aria-hidden="true">
-                    <p>@Messages("action-required.details.ters.p1")</p>
-                    <p>@Messages("action-required.details.ters.p2")</p>
+                    <p>@Messages("action-needed.details.ters.p1")</p>
+                    <p>@Messages("action-needed.details.ters.p2")</p>
                 </div>
             </details>
         </div>

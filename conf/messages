@@ -656,18 +656,18 @@ incorrect-invitation.header=There is a problem
 incorrect-invitation.description=The request you accepted might be meant for someone else. Contact the tax agent who sent you the request.
 
 # Action required
-action-required.header=You need to take action before you can continue
-action-required.vat=submit VAT returns through software
-action-required.itsa=send your Income Tax updates through software
-action-required.ters=maintain a trust or an estate
-action-required.summary=If you want this agent to {0}
-action-required.vat.link-text=Making Tax Digital for VAT
-action-required.itsa.link-text=the Making Tax Digital pilot for Income Tax
-action-required.details.p1=Make sure you have signed up to {0}.
-action-required.details.p2=Find out how to {0}
-action-required.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new window or tab)</a>.
-action-required.details.ters.p1=You will need to claim a trust or an estate before you can continue.
-action-required.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
+action-needed.header=You need to take action before you can continue
+action-needed.vat=submit VAT returns through software
+action-needed.itsa=send your Income Tax updates through software
+action-needed.ters=maintain a trust or an estate
+action-needed.summary=If you want this agent to {0}
+action-needed.vat.link-text=Making Tax Digital for VAT
+action-needed.itsa.link-text=the Making Tax Digital pilot for Income Tax
+action-needed.details.p1=Make sure you have signed up to {0}.
+action-needed.details.p2=Find out how to {0}
+action-needed.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new window or tab)</a>.
+action-needed.details.ters.p1=You will need to claim a trust or an estate before you can continue.
+action-needed.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
 
 # Not Found Invitation
 not-found-invitation.header=Page not found
