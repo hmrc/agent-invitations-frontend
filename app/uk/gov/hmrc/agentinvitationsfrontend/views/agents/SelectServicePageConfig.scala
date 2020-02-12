@@ -50,4 +50,7 @@ trait SelectServicePageConfig {
   protected def firstServiceKey: String =
     availableServices.headOption.map(_._1).getOrElse("notfound")
 
+  def isCgtOnly: Boolean =
+    availableServices.exists(_._1 == "HMRC-CGT-PD") && availableServices.size == 1
+
 }

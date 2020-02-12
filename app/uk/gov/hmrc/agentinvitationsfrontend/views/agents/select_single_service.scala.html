@@ -24,17 +24,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 
 @this(
-    mainTemplate: main_template,
-    errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        mainTemplate: main_template,
+        errorPrefix: error_prefix,
+        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+        uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+        uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
 @(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage , Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
 
     @back_link(config.backLink)
 
@@ -45,22 +45,27 @@
     @uiFormHelper(
         action = config.submitCall,
         'class -> "form js-form") {
+
+        <h1 class="heading-xlarge margin-bottom-20">@config.selectSingleHeaderMessage</h1>
+
+        @if(config.isCgtOnly) {
+            <div class="panel panel-border-wide margin-bottom-40"><span>@Messages(s"identify-cgt-client.p2")</span></div>
+        }
+
         <div class="form-group">
         @uiInputRadioGroup(
             choiceForm("accepted"),
-            Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ config.selectSingleHeaderMessage + """</h1>"""),
+            Seq("true" -> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='service'"""),
             '_legendClass -> "margin-bottom-10"
-
         )
         </div>
 
         <details id="selectServiceHelper">
             <summary id="selectServiceSummary">
                 <span id="selectServiceAlt" class="summary">
-        @Messages("select-service.alternative")
+                @Messages("select-service.alternative")
                 </span>
             </summary>
 
