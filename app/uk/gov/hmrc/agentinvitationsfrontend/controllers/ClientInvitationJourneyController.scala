@@ -57,7 +57,7 @@ class ClientInvitationJourneyController @Inject()(
   failedIv5xxView: failed_iv_5xx,
   sessionLostView: session_lost,
   notFoundInvitationView: not_found_invitation,
-  actionRequiredView: action_required,
+  actionNeededView: action_needed,
   requestCancelledView: request_cancelled,
   invitationExpiredView: invitation_expired,
   invitationAlreadyRespondedView: invitation_already_responded,
@@ -152,8 +152,8 @@ class ClientInvitationJourneyController @Inject()(
     case _: MultiConsent =>
   }
 
-  val showActionRequired = actionShowStateWhenAuthorised(AsClient) {
-    case _: ActionRequired =>
+  val showActionNeeded = actionShowStateWhenAuthorised(AsClient) {
+    case _: ActionNeeded =>
   }
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
@@ -362,7 +362,7 @@ class ClientInvitationJourneyController @Inject()(
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation         => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case _: ActionRequired          => routes.ClientInvitationJourneyController.showActionRequired()
+    case _: ActionNeeded            => routes.ClientInvitationJourneyController.showActionNeeded()
     case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
     case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
     case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
@@ -399,9 +399,9 @@ class ClientInvitationJourneyController @Inject()(
           )))
 
     //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
-    case ActionRequired(clientType) => {
+    case ActionNeeded(clientType) => {
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(actionRequiredView(clientType, serviceMessageKey))
+      Ok(actionNeededView(clientType, serviceMessageKey))
     }
 
     case NotFoundInvitation => {
