@@ -1,5 +1,5 @@
 @*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,13 @@
         @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("service"))
     }
 
+
+    <h1 class="heading-xlarge margin-bottom-20">@config.selectSingleHeaderMessage</h1>
+
+    @if(config.isCgtOnly) {
+        <div class="panel panel-border-wide margin-bottom-40"><span>@Messages(s"identify-cgt-client.p2")</span></div>
+    }
+
     @uiFormHelper(
         action = config.submitCall,
         'class -> "form js-form") {
@@ -49,7 +56,6 @@
         @uiInputRadioGroup(
             choiceForm("accepted"),
             Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ config.selectSingleHeaderMessage + """</h1>"""),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='service'"""),
             '_legendClass -> "margin-bottom-10"

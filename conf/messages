@@ -92,8 +92,8 @@ select-service.HMRC-MTD-VAT.personal=Submit their VAT returns through software
 select-service.HMRC-MTD-VAT.business=Submit their VAT returns through software
 select-service.HMRC-TERS-ORG.business=Maintain a trust or an estate
 
-select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals
-select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property disposals
+select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property disposals (this is a trial service available by invite only).
+select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property disposals (this is a trial service available by invite only).
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -147,7 +147,8 @@ identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 
 ## Identify CGT Client
 identify-cgt-client.header=What is your client’s Capital Gains Tax (CGT) account reference?
 identify-cgt-client.p1=This will help us match their details against information we hold.
-identify-cgt-client.p2=Capital Gains Tax (CGT) account reference
+identify-cgt-client.p2=This is a trial service available by invite only.
+identify-cgt-client.p3=Capital Gains Tax (CGT) account reference
 identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
 confirm-postcode-cgt.header=What is your client’s postcode?
 confirm-postcode-cgt.p1=This will help us match their details against information we hold.
