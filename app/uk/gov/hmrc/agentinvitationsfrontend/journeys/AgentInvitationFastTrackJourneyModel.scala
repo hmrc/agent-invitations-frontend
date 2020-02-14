@@ -725,9 +725,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
 
           def stateForMissingKnownFact(forService: String) =
             forService match {
-              case HMRCMTDVAT => NoVatRegDate(originalFtr, ftrWithoutKF, continueUrl)
-              case HMRCMTDIT  => NoPostcode(originalFtr, ftrWithoutKF, continueUrl)
-              case HMRCPIR    => NoDob(originalFtr, ftrWithoutKF, continueUrl)
+              case HMRCMTDVAT | HMRCMTDIT | HMRCPIR => IdentifyPersonalClient(originalFtr, ftrWithoutKF, continueUrl)
             }
 
           val tryAgainState = fastTrackRequest match {
