@@ -895,7 +895,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             ))
       }
 
-      "fast track request is for MTD-VAT with client type should go to NoVatRegDate" in {
+      "fast track request is for MTD-VAT with client type should go to IdentifyPersonalClient" in {
         val originalFtr = AgentFastTrackRequest(
           clientType = Some(personal),
           service = HMRCMTDVAT,
@@ -920,7 +920,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           )) when
           tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
-            NoVatRegDate(
+            IdentifyPersonalClient(
               originalFastTrackRequest = originalFtr,
               fastTrackRequest = ftr,
               continueUrl = None
@@ -952,7 +952,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           )) when
           tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
-            NoPostcode(
+            IdentifyPersonalClient(
               originalFastTrackRequest = originalFtr,
               fastTrackRequest = ftr,
               continueUrl = None
@@ -984,7 +984,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           )) when
           tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
-            NoDob(
+            IdentifyPersonalClient(
               originalFastTrackRequest = originalFtr,
               fastTrackRequest = ftr,
               continueUrl = None
