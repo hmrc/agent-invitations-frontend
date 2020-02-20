@@ -22,82 +22,32 @@ import org.joda.time.LocalDate
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.http.controllers.RestFormats.localDateFormats
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
 sealed trait TrackRelationship extends Product with Serializable {
   val arn: Arn
-  val clientType: Option[String]
-  val serviceName: String
-  val dateTo: Option[LocalDate]
+  val clientType: String
   val clientId: String
+  val service: String
+  val dateTo: Option[LocalDate]
 }
 
-case class ItsaInactiveTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String)
-    extends TrackRelationship {
-  val serviceName = Services.HMRCMTDIT
-  val clientType = Some("personal")
-}
+case class InactiveTrackRelationship(
+  arn: Arn,
+  clientType: String,
+  clientId: String,
+  service: String,
+  dateTo: Option[LocalDate])
+    extends TrackRelationship
 
-object ItsaInactiveTrackRelationship {
-  implicit val relationshipWrites = Json.writes[ItsaInactiveTrackRelationship]
-
-  implicit val reads: Reads[ItsaInactiveTrackRelationship] =
-    ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(ItsaInactiveTrackRelationship.apply _)
-
-}
-
-case class VatTrackRelationship(arn: Arn, clientType: Option[String], dateTo: Option[LocalDate], clientId: String)
-    extends TrackRelationship {
-  val serviceName = Services.HMRCMTDVAT
-}
-
-object VatTrackRelationship {
-  implicit val relationshipWrites = Json.writes[VatTrackRelationship]
-
-  implicit val reads: Reads[VatTrackRelationship] =
-    ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "clientType").readNullable[String] and
-      (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(VatTrackRelationship.apply _)
-
-}
-
-case class TrustTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
-  val serviceName = Services.TRUST
-  val clientType = Some("business")
-}
-
-object TrustTrackRelationship {
-  implicit val relationshipWrites = Json.writes[TrustTrackRelationship]
-
-  implicit val reads: Reads[TrustTrackRelationship] =
-    ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(TrustTrackRelationship.apply _)
-
-}
-
-case class CgtTrackRelationship(arn: Arn, clientType: Option[String], dateTo: Option[LocalDate], clientId: String)
-    extends TrackRelationship {
-  val serviceName = Services.HMRCCGTPD
-}
-
-object CgtTrackRelationship {
-  implicit val relationshipWrites = Json.writes[CgtTrackRelationship]
-
-  implicit val reads: Reads[CgtTrackRelationship] =
-    ((JsPath \ "arn").read[Arn] and
-      (JsPath \ "clientType").readNullable[String] and
-      (JsPath \ "dateTo").readNullable[LocalDate] and
-      (JsPath \ "referenceNumber").read[String])(CgtTrackRelationship.apply _)
-
+object InactiveTrackRelationship {
+  implicit val format: OFormat[InactiveTrackRelationship] = Json.format[InactiveTrackRelationship]
 }
 
 case class IrvTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
-  val serviceName = Services.HMRCPIR
-  val clientType = Some("personal")
+  val service = Services.HMRCPIR
+  val clientType = "personal"
 }
 
 object IrvTrackRelationship {

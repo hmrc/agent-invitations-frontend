@@ -20,7 +20,6 @@ import java.util.UUID
 
 import org.joda.time.{DateTimeZone, LocalDate}
 import org.jsoup.Jsoup
-import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -45,11 +44,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing non-empty invitations with client's names resolved" in {
       givenGetInvitations(arn) // 18 invitations
-      givenInactiveITSARelationships(arn) // 2 relationships
-      givenInactiveVATRelationships(arn) // 2 relationships
+      givenInactiveRelationships(arn)
       givenInactiveAfiRelationship(arn)  // 2 relationships
-      givenInactiveTrustRelationships(arn)  // 1 relationship
-      givenInactiveCgtRelationships(arn)  // 1 relationship
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
@@ -69,13 +65,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Accepted by client",
         "Client has not yet responded",
         "Declined by client",
-        "You cancelled your authorisation",
         "FooBar Ltd.",
         "John Smith",
-        "Cosmo Kramer",
         "GDT",
         "11 September 2018",
-        "24 September 2018",
         "01 January 2099",
         "Resend request to client",
         "Cancel this request",
@@ -102,18 +95,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Send their Income Tax updates through software")
-
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("GDT")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("Submit their VAT returns through software")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("resendRequest")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("cancelled your authorisation")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("fastTrackInvitationCreate")
-
-      parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("John Smith")
-      parseHtml.getElementsByAttributeValue("id", "row-7").toString should include("View their PAYE income record")
-
-      parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("Declined")
-      parseHtml.getElementsByAttributeValue("id", "row-8").toString should include("fastTrackInvitationCreate")
 
       val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
       status(resultPageTwo) shouldBe 200
@@ -142,18 +123,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         resultPageThree,
         "recent-invitations.invitation.service.HMRC-CGT-PD",
         "recent-invitations.invitation.service.HMRC-TERS-ORG")
-
-      val parseHtmlPageThree = Jsoup.parse(contentAsString(resultPageThree))
-
-      parseHtmlPageThree.getElementsByAttributeValue("id", "row-3").toString should include("Rodney Jones")
-      parseHtmlPageThree.getElementsByAttributeValue("id", "row-3").toString should include("View their PAYE income record")
-
     }
 
     "render a page listing non-empty invitations without client's names" in {
       givenGetInvitations(arn)
-      givenInactiveITSARelationships(arn)
-      givenInactiveVATRelationships(arn)
+      givenInactiveRelationships(arn)
       givenInactiveAfiRelationship(arn)
       givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
@@ -173,7 +147,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Accepted by client",
         "Client has not yet responded",
         "Declined by client",
-        "You cancelled your authorisation",
         "11 September 2018",
         "01 January 2099",
         htmlEscapedMessage("recent-invitations.description", 30)
@@ -202,8 +175,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a page listing empty invitations" in {
       givenGetInvitationsReturnsEmpty(arn)
-      givenInactiveITSARelationshipsNotFound
-      givenInactiveVATRelationshipsNotFound
+      givenInactiveRelationshipsNotFound
       givenInactiveAfiRelationshipNotFound
       val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

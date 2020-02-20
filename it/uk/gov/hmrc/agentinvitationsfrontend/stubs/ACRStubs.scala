@@ -1,90 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
+import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
-import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.StoredInvitation
-import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 trait ACRStubs {
   me: WireMockSupport =>
 
-  def givenInactiveITSARelationships(arn: Arn) =
+  def givenInactiveRelationships(arn: Arn) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-IT"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[{
-                 |   "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-21",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"ABCDE1234567890"
-                 |},
-                 |{  "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-24",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"JKKL80894713304"
-                 |}]""".stripMargin
-            )
-        )
-    )
-
-  def givenInactiveITSARelationshipsNotFound =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-IT"))
-        .willReturn(aResponse()
-          .withStatus(404)))
-
-  def givenInactiveVATRelationships(arn: Arn) =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-VAT"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[{
-                 |   "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-21",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747696"
-                 |},
-                 |{  "arn":"${arn.value}",
-                 |   "dateTo":"2018-09-24",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"101747641"
-                 |}]""".stripMargin
-            )
-        )
-    )
-
-  def givenInactiveTrustRelationships(arn: Arn) =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-TERS-ORG"))
-        .willReturn(
-          aResponse()
-            .withStatus(200)
-            .withBody(
-              s"""
-                 |[{
-                 |   "arn":"${arn.value}",
-                 |   "dateTo":"2015-09-21",
-                 |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"4937455253"
-                 |}]""".stripMargin
-            )
-        )
-    )
-
-
-  def givenInactiveCgtRelationships(arn: Arn) =
-    stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-CGT-PD"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive"))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -95,15 +20,40 @@ trait ACRStubs {
                  |   "clientType":"personal",
                  |   "dateTo":"2015-09-21",
                  |   "dateFrom":"2015-09-10",
-                 |   "referenceNumber":"XMCGTP123456789"
-                 |}]""".stripMargin
+                 |   "clientId":"ABCDE1234567890",
+                 |   "service":"HMRC-MTD-IT"
+                 |},
+                 |{  "arn":"${arn.value}",
+                 |   "clientType":"personal",
+                 |   "dateTo":"2015-09-24",
+                 |   "dateFrom":"2015-09-10",
+                 |   "clientId":"101747641",
+                 |   "service":"HMRC-MTD-VAT"
+                 |},
+                 |{
+                 |   "arn":"${arn.value}",
+                 |   "clientType":"personal",
+                 |   "dateTo":"2015-09-21",
+                 |   "dateFrom":"2015-09-10",
+                 |   "clientId":"4937455253",
+                 |   "service":"HMRC-TERS-ORG"
+                 |},
+                 |{
+                 |   "arn":"${arn.value}",
+                 |   "clientType":"personal",
+                 |   "dateTo":"2015-09-21",
+                 |   "dateFrom":"2015-09-10",
+                 |   "clientId":"XMCGTP123456789",
+                 |   "service":"HMRC-CGT-PD"
+                 |}
+                 |]""".stripMargin
             )
         )
     )
 
-  def givenInactiveVATRelationshipsNotFound =
+  def givenInactiveRelationshipsNotFound =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive/service/HMRC-MTD-VAT"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive"))
         .willReturn(aResponse()
           .withStatus(404)))
 
