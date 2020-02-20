@@ -58,16 +58,16 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-CGT-PD"   -> "CGTPDRef"
   )
 
-  private def isServiceEnabled(service: String): Boolean = service match {
-    case "HMRC-MTD-IT"   => featureFlags.showHmrcMtdIt
-    case "HMRC-MTD-VAT"  => featureFlags.showHmrcMtdVat
-    case "HMRC-TERS-ORG" => featureFlags.showHmrcTrust
-    case "HMRC-CGT-PD"   => featureFlags.showHmrcCgt
-    case _               => false // unknown service
+  def isServiceEnabled(service: String): Boolean = service match {
+    case "HMRC-MTD-IT"            => featureFlags.showHmrcMtdIt
+    case "HMRC-MTD-VAT"           => featureFlags.showHmrcMtdVat
+    case "HMRC-TERS-ORG"          => featureFlags.showHmrcTrust
+    case "HMRC-CGT-PD"            => featureFlags.showHmrcCgt
+    case "PERSONAL-INCOME-RECORD" => featureFlags.showPersonalIncome
+    case _                        => false // unknown service
   }
 
-  private def getInactiveRelationshipUrlFor(service: String): String =
-    new URL(baseUrl, s"/agent-client-relationships/agent/relationships/inactive/service/$service").toString
+  private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
   private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
     new URL(
@@ -75,39 +75,18 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
       s"/agent-client-relationships/agent/${arn.value}/service" +
         s"/$service/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
 
-  private def getInactiveRelationshipsForService[A](
-    service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, evidence: HttpReads[Seq[A]]): Future[Seq[A]] =
-    if (isServiceEnabled(service)) {
-      monitor(s"ConsumedApi-Get-Inactive${serviceShortNames(service)}Relationships-GET") {
-        http
-          .GET[Seq[A]](getInactiveRelationshipUrlFor(service))
-          .recover {
-            case _: NotFoundException =>
-              Logger(getClass).warn(s"No inactive relationships were found for ${serviceShortNames(service)}")
-              Seq.empty
-          }
-      }
-    } else {
-      Logger(getClass).warn(
-        s"${serviceShortNames(service)} service is disabled - returning empty list of relationships")
-      Future successful Seq.empty
+  def getInactiveRelationships(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext,
+    evidence: HttpReads[Seq[InactiveTrackRelationship]]): Future[Seq[InactiveTrackRelationship]] =
+    monitor(s"ConsumedApi-Get-InactiveRelationships-GET") {
+      http
+        .GET[Seq[InactiveTrackRelationship]](inactiveRelationshipUrl)
+        .recover {
+          case _: NotFoundException =>
+            Seq.empty
+        }
     }
-
-  def getInactiveItsaRelationships(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[ItsaInactiveTrackRelationship]] =
-    getInactiveRelationshipsForService[ItsaInactiveTrackRelationship]("HMRC-MTD-IT")
-
-  def getInactiveVatRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[VatTrackRelationship]] =
-    getInactiveRelationshipsForService[VatTrackRelationship]("HMRC-MTD-VAT")
-
-  def getInactiveTrustRelationships(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[TrustTrackRelationship]] =
-    getInactiveRelationshipsForService[TrustTrackRelationship]("HMRC-TERS-ORG")
-
-  def getInactiveCgtRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[CgtTrackRelationship]] =
-    getInactiveRelationshipsForService[CgtTrackRelationship]("HMRC-CGT-PD")
 
   private def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,

@@ -59,4 +59,13 @@ object Services {
       case "trust" => TRUST
       case "cgt"   => HMRCCGTPD
     }
+
+  def clientIdType(service: String) =
+    service match {
+      case HMRCMTDIT  => "ni"
+      case HMRCMTDVAT => "vrn"
+      case HMRCCGTPD  => "CGTPDRef"
+      case TRUST      => "utr"
+      case HMRCPIR    => "ni"
+    }
 }
