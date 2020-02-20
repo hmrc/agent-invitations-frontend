@@ -80,7 +80,6 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
         .GET[Seq[IrvTrackRelationship]](getInactiveIrvRelationshipUrl.toString)
         .recover {
           case _: NotFoundException =>
-            Logger(getClass).warn("No inactive relationships were found for IRV")
             Seq.empty
         }
     }

@@ -55,36 +55,33 @@ class TrackService @Inject()(
       relationships <- Future
                         .sequence(
                           Seq(
-                            relationshipsConnector.getInactiveItsaRelationships,
-                            relationshipsConnector.getInactiveVatRelationships,
-                            pirRelationshipConnector.getInactiveIrvRelationships,
-                            relationshipsConnector.getInactiveTrustRelationships,
-                            relationshipsConnector.getInactiveCgtRelationships
+                            relationshipsConnector.getInactiveRelationships,
+                            pirRelationshipConnector.getInactiveIrvRelationships
                           ))
                         .map(_.flatten)
+      filteredRelationships = relationships.filter(rel => relationshipsConnector.isServiceEnabled(rel.service))
 
-      inactiveClients <- Future.traverse(relationships) {
+      inactiveClients <- Future.traverse(filteredRelationships) {
 
-                          case ItsaInactiveTrackRelationship(_, dateTo, clientId) =>
+                          case r if r.service == Services.HMRCMTDIT =>
                             for {
-                              nino <- acaConnector.getNinoForMtdItId(MtdItId(clientId))
+                              nino <- acaConnector.getNinoForMtdItId(MtdItId(r.clientId))
                             } yield
                               InactiveClient(
-                                Some("personal"),
-                                "HMRC-MTD-IT",
+                                Some(r.clientType),
+                                r.service,
                                 nino.map(ni => ni.value).getOrElse(""),
                                 "ni",
-                                dateTo
+                                r.dateTo
                               )
 
-                          case VatTrackRelationship(_, clientType, dateTo, clientId) =>
-                            Future successful InactiveClient(clientType, "HMRC-MTD-VAT", clientId, "vrn", dateTo)
-
-                          case TrustTrackRelationship(_, dateTo, clientId) =>
-                            Future successful InactiveClient(Some("business"), "HMRC-TERS-ORG", clientId, "utr", dateTo)
-
-                          case CgtTrackRelationship(_, clientType, dateTo, clientId) =>
-                            Future successful InactiveClient(clientType, "HMRC-CGT-PD", clientId, "CGTPDRef", dateTo)
+                          case rel: InactiveTrackRelationship =>
+                            Future successful InactiveClient(
+                              Some(rel.clientType),
+                              rel.service,
+                              rel.clientId,
+                              Services.clientIdType(rel.service),
+                              rel.dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>
                             Future successful InactiveClient(
@@ -98,16 +95,18 @@ class TrackService @Inject()(
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
 
-  def relationships(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[TrackRelationship]]) =
+  def relationships(identifierOpt: Option[TaxIdentifier])(
+    f: TaxIdentifier => Future[Seq[TrackRelationship]]): Future[Seq[TrackRelationship]] =
     identifierOpt match {
       case Some(identifier) => f(identifier)
       case None             => Future.successful(Seq.empty)
     }
 
-  def names(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[String]]) = identifierOpt match {
-    case Some(identifier) => f(identifier)
-    case None             => Future.successful(Seq.empty)
-  }
+  def names(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[String]]): Future[Seq[String]] =
+    identifierOpt match {
+      case Some(identifier) => f(identifier)
+      case None             => Future.successful(Seq.empty)
+    }
 
   def getTradingName(
     clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

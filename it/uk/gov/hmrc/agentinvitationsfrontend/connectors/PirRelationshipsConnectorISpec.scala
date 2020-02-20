@@ -17,11 +17,11 @@ class PirRelationshipsConnectorISpec extends BaseISpec with ACRStubs {
     "return a sequence of inactive IRV relationships" in {
       givenInactiveAfiRelationship(arn)
       val result = await(connector.getInactiveIrvRelationships)
-      result(0).serviceName shouldBe "PERSONAL-INCOME-RECORD"
+      result(0).service shouldBe "PERSONAL-INCOME-RECORD"
       result(0).arn shouldBe arn
       result(0).dateTo shouldBe Some(LocalDate.parse("2015-09-21"))
       result(0).clientId shouldBe "AB123456A"
-      result(1).serviceName shouldBe "PERSONAL-INCOME-RECORD"
+      result(1).service shouldBe "PERSONAL-INCOME-RECORD"
       result(1).arn shouldBe arn
       result(1).dateTo shouldBe Some(LocalDate.parse("2018-09-24"))
       result(1).clientId shouldBe "GZ753451B"
