@@ -44,7 +44,7 @@
         scriptElem: Option[Html] = None,
         gaCalls: Option[(String,String) => Html] = None,
         gaCode: Seq[String] = Seq.empty,
-        cookies: Option[Cookies] = None,
+        session: Option[Session] = None,
         isAgent: Boolean,
         bannerTitle: String = "banner.agents.auth",
         completedInviteGoSurvey: Option[Boolean] = None, hasTimeout: Boolean = true)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -124,7 +124,7 @@
 
 @headerNavLinks = {
     <li>
-    @if(cookies.flatMap(_.get("mdtp")).fold(false)(cookie => cookie.value.contains("authToken=Bearer+"))) {
+    @if(session.fold(false)(s => s.get("authToken").isDefined)) {
         <a href="@Html(externalUrls.signOutUrl(isAgent, completedInviteGoSurvey))" data-journey-click="primary-navigation:Click:Sign out">
             Sign out</a>
     }
