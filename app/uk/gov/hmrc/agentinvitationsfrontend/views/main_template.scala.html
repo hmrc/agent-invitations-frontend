@@ -19,8 +19,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
 @this(
+    appConfig: AppConfig,
         govukWrapper: govuk_wrapper,
         uiSidebar: uk.gov.hmrc.play.views.html.layouts.Sidebar,
         uiArticle: uk.gov.hmrc.play.views.html.layouts.Article
@@ -38,6 +40,7 @@
         gaCalls: Option[(String, String) => Html] = None,
         mainDataAttributes: Option[Html] = None,
         hasTimeout: Boolean = true)(mainContent: Html)(implicit messages: Messages, request: Request[_], configuration: Configuration, externalUrls: ExternalUrls)
+
 
 @serviceInfoContent = {}
 
@@ -64,6 +67,7 @@
 }
 
 @govukWrapper(title,
+    appConfig,
     mainClass,
     bodyClasses = bodyClasses,
     sidebar = sidebar,

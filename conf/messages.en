@@ -745,7 +745,7 @@ session-lost-client.description.3=If you have any questions, use the ‘Get help
 session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
 # General Messages
-# Error messages for digital services
+# Error messages.en for digital services
 global.error.400.title=Bad request - 400
 global.error.400.heading=Bad request
 global.error.400.message=Please check that you have entered the correct web address.
