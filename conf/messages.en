@@ -133,7 +133,7 @@ agent-suspended.p1=You cannot ask a client to authorise you to {0} because your 
 agent-suspended.p1.HMRC-MTD-IT=send their Income Tax updates through software
 agent-suspended.p1.HMRC-MTD-VAT=submit their VAT returns through software
 agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
-agent-suspended.p1.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property disposals
+agent-suspended.p1.HMRC-CGT-PD=manage their Capital Gains Tax on UK property disposals
 agent-suspended.p2.single=You can start a new authorisation request for a different service.
 agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
@@ -306,7 +306,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to m
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property disposals for {1}.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business-select-service.header=Do you want to cancel submitting this client’s VAT returns through software?
-cancel-authorisation.error.business-service.required=Select yes if you want to cancel this client’s VAT returns through software
+cancel-authorisation.error.business-service.required=Select yes if you want to cancel submitting this client’s VAT returns through software
 
 cancel-authorisation.trust-select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client’s tax returns through software
@@ -556,7 +556,7 @@ confirm-terms-multi.cgt.personal.p2=I also consent to HMRC allowing {0} to manag
 confirm-terms-multi.cgt.personal.p2.l1=view, change and submit my current returns
 confirm-terms-multi.cgt.personal.p2.l2=view and change my previous return details
 confirm-terms-multi.cgt.personal.p2.l3=view and change my contact preferences
-confirm-terms-multi.cgt.personal.p2.l4=contact to HMRC to discuss my returns, payments and any penalties
+confirm-terms-multi.cgt.personal.p2.l4=contact HMRC to discuss my returns, payments and any penalties
 
 confirm-terms-multi.cgt.business.p1=I consent to HMRC sharing a trust’s CGT on UK property disposals details with {0}, such as the trust’s:
 confirm-terms-multi.cgt.business.p1.l1=name, location and contact details
@@ -689,8 +689,8 @@ cannot-view-request.button=Finish and sign out
 # Wrong Client Type
 incorrect-client-type.header=There is a problem
 incorrect-client-type.p1=You signed in with the wrong type of Government Gateway user ID.
-incorrect-client-type.p2.personal=If you are not an individual or sole trader, contact your tax agent who sent you this request.
-incorrect-client-type.p2.business=If you are an individual or sole trader, contact your tax agent who sent you this request.
+incorrect-client-type.p2.personal=If you are not an individual or sole trader, contact the tax agent who sent you this request.
+incorrect-client-type.p2.business=If you are an individual or sole trader, contact the tax agent who sent you this request.
 incorrect-client-type.p3=If you still want to continue, you will need to sign in with the Government Gateway user ID you use for your {0} tax affairs.
 incorrect-client-type.p4=You can create an account if you do not have one.
 incorrect-client-type.button=Sign out and try again
@@ -766,9 +766,11 @@ global.error.500.title=Sorry, there is a problem with the service - 500
 global.error.500.heading=Sorry, there is a problem with the service
 global.error.500.message=Try again later.
 global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
-global.error.500.vat_helpline.link=Call the VAT online services helpline
+global.error.500.vat_helpline.link-text=Call the VAT online services helpline
+global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
 global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
-global.error.500.sa_helpline.link=Call the HMRC Self Assessment online services helpline
+global.error.500.sa_helpline.link-text=Call the HMRC Self Assessment online services helpline
+global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
 global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
 
 #Relationships

@@ -717,8 +717,8 @@ some-responses-failed.li.trust=
 some-responses-failed.li.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 some-responses-failed.itsa=Nid oeddem yn gallu cadw’ch ymateb o ran anfon eich diweddariadau Treth Incwm drwy feddalwedd.
 some-responses-failed.afi=Nid oeddem yn gallu cadw’ch ymateb o ran bwrw golwg dros eich cofnod incwm TWE.
-some-responses-failed.vat=Nid oeddem yn gallu cadw’ch ymateb o ran cyflwyno’ch Ffurflenni TAW drwy feddalwedd.
-some-responses-failed.trust=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd.
+some-responses-failed.vat=Nid oeddem yn gallu cadw’ch ymateb o ran cyflwyno’ch Ffurflenni TAW drwy feddalwedd
+some-responses-failed.trust=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
 some-responses-failed.cgt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 some-responses-failed.try-again=Gallwch fynd yn eich blaen heb y gwasanaethau hyn, neu roi cynnig arall arni yn nes ymlaen.
 some-responses-failed.advice=
@@ -766,9 +766,11 @@ global.error.500.title=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth –
 global.error.500.heading=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 global.error.500.message=Rhowch gynnig arall arni yn nes ymlaen.
 global.error.500.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
-global.error.500.vat_helpline.link=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
+global.error.500.vat_helpline.link-text=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
+global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
 global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
-global.error.500.sa_helpline.link=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
+global.error.500.sa_helpline.link-text=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
+global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
 global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
 #Relationships
