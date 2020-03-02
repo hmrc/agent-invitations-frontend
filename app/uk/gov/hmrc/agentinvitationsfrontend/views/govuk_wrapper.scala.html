@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import play.twirl.api.HtmlFormat
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
 @this(
     govUkTemplate: views.html.layouts.GovUkTemplate,
@@ -33,7 +34,9 @@
     uiBetaBanner: uk.gov.hmrc.play.views.html.layouts.BetaBanner
 )
 
+
 @(title: String,
+        appConfig: AppConfig,
         mainClass: Option[String] = None,
         mainDataAttributes: Option[Html] = None,
         bodyClasses: Option[String] = None,
@@ -88,7 +91,6 @@
             window.jsConfig.timeout = @{externalUrls.timeout};
             window.jsConfig.countdown = @{externalUrls.timeoutCountdown};
             window.jsConfig.keep_alive_url = "@{routes.TimeoutController.keepAlive().url}";
-            window.jsConfig.message = "@{Messages(s"timeout-dialog.p1.$agentOrClient")}";
             window.jsConfig.timed_out_url = "@timedOutUrl";
             window.jsConfig.logout_url = "@signOutUrl";
     </script>
@@ -129,7 +131,18 @@
             Sign out</a>
     }
     </li>
+@if(appConfig.languageToggle && isAgent){
+    <div class="text--right">@views.html.language_selection(
+        appConfig.languageMap,
+        appConfig.routeToSwitchLanguage,
+        customClass = Some("welsh-toggle")
+    )</div>
 }
+
+
+}
+
+
 
 @insideHeader = {
     <!-- Google Tag Manager (noscript) -->
@@ -172,10 +185,19 @@
 }
 
 @mainContentHeader = {
+@if(appConfig.languageToggle && !isAgent){
+    <div class="text--right">@views.html.language_selection(
+        appConfig.languageMap,
+        appConfig.routeToSwitchLanguage,
+        customClass = None
+    )</div>
+}
+}
+
 @if(contentHeader.isDefined) {
     @uiMainContentHeader(contentHeader.get)
 }
-}
+
 
 @getHelpForm = @{
     helperReportAProblemLink(externalUrls.contactFrontendAjaxUrl(isAgent), externalUrls.contactFrontendNonJsUrl(isAgent))

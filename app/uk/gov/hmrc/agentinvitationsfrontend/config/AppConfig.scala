@@ -17,6 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.config
 
 import javax.inject.{Inject, Singleton}
+import play.api.i18n.Lang
+import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 
 import scala.concurrent.duration.Duration
@@ -54,8 +57,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")
   val agentSubscriptionFrontendExternalUrl: String = getConfString("agent-subscription-frontend.external-url")
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
-  val vatOnlineHelplineExternalUrl: String = getConfString("vat-online-service-helpline.external-url")
-  val saOnlineHelplineFrontendExternalUrl: String = getConfString("sa-online-service-helpline.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
   val pdvFrontendExternalUrl: String = getConfString("personal-details-validation-frontend.external-url")
@@ -68,6 +69,14 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val invitationExpirationDuration: Duration = servicesConfig.getDuration("invitation.expiryDuration")
   val agentMappingFrontendExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
   val govUkGuidanceExternalUrl: String = getConfString("gov-uk-guidance.external-url")
+  val passcodeVerificationUrl =
+    servicesConfig.getConfString(s"govuk-tax.${runMode.env}.url.verification-frontend.redirect", "/verification")
+  val languageMap: Map[String, Lang] = Map(
+    "english" -> Lang("en"),
+    "cymraeg" -> Lang("cy")
+  )
+  def routeToSwitchLanguage: String => Call =
+    (lang: String) => routes.AgentInvitationsLanguageController.switchToLanguage(lang)
 
   //Ints
   val trackRequestsShowLastDays: Int = servicesConfig.getInt("track-requests-show-last-days")
@@ -88,7 +97,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val passcodeAuthEnabled: Boolean = servicesConfig.getBoolean("passcodeAuthentication.enabled")
   val passcodeAuthRegime: String = servicesConfig.getString("passcodeAuthentication.regime")
-  val passcodeVerificationUrl =
-    servicesConfig.getConfString(s"govuk-tax.${runMode.env}.url.verification-frontend.redirect", "/verification")
+
+  val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
 
 }

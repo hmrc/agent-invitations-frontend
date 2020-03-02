@@ -24,7 +24,7 @@ $(function() {
     //Add aria-hidden to hidden inputs
     $('[type="hidden"]').attr("aria-hidden", true)
 
-    //arrange validation messages/classes to correct pattern
+    //arrange validation messages.en/classes to correct pattern
 
     $('.form-date label.form-field--error').each(function () {
 
