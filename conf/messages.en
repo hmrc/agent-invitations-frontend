@@ -539,7 +539,7 @@ confirm-terms-multi.vat.list.item3=how my VAT returns have been calculated
 
 confirm-terms-multi.trust.heading=Maintain a trust or an estate
 confirm-terms-multi.trust.p1=I consent to HMRC sharing this information with {0}, so this agent can either:
-confirm-terms-multi.trust.list.item1=report changes relating to trustees, settlers, beneficiaries and protectors, such as names and addresses, and declare the trust is up to date
+confirm-terms-multi.trust.list.item1=report changes relating to trustees, settlors, beneficiaries and protectors, such as names and addresses, and declare the trust is up to date
 confirm-terms-multi.trust.list.item2=report changes relating to the estate’s personal representative, such as name and address, and declare the estate is up to date
 
 confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property disposals
@@ -549,7 +549,7 @@ confirm-terms-multi.cgt.personal.p1.l1=name and contact details
 confirm-terms-multi.cgt.personal.p1.l2=residence status
 confirm-terms-multi.cgt.personal.p1.l3=liability for current and previous tax years
 confirm-terms-multi.cgt.personal.p1.l4=tax codes and personal allowance details
-confirm-terms-multi.cgt.personal.p1.l5=amounts due and paid
+confirm-terms-multi.cgt.personal.p1.l5=amounts due and amounts paid
 confirm-terms-multi.cgt.personal.p1.l6=penalty details
 
 confirm-terms-multi.cgt.personal.p2=I also consent to HMRC allowing {0} to manage my CGT on UK property disposals account, so they can:
@@ -561,14 +561,14 @@ confirm-terms-multi.cgt.personal.p2.l4=contact HMRC to discuss my returns, payme
 confirm-terms-multi.cgt.business.p1=I consent to HMRC sharing a trust’s CGT on UK property disposals details with {0}, such as the trust’s:
 confirm-terms-multi.cgt.business.p1.l1=name, location and contact details
 confirm-terms-multi.cgt.business.p1.l2=liability for current and previous tax years
-confirm-terms-multi.cgt.business.p1.l3=amount due and paid
+confirm-terms-multi.cgt.business.p1.l3=the amounts due and the amounts paid
 confirm-terms-multi.cgt.business.p1.l4=penalty details
 
 confirm-terms-multi.cgt.business.p2=I also consent to HMRC allowing {0} to manage a trust’s CGT on UK property disposals account, so they can:
 confirm-terms-multi.cgt.business.p2.l1=view, change and submit the trust’s current returns
 confirm-terms-multi.cgt.business.p2.l2=view and change the trust’s previous return details
 confirm-terms-multi.cgt.business.p2.l3=view and change the trust’s contact preferences
-confirm-terms-multi.cgt.business.p2.l4=contact to HMRC to discuss the trust’s returns, payments and any penalties
+confirm-terms-multi.cgt.business.p2.l4=contact HMRC to discuss the trust’s returns, payments and any penalties
 
 confirm-terms.itsa.bullet1=your Income Tax updates information
 confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
@@ -727,6 +727,8 @@ some-responses-failed.advice=If you have any questions, use the ‘Get help with
 technical-issues.header=Sorry, there is a problem with the service
 technical-issues.p1=Try again later.
 technical-issues.p2=We may not have saved your answers. When the service is available, you may have to start again.
+technical-issues.sa-url=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
+technical-issues.vat-url=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
 technical-issues.vat=<a href="{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
 technical-issues.it=<a href="{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
 
@@ -734,7 +736,7 @@ technical-issues.it=<a href="{0}">Call the HMRC Self Assessment online services 
 all-responses-failed.header=Sorry, there is a problem with the service
 all-responses-failed.p1=Try again later.
 all-responses-failed.p2=We may not have saved your responses.
-all-responses-failed.check=You can <a href = {0}>check who can deal with HMRC for you</a>.
+all-responses-failed.check=You can <a href ="{0}">check who can deal with HMRC for you</a>.
 all-responses-failed.p3=If you have any questions, use the ‘Get help with this page’ link.
 
 # Client session expired/lost

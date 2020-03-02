@@ -3,9 +3,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.scalatest.BeforeAndAfter
 import play.api.Application
-import play.api.mvc.Cookie
 import play.api.test.FakeRequest
-import play.api.test.Helpers.redirectLocation
+import play.api.test.Helpers.{cookies, redirectLocation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -34,11 +33,7 @@ class AgentInvitationsLanguageControllerISpec extends BaseISpec with BeforeAndAf
       status(result) shouldBe 303
       redirectLocation(result)(timeout) shouldBe Some("https://www.gov.uk/fallback")
 
-      result.map( println _)
-
-     //TODO test the cookie value
-
-
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "en"
 
     }
 
@@ -50,7 +45,19 @@ class AgentInvitationsLanguageControllerISpec extends BaseISpec with BeforeAndAf
       status(result) shouldBe 303
       redirectLocation(result)(timeout) shouldBe Some("/some-page")
 
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "en"
+
+    }
+
+    "redirect to /some-page with lang set to 'cy' when the user has selected Welsh" in {
+
+      val request = FakeRequest("GET", "/language/cymraeg").withHeaders("referer" -> "/some-page")
+
+      val result = controller.switchToLanguage("cymraeg")(request)
+      status(result) shouldBe 303
+      redirectLocation(result)(timeout) shouldBe Some("/some-page")
+
+      cookies(result)(timeout).get("PLAY_LANG").get.value shouldBe "cy"
     }
   }
-
 }

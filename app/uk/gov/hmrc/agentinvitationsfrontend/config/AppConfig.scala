@@ -57,8 +57,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")
   val agentSubscriptionFrontendExternalUrl: String = getConfString("agent-subscription-frontend.external-url")
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
-  val vatOnlineHelplineExternalUrl: String = getConfString("vat-online-service-helpline.external-url")
-  val saOnlineHelplineFrontendExternalUrl: String = getConfString("sa-online-service-helpline.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
   val pdvFrontendExternalUrl: String = getConfString("personal-details-validation-frontend.external-url")

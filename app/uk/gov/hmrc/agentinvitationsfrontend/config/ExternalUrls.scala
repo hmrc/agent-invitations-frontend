@@ -39,8 +39,6 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val agentClientManagementUrl = appConfig.acmExternalUrl
   val agentInvitationsExternalUrl = appConfig.agentInvitationsFrontendExternalUrl
   val privacypolicyUrl = appConfig.privacyPolicyExternalUrl
-  val vatOnlineServiceHelplineUrl = appConfig.vatOnlineHelplineExternalUrl
-  val saOnlineServiceHelplineUrl = appConfig.saOnlineHelplineFrontendExternalUrl
   val agentMappingFrontendUrl = s"${appConfig.agentMappingFrontendExternalUrl}/agent-mapping/start"
   val timeout = appConfig.timeoutDialogTimeoutSeconds
   val timeoutCountdown = appConfig.timeoutDialogCountdownSeconds

@@ -131,9 +131,18 @@
             Sign out</a>
     }
     </li>
+@if(appConfig.languageToggle && isAgent){
+    <div class="text--right">@views.html.language_selection(
+        appConfig.languageMap,
+        appConfig.routeToSwitchLanguage,
+        customClass = Some("welsh-toggle")
+    )</div>
+}
 
 
 }
+
+
 
 @insideHeader = {
     <!-- Google Tag Manager (noscript) -->
@@ -176,7 +185,7 @@
 }
 
 @mainContentHeader = {
-@if(appConfig.languageToggle){
+@if(appConfig.languageToggle && !isAgent){
     <div class="text--right">@views.html.language_selection(
         appConfig.languageMap,
         appConfig.routeToSwitchLanguage,
