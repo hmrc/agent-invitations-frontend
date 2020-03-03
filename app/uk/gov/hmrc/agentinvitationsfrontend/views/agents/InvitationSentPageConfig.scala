@@ -27,6 +27,7 @@ case class InvitationSentPageConfig(
   clientType: String,
   expiryDate: LocalDate,
   agencyEmail: String,
+  services: Set[String],
   serviceType: String = "personal")(implicit externalUrls: ExternalUrls) {
 
   val continueUrl: String = continueUrlOpt match {

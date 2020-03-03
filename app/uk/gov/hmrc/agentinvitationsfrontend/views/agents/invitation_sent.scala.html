@@ -27,6 +27,12 @@
 
 @(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@gaCalls(analyticsHost: String, token: String) = {
+    @for(service <- config.services) {
+        ga('send', 'event', 'invitation', 'sent', '@service');
+    }
+}
+
 @displayDate = @{
     if(config.expiryDate.getDayOfMonth < 10) config.expiryDate.toString("d MMMM yyyy", messages.lang.locale)
     else config.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)
@@ -34,7 +40,7 @@
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent")) {
+@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some("InviteSent"), gaCalls = Some(gaCalls _)) {
 
 
     <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>

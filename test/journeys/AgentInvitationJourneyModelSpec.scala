@@ -873,7 +873,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
             hasNoPendingInvitation)(hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
-          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+          thenGo(
+            InvitationSentBusiness(
+              "invitation/link",
+              None,
+              "abc@xyz.com",
+              Set(authorisationRequest.invitation.service)))
       }
 
       "after clientConfirmed(false) transition to IdentifyBusinessClient" in {
@@ -999,7 +1004,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
               "invitation/link",
               None,
               "abc@xyz.com",
-              "HMRC-TERS-ORG"
+              Set("HMRC-TERS-ORG")
             ))
       }
 
@@ -1073,7 +1078,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         ) when
           authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(
             Confirmation(false)) should
-          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT)))
       }
 
       "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
@@ -1240,7 +1245,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         ) when
           authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(
             Confirmation(false)) should
-          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT)))
       }
 
       "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
@@ -1452,7 +1457,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set.empty
           )
         ) when continueSomeResponsesFailed(authorisedAgent) should
-          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
       }
     }
   }

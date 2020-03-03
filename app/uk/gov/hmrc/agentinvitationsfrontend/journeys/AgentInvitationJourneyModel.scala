@@ -88,13 +88,17 @@ object AgentInvitationJourneyModel extends JourneyModel {
     case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
     case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
         extends State
-    case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
+    case class InvitationSentPersonal(
+      invitationLink: String,
+      continueUrl: Option[String],
+      agencyEmail: String,
+      services: Set[String])
         extends State
     case class InvitationSentBusiness(
       invitationLink: String,
       continueUrl: Option[String],
       agencyEmail: String,
-      service: String = HMRCMTDVAT)
+      services: Set[String])
         extends State
     case class ClientNotSignedUp(service: String, basket: Basket) extends State
     case object AllAuthorisationsRemoved extends State
@@ -554,7 +558,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                              getAgencyEmail().flatMap(
                                agencyEmail =>
                                  createAndProcessInvitations(
-                                   InvitationSentBusiness(agentLink, None, agencyEmail),
+                                   InvitationSentBusiness(agentLink, None, agencyEmail, Set(HMRCMTDVAT)),
                                    (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                    Set(request),
                                    createMultipleInvitations,
@@ -590,7 +594,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
-                                     InvitationSentBusiness(agentLink, None, agencyEmail, TRUST),
+                                     InvitationSentBusiness(agentLink, None, agencyEmail, Set(TRUST)),
                                      (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
                                      createMultipleInvitations,
@@ -603,8 +607,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
     }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
-      case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, _) =>
-        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail))
+      case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>
+        val services = basket.filter(_.state == AuthorisationRequest.CREATED).map(_.invitation.service)
+        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services))
     }
 
     // format: off
@@ -622,8 +627,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
           for {
             agencyEmail    <- getAgencyEmail()
             invitationLink <- getAgentLink(agent.arn, Some(business))
+            services = basket.map(_.invitation.service)
             result <- createAndProcessInvitations(
-                       InvitationSentBusiness(invitationLink, None, agencyEmail),
+                       InvitationSentBusiness(invitationLink, None, agencyEmail, services),
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
                        createMultipleInvitations,
@@ -639,8 +645,9 @@ object AgentInvitationJourneyModel extends JourneyModel {
           for {
             agencyEmail    <- getAgencyEmail()
             invitationLink <- getAgentLink(agent.arn, Some(personal))
+            services = basket.map(_.invitation.service)
             result <- createAndProcessInvitations(
-                       InvitationSentPersonal(invitationLink, None, agencyEmail),
+                       InvitationSentPersonal(invitationLink, None, agencyEmail, services),
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
                        createMultipleInvitations,
