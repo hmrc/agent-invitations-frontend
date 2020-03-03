@@ -236,35 +236,49 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "InvitationSentPersonal" in {
-        Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(
+        Json.toJson(InvitationSentPersonal(
+          "invitation/link",
+          Some("continue/url"),
+          "abc@xyz.com",
+          Set(HMRCMTDIT, HMRCPIR))) shouldBe Json.obj(
           "state" -> "InvitationSentPersonal",
-          "properties" -> Json
-            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com")
-        )
-        Json
-          .parse(
-            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com"}}""")
-          .as[State] shouldBe InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com")
-      }
-
-      "InvitationSentBusiness" in {
-        Json.toJson(InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com")) shouldBe Json.obj(
-          "state" -> "InvitationSentBusiness",
           "properties" -> Json
             .obj(
               "invitationLink" -> "invitation/link",
               "continueUrl"    -> "continue/url",
               "agencyEmail"    -> "abc@xyz.com",
-              "service"        -> "HMRC-MTD-VAT")
+              "services"       -> Json.arr("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD")
+            )
         )
         Json
           .parse(
-            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "service": "HMRC-MTD-VAT"}}""")
+            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "services": ["HMRC-MTD-IT", "PERSONAL-INCOME-RECORD"]}}""")
+          .as[State] shouldBe InvitationSentPersonal(
+          "invitation/link",
+          Some("continue/url"),
+          "abc@xyz.com",
+          Set(HMRCMTDIT, HMRCPIR))
+      }
+
+      "InvitationSentBusiness" in {
+        Json.toJson(InvitationSentBusiness("invitation/link", Some("continue/url"), "abc@xyz.com", Set(HMRCMTDVAT))) shouldBe Json
+          .obj(
+            "state" -> "InvitationSentBusiness",
+            "properties" -> Json
+              .obj(
+                "invitationLink" -> "invitation/link",
+                "continueUrl"    -> "continue/url",
+                "agencyEmail"    -> "abc@xyz.com",
+                "services"       -> Json.arr("HMRC-MTD-VAT"))
+          )
+        Json
+          .parse(
+            """{"state":"InvitationSentBusiness", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "services": ["HMRC-MTD-VAT"]}}""")
           .as[State] shouldBe InvitationSentBusiness(
           "invitation/link",
           Some("continue/url"),
           "abc@xyz.com",
-          "HMRC-MTD-VAT")
+          Set("HMRC-MTD-VAT"))
       }
 
       "KnownFactNotMatched" in {

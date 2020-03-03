@@ -602,7 +602,7 @@ class AgentInvitationJourneyController @Inject()(
           DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
           DeleteAuthorisationForm))
 
-    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
+    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services) =>
       Ok(
         invitationSentView(
           InvitationSentPageConfig(
@@ -611,9 +611,10 @@ class AgentInvitationJourneyController @Inject()(
             continueUrl.isDefined,
             ClientType.fromEnum(personal),
             inferredExpiryDate,
-            agencyEmail)))
+            agencyEmail,
+            services)))
 
-    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, service) =>
+    case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, services) =>
       Ok(
         invitationSentView(
           InvitationSentPageConfig(
@@ -623,7 +624,8 @@ class AgentInvitationJourneyController @Inject()(
             ClientType.fromEnum(business),
             inferredExpiryDate,
             agencyEmail,
-            service)))
+            services,
+            services.head)))
 
     case KnownFactNotMatched(basket) =>
       Ok(

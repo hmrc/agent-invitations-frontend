@@ -572,7 +572,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           isDeAuth = false
         ))
 
-    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail) =>
+    case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, service) =>
       Ok(
         invitationSentView(
           InvitationSentPageConfig(
@@ -581,7 +581,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             continueUrl.isDefined,
             ClientType.fromEnum(personal),
             inferredExpiryDate,
-            agencyEmail)))
+            agencyEmail,
+            Set(service))))
 
     case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, service) =>
       Ok(
@@ -593,6 +594,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ClientType.fromEnum(business),
             inferredExpiryDate,
             agencyEmail,
+            Set(service),
             service)))
 
     case KnownFactNotMatched(_, _, _) =>
