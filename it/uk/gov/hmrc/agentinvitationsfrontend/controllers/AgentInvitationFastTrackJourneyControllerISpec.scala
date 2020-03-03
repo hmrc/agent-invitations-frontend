@@ -1485,7 +1485,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the invitation sent page for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
-        InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com"),
+        InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com", HMRCMTDIT),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)

@@ -168,7 +168,11 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
       trustName: String)
         extends State
 
-    case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String)
+    case class InvitationSentPersonal(
+      invitationLink: String,
+      continueUrl: Option[String],
+      agencyEmail: String,
+      service: String)
         extends State
 
     case class InvitationSentBusiness(
@@ -316,7 +320,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel {
                            invitationLink <- getAgentLink(arn, fastTrackRequest.clientType)
                            result <- fastTrackRequest.clientType match {
                                       case Some(ClientType.personal) =>
-                                        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail))
+                                        goto(
+                                          InvitationSentPersonal(
+                                            invitationLink,
+                                            continueUrl,
+                                            agencyEmail,
+                                            fastTrackRequest.service))
                                       case Some(ClientType.business) =>
                                         goto(
                                           InvitationSentBusiness(

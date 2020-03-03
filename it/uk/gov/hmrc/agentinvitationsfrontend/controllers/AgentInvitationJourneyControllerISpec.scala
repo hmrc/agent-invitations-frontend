@@ -85,7 +85,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType and there are breadcrumbs" in {
         journeyState.set(
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
         )
 
         behave like itShowsClientTypePage(
@@ -93,7 +93,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
         )
       }
 
@@ -1475,7 +1475,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
       journeyState.get should have[State](
-        InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com"))
+        InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com", Set.empty))
     }
 
     "redirect to select-service when yes is selected" in {
@@ -1550,7 +1550,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the invitation sent page for a personal service" in {
       journeyState.set(
-        InvitationSentPersonal("invitation/link", None, "abc@xyz.com"),
+        InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
         List(
           ReviewAuthorisationsPersonal(availableServices, Set.empty),
           ConfirmClientItsa(
@@ -1575,12 +1575,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
     }
 
     "show the invitation sent page for a business service" in {
       journeyState.set(
-        InvitationSentBusiness("invitation/link", None, "abc@xyz.com"),
+        InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)),
         List(
           ConfirmClientBusinessVat(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)))),
@@ -1603,7 +1603,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      journeyState.get should have[State](InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
+      journeyState.get should have[State](InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)))
     }
   }
 
@@ -1752,7 +1752,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
-      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com"))
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
     }
   }
 
