@@ -119,7 +119,10 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          getAgencyName(r.arn).flatMap { name =>
                            goto(WarmUp(clientType, uid, r.arn, name, normalisedAgentName))
                          }
-                       case _ => goto(NotFoundInvitation)
+                       case _ =>
+                         Logger.warn(
+                           s"No agent reference record found matching uid: $uid and agent name: $normalisedAgentName")
+                         goto(NotFoundInvitation)
                      }
           } yield result
       }
@@ -156,15 +159,23 @@ object ClientInvitationJourneyModel extends JourneyModel {
       Transition {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           getInvitationDetails(uid).flatMap { invitationDetails =>
-            if (invitationDetails.isEmpty)
-              goto(ActionNeeded(clientType))
-            else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected))
-              goto(InvitationAlreadyResponded)
-            else if (invitationDetails.forall(_.status == Cancelled))
-              goto(AllRequestsCancelled)
-            else if (invitationDetails.forall(_.status == Expired))
-              goto(AllRequestsExpired)
-            else {
+            if (invitationDetails.isEmpty) {
+              Logger.warn(s"no invitation found for uid: $uid")
+              //goto(ActionNeeded(clientType))
+              goto(NotFoundInvitation)
+            } else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected)) {
+              Logger.warn(s"InvitationAlreadyResponded (either Accepted or Rejected) for uid: $uid")
+              //goto(InvitationAlreadyResponded)
+              goto(NotFoundInvitation)
+            } else if (invitationDetails.forall(_.status == Cancelled)) {
+              Logger.warn(s"Invitation Cancelled for uid: $uid")
+              //goto(AllRequestsCancelled)
+              goto(NotFoundInvitation)
+            } else if (invitationDetails.forall(_.status == Expired)) {
+              Logger.warn(s"Invitation Expired for uid: $uid")
+              //goto(AllRequestsExpired)
+              goto(NotFoundInvitation)
+            } else {
               val consents: Seq[ClientConsent] =
                 getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid)
 
@@ -194,7 +205,10 @@ object ClientInvitationJourneyModel extends JourneyModel {
                       }
                     }
                   case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
-                  case _                      => goto(CannotViewRequest)
+                  case _ =>
+                    Logger.warn(s"No pending invitations are found for uid: $uid")
+                    // goto(CannotViewRequest)
+                    goto(NotFoundInvitation)
                 }
               }
             }
