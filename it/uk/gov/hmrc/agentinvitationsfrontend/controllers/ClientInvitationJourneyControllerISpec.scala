@@ -57,10 +57,18 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
+
       "work when not signed in" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
         checkWarmUpPageIsShown(result)
+      }
+
+      "redirect to /not-found if the url is corrupted" in new Setup {
+        val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
+        val result = controller.warmUp("personal", uid, "wrong-agency-name")(reqWithJourneyId)
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
       def checkWarmUpPageIsShown(result: Result) {
@@ -137,49 +145,49 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
       }
 
-      "redirect to action needed if there are no invitations found" in {
+      "redirect to /not-found if there are no invitations found" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showActionNeeded().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
-      "redirect to already responded if the invitation has status of Accepted or Rejected" in {
+      "redirect to /not-found if the invitation has status of Accepted or Rejected" in {
         givenAllInvitationIdsByStatus(uid, "Accepted")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationAlreadyResponded().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
-      "redirect to request cancelled if the invitation has status of Cancelled" in {
+      "redirect to /not-found if the invitation has status of Cancelled" in {
         givenAllInvitationIdsByStatus(uid, "Cancelled")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showRequestCancelled().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
-      "redirect to request expired if the invitation has status of Expired" in {
+      "redirect to /not-found if the invitation has status of Expired" in {
         givenAllInvitationIdsByStatus(uid, "Expired")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showRequestExpired().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
-      "redirect to cannot view request if the invitation has mixed statuses, none of which are Pending" in {
+      "redirect to /not-found if the invitation has mixed statuses, none of which are Pending" in {
         givenAllInvitationIdsWithMixedStatus(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCannotViewRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -284,13 +292,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
       }
 
-      "redirect to action needed" in {
+      "redirect to /not-found" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showActionNeeded().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
       }
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
