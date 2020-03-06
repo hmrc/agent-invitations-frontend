@@ -52,19 +52,20 @@
 
     <div class="panel panel-border-wide margin-bottom-40"><span>@Messages(s"identify-cgt-client.p2")</span></div>
 
-    <p>@Html(Messages("identify-cgt-client.p3"))</p>
+    <label for="cgtRef" class="soft--ends margin-bottom-10">@Html(Messages("identify-cgt-client.p3"))</label>
 
     <span class="form-hint margin-bottom-0">@Html(Messages("identify-cgt-client.hint"))</span>
 
     @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
+        <div class="form-group margin-top-20 @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error}">
 
-        <div class="form-group margin-top-20">
-        @uiInput(
-            cgtClientForm("cgtRef"),
-            '_inputClass -> "form-control",
-            '_labelClass -> "soft--ends"
-        )
-        </div>
+        @if(cgtClientForm.error("cgtRef").isDefined){
+            <span class="error-notification" role="tooltip" data-journey="search-page:error:cgtRef">
+                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages("error.cgt.required")</span>
+
+        }
+            <input type="text" class="form-control" id="cgtRef" name="cgtRef" value="" aria-invalid="true">
+            </div>
 
         <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

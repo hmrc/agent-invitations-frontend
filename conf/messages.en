@@ -516,6 +516,8 @@ confirm-terms.radio2=No
 confirm-terms.multi.heading=We need your consent to share information
 confirm-terms.multi-individual.heading=Change your consent
 confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
+confirm-terms.legend.multi=Select the services for which you consent to HMRC sharing your information with {0}
+confirm-terms.legend.single=Select if you consent to HMRC sharing your information with {0}
 
 confirm-terms-multi.itsa.heading=Send my Income Tax updates through software
 confirm-terms-multi.itsa.p1=I consent to HMRC sharing the following information with {0}, so this agent can send my Income Tax updates through software:

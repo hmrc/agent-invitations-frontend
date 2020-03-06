@@ -137,10 +137,6 @@
     @if(confirmTermsForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), confirmTermsForm, Seq.empty, Some("confirmTerms"))
     }
-
-      @uiFormHelper(pageConfig.submitUrl) {
-        <fieldset>
-            <legend>
                 <h1 class="heading-xlarge margin-bottom-20">@{if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl.url)){
                     Messages("confirm-terms.multi-individual.heading")
                 }else {
@@ -151,7 +147,15 @@
                 <p>@Html(Messages("confirm-terms.subheading2.p1", externalUrls.agentClientManagementUrl))</p>
 
                 <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
+
+    @uiFormHelper(pageConfig.submitUrl) {
+        <fieldset>
+            <legend class="visuallyhidden">
+                @if(pageConfig.isSingleConsent)@{Messages("confirm-terms.legend.single",pageConfig.agencyName)} else{
+                @Messages("confirm-terms.legend.multi",pageConfig.agencyName)
+                }
             </legend>
+
                 @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
 
                     @if(pageConfig.isPending(consent)) {

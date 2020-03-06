@@ -37,7 +37,7 @@
          <p class="transaction-banner__heading">@{LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM YYYY").withZone(ZoneOffset.UTC))}</p>
      </div>
 
-    <h3 class="heading-medium">@Messages("cancel-authorisation.cancelled.subheader")</h3>
+    <h2 class="heading-medium">@Messages("cancel-authorisation.cancelled.subheader")</h2>
     <p>@Html(Messages(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
 
     <p>

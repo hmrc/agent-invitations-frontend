@@ -393,7 +393,25 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.legend.single", "My Agency"))
     }
+
+    "display the correct legend message when there are multiple invitations" in {
+      journeyState.set(
+        MultiConsent(
+          personal,
+          uid,
+          "My Agency",
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true),
+            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
+        Nil)
+
+      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.legend.multi", "My Agency"))
+    }
+
 
     "display the multi consent page for cgt business" in {
       journeyState.set(

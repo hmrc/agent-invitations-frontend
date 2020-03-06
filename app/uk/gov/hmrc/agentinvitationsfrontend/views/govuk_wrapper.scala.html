@@ -131,13 +131,6 @@
             Sign out</a>
     }
     </li>
-@if(appConfig.languageToggle && isAgent){
-    <div class="text--right">@views.html.language_selection(
-        appConfig.languageMap,
-        appConfig.routeToSwitchLanguage,
-        customClass = Some("welsh-toggle")
-    )</div>
-}
 
 
 }
@@ -185,12 +178,12 @@
 }
 
 @mainContentHeader = {
-@if(appConfig.languageToggle && !isAgent){
-    <div class="text--right">@views.html.language_selection(
+@if(appConfig.languageToggle){
+    <li style="list-style: none;" class="text--right">@views.html.language_selection(
         appConfig.languageMap,
         appConfig.routeToSwitchLanguage,
         customClass = None
-    )</div>
+    )</li>
 }
 }
 

@@ -50,12 +50,13 @@ action = config.submitCall,
 'class -> "form js-form") {
 
 <div class="form-group">
+    <h1 class="heading-xlarge margin-bottom-30">@config.selectHeaderMessage</h1>
+    <div class="panel panel-border-wide margin-bottom-40"><span>@Messages("select-service.p1")</span></div>
+
     @uiInputRadioGroup(
     agentInvitationsForm("serviceType"),
     config.availableServices,
-    '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ config.selectHeaderMessage + """</h1>""" +
-    """<div class="panel panel-border-wide margin-bottom-40"><span>""" + Messages("select-service.p1") + """</span></div>""" +
-    """<span class="form-hint">""" + Messages("select-service.hint") + """</span>"""),
+        '_legend -> Html("""<span class="form-hint">"""+ Messages("select-service.hint") + """</span>"""),
     '_groupDivClass -> "form-group soft--ends",
     '_fieldsetAttributes -> Html("""id='service'"""),
     '_legendClass -> "margin-bottom-10"
