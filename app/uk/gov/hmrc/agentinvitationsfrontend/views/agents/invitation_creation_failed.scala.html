@@ -36,7 +36,7 @@
 
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
 
     <h1 class="heading-xlarge">@Messages("create-auth-failed.header")</h1>
 

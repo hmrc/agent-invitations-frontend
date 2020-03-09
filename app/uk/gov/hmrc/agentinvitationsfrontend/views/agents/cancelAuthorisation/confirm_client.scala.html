@@ -34,8 +34,8 @@
 @(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @clientIdentifierText = @{clientIdType match {
-                            case "utr"      => s"Unique Taxpayer Reference: $clientIdentifier"
-                            case "CGTPDRef" => s"Capital Gains Tax (CGT) account reference: $clientIdentifier"
+                            case "utr"      => s"${Messages("cancel-authorisation.utr", clientIdentifier)}"
+                            case "CGTPDRef" => s"${Messages("cancel-authorisation.cgt.account-ref", clientIdentifier)}"
                             case _      => ""
                            }
                          }

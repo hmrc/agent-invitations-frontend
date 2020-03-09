@@ -38,7 +38,7 @@
     <span class="form-hint margin-bottom-10">@Messages(s"delete.subheading.${config.clientDetail.invitation.service}")</span>
 }
 
-@mainTemplate(title = Messages("generic.title", Messages(s"delete.heading", "Your client"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"delete.heading", Messages("delete.client")), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
 
     @back_link_referer(request)
 

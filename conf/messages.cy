@@ -285,6 +285,8 @@ cancel-authorisation.confirm-client.header=Ai hwn yw’r cleient yr hoffech gans
 cancel-authorisation.confirm-client.yes=Iawn – hwn yw’r cleient
 cancel-authorisation.confirm-client.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
+cancel-authorisation.utr=Cyfeirnod Unigryw y Trethdalwr: {0}
+cancel-authorisation.cgt.account-ref=Cyfeirnod cyfrif Treth Enillion Cyfalaf: {0}
 
 cancel-authorisation.confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r awdurdodiad hwn?
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu anfon diweddariadau Treth Incwm drwy feddalwedd ar gyfer {0}.
@@ -340,6 +342,7 @@ delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er m
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 delete.radio-yes=Iawn
 delete.radio-no=Na
+delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 
 #Known fact
