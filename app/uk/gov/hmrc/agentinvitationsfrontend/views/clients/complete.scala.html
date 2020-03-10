@@ -26,6 +26,8 @@
 @(config: CompletePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @gaCalls(analyticsHost: String, token: String) = {
+    ga('create', '@token', '@analyticsHost');
+
     @for(consent <- config.consents) {
         if(@consent.consent) {
             ga('send', 'event', 'invitation', 'accepted', '@consent.service');
