@@ -28,6 +28,8 @@
 @(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @gaCalls(analyticsHost: String, token: String) = {
+    ga('create', '@token', '@analyticsHost');
+    
     @for(service <- config.services) {
         ga('send', 'event', 'invitation', 'sent', '@service');
     }
