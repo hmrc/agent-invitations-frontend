@@ -43,4 +43,6 @@ case class ConfirmTermsPageConfig(
 
   def isPending(consent: ClientConsent): Boolean =
     if (consent.expiryDate.isBefore(LocalDate.now())) false else true
+
+  val isSingleConsent = consentSeq.size == 1
 }
