@@ -519,6 +519,8 @@ confirm-terms.radio2=Na
 confirm-terms.multi.heading=Mae angen eich caniatâd arnom i rannu gwybodaeth
 confirm-terms.multi-individual.heading=Newid eich caniatâd
 confirm-terms.multi.p1=Mae rhoi’ch caniatâd yn golygu y bydd modd i gyflogeion {0} gael mynediad at eich data. Bydd hyn y para hyd nes eich bod yn dileu ei awdurdodiad i weithredu ar eich rhan.
+confirm-terms.legend.multi=
+confirm-terms.legend.single=
 
 confirm-terms-multi.itsa.heading=Anfon fy niweddariadau Treth Incwm drwy feddalwedd
 confirm-terms-multi.itsa.p1=Rwy’n rhoi fy nghaniatâd i CThEM rannu’r wybodaeth ganlynol gyda {0}, er mwyn i’r asiant hwn allu anfon fy niweddariadau Treth Incwm drwy feddalwedd:
