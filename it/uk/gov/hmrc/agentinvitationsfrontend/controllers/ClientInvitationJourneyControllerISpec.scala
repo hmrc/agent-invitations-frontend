@@ -64,11 +64,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         checkWarmUpPageIsShown(result)
       }
 
-      "redirect to /not-found if the url is corrupted" in new Setup {
+      "show not-found content on the same page if the url is corrupted" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "wrong-agency-name")(reqWithJourneyId)
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        status(result) shouldBe 200
+
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
+        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
       }
 
       def checkWarmUpPageIsShown(result: Result) {

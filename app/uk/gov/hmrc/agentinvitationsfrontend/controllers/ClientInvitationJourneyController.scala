@@ -129,15 +129,7 @@ class ClientInvitationJourneyController @Inject()(
           apply(
             Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(
               invitationsService.getAgencyName),
-            stateAndBreadCrumbs =>
-              stateAndBreadCrumbs._1 match {
-                case NotFoundInvitation =>
-                  request =>
-                    Results.Redirect(getCallFor(stateAndBreadCrumbs._1)(request))
-                case _ =>
-                  request =>
-                    renderState(stateAndBreadCrumbs._1, stateAndBreadCrumbs._2, None)(request)
-            }
+            display
           )
       }
     }

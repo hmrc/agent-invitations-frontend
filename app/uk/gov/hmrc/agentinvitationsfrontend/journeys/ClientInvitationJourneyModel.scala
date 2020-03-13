@@ -160,7 +160,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty) {
-              Logger.warn(s"no invitation found for uid: $uid")
+              Logger.warn(s"no invitations returned for uid: $uid, probably client not signed up ?")
               //goto(ActionNeeded(clientType))
               goto(NotFoundInvitation)
             } else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected)) {
