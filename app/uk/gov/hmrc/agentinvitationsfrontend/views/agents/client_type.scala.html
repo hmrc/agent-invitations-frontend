@@ -40,6 +40,8 @@
         @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))
     }
 
+    <h1 class="heading-xlarge margin-bottom-20">@Messages("client-type.header")</h1>
+
     @uiFormHelper(
         action = config.submitCall,
         'class -> "form js-form") {
@@ -47,8 +49,8 @@
         @uiInputRadioGroup(
             agentInvitationsForm("clientType"),
             config.clientTypes,
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("client-type.header") + """</h1>""" +
-                """<p>""" + Messages("client-type.p1") + """</p> """),
+            '_legend -> Html(Messages("client-type.p1")),
+            '_legendClass -> "margin-bottom-20",
             '_groupDivClass -> "form-group soft--ends margin-bottom-10",
             '_fieldsetAttributes -> Html("""id='clientType'""")
     )

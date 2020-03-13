@@ -131,8 +131,6 @@
             Sign out</a>
     }
     </li>
-
-
 }
 
 
@@ -179,12 +177,13 @@
 
 @mainContentHeader = {
 @if(appConfig.languageToggle){
-    <li style="list-style: none;" class="text--right">@views.html.language_selection(
+    <div style="list-style: none;" class="text--right">@views.html.language_selection(
         appConfig.languageMap,
         appConfig.routeToSwitchLanguage,
         customClass = None
-    )</li>
+    )</div>
 }
+
 }
 
 @if(contentHeader.isDefined) {
