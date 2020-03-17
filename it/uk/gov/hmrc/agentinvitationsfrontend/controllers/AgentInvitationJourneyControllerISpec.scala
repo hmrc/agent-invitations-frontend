@@ -1575,6 +1575,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
+      checkInviteSentPageContainsSurveyLink(result, true)
+
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
     }
 
@@ -1602,6 +1604,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
         )
       )
+
+      checkInviteSentPageContainsSurveyLink(result, true)
 
       journeyState.get should have[State](InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)))
     }
