@@ -34,12 +34,11 @@ abstract class BaseISpec
   override implicit lazy val app: Application = appBuilder.build()
 
   val pdvFrontendUrl = "http://localhost:9968"
-  val companyAuthUrl = "https://company-auth-url"
-  val companyAuthSignOutPath = "/sign-out-path"
+  val companyAuthUrl = "http://localhost:9025"
+  val companyAuthSignOutPath = "/gg/sign-out"
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
-  val agentFeedbackSurveyURNWithOriginToken = "/feedback-survey/?origin=INVITAGENT"
   val pdvBaseUrl = "/pdv-base-url"
 
   val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
@@ -156,10 +155,10 @@ abstract class BaseISpec
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
     HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
-  def checkInviteSentExitSurveyAgentSignOutLink(result: Future[Result]): Unit = {
+  def checkInviteSentPageContainsSurveyLink(result: Future[Result], isAgent: Boolean): Unit = {
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    val continueUrl = URLEncoder.encode(agentFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, continueUrl)
+    val service = if(isAgent) "INVITAGENT" else "INVITCLIENT"
+    checkHtmlResultWithBodyText(result, s"http://localhost:9025/gg/sign-out?continue=http%3A%2F%2Flocalhost%3A9514%2Ffeedback%2F$service")
   }
 
   def checkResultContainsLink(
@@ -226,12 +225,6 @@ abstract class BaseISpec
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
     checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
-  }
-
-  def checkExitSurveyAfterInviteResponseSignOutUrl(result: Future[Result]): Unit = {
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
-    val continueUrl = URLEncoder.encode(clientFeedbackSurveyURNWithOriginToken, StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, continueUrl)
   }
 
   def verifyAgentClientInvitationSubmittedEvent(

@@ -60,10 +60,11 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
   val pdvFrontendExternalUrl: String = getConfString("personal-details-validation-frontend.external-url")
-  val feedbackSurveyFrontendExternalUrl: String = getConfString("feedback-survey-frontend.external-url")
-  val feedbackSurveyOriginToken: String = servicesConfig.getString("survey.feedbackSurveyURNWithoutOriginToken")
-  val feedbackSurveyagentIdentifier: String = servicesConfig.getString("survey.originTokenIdentifier.agent")
-  val feedbackSurveyClientIdentifier: String = servicesConfig.getString("survey.originTokenIdentifier.client")
+
+  val feedbackSurveyUrl: String = getConfString("feedback-frontend.external-url")
+  val agentOriginToken = "INVITAGENT"
+  val clientOriginToken = "INVITCLIENT"
+
   val countryListLocation: String = servicesConfig.getString("country.list.location")
 
   val invitationExpirationDuration: Duration = servicesConfig.getDuration("invitation.expiryDuration")

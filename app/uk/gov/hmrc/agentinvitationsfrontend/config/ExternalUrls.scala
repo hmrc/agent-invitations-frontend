@@ -29,10 +29,9 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val businessTaxAccountUrl = appConfig.btaExternalUrl
   val agentServicesAccountUrl = s"${appConfig.asaFrontendExternalUrl}/agent-services-account/home"
   val contactFrontendUrl = appConfig.contactFrontendExternalUrl
-  val exitSurveyUrl = appConfig.feedbackSurveyFrontendExternalUrl
-  val invitationExitSurvey = appConfig.feedbackSurveyOriginToken
-  val agentOriginTokenIdentifier = appConfig.feedbackSurveyagentIdentifier
-  val clientOriginTokenIdentifier = appConfig.feedbackSurveyClientIdentifier
+  val exitSurveyUrl = appConfig.feedbackSurveyUrl
+  val agentOriginToken = appConfig.agentOriginToken
+  val clientOriginToken = appConfig.clientOriginToken
 
   val pdvFrontendUrl = appConfig.pdvFrontendExternalUrl
   val subscriptionURL = appConfig.agentSubscriptionFrontendExternalUrl
@@ -50,17 +49,17 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
 
   private def contactFrontendServiceId(isAgent: Boolean) =
-    if (isAgent) agentOriginTokenIdentifier else clientOriginTokenIdentifier
+    if (isAgent) agentOriginToken else clientOriginToken
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
     val continueUrl = if (isAgent) {
-      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$agentOriginTokenIdentifier"
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$agentOriginToken"
       else agentServicesAccountUrl
     } else {
-      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl$invitationExitSurvey$clientOriginTokenIdentifier"
+      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$clientOriginToken"
       else s"$businessTaxAccountUrl/business-account"
     }
-    s"$companyAuthUrl$companyAuthSignOutPath?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
+    s"$companyAuthFrontendSignOutUrl?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
 
   def contactFrontendAjaxUrl(isAgent: Boolean): String =

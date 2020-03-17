@@ -37,7 +37,7 @@
     else config.expiryDateAsLocalDate.toString("dd MMMM yyyy", messages.lang.locale)
 }
 
-@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some("InviteSent")) {
+@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some(true)) {
 
     @back_link_referer(request)
 
