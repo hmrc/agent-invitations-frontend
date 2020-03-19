@@ -41,8 +41,6 @@ trait TestDataCommonSupport {
   val fromManual: Boolean = false
   val invalidInvitationId = InvitationId("ZTSF4OW9CCRPT")
 
-  val clientFeedbackSurveyURNWithOriginToken = "feedback-survey/?origin=INVITCLIENT"
-
   val hash = "12345678"
 
   val validUtr = Utr("4937455253")
