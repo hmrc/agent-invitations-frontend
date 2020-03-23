@@ -26,8 +26,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(agentInvitationsForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -49,19 +48,17 @@
 action = config.submitCall,
 'class -> "form js-form") {
 
-<div class="form-group">
-    <h1 class="heading-xlarge margin-bottom-30">@config.selectHeaderMessage</h1>
-    <div class="panel panel-border-wide margin-bottom-40"><span>@Messages("select-service.p1")</span></div>
-
-    @uiInputRadioGroup(
-    agentInvitationsForm("serviceType"),
-    config.availableServices,
-        '_legend -> Html("""<span class="form-hint">"""+ Messages("select-service.hint") + """</span>"""),
-    '_groupDivClass -> "form-group soft--ends",
+    @uiInputRadioGroupCustom(
+        agentInvitationsForm("serviceType"),
+        config.availableServices,
+    '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-30">${config.selectHeaderMessage}</h1>"""),
+    '_inputHint -> Messages("select-service.p1"),
+    '_inputHintClass -> "panel panel-border-wide margin-bottom-40",
+    '_fieldsetDiv -> Messages("select-service.hint"),
+    '_fieldsetDivClass -> "form-hint  margin-bottom-10",
     '_fieldsetAttributes -> Html("""id='serviceType'"""),
-    '_legendClass -> "margin-bottom-10"
+    '_groupDivClass -> "form-group soft--ends"
     )
-</div>
 
 <details id="selectServiceHelper">
     <summary id="selectServiceSummary">

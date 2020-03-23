@@ -27,8 +27,6 @@
 
 @(service: String, clientName: String, agencyName: String, agentServicesAccountUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
-        """<p>""" + Messages(s"confirm-cancel.subheader.$service") + """</p>"""}
 
 @mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 

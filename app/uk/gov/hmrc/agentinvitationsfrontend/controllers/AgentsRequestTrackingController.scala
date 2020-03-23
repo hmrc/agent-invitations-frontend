@@ -155,9 +155,13 @@ class AgentsRequestTrackingController @Inject()(
 
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      val service = request.session.get("service").getOrElse("")
-      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-      Future successful Ok(confirmCancelView(service, clientType, confirmCancelForm))
+      request.session.get("service") match {
+        case Some(service) => {
+          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+          Future successful Ok(confirmCancelView(service, clientType, confirmCancelForm))
+        }
+        case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
+      }
     }
   }
 
@@ -167,30 +171,33 @@ class AgentsRequestTrackingController @Inject()(
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         case Some(id) =>
           val invitationId = InvitationId(id)
-          val service = Services.determineServiceMessageKey(invitationId)
-          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-          confirmCancelForm
-            .bindFromRequest()
-            .fold(
-              formWithErrors => {
-                Future successful Ok(confirmCancelView(service, clientType, formWithErrors))
-              },
-              data => {
-                if (data.value.getOrElse(true)) {
-                  acaConnector
-                    .cancelInvitation(agent.arn, invitationId)
-                    .map {
-                      case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
-                      case Some(false) => NotFound
-                      case _           => Forbidden
+          request.session.get("service") match {
+            case Some(service) => {
+              val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+              confirmCancelForm
+                .bindFromRequest()
+                .fold(
+                  formWithErrors => {
+                    Future successful Ok(confirmCancelView(service, clientType, formWithErrors))
+                  },
+                  data => {
+                    if (data.value.getOrElse(true)) {
+                      acaConnector
+                        .cancelInvitation(agent.arn, invitationId)
+                        .map {
+                          case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
+                          case Some(false) => NotFound
+                          case _           => Forbidden
+                        }
+                    } else {
+                      Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
                     }
-                } else {
-                  Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
-                }
-              }
-            )
+                  }
+                )
+            }
+            case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
+          }
       }
-
     }
   }
 

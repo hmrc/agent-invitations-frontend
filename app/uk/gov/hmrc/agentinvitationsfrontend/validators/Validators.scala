@@ -91,10 +91,8 @@ object Validators {
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
       vatRegistrationDate => validateDate(vatRegistrationDate))
 
-  def validNino(
-    nonEmptyFailure: String = "error.nino.required",
-    invalidFailure: String = "enter-nino.invalid-format"): Constraint[String] =
-    ValidateHelper.validateField(nonEmptyFailure, invalidFailure)(nino => Nino.isValid(nino))
+  val validNino: Constraint[String] =
+    ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
 
   def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
 

@@ -127,6 +127,11 @@ caption.caption-normal {
     border: 0;
 }
 
+.error-container {
+    padding-top: 0;
+    padding-bottom: 0
+}
+
 /*IE10 Fix for DetailsPloyFill*/
 .no-details details summary .arrow-open,
 .no-details details summary .arrow-closed {

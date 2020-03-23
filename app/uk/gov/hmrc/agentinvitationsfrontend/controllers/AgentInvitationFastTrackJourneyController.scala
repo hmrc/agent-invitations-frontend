@@ -710,7 +710,7 @@ object AgentInvitationFastTrackJourneyController {
 
   def IdentifyItsaClientForm: Form[ItsaClient] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
       "postcode"         -> postcodeMapping
     )(ItsaClient.apply)(ItsaClient.unapply)
   )
@@ -730,7 +730,7 @@ object AgentInvitationFastTrackJourneyController {
 
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
       "dob"              -> dateOfBirthMapping
     )(IrvClient.apply)(IrvClient.unapply)
   )

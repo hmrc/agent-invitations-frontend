@@ -26,9 +26,7 @@
     mainTemplate: main_template,
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 @(agentInvitationsForm : Form[ItsaClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -50,32 +48,27 @@
 
  @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
-     <div class="form-group">
-     @uiInput(
-         agentInvitationsForm("clientIdentifier"),
-         '_label -> Messages("identify-client.nino.label"),
-         '_inputClass -> "form-control",
-         '_labelTextClass -> "form-label",
-         '_inputHint -> Messages("identify-client.nino.hint"),
-         '_labelClass -> "soft--ends"
-     )
+
+     <div class="form-group @if(agentInvitationsForm.hasErrors){form-field--error}">
+         <label class="form-label soft--ends @if(agentInvitationsForm.hasErrors){push--top}" for="clientIdentifier">@Messages("identify-client.nino.label")</label>
+         <span class="form-hint">@Messages("identify-client.nino.hint")</span>
+         @agentInvitationsForm.error("clientIdentifier").map{formError => <span class="error-message"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>}
+         <input class="form-control" name="clientIdentifier" id="clientIdentifier" type="text">
+
      </div>
 
-         <div class="form-group">
-         @uiInput(
-             agentInvitationsForm("postcode"),
-             '_label -> Messages("identify-client.postcode.label"),
-             '_inputClass -> "form-control",
-             '_labelTextClass -> "form-label",
-             '_inputHint -> Messages("identify-client.postcode.hint"),
-             '_labelClass -> "soft--ends"
-         )
-         </div>
+     <div class="form-group @if(agentInvitationsForm.hasErrors){form-field--error}">
+         <label class="form-label soft--ends" for="postcode">@Messages("identify-client.postcode.label")</label>
+         <span class="form-hint">@Messages("identify-client.postcode.hint")</span>
+         @agentInvitationsForm.error("postcode").map{formError => <span class="error-message"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>}
+         <input class="form-control" name="postcode" id="postcode" type="text">
+     </div>
 
-     <div class="form-group">
+
+
+     <div class="form-group margin-top-30">
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
      </div>
  }
-
 
  }

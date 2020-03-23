@@ -25,7 +25,7 @@ object ItsaClientForm {
 
   def form: Form[ItsaClient] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
       "postcode"         -> postcodeMapping
     )(ItsaClient.apply)(ItsaClient.unapply)
   )

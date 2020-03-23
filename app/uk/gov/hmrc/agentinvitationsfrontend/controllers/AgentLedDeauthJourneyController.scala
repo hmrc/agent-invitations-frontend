@@ -310,7 +310,7 @@ class AgentLedDeauthJourneyController @Inject()(
         case HMRCMTDIT =>
           Ok(
             identifyClientItsaView(
-              ItsaClientForm.form,
+              formWithErrors.or(ItsaClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
@@ -318,7 +318,7 @@ class AgentLedDeauthJourneyController @Inject()(
         case HMRCPIR =>
           Ok(
             identifyClientIrvView(
-              IrvClientForm.form,
+              formWithErrors.or(IrvClientForm.form),
               routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true

@@ -28,8 +28,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -43,19 +42,19 @@
     }
 
     @uiFormHelper(action = config.submitCall,'class -> "form js-form") {
-        <div class="form-group">
-            @uiInputRadioGroup(
+
+        @uiInputRadioGroupCustom(
             serviceTypeForm("serviceType"),
             config.enabledTrustServices,
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.trust-select-service.header") + """</h1>""" +
-            """<span class="form-hint">""" + Messages("cancel-authorisation.select-service.hint") + """</span>"""),
+        '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.trust-select-service.header") + """</h1>"""),
+        '_inputHint -> Messages("cancel-authorisation.select-service.hint"),
+        '_inputHintClass -> "form-hint",
             '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='service'"""),
+            '_fieldsetAttributes -> Html("""id='serviceType'"""),
             '_legendClass -> "margin-bottom-10"
-            )
-        </div>
+        )
 
-        <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
+        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
     }
 }
 

@@ -26,8 +26,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -47,16 +46,17 @@
   @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
 }
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-client.header")</h1>
-    <div class="panel panel-border-wide margin-bottom-40">
-        <span class="heading-medium">@clientName</span>@clientIdentifierText</div>
 
 @uiFormHelper(action = submitCall, 'class -> "form js-form") {
-    @uiInputRadioGroup(
+
+    @uiInputRadioGroupCustom(
         choiceForm("accepted"),
         Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
-        '_groupDivClass -> "form-group soft--ends",
-        '_fieldsetAttributes -> Html("""id='choice'""")
+    '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-client.header")}</h1>"""),
+    '_fieldsetDiv -> Html(s"""<span class="heading-medium">$clientName</span>$clientIdentifierText"""),
+    '_fieldsetDivClass -> "panel panel-border-wide margin-bottom-30",
+    '_groupDivClass -> "form-group soft--ends",
+    '_fieldsetAttributes -> Html("""id='accepted'""")
     )
 <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
 }

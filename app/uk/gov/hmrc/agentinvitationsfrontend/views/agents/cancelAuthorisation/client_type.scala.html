@@ -29,8 +29,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(agentForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -47,14 +46,14 @@
         action = config.submitCall,
         'class -> "form js-form") {
 
-        @uiInputRadioGroup(
+        @uiInputRadioGroupCustom(
             agentForm("clientType"),
             config.clientTypes,
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>""" +
-                """<p>""" + Messages("cancel-authorisation.client-type.p1") + """</p> """),
+            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>"""),
+            '_inputHint -> Messages("cancel-authorisation.client-type.p1"),
             '_groupDivClass -> "form-group soft--ends margin-bottom-10",
             '_fieldsetAttributes -> Html("""id='clientType'""")
-    )
+        )
 
     <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
     }

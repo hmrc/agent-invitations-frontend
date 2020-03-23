@@ -25,7 +25,7 @@ object IrvClientForm {
 
   def form: Form[IrvClient] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino()),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
       "dob"              -> dateOfBirthMapping
     )(IrvClient.apply)(IrvClient.unapply)
   )
