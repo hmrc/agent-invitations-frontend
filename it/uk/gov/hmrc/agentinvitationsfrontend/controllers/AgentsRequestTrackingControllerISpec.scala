@@ -310,7 +310,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
-            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
+            .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
           arn.value))
 
       status(result) shouldBe 303
@@ -330,13 +330,26 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       redirectLocation(result) shouldBe Some("/invitations/track")
     }
 
+    "redirect to track page when no service in the session" in {
+      givenCancelInvitationReturns(arn, invitationIdITSA, 204)
+      val result = postConfirmCancel(
+        authorisedAsValidAgent(
+          request
+            .withFormUrlEncodedBody("confirmCancel" -> "true")
+            .withSession("clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value),
+          arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/track")
+    }
+
     "NotFound when yes is selected on confirm cancel page, but cancellation fails because invitation is not found" in {
       givenCancelInvitationReturns(arn, invitationIdITSA, 404)
       val result = postConfirmCancel(
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
-            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
+            .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
           arn.value))
 
       status(result) shouldBe NOT_FOUND
@@ -348,7 +361,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
-            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
+            .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
           arn.value))
 
       status(result) shouldBe FORBIDDEN
@@ -370,7 +383,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = postConfirmCancel(
         authorisedAsValidAgent(
           request
-            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
+            .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
           arn.value))
 
       status(result) shouldBe 200

@@ -27,8 +27,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -48,14 +47,17 @@
 }
 
 @uiFormHelper(action = submitCall, 'class -> "form js-form") {
- @uiInputRadioGroup(
-  choiceForm("accepted"),
-  Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),
-  '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-client.header") +
-      s"""</h1><div class="panel panel-border-wide margin-bottom-40"><span class="heading-medium">$clientName</span>$clientIdentifierText</div>"""),
-  '_groupDivClass -> "form-group soft--ends",
-  '_fieldsetAttributes -> Html("""id='choice'""")
-  )
+
+    @uiInputRadioGroupCustom(
+        choiceForm("accepted"),
+        Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),
+        '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-client.header") + """</h1>"""),
+        '_fieldsetDiv -> Html(s"""<span class="heading-medium">$clientName</span>$clientIdentifierText"""),
+    '_fieldsetDivClass -> "panel panel-border-wide margin-bottom-40",
+        '_groupDivClass -> "form-group soft--ends",
+        '_fieldsetAttributes -> Html("""id='accepted'""")
+    )
+
   <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
  }
 }

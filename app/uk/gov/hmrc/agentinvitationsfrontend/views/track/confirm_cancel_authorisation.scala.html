@@ -31,8 +31,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -45,24 +44,22 @@
    @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
   }
 
-  <h1 class="heading-xlarge margin-bottom-20">@Messages("confirm-authorisation-cancelled.header")</h1>
-  <p>@Messages(s"confirm-authorisation-cancelled.p1.$service")</p>
-
 
   @uiFormHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
-    <div class="govuk-radios--inline">
-     @uiInputRadioGroup(
-      confirmForm("confirmCancelAuthorisation"),
-      Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
-        '_legend -> Html("""<p class="panel panel-border-wide">""" + Messages("confirm-authorisation-cancelled.warning")+ """</p>"""),
-      '_groupDivClass -> "form-group soft--ends",
-      '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'"""),
-         '_errorPrefix -> Messages("error.prefix")
-     )
-    </div>
+      @uiInputRadioGroupCustom(
+          confirmForm("confirmCancelAuthorisation"),
+          Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
+      '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.header")}</h1>"""),
+      '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.$service"),
+      '_inputHintClass -> "",
+      '_fieldsetDiv -> Messages("confirm-authorisation-cancelled.warning"),
+      '_fieldsetDivClass -> "panel panel-border-wide",
+          '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
+      )
 
-   <div class="form-group">
+
+   <div class="form-group margin-top-30">
     <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
    </div>
   }

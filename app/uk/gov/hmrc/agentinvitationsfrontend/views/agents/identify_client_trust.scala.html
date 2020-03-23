@@ -27,9 +27,7 @@
     mainTemplate: main_template,
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 @(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -45,20 +43,21 @@
          @uiErrorSummary(Messages("error.summary.heading"), trustClientForm, Seq.empty, Some("identify-trust-client"))
     }
 
-    <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-trust-client.header")</h1>
-
-    <span class="form-hint margin-bottom-20">@Html(Messages("identify-trust-client.p1"))</span>
-
-    <span class="form-hint">@Html(Messages("identify-trust-client.p2"))</span>
-
     @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
 
-        <div class="form-group margin-top-30">
-            @uiInput(
-            trustClientForm("utr"),
-            '_inputClass -> "form-control",
-            '_labelClass -> "soft--ends"
-            )
+
+        <div class="form-group margin-top-20 @if(trustClientForm.error("utr").isDefined) {form-field--error}">
+            <h1 @if(trustClientForm.hasErrors){class="push--top"}>
+                <label for="utr" class="heading-xlarge margin-bottom-10 @if(trustClientForm.hasErrors){push--top}">
+                @Html(Messages("identify-trust-client.header"))</label>
+            </h1>
+            <p class="form-hint margin-bottom-20">@Html(Messages("identify-trust-client.p1"))</p>
+            <p class="form-hint">@Html(Messages("identify-trust-client.p2"))</p>
+            @trustClientForm.error("utr").map{formError =>
+                <span class="error-notification" role="tooltip" data-journey="search-page:error:utr">
+                    <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
+            }
+            <input type="text" class="form-control" id="utr" name="utr" aria-invalid="true">
         </div>
 
         <div class="form-group">

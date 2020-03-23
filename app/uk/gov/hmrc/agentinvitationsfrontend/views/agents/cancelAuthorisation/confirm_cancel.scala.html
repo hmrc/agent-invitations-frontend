@@ -28,8 +28,7 @@
    errorPrefix: error_prefix,
    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-   uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-   uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -43,14 +42,16 @@
 }
 
 @uiFormHelper(action = config.submitCall, 'class -> "form js-form" ) {
- @uiInputRadioGroup(
+
+ @uiInputRadioGroupCustom(
   choiceForm("accepted"),
   Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> Messages("cancel-authorisation.confirm-cancel.no")),
-  '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">""" + Messages("cancel-authorisation.confirm-cancel.header") + s"""</h1>""" +
-    """<p>""" + Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName) + """</p>"""),
+  '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
+  '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
   '_groupDivClass -> "form-group soft--ends",
-  '_fieldsetAttributes -> Html("""id='choice'""")
+  '_fieldsetAttributes -> Html("""id='accepted'""")
  )
+
  <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
  }
 }

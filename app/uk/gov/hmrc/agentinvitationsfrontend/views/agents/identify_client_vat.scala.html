@@ -26,7 +26,6 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
 )
 
@@ -56,17 +55,15 @@
  @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
 
-         <div class="form-group">
-            @uiInput(
-                 agentInvitationsForm("clientIdentifier"),
-                 '_label -> Messages("identify-client.vrn.label"),
-                 '_inputClass -> "form-control",
-                 '_labelTextClass -> "form-label",
-                 '_inputHint -> Html("""<span>""" + Messages("identify-client.vrn.hint") + """</span><br>"""),
-                 '_labelClass -> "soft--ends"
-             )
-         </div>
-
+     <div class="form-group margin-top-20 @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error error-container}">
+         <label for="clientIdentifier" class="soft--ends @if(agentInvitationsForm.hasErrors){push--top}">@Html(Messages("identify-client.vrn.label"))</label>
+         <span class="form-hint">@Html(Messages("identify-client.vrn.hint"))</span>
+         @agentInvitationsForm.error("clientIdentifier").map{formError =>
+             <span class="error-notification" role="tooltip" data-journey="search-page:error:vrn">
+                 <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
+         }
+         <input type="text" class="form-control" id="clientIdentifier" name="clientIdentifier" aria-invalid="true">
+     </div>
 
          <div class="@noJsDateFieldsError">
              @uiDateFields(agentInvitationsForm, "registrationDate",
