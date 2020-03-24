@@ -16,19 +16,14 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
-
-@import org.joda.time.LocalDate
-@import org.joda.time.DateTimeZone
-@import org.joda.time.Days
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @this(
     mainTemplate: main_template
 )
+
 
 @(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -39,7 +34,7 @@
 
 @mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some(true)) {
 
-    @back_link_referer(request)
+    @back_link(config.backLinkUrl)
 
   <h1 class="heading-xlarge">@Messages("resend-link.header")</h1>
 

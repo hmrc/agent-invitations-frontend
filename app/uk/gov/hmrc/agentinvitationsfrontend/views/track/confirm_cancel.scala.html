@@ -16,13 +16,10 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
-@import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 
 @this(
     mainTemplate: main_template,
@@ -32,18 +29,20 @@
         uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
 
 @mainTemplate(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
 
-    @back_link_referer(request)
+    @back_link(backLinkUrl)
 
     @if(confirmForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
     }
+
 
     @uiFormHelper(routes.AgentsRequestTrackingController.submitConfirmCancel){
 

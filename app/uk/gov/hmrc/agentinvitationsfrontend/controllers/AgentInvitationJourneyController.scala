@@ -593,14 +593,24 @@ class AgentInvitationJourneyController @Inject()(
     case DeleteAuthorisationRequestPersonal(authorisationRequest, _) =>
       Ok(
         deleteView(
-          DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
-          DeleteAuthorisationForm))
+          DeletePageConfig(
+            authorisationRequest,
+            routes.AgentInvitationJourneyController.submitDeleteAuthorisation(),
+            routes.AgentInvitationJourneyController.showReviewAuthorisations().url
+          ),
+          formWithErrors.or(DeleteAuthorisationForm)
+        ))
 
     case DeleteAuthorisationRequestTrust(authorisationRequest, _) =>
       Ok(
         deleteView(
-          DeletePageConfig(authorisationRequest, routes.AgentInvitationJourneyController.submitDeleteAuthorisation()),
-          DeleteAuthorisationForm))
+          DeletePageConfig(
+            authorisationRequest,
+            routes.AgentInvitationJourneyController.submitDeleteAuthorisation(),
+            routes.AgentInvitationJourneyController.showReviewAuthorisations().url
+          ),
+          formWithErrors.or(DeleteAuthorisationForm)
+        ))
 
     case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services) =>
       Ok(

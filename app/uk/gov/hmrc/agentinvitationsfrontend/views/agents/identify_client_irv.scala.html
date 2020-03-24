@@ -26,8 +26,6 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup,
     uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
 )
 
@@ -36,9 +34,8 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@noJsDateFieldsError = @{
-    if(agentInvitationsForm("dob.day").hasErrors || agentInvitationsForm("dob.month").hasErrors || agentInvitationsForm("dob.year").hasErrors)
-        "nojs-date-fields-error"
+@agentInvitationsDateForm = @{
+    agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.nino.required")))
 }
 
 @mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "afi"))) {
@@ -48,8 +45,6 @@
     @if(agentInvitationsForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
-
-    <h6>@agentInvitationsForm.errors</h6>
 
     @uiFormHelper(
         action = submitFormCall, 'class -> "form js-form") {
@@ -68,8 +63,8 @@
             <input type="text" class="form-control" id="clientIdentifier" name="clientIdentifier" aria-invalid="true">
         </div>
 
-            <div class="@noJsDateFieldsError">
-            @uiDateFields(agentInvitationsForm, "dob",
+            <div @if(agentInvitationsForm.error("dob").isDefined){class="nojs-date-fields-error"}>
+            @uiDateFields(agentInvitationsDateForm, "dob",
                 '_legend -> Messages("identify-client.irv-date-of-birth.label"),
                 '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
                 '_legendSpanClass -> "form-label",

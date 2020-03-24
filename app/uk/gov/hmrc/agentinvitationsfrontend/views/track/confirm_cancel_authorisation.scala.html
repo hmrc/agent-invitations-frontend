@@ -16,15 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import play.api.Configuration
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
-@import uk.gov.hmrc.play.views.html.helpers.{form, input_radio_group, errorSummary}
-@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.ConfirmForm
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 @this(
     mainTemplate: main_template,
@@ -34,11 +30,12 @@
         uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
 
-  @back_link_referer(request)
+  @back_link(backLinkUrl)
 
   @if(confirmForm.hasErrors) {
    @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))

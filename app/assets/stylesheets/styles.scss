@@ -127,6 +127,14 @@ caption.caption-normal {
     border: 0;
 }
 
+.nojs-date-fields-error input {
+    border: 4px solid #b10e1e;
+}
+
+.nojs-date-fields-error input:focus{
+    border: 2px solid black;
+}
+
 .error-container {
     padding-top: 0;
     padding-bottom: 0

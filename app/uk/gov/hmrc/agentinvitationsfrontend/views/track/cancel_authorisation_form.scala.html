@@ -14,17 +14,17 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.play.views.html.helpers.form
+@import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
-@import org.joda.time.LocalDate
+@import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 
 @this(
     mainTemplate: main_template,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
+
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 

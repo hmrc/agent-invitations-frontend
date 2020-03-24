@@ -34,11 +34,10 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@noJsDateFieldsError = @{
-    if(agentInvitationsForm("knownFact.day").hasErrors || agentInvitationsForm("knownFact.month").hasErrors || agentInvitationsForm("knownFact.year").hasErrors)
-        "nojs-date-fields-error"
-}
 
+    @agentInvitationsDateForm = @{
+        agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.vrn.required")))
+    }
 
 @mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "vat"))) {
 
@@ -47,6 +46,8 @@
     @if(agentInvitationsForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
+
+    <h2>@agentInvitationsForm.errors</h2>
 
   <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
@@ -65,12 +66,13 @@
          <input type="text" class="form-control" id="clientIdentifier" name="clientIdentifier" aria-invalid="true">
      </div>
 
-         <div class="@noJsDateFieldsError">
-             @uiDateFields(agentInvitationsForm, "registrationDate",
+         <div @if(agentInvitationsForm.error("registrationDate").isDefined){class="nojs-date-fields-error"}>
+             @uiDateFields(agentInvitationsDateForm, "registrationDate",
                  '_legend -> Messages("identify-client.vat-registration-date.label"),
                  '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
                  '_legendSpanClass -> "form-label",
-                 '_legendClass -> "flush--ends"
+                 '_legendClass -> "flush--ends",
+                 '_errorPrefix -> Messages("error.prefix")
              )
         </div>
 

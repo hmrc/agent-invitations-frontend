@@ -26,7 +26,8 @@ case class ResendLinkPageConfig(
   clientType: String,
   expiryDate: String,
   service: String,
-  agencyEmail: String) {
+  agencyEmail: String,
+  backLinkUrl: String) {
 
   val expiryDateAsLocalDate = LocalDate.parse(expiryDate)
 
