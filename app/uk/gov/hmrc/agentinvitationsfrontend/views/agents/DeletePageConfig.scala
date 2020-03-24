@@ -18,4 +18,4 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
-case class DeletePageConfig(clientDetail: AuthorisationRequest, submitDelete: Call)
+case class DeletePageConfig(clientDetail: AuthorisationRequest, submitDelete: Call, backLinkUrl: String)

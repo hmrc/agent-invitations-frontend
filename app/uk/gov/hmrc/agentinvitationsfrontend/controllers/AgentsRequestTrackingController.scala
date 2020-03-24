@@ -127,7 +127,8 @@ class AgentsRequestTrackingController @Inject()(
                   data.expiryDate,
                   if (data.clientType.contains(personal)) "personal"
                   else data.service,
-                  agencyEmail
+                  agencyEmail,
+                  routes.AgentsRequestTrackingController.showTrackRequests(1).url
                 )))
           }
         )
@@ -158,7 +159,12 @@ class AgentsRequestTrackingController @Inject()(
       request.session.get("service") match {
         case Some(service) => {
           val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-          Future successful Ok(confirmCancelView(service, clientType, confirmCancelForm))
+          Future successful Ok(
+            confirmCancelView(
+              service,
+              clientType,
+              confirmCancelForm,
+              routes.AgentsRequestTrackingController.showTrackRequests(1).url))
         }
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
       }
@@ -178,7 +184,12 @@ class AgentsRequestTrackingController @Inject()(
                 .bindFromRequest()
                 .fold(
                   formWithErrors => {
-                    Future successful Ok(confirmCancelView(service, clientType, formWithErrors))
+                    Future successful Ok(
+                      confirmCancelView(
+                        service,
+                        clientType,
+                        formWithErrors,
+                        routes.AgentsRequestTrackingController.showTrackRequests(1).url))
                   },
                   data => {
                     if (data.value.getOrElse(true)) {
@@ -235,7 +246,12 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
-      Future successful Ok(confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType))
+      Future successful Ok(
+        confirmCancelAuthView(
+          confirmCancelAuthorisationForm,
+          service,
+          clientType,
+          routes.AgentsRequestTrackingController.showTrackRequests(1).url))
     }
   }
 
@@ -248,7 +264,13 @@ class AgentsRequestTrackingController @Inject()(
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
-          formWithErrors => Future successful Ok(confirmCancelAuthView(formWithErrors, service, clientType)),
+          formWithErrors =>
+            Future successful Ok(
+              confirmCancelAuthView(
+                formWithErrors,
+                service,
+                clientType,
+                routes.AgentsRequestTrackingController.showTrackRequests(1).url)),
           data =>
             if (data.value.getOrElse(true)) {
               deleteRelationshipForService(service, agent.arn, clientId).map {

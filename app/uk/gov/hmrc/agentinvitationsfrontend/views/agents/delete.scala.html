@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 
+
 @this(
     mainTemplate: main_template,
     errorPrefix: error_prefix,
@@ -30,16 +31,18 @@
         uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
+
 @(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@legend = {
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("delete.heading", config.clientDetail.clientName)</h1>
-    <span class="form-hint margin-bottom-10">@Messages(s"delete.subheading.${config.clientDetail.invitation.service}")</span>
-}
 
 @mainTemplate(title = Messages("generic.title", Messages(s"delete.heading", Messages("delete.client")), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"delete.header", "Your client"), ""))) {
 
-    @back_link_referer(request)
+    @back_link(config.backLinkUrl)
+
+    @if(deleteForm.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), deleteForm, Seq.empty, Some("delete-client"))
+    }
+
 
     @uiFormHelper(config.submitDelete) {
 
@@ -49,11 +52,12 @@
         '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-30">${Messages("delete.heading", config.clientDetail.clientName)}</h1>"""),
         '_inputHint -> Messages(s"delete.subheading.${config.clientDetail.invitation.service}"),
         '_inputHintClass -> "form-hint margin-bottom-10",
-        '_fieldsetAttributes -> Html("""id='accepted'""")
+        '_fieldsetAttributes -> Html("""id='accepted'"""),
+        '_groupDivClass -> "form-group"
         )
 
         <div class="form-group">
-            <button class="button margin-top-30" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
         </div>
     }
 
