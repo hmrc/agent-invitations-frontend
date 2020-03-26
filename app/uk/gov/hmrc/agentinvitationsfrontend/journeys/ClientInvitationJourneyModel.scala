@@ -107,21 +107,25 @@ object ClientInvitationJourneyModel extends JourneyModel {
     type RejectInvitation = InvitationId => String => Future[Boolean]
     type GetSuspensionDetails = Arn => Future[SuspensionDetails]
 
-    def start(clientTypeStr: String, uid: String, normalisedAgentName: String)(
-      getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
+    def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(
+      getAgencyName: GetAgencyName) =
       Transition {
         case _ =>
           for {
             record <- getAgentReferenceRecord(uid)
             clientType = ClientType.toEnum(clientTypeStr)
             result <- record match {
-                       case Some(r) if r.normalisedAgentNames.contains(normalisedAgentName) =>
+                       case Some(r) if r.normalisedAgentNames.map(_.trim).contains(agentName.trim) =>
                          getAgencyName(r.arn).flatMap { name =>
-                           goto(WarmUp(clientType, uid, r.arn, name, normalisedAgentName))
+                           goto(WarmUp(clientType, uid, r.arn, name, agentName.trim))
                          }
-                       case _ =>
+                       case Some(r) =>
+                         val names = r.normalisedAgentNames.mkString(",")
                          Logger.warn(
-                           s"No agent reference record found matching uid: $uid and agent name: $normalisedAgentName")
+                           s"Agency name not matching for uid: $uid, record has [$names], but url provided: [$agentName]")
+                         goto(NotFoundInvitation)
+                       case _ =>
+                         Logger.warn(s"No agent reference record found matching uid: $uid")
                          goto(NotFoundInvitation)
                      }
           } yield result

@@ -116,19 +116,17 @@ class ClientInvitationJourneyController @Inject()(
       case _ =>
     }
 
-  def warmUp(clientType: String, uid: String, normalisedAgentName: String) =
+  def warmUp(clientType: String, uid: String, agentName: String) =
     Action.async { implicit request =>
       journeyId match {
         case None =>
           // redirect to itself with new journeyId generated
           Future.successful(
             appendJourneyId(
-              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, normalisedAgentName)))(
-              request))
+              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName)))(request))
         case _ =>
           apply(
-            Transitions.start(clientType, uid, normalisedAgentName)(getAgentReferenceRecord)(
-              invitationsService.getAgencyName),
+            Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
             display
           )
       }
