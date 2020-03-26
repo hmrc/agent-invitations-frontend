@@ -64,6 +64,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         checkWarmUpPageIsShown(result)
       }
 
+      "remove spaces in the url" in new Setup {
+        val reqAuthorisedWithJourneyId =
+          authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
+        val result = controller.warmUp("personal", uid, "My-Agency ")(reqAuthorisedWithJourneyId)
+        checkWarmUpPageIsShown(result)
+      }
+
       "show not-found content on the same page if the url is corrupted" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "wrong-agency-name")(reqWithJourneyId)
