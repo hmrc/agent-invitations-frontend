@@ -158,21 +158,20 @@ identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodae
 identify-trust-client.p2=Mae Cyfeirnod Unigryw y Trethdalwr yn 10 rhif, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/dod-o-hyd-i-utr-sydd-ar-goll"  target="_blank" rel="noopener noreferrer">Dod o hyd i UTR sydd ar goll (yn agor ffenestr neu dab newydd).</a>
 
 ## Identify CGT Client
-identify-cgt-client.header=Beth yw cyfeirnod cyfrif Treth Enillion Cyfalaf eich cleient?
+identify-cgt-client.header=
 identify-cgt-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
-identify-cgt-client.p2=Mae hwn yn wasanaeth sy’n cael ei brofi sydd ar gael drwy wahoddiad yn unig.
-identify-cgt-client.p3=Cyfeirnod cyfrif Treth Enillion Cyfalaf
-identify-cgt-client.hint=Mae hwn yn 15 o gymeriadau, er enghraifft XYCGTP123456789.  Cafodd eich cleient hwn pan greodd ei gyfrif Treth Enillion Cyfalaf.
-confirm-postcode-cgt.header=Beth yw cod post eich cleient?
+identify-cgt-client.p3=
+identify-cgt-client.hint=
+confirm-postcode-cgt.header=
 confirm-postcode-cgt.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 confirm-postcode-cgt.label=Cod post
-confirm-postcode-cgt.hint=Dyma god post y cyfeiriad lle y mae’ch cleient yn cael ei ohebiaeth Treth Enillion Cyfalaf
-confirm-countryCode-cgt.header=O ba wlad y mae’ch cleient?
-confirm-countryCode-cgt.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
-confirm-countryCode-cgt.hint=Dechreuwch deipio’r wlad
+confirm-postcode-cgt.hint=
+confirm-countryCode-cgt.header=
+confirm-countryCode-cgt.p1=
+confirm-countryCode-cgt.hint=
 confirm-countryCode-cgt.label=Gwlad
-error.country.empty=Nodwch y wlad y mae’ch cleient yn dod ohoni
-error.country.invalid=Nodwch y wlad y mae’ch cleient yn dod ohoni
+error.country.empty=
+error.country.invalid=
 
 ## CGT Not Matched
 cgt-not-matched.header=Nid yw’r cyfeirnod cyfrif ar gyfer Treth Enillion Cyfalaf yn ddilys

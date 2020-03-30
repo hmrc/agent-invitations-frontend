@@ -46,21 +46,26 @@
         @uiErrorSummary(Messages("error.summary.heading"), postcodeForm, Seq.empty, Some("confirm-postcode-cgt"))
     }
 
-    <h1 class="heading-xlarge margin-bottom-10">@Messages("confirm-postcode-cgt.header")</h1>
-
-    <p class="hint-text">@Messages("confirm-postcode-cgt.p1")</p>
-
     @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
-    <div class="form-group">
-        @uiInput(
-        postcodeForm("postcode"),
-        '_label -> Messages("confirm-postcode-cgt.label"),
-        '_inputClass -> "form-control",
-        '_labelTextClass -> "form-label",
-        '_inputHint -> Messages("confirm-postcode-cgt.hint"),
-        '_labelClass -> "soft--ends"
-        )
-    </div>
+
+        <div class="form-group @if(postcodeForm.hasErrors){form-field--error padding-0}">
+            <h1 class="form-label soft--ends @if(postcodeForm.hasErrors){push--top}">
+                <label class="heading-xlarge margin-bottom-10 @if(postcodeForm.hasErrors){push--top}" for="postcode">
+                @Messages("confirm-postcode-cgt.header")
+                </label>
+            </h1>
+            <p class="margin-bottom-30">@Messages("confirm-postcode-cgt.p1")</p>
+            <p>@Messages("confirm-postcode-cgt.label")</p>
+            <p class="form-hint">@Messages("confirm-postcode-cgt.hint")</p>
+            @postcodeForm.error("postcode").map{formError =>
+                <span class="error-notification">
+                    <span class="visuallyhidden">@Messages("error.prefix")</span>
+                @Messages(formError.message)
+                </span>
+            }
+            <input class="form-control" name="postcode" id="postcode">
+
+        </div>
 
     <div class="form-group">
         <button class="button" type="submit" id="continue">@Messages("continue.button")</button>

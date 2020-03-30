@@ -48,8 +48,6 @@
 
     <p>@Html(Messages("identify-cgt-client.p1"))</p>
 
-    <div class="panel panel-border-wide margin-bottom-40"><span>@Messages(s"identify-cgt-client.p2")</span></div>
-
     @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
         <div class="form-group margin-top-20 @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error}">
             <label for="cgtRef" class="soft--ends margin-bottom-10">@Html(Messages("identify-cgt-client.p3"))</label>

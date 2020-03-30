@@ -476,7 +476,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "identify-cgt-client.header",
         "identify-cgt-client.p1",
-        "identify-cgt-client.p2",
         "identify-cgt-client.hint",
         "continue.button"
       )
@@ -503,7 +502,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "identify-cgt-client.header",
         "identify-cgt-client.p1",
-        "identify-cgt-client.p2",
         "identify-cgt-client.hint",
         "continue.button"
       )

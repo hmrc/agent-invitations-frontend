@@ -286,8 +286,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyMsgs(
         result,
         "identify-cgt-client.header",
-        "identify-cgt-client.p1",
-        "identify-cgt-client.p2")
+        "identify-cgt-client.p1")
     }
   }
   "GET /agents/identify-itsa-client" should {
