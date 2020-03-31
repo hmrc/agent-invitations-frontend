@@ -158,21 +158,20 @@ identify-trust-client.p1=This will help us match their details against informati
 identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 ## Identify CGT Client
-identify-cgt-client.header=What is your client’s Capital Gains Tax (CGT) account reference?
+identify-cgt-client.header=What is your client’s Capital Gains Tax on UK property account number?
 identify-cgt-client.p1=This will help us match their details against information we hold.
-identify-cgt-client.p2=This is a trial service available by invite only.
-identify-cgt-client.p3=Capital Gains Tax (CGT) account reference
-identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their CGT account.
-confirm-postcode-cgt.header=What is your client’s postcode?
+identify-cgt-client.p3=Capital Gains Tax on UK property account number
+identify-cgt-client.hint=This is 15 characters, for example XYCGTP123456789.  Your client received this when they created their account.
+confirm-postcode-cgt.header=What is the postcode of your client’s contact address?
 confirm-postcode-cgt.p1=This will help us match their details against information we hold.
 confirm-postcode-cgt.label=Postcode
-confirm-postcode-cgt.hint=This is the postcode of the address where your client receives their Capital Tax Gains correspondence
-confirm-countryCode-cgt.header=Which country is your client from?
-confirm-countryCode-cgt.p1=This will help us match their details against information we hold.
-confirm-countryCode-cgt.hint=Start typing the country
+confirm-postcode-cgt.hint=This must match the postcode of the client’s contact address in their Capital Gains Tax on UK property account.
+confirm-countryCode-cgt.header=What is the country of your client’s contact address?
+confirm-countryCode-cgt.p1=This must match the country of the client’s contact address in their Capital Gains Tax on UK property account.
+confirm-countryCode-cgt.hint=Start typing the country.
 confirm-countryCode-cgt.label=Country
-error.country.empty=Enter the country that your client is from
-error.country.invalid=Enter the country that your client is from
+error.country.empty=Enter the country of your client’s contact address
+error.country.invalid=Enter the country of your client’s contact address
 
 ## CGT Not Matched
 cgt-not-matched.header=Capital Gains Tax (CGT) account reference is not valid

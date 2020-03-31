@@ -838,7 +838,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "identify-cgt-client.header", "identify-cgt-client.p1", "identify-cgt-client.p2", "identify-cgt-client.hint")
+      checkHtmlResultWithBodyMsgs(result, "identify-cgt-client.header", "identify-cgt-client.p1", "identify-cgt-client.hint")
     }
 
     "show the client-details page when there is no client type for VAT" in {
