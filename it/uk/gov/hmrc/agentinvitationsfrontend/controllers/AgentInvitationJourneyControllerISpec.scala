@@ -1280,7 +1280,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "CGT_NAME")
-      checkHtmlResultWithBodyText(result, "Capital Gains Tax (CGT) account reference: XMCGTP123456789")
+      checkHtmlResultWithBodyText(result, "Capital Gains Tax account reference: XMCGTP123456789")
       checkHtmlResultWithBodyMsgs(result, "confirm-client.header")
     }
   }

@@ -174,9 +174,9 @@ error.country.empty=Enter the country of your client’s contact address
 error.country.invalid=Enter the country of your client’s contact address
 
 ## CGT Not Matched
-cgt-not-matched.header=Capital Gains Tax (CGT) account reference is not valid
+cgt-not-matched.header=Capital Gains Tax account reference is not valid
 cgt-not-matched.p1=You entered {0}.
-cgt-not-matched.p2=This does not match any registered CGT account reference.
+cgt-not-matched.p2=This does not match any registered Capital Gains Tax account reference.
 cgt-not-matched.advice=You can:
 cgt-not-matched.advice.l1=check the account reference is correct and try again
 cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
@@ -285,7 +285,7 @@ cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
 cancel-authorisation.utr=Unique Taxpayer Reference: {0}
-cancel-authorisation.cgt.account-ref=Capital Gains Tax (CGT) account reference: {0}
+cancel-authorisation.cgt.account-ref=Capital Gains Tax account reference: {0}
 
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to send Income Tax updates through software for {0}.
@@ -548,7 +548,7 @@ confirm-terms-multi.trust.list.item2=report changes relating to the estate’s p
 
 confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.business.heading=Manage a trust’s Capital Gains Tax on UK property account
-confirm-terms-multi.cgt.personal.p1=I consent to HMRC sharing my CGT on UK property account details with {0}, such as my:
+confirm-terms-multi.cgt.personal.p1=I consent to HMRC sharing my Capital Gains Tax on UK property account details with {0}, such as my:
 confirm-terms-multi.cgt.personal.p1.l1=name and contact details
 confirm-terms-multi.cgt.personal.p1.l2=residence status
 confirm-terms-multi.cgt.personal.p1.l3=liability for current and previous tax years
@@ -556,19 +556,19 @@ confirm-terms-multi.cgt.personal.p1.l4=tax codes and personal allowance details
 confirm-terms-multi.cgt.personal.p1.l5=amounts due and amounts paid
 confirm-terms-multi.cgt.personal.p1.l6=penalty details
 
-confirm-terms-multi.cgt.personal.p2=I also consent to HMRC allowing {0} to manage my CGT on UK property account, so they can:
+confirm-terms-multi.cgt.personal.p2=I also consent to HMRC allowing {0} to manage my Capital Gains Tax on UK property account, so they can:
 confirm-terms-multi.cgt.personal.p2.l1=view, change and submit my current returns
 confirm-terms-multi.cgt.personal.p2.l2=view and change my previous return details
 confirm-terms-multi.cgt.personal.p2.l3=view and change my contact preferences
 confirm-terms-multi.cgt.personal.p2.l4=contact HMRC to discuss my returns, payments and any penalties
 
-confirm-terms-multi.cgt.business.p1=I consent to HMRC sharing a trust’s CGT on UK property account details with {0}, such as the trust’s:
+confirm-terms-multi.cgt.business.p1=I consent to HMRC sharing a trust’s Capital Gains Tax on UK property account details with {0}, such as the trust’s:
 confirm-terms-multi.cgt.business.p1.l1=name, location and contact details
 confirm-terms-multi.cgt.business.p1.l2=liability for current and previous tax years
 confirm-terms-multi.cgt.business.p1.l3=the amounts due and the amounts paid
 confirm-terms-multi.cgt.business.p1.l4=penalty details
 
-confirm-terms-multi.cgt.business.p2=I also consent to HMRC allowing {0} to manage a trust’s CGT on UK property account, so they can:
+confirm-terms-multi.cgt.business.p2=I also consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account, so they can:
 confirm-terms-multi.cgt.business.p2.l1=view, change and submit the trust’s current returns
 confirm-terms-multi.cgt.business.p2.l2=view and change the trust’s previous return details
 confirm-terms-multi.cgt.business.p2.l3=view and change the trust’s contact preferences
