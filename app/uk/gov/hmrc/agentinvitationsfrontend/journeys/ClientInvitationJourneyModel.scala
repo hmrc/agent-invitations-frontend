@@ -22,6 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -164,7 +165,9 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty) {
-              Logger.warn(s"no invitations returned for uid: $uid, probably client not signed up ?")
+              Logger.warn(
+                s"no invitations returned for uid: $uid, probably client not signed up ?, client enrolments: ${tempEnrolLog(
+                  client.enrolments)}")
               //goto(ActionNeeded(clientType))
               goto(NotFoundInvitation)
             } else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected)) {
@@ -219,6 +222,17 @@ object ClientInvitationJourneyModel extends JourneyModel {
           }
         }
       }
+
+    private def tempEnrolLog(enrolments: Enrolments): String =
+      enrolments.enrolments
+        .map(
+          x =>
+            Enrolment(
+              x.key,
+              x.identifiers
+                .map(id => id.copy(id.key, if (Option(id.value).exists(_.trim.nonEmpty)) "NOT_EMPTY" else "EMPTY")),
+              x.state))
+        .mkString(",")
 
     def submitSuspension(client: AuthorisedClient) = Transition {
       case SuspendedAgent(clientType, uid, agentName, _, nonSuspendedConsents) =>
