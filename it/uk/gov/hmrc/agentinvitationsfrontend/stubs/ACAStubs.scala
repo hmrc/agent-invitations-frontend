@@ -661,6 +661,16 @@ trait ACAStubs {
         )
     )
 
+  def givenSetRelationshipEndedReturns(arn: Arn, invitationId: InvitationId, status: Int) =
+    stubFor(
+      put(
+        urlEqualTo(s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/relationship-ended"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
   def givenRejectInvitationSucceeds(clientId: String, invitationId: InvitationId, serviceIdentifier: String) =
     rejectInvitationStub(clientId, invitationId, responseStatus = 204, serviceIdentifier)
 
