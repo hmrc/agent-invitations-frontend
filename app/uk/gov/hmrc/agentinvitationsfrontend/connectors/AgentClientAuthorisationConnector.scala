@@ -231,6 +231,11 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def cancelInvitationUrl(arn: Arn, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel")
 
+  private[connectors] def setRelationshipEndedUrl(arn: Arn, invitationId: InvitationId) =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/relationship-ended")
+
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
     new URL(
       baseUrl,
@@ -328,6 +333,16 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Cancel-Invitation-PUT") {
       http.PUT[String, HttpResponse](cancelInvitationUrl(arn, invitationId).toString, "").map(_ => Some(true))
+    }.recover {
+      case _: NotFoundException   => Some(false)
+      case _: Upstream4xxResponse => None
+    }
+
+  def setRelationshipEnded(arn: Arn, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[Boolean]] =
+    monitor("ConsumedApi-Set-Relationship-Ended-PUT") {
+      http.PUT[String, HttpResponse](setRelationshipEndedUrl(arn, invitationId).toString, "").map(_ => Some(true))
     }.recover {
       case _: NotFoundException   => Some(false)
       case _: Upstream4xxResponse => None
