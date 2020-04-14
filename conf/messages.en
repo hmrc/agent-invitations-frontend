@@ -105,10 +105,10 @@ select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noo
 select-service.review-auth-link=Return to authorisation requests
 
 # single service selection headers and errors
-select-single-service.HMRC-MTD-VAT.business.header=Do you want to manage this client's VAT?
+select-single-service.HMRC-MTD-VAT.business.header=Do you want to manage this client’s VAT?
 select-single-service.HMRC-MTD-VAT.business.error=Select yes if you want to submit this client’s VAT
 
-select-single-service.HMRC-MTD-VAT.personal.header=Do you want to manage this client's VAT?
+select-single-service.HMRC-MTD-VAT.personal.header=Do you want to manage this client’s VAT?
 select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to submit this client’s VAT
 
 # Note: trusts are internally treated as "business" client type
@@ -143,7 +143,7 @@ agent-suspended.fastrack.heading=We have temporarily limited your use of this se
 agent-suspended.fastrack.p1=We did this because we have suspended your agent code. We sent you a letter to confirm this.
 agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
 agent-suspended.fastrack.p2.HMRC-MTD-IT=manage their Income Tax.
-agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage a client's VAT.
+agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage a client’s VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property account.
 
@@ -228,7 +228,7 @@ invitation-sent.startNewAuthRequest=Start a new authorisation request
 check-details.heading=Check your client’s details before you continue
 check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to manage a client’s Income Tax.
 check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client’s PAYE income record.
-check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to manage a client's VAT.
+check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to manage a client’s VAT.
 check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation to submit a client’s tax returns through software.
 check-details.p.HMRC-CGT-PD=You are about to start a request for authorisation to manage a client’s Capital Gains Tax on UK property account.
 check-details.table.heading=Client’s details
