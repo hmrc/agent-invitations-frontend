@@ -334,9 +334,9 @@ not-authorised.button=Start over
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
-delete.subheading.HMRC-MTD-IT=You will not send them an authorisation request to manage their Income Tax.
+delete.subheading.HMRC-MTD-IT=You will not send an authorisation request to manage their Income Tax.
 delete.subheading.PERSONAL-INCOME-RECORD=You will not send them an authorisation request to view their PAYE income record.
-delete.subheading.HMRC-MTD-VAT=You will not send them an authorisation request to manage their VAT.
+delete.subheading.HMRC-MTD-VAT=You will not send an authorisation request to manage their VAT.
 delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-CGT-PD=You will not send them an authorisation request to manage Capital Gains Tax on UK property account.
 delete.radio-yes=Yes
