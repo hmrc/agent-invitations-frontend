@@ -1634,7 +1634,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to remove your authorisation request for Sylvia Plath?",
-        "You will not send them an authorisation request to manage their Income Tax"
+        "You will not send an authorisation request to manage their Income Tax."
       )
 
       journeyState.get should have[State](
