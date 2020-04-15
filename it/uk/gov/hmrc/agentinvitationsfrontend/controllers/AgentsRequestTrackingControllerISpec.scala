@@ -292,7 +292,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to manage their Income Tax for this client.",
+        "If you cancel this request, you will not be able to manage their Income Tax.",
         "Yes",
         "No"
       )
@@ -408,7 +408,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Authorisation request cancelled",
-        "You have cancelled your authorisation request to manage their Income Tax for this client.",
+        "You have cancelled your authorisation request to manage their Income Tax.",
         "Joe Volcano can no longer respond to this request.",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
       )

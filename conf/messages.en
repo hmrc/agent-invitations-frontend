@@ -288,9 +288,9 @@ cancel-authorisation.utr=Unique Taxpayer Reference: {0}
 cancel-authorisation.cgt.account-ref=Capital Gains Tax account reference: {0}
 
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to manage their Income Tax for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to manage their Income Tax for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel this request, you will not be able to manage their VAT for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisation, you will not be able to manage their VAT for {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisation, you will not be able to manage Capital Gains Tax on UK property account for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
@@ -839,9 +839,9 @@ resend-link.header=Resend this link to your client
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?
-confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to manage their Income Tax for this client.
+confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to manage their Income Tax.
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
-confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to manage their VAT for this client.
+confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to manage their VAT.
 confirm-cancel.subheader.HMRC-TERS-ORG=If you cancel this request, you will not be able to maintain a trust or an estate.
 confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be able to manage their Capital Gains Tax on UK property account.
 
@@ -851,9 +851,9 @@ error.confirmCancel.invalid=This field is required
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to manage their Income Tax for this client.
+request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to manage their Income Tax.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
-request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to manage their VAT for this client.
+request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to manage their VAT.
 request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
 request-cancelled.p1.HMRC-CGT-PD=You have cancelled your authorisation request to manage their Capital Gains Tax on UK property account.
 request-cancelled.panel= {0} can no longer respond to this request.
