@@ -87,9 +87,9 @@ service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’
 
 # multi-choice selections
 select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
-select-service.HMRC-MTD-IT.personal=Anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
-select-service.HMRC-MTD-VAT.personal=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
-select-service.HMRC-MTD-VAT.business=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
+select-service.HMRC-MTD-IT.personal=Rheoli ei Dreth Incwm
+select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
+select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU.
@@ -105,11 +105,11 @@ select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noo
 select-service.review-auth-link=Dychwelyd i’r ceisiadau am awdurdodiad
 
 # single service selection headers and errors
-select-single-service.HMRC-MTD-VAT.business.header=A hoffech gyflwyno Ffurflenni TAW y cleient hwn drwy feddalwedd?
-select-single-service.HMRC-MTD-VAT.business.error=Dewiswch ‘Iawn’ os hoffech gyflwyno Ffurflenni TAW y cleient hwn drwy feddalwedd
+select-single-service.HMRC-MTD-VAT.business.header=A ydych am reoli TAW y cleient hwn?
+select-single-service.HMRC-MTD-VAT.business.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
 
-select-single-service.HMRC-MTD-VAT.personal.header=A hoffech gyflwyno Ffurflenni TAW y cleient hwn drwy feddalwedd?
-select-single-service.HMRC-MTD-VAT.personal.error=Dewiswch ‘Iawn’ os hoffech gyflwyno Ffurflenni TAW y cleient hwn drwy feddalwedd
+select-single-service.HMRC-MTD-VAT.personal.header=A ydych am reoli TAW y cleient hwn?
+select-single-service.HMRC-MTD-VAT.personal.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
 
 # Note: trusts are internally treated as "business" client type
 select-single-service.HMRC-TERS-ORG.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
@@ -118,8 +118,8 @@ select-single-service.HMRC-TERS-ORG.business.error=Dewiswch ‘Iawn’ os hoffec
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn
 
-select-single-service.HMRC-MTD-IT.personal.header=A hoffech anfon diweddariadau Treth Incwm y cleient hwn drwy feddalwedd?
-select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os hoffech anfon diweddariadau Treth Incwm y cleient hwn drwy feddalwedd
+select-single-service.HMRC-MTD-IT.personal.header=A ydych am reoli Treth Incwm y cleient hwn?
+select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am reoli Treth Incwm y cleient hwn
 
 select-single-service.HMRC-CGT-PD.personal.header=A hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU?
 select-single-service.HMRC-CGT-PD.business.header=A hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU?
@@ -226,9 +226,9 @@ invitation-sent.startNewAuthRequest=Dechrau cais am awdurdodiad newydd
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
-check-details.p.HMRC-MTD-IT=Rydych ar fin dechrau cais am awdurdodiad i anfon diweddariadau Treth Incwm cleient drwy feddalwedd.
+check-details.p.HMRC-MTD-IT=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Incwm cleient.
 check-details.p.PERSONAL-INCOME-RECORD=Rydych ar fin dechrau cais am awdurdodiad i fwrw golwg dros gofnod incwm TWE cleient.
-check-details.p.HMRC-MTD-VAT=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni TAW cleient drwy feddalwedd.
+check-details.p.HMRC-MTD-VAT=Rydych ar fin dechrau cais am awdurdodiad i reoli TAW cleient.
 check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 check-details.table.heading=Manylion y cleient
@@ -254,9 +254,9 @@ error.confirmDetails.invalid=Dewiswch ‘Iawn’ os yw’r manylion yn gywir
 #Review authorisations
 review-authorisations.heading=Gwiriwch eich ceisiadau am awdurdodiad
 review-authorisations.p=Rydych wedi ychwanegu {0}.
-review-authorisations.table.HMRC-MTD-IT=Anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
+review-authorisations.table.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
-review-authorisations.table.HMRC-MTD-VAT=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
+review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.remove=Dileu
@@ -274,8 +274,8 @@ error.cancel-authorisation.client-type.empty=Dewiswch ai unigolyn neu unig fasna
 error.fast-track.client-type.empty=Dewiswch ai unigolyn neu unig fasnachwr, neu gwmni cyfyngedig neu bartneriaeth yw’r math o gleient y mae angen i chi ganslo’ch awdurdodiad ar ei gyfer
 
 cancel-authorisation.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
-cancel-authorisation.select-service.itsa=Anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
-cancel-authorisation.select-service.vat=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
+cancel-authorisation.select-service.itsa=Rheoli ei Dreth Incwm
+cancel-authorisation.select-service.vat=Rheoli ei TAW
 cancel-authorisation.select-service.trust=Cynnal ymddiriedolaeth neu ystâd
 cancel-authorisation.select-service.cgt=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
 cancel-authorisation.select-service.hint=Dewiswch opsiwn.
@@ -407,9 +407,9 @@ cannot-create-request.start-again=Dechrau cais newydd
 #Create authorisation failed
 create-auth-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 create-auth-failed.p1=Nid oeddem yn gallu creu’r awdurdodiad canlynol: {0}.
-create-auth-failed.HMRC-MTD-IT=Anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
+create-auth-failed.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 create-auth-failed.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
-create-auth-failed.HMRC-MTD-VAT=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
+create-auth-failed.HMRC-MTD-VAT=Rheoli ei TAW
 create-auth-failed.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 create-auth-failed.HMRC-CGT-PD=Rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
 create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad newydd</a>, neu roi cynnig arall arni.
@@ -811,9 +811,9 @@ recent-invitations.table-row-header.clientName=Manylion y cleient
 recent-invitations.table-row-header.service=Cais am awdurdodiad wedi’i anfon
 recent-invitations.table-row-header.status=Statws
 recent-invitations.table-row-header.actions=Camau gweithredu
-recent-invitations.invitation.service.HMRC-MTD-IT=Anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
+recent-invitations.invitation.service.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
-recent-invitations.invitation.service.HMRC-MTD-VAT=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
+recent-invitations.invitation.service.HMRC-MTD-VAT=Rheoli ei TAW
 recent-invitations.invitation.service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
