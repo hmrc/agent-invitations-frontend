@@ -81,7 +81,7 @@ enter-irv-date-of-birth.invalid-format=Nodwch ddyddiad dilys
 
 select-service.yes=Iawn
 select-service.no=Na
-select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad.
+select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
 select-service.hint=Dewiswch opsiwn.
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
@@ -92,8 +92,8 @@ select-service.HMRC-MTD-VAT.personal=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
 select-service.HMRC-MTD-VAT.business=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
 select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
 
-select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU.
-select-service.HMRC-CGT-PD.personal=Rheoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
+select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU
+select-service.HMRC-CGT-PD.personal=Rheoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
