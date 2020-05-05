@@ -92,8 +92,8 @@ select-service.HMRC-MTD-VAT.personal=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
 select-service.HMRC-MTD-VAT.business=Cyflwyno ei Ffurflenni TAW drwy feddalwedd
 select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
 
-select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU (mae hwn yn wasanaeth sy’n cael ei brofi sydd ar gael drwy wahoddiad yn unig).
-select-service.HMRC-CGT-PD.personal=Rheoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU (mae hwn yn wasanaeth sy’n cael ei brofi sydd ar gael drwy wahoddiad yn unig).
+select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU.
+select-service.HMRC-CGT-PD.personal=Rheoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
