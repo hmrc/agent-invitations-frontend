@@ -41,9 +41,9 @@
 
     <p class="margin-bottom-30">
     @if(config.basket.size == 1) {
-        @Messages("review-authorisations.p", s"${config.basket.size} authorisation request")
+        @Messages("review-authorisations.p", s"${config.basket.size} ${Messages("review-authorisations.singular")}")
     } else {
-        @Messages("review-authorisations.p", s"${config.basket.size} authorisation requests")
+        @Messages("review-authorisations.p", s"${config.basket.size} ${Messages("review-authorisations.plural")}")
     }
     </p>
 

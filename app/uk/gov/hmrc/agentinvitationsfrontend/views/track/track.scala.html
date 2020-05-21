@@ -48,10 +48,10 @@
 
     @if(config.hasInvitationsOrRelationships) {
         <div class="table text-small">
-            <div style="font-size: 16.5px; margin-bottom: 0.5em;">Showing
+            <div style="font-size: 16.5px; margin-bottom: 0.5em;">@Messages("recent-invitations.pagination.showing")
                 <strong class="bold">@config.firstResult</strong>
-                to <strong class="bold">@config.lastResult</strong>
-                of <strong class="bold">@config.totalResults</strong>
+                @Messages("recent-invitations.pagination.to") <strong class="bold">@config.lastResult</strong>
+                @Messages("recent-invitations.pagination.of") <strong class="bold">@config.totalResults</strong>
             </div>
             <div class="table-row table-head">
                 <div class="table-cell column-22">@Messages("recent-invitations.table-row-header.clientName")</div>

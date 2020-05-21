@@ -254,6 +254,8 @@ error.confirmDetails.invalid=Select yes if the details are correct
 #Review authorisations
 review-authorisations.heading=Check your authorisation requests
 review-authorisations.p=You have added {0}.
+review-authorisations.singular=authorisation request
+review-authorisations.plural=authorisation requests
 review-authorisations.table.HMRC-MTD-IT=Manage their Income Tax
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
 review-authorisations.table.HMRC-MTD-VAT=Manage their VAT
@@ -833,6 +835,9 @@ recent-invitations.invitations.actions.rejected=Start new request
 recent-invitations.invitations.actions.expired=Start new request
 recent-invitations.invitations.actions.cancelled=Start new request
 recent-invitations.invitations.actions.invalidrelationship=Start new request
+recent-invitations.pagination.showing=Showing
+recent-invitations.pagination.to=to
+recent-invitations.pagination.of=of
 
 #ResendLink page
 resend-link.header=Resend this link to your client
