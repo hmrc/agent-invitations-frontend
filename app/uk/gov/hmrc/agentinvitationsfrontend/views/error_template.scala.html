@@ -22,7 +22,7 @@
 @this(appConfig: AppConfig,
         govUkWrapper: govuk_wrapper)
 
-@(pageTitle: String, heading: String, message: String)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
 @contentHeader = {
