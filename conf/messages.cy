@@ -92,8 +92,8 @@ select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
 
-select-service.HMRC-CGT-PD.business=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU
-select-service.HMRC-CGT-PD.personal=Rheoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU
+select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+select-service.HMRC-CGT-PD.personal=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer cleient
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
@@ -121,8 +121,8 @@ select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ 
 select-single-service.HMRC-MTD-IT.personal.header=A ydych am reoli Treth Incwm y cleient hwn?
 select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am reoli Treth Incwm y cleient hwn
 
-select-single-service.HMRC-CGT-PD.personal.header=A hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU?
-select-single-service.HMRC-CGT-PD.business.header=A hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.personal.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
+select-single-service.HMRC-CGT-PD.business.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
 select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
 select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
 
@@ -165,7 +165,7 @@ identify-cgt-client.hint=Mae hwn yn 15 o gymeriadau, er enghraifft XYCGTP1234567
 confirm-postcode-cgt.header=Beth yw cod post cyfeiriad cyswllt eich cleient?
 confirm-postcode-cgt.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 confirm-postcode-cgt.label=Cod post
-confirm-postcode-cgt.hint=Mae’n rhaid i hwn gyd-fynd â gwlad cyfeiriad cyswllt eich cleient yn ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
+confirm-postcode-cgt.hint=Mae’n rhaid i hwn gyd-fynd â chod post cyfeiriad cyswllt eich cleient yn ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 confirm-countryCode-cgt.header=Beth yw gwlad cyfeiriad cyswllt eich cleient?
 confirm-countryCode-cgt.p1=Mae’n rhaid i hwn gyd-fynd â gwlad cyfeiriad cyswllt eich cleient yn ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 confirm-countryCode-cgt.hint=Dechreuwch deipio enw’r wlad.
@@ -254,6 +254,8 @@ error.confirmDetails.invalid=Dewiswch ‘Iawn’ os yw’r manylion yn gywir
 #Review authorisations
 review-authorisations.heading=Gwiriwch eich ceisiadau am awdurdodiad
 review-authorisations.p=Rydych wedi ychwanegu {0}.
+review-authorisations.singular=o geisiadau am awdurdodiad
+review-authorisations.plural=o geisiadau am awdurdodiad
 review-authorisations.table.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
 review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
@@ -411,7 +413,7 @@ create-auth-failed.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 create-auth-failed.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
 create-auth-failed.HMRC-MTD-VAT=Rheoli ei TAW
 create-auth-failed.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
-create-auth-failed.HMRC-CGT-PD=Rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
+create-auth-failed.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad newydd</a>, neu roi cynnig arall arni.
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
 create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
@@ -470,7 +472,7 @@ invitation-declined.multi.itsa.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch
 invitation-declined.multi.afi.p1=Nid ydych wedi rhoi caniatâd i {0} fwrw golwg dros eich cofnodion incwm personol.
 invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch TAW.
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
-invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.sign-out.button=Gorffen ac allgofnodi
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
@@ -546,17 +548,17 @@ confirm-terms-multi.trust.p1=Rwy’n rhoi fy nghaniatâd i CThEM rannu’r wybod
 confirm-terms-multi.trust.list.item1=rhoi gwybod am newidiadau sy’n ymwneud ag ymddiriedolwyr, setlwyr, buddiolwyr a diogelwyr, megis enwau a chyfeiriadau, a datgan bod yr ymddiriedolaeth yn gyfredol
 confirm-terms-multi.trust.list.item2=rhoi gwybod am newidiadau sy’n ymwneud â chynrychiolydd personol yr ystâd, megis enwau a chyfeiriadau, a datgan bod yr ystâd yn gyfredol
 
-confirm-terms-multi.cgt.personal.heading=Rheoli fy Nhreth Enillion Cyfalaf ar warediadau eiddo yn y DU
-confirm-terms-multi.cgt.business.heading=Rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar warediadau eiddo yn y DU
-confirm-terms-multi.cgt.personal.p1=Rwy’n rhoi fy nghaniatâd i CThEM rannu manylion fy Nhreth Enillion Cyfalaf ar warediadau eiddo yn y DU gyda {0}, er enghraifft:
+confirm-terms-multi.cgt.personal.heading=Rheoli fy nghyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+confirm-terms-multi.cgt.business.heading=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+confirm-terms-multi.cgt.personal.p1=Rwy’n rhoi fy nghaniatâd i CThEM rannu manylion fy nghyfrif Treth Enillion Cyfalaf ar eiddo yn y DU gyda {0}, er enghraifft:
 confirm-terms-multi.cgt.personal.p1.l1=fy enw a manylion cyswllt
 confirm-terms-multi.cgt.personal.p1.l2=fy statws preswyl
-confirm-terms-multi.cgt.personal.p1.l3=rhwymedigaeth yr ymddiriedolaeth ar gyfer y flwyddyn dreth bresennol a blynyddoedd treth blaenorol
+confirm-terms-multi.cgt.personal.p1.l3=rhwymedigaeth ar gyfer y flwyddyn dreth bresennol a blynyddoedd treth blaenorol
 confirm-terms-multi.cgt.personal.p1.l4=fy nghodau treth a manylion fy lwfans personol
 confirm-terms-multi.cgt.personal.p1.l5=y symiau sy’n ddyledus a’r symiau sydd wedi’u talu
 confirm-terms-multi.cgt.personal.p1.l6=manylion cosbau’r ymddiriedolaeth
 
-confirm-terms-multi.cgt.personal.p2=Rwyf hefyd yn rhoi fy nghaniatâd i CThEM ganiatáu i {0} reoli fy nghyfrif Treth Enillion Cyfalaf ar warediadau eiddo yn y DU, er mwyn iddo allu:
+confirm-terms-multi.cgt.personal.p2=Rwyf hefyd yn rhoi fy nghaniatâd i CThEM ganiatáu i {0} reoli fy nghyfrif Treth Enillion Cyfalaf ar eiddo yn y DU, er mwyn iddo allu:
 confirm-terms-multi.cgt.personal.p2.l1=bwrw golwg dros fy Ffurflenni TAW presennol, eu newid a’u cyflwyno
 confirm-terms-multi.cgt.personal.p2.l2=bwrw golwg dros fanylion fy Ffurflenni TAW blaenorol, a’u newid
 confirm-terms-multi.cgt.personal.p2.l3=bwrw golwg dros fy nulliau cysylltu dewisol, a’u newid
@@ -595,7 +597,7 @@ check-answers.service.afi =Bwrw golwg dros eich cofnod incwm TWE
 check-answers.service.itsa =Anfon eich diweddariadau Treth Incwm drwy feddalwedd
 check-answers.service.vat =Cyflwyno’ch Ffurflenni TAW drwy feddalwedd
 check-answers.service.trust=Cynnal ymddiriedolaeth neu ystâd
-check-answers.service.cgt=Rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+check-answers.service.cgt=Rheoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 check-answers.consent.true =Iawn
 check-answers.consent.false =Na
 check-answers.change-link=Newid
@@ -815,7 +817,7 @@ recent-invitations.invitation.service.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
 recent-invitations.invitation.service.HMRC-MTD-VAT=Rheoli ei TAW
 recent-invitations.invitation.service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
-recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
+recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
 recent-invitations.invitation.identifier.vrn=Rhif cofrestru TAW:
 recent-invitations.invitation.identifier.MTDITID=Dynodydd Troi Treth yn Ddigidol ar gyfer Treth Incwm
@@ -833,6 +835,9 @@ recent-invitations.invitations.actions.rejected=Dechrau cais newydd
 recent-invitations.invitations.actions.expired=Dechrau cais newydd
 recent-invitations.invitations.actions.cancelled=Dechrau cais newydd
 recent-invitations.invitations.actions.invalidrelationship=Dechrau cais newydd
+recent-invitations.pagination.showing=Dangos
+recent-invitations.pagination.to=i
+recent-invitations.pagination.of=o
 
 #ResendLink page
 resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
