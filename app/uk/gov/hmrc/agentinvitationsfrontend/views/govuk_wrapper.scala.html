@@ -50,7 +50,7 @@
         session: Option[Session] = None,
         isAgent: Boolean,
         bannerTitle: String = "banner.agents.auth",
-        completedInviteGoSurvey: Option[Boolean] = None, hasTimeout: Boolean = true)(implicit messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+        completedInviteGoSurvey: Option[Boolean] = None, hasTimeout: Boolean = true)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @timedOutUrl = @{
     if(isAgent){
@@ -172,7 +172,9 @@
 @uiServiceInfo(
     betaBanner = betaBanner,
     includeGridWrapper = false,
-    serviceInfoContent = Some(serviceInfoContent))
+    serviceInfoContent = Some(serviceInfoContent),
+    setLang = request.cookies
+            .get("PLAY_LANG").map(_.value).getOrElse("en"))
 }
 
 @mainContentHeader = {
