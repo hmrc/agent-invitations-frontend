@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @import scala.util.Try
 
@@ -36,11 +37,6 @@
 @(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
-
-@displayDate(date: String) = @{
-    val localDate = Try(LocalDate.parse(date))
-    localDate.map(_.toString("dd MMMM yyyy", messages.lang.locale)).getOrElse(date)
-}
 
 
 @postcodeSpace = @{
@@ -116,7 +112,7 @@
                         @config.fastTrackRequest.knownFact.get
                     }
                 } else {
-                    @displayDate(config.fastTrackRequest.knownFact.get)
+                    @displayDateForLangFromString(config.fastTrackRequest.knownFact.get)
                 }
                 </dd>
             </div>

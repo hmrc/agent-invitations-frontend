@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.TrackPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template,
@@ -178,7 +179,7 @@
 @displayDate(date: Option[LocalDate]) = {
 @{
     date match {
-        case Some(d) => d.toString("dd MMMM yyyy", messages.lang.locale)
+        case Some(d) => displayDateForLangWithLeadingZero(d)
         case None => ""
     }
 }

@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 @import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template,
@@ -34,10 +35,6 @@
 
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig, changingConsent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@displayDate(date: LocalDate) = @{
-    if(date.getDayOfMonth < 10) date.toString("d MMMM yyyy", messages.lang.locale)
-    else date.toString("dd MMMM yyyy", messages.lang.locale)
-}
 
 @itsaTerms = {
 
@@ -164,12 +161,12 @@
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                             @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                                '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                                '_label -> suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate)),
                                 '_groupDivClass -> "div-underline",
                                 '_value -> "true")
                         } else {
                             @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                '_label -> suitableTerms(consent.serviceKey, displayDate(consent.expiryDate)),
+                                '_label -> suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate)),
                                 '_groupDivClass -> "div-underline")
                         }
                     }

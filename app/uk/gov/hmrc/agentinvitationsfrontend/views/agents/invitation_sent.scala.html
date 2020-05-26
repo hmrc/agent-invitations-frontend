@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationSentPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template
@@ -54,11 +55,11 @@
             <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}.${config.serviceType}"))</p>
         </li>
         <li>@Messages("invitation-sent.l2")</li>
-        <li>@Html(Messages("invitation-sent.l3", displayDate))</li>
+        <li>@Html(Messages("invitation-sent.l3", displayDateForLang(config.expiryDate)))</li>
         <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.serviceType}")</li>
     </ol>
 
-  <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDate)</p>
+  <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDateForLang(config.expiryDate)))</p>
 <p>@Messages("invitation-sent.p1.start") <a target="_blank" href="@config.trackUrl">@Messages("invitation-sent.p1.link")</a> @Messages("invitation-sent.p1.end")</p>
 <ol class="list list-bullet margin-left-0">
 <li>@Messages("invitation-sent.l5")</li>

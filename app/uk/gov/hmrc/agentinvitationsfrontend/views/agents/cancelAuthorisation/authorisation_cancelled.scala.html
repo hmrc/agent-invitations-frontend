@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import java.time.format.DateTimeFormatter
 @import java.time.{LocalDate, ZoneOffset}
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template
@@ -32,7 +33,7 @@
 
      <div class="transaction-banner--complete">
       <h1 class="transaction-banner__heading">@Messages("cancel-authorisation.cancelled.header")</h1>
-         <p class="transaction-banner__heading">@{LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM YYYY").withZone(ZoneOffset.UTC))}</p>
+         <p class="transaction-banner__heading">@displayDateForLang(Some(LocalDate.now()))</p>
      </div>
 
     <h2 class="heading-medium">@Messages("cancel-authorisation.cancelled.subheader")</h2>

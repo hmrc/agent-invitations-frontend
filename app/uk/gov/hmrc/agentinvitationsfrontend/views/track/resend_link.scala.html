@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template
@@ -27,10 +28,6 @@
 
 @(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@displayDate = @{
-    if(config.expiryDateAsLocalDate.getDayOfMonth < 10) config.expiryDateAsLocalDate.toString("d MMMM yyyy", messages.lang.locale)
-    else config.expiryDateAsLocalDate.toString("dd MMMM yyyy", messages.lang.locale)
-}
 
 @mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some(true)) {
 
@@ -43,11 +40,11 @@
             <p><span id="invitationUrl" class="word-wrap">@config.fullAgentLink</span></p>
             <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}.${config.service}"))</p></li>
         <li>@Messages("invitation-sent.l2")</li>
-        <li>@Html(Messages("invitation-sent.l3", displayDate))</li>
+        <li>@Html(Messages("invitation-sent.l3", displayDateForLang(config.expiryDateAsLocalDate)))</li>
         <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.service}")</li>
     </ol>
 
-    <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDate)</p>
+    <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDateForLang(config.expiryDateAsLocalDate))</p>
 
     <p>@Html(Messages("invitation-sent.resend.track-info.header", config.trackLink))</p>
 
