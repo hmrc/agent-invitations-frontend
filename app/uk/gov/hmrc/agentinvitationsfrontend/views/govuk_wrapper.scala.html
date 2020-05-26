@@ -128,7 +128,7 @@
     <li>
     @if(session.fold(false)(s => s.get("authToken").isDefined)) {
         <a href="@Html(externalUrls.signOutUrl(isAgent, completedInviteGoSurvey))" data-journey-click="primary-navigation:Click:Sign out">
-            Sign out</a>
+            @Messages("common.sign-out")</a>
     }
     </li>
 }

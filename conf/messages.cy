@@ -290,7 +290,7 @@ cancel-authorisation.utr=Cyfeirnod Unigryw y Trethdalwr: {0}
 cancel-authorisation.cgt.account-ref=Cyfeirnod cyfrif Treth Enillion Cyfalaf: {0}
 
 cancel-authorisation.confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r awdurdodiad hwn?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli Treth Incwm ar gyfer {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Incwm ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu gweld y cofnod incwm TWE ar gyfer y cleient hwn.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cyflwyno Ffurflenni TAW drwy feddalwedd ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
@@ -315,7 +315,7 @@ cancel-authorisation.trust-select-service.header=Pa awdurdodiad yr hoffech ei ga
 cancel-authorisation.error.trust-service.required=Dewiswch ‘Iawn’ os hoffech ganslo Ffurflenni Treth y cleient hwn drwy feddalwedd
 
 cancel-authorisation.not-matched.header=Nid oeddem yn gallu dod o hyd i’ch cleient
-cancel-authorisation.not-matched.description=Nid oeddem yn gallu dod o hyd i’ch cleient
+cancel-authorisation.not-matched.description=Nid oeddem yn gallu dod o hyd i gleient yn ein cofnodion gan ddefnyddio’r manylion a roesoch i ni.
 cancel-authorisation.not-matched.advice=Gwiriwch y manylion a rhowch gynnig arall arni.
 
 cancel-authorisation.start-over.button=Dechrau eto
@@ -369,7 +369,7 @@ not-enrolled.p.HMRC-MTD-IT=gofrestru.
 not-enrolled.p.HMRC-MTD-VAT=gofrestru.
 not-enrolled.p.HMRC-TERS-ORG=hawlio ymddiriedolaeth.
 
-not-enrolled.existing.header=hawlio ymddiriedolaeth.
+not-enrolled.existing.header=Cleientiaid {0} presennol
 not-enrolled.existing.p=Os gwnaethoch gopïo awdurdodiad {0} presennol ar gyfer y cleient hwn i’ch cyfrif gwasanaethau asiant, gallwch {1}
 not-enrolled.existing.p.HMRC-MTD-IT=<a target=”_blank” href=”{0}” >ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor ffenestr neu dab newydd).</a>
 not-enrolled.existing.p.HMRC-MTD-VAT=<a target=”_blank” href=”{0}”>ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).</a>
@@ -922,4 +922,6 @@ timeout-dialog.p1.client=Am resymau diogelwch, cewch eich allgofnodi ymhen
 timed-out.header=Rydych wedi cael eich allgofnodi
 timed-out.p1=Nid ydych wedi gwneud dim byd ers {0}, felly rydym wedi’ch allgofnodi er mwyn cadw’ch cyfrif yn ddiogel.
 timed-out.p2=<a href="{0}">Mewngofnodwch eto</a> i ddefnyddio’r gwasanaeth hwn.
-timed-out.button=dechrau eto
+timed-out.button=Dechrau eto
+timed-out.minutes=munud
+timed-out.seconds=eiliad

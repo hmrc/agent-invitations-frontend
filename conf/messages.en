@@ -922,4 +922,6 @@ timeout-dialog.p1.client=For security reasons, you will be signed out in
 timed-out.header=You have been signed out
 timed-out.p1=You have not done anything for {0}, so we have signed you out to keep your account secure.
 timed-out.p2=<a href="{0}">Sign in again</a> to use this service.
-timed-out.button=start again
+timed-out.button=Start again
+timed-out.minutes=minutes
+timed-out.seconds=seconds
