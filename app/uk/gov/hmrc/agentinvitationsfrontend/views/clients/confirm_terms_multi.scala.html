@@ -42,6 +42,7 @@
 <ul class="list list-bullet">
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
+
 </ul>
 }
 
@@ -61,6 +62,17 @@
         <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item3")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item4")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item5")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item6")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item7")</li>
+        <li>@Messages("confirm-terms-multi.vat.list.item8")</li>
+        <ul class="list list-bullet">
+            <li>@Messages("confirm-terms-multi.vat.list.item9")</li>
+            <li>@Messages("confirm-terms-multi.vat.list.item10")</li>
+            <li>@Messages("confirm-terms-multi.vat.list.item11")</li>
+            <li>@Messages("confirm-terms-multi.vat.list.item12")</li>
+        </ul>
     </ul>
 }
 
@@ -82,15 +94,14 @@
             <li>@Messages("confirm-terms-multi.cgt.personal.p1.l3")</li>
             <li>@Messages("confirm-terms-multi.cgt.personal.p1.l4")</li>
             <li>@Messages("confirm-terms-multi.cgt.personal.p1.l5")</li>
-            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l6")</li>
-        </ul>
 
-        <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.cgt.personal.p2", pageConfig.agencyName)</span>
         <ul class="list list-bullet">
-            <li>@Messages("confirm-terms-multi.cgt.personal.p2.l1")</li>
-            <li>@Messages("confirm-terms-multi.cgt.personal.p2.l2")</li>
-            <li>@Messages("confirm-terms-multi.cgt.personal.p2.l3")</li>
-            <li>@Messages("confirm-terms-multi.cgt.personal.p2.l4")</li>
+            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l6")</li>
+            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l7")</li>
+            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l8")</li>
+            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l9")</li>
+            <li>@Messages("confirm-terms-multi.cgt.personal.p1.l10")</li>
+        </ul>
         </ul>
     } else {
         <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)</span>
@@ -99,14 +110,15 @@
             <li>@Messages("confirm-terms-multi.cgt.business.p1.l2")</li>
             <li>@Messages("confirm-terms-multi.cgt.business.p1.l3")</li>
             <li>@Messages("confirm-terms-multi.cgt.business.p1.l4")</li>
-        </ul>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l5")</li>
 
-        <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.cgt.business.p2", pageConfig.agencyName)</span>
         <ul class="list list-bullet">
-            <li>@Messages("confirm-terms-multi.cgt.business.p2.l1")</li>
-            <li>@Messages("confirm-terms-multi.cgt.business.p2.l2")</li>
-            <li>@Messages("confirm-terms-multi.cgt.business.p2.l3")</li>
-            <li>@Messages("confirm-terms-multi.cgt.business.p2.l4")</li>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l6")</li>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l7")</li>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l8")</li>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l9")</li>
+            <li>@Messages("confirm-terms-multi.cgt.business.p1.l10")</li>
+        </ul>
         </ul>
    }
 }
@@ -157,16 +169,18 @@
 
                     @if(pageConfig.isPending(consent)) {
 
-                        <h2 class="margin-top-0 heading-small margin-bottom-20">@Messages(s"confirm-terms-multi.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}.heading")</h2>
+                        <h2 class="margin-top-0 heading-medium margin-bottom-20 margin-top-20">@Messages(s"confirm-terms-multi.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}.heading")</h2>
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
+                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
                             @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                                '_label -> suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate)),
+                                '_label -> Messages(s"confirm-terms-multi.${consent.serviceKey}.label", pageConfig.agencyName),
                                 '_groupDivClass -> "div-underline",
                                 '_value -> "true")
                         } else {
+                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
                             @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                '_label -> suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate)),
+                                '_label -> Messages(s"confirm-terms-multi.${consent.serviceKey}.label", pageConfig.agencyName),
                                 '_groupDivClass -> "div-underline")
                         }
                     }
