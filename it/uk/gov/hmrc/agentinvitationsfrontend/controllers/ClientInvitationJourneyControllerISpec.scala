@@ -368,13 +368,22 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
+          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms.multi.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms.legend.single", "My Agency"))
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.itsa.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item2"))
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Income Tax.")
+
     }
 
     "display the multi consent page for cgt personal" in {
@@ -390,6 +399,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms.multi.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms.legend.single", "My Agency"))
+
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.heading"))
       checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.cgt.personal.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l1"))
@@ -398,13 +410,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l4"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l5"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l6"))
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p2.l4"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.legend.single", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l7"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l8"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l9"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.personal.p1.l10"))
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Capital Gains Tax on UK property account details.")
     }
 
     "display the correct legend message when there are multiple invitations" in {
@@ -443,12 +453,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l3"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l5"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l6"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l7"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l8"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l9"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l10"))
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Capital Gains Tax on UK property account details.")
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2", "My Agency"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p2.l4"))
     }
   }
 
