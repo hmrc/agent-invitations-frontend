@@ -522,7 +522,6 @@ confirm-terms.multi-individual.heading=Change your consent
 confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
 confirm-terms.legend.multi=Select the services for which you consent to HMRC sharing your information with {0}
 confirm-terms.legend.single=Select if you consent to HMRC sharing your information with {0}
-
 confirm-terms-multi.itsa.heading=Manage my Income Tax
 confirm-terms-multi.itsa.p1=If you consent to HMRC allowing {0} to manage your Income Tax, this means {0} can:
 confirm-terms-multi.itsa.list.item1=view your income and expenses information
@@ -540,7 +539,7 @@ confirm-terms-multi.pir.list.item4=your PAYE involvement start and end dates
 confirm-terms-multi.afi.label=I consent to HMRC allowing {0} to view my PAYE Income Record.
 
 confirm-terms-multi.vat.heading=Manage my VAT
-confirm-terms-multi.vat.p1=If you consent to HMRC allowing {0} to manage your VAT, this means ABC Accountants can:
+confirm-terms-multi.vat.p1=If you consent to HMRC allowing {0} to manage your VAT, this means {0} can:
 confirm-terms-multi.vat.list.item1=discuss your VAT with HMRC
 confirm-terms-multi.vat.list.item2=view and change your VAT and bank details
 confirm-terms-multi.vat.list.item3=view, change and submit your VAT details
