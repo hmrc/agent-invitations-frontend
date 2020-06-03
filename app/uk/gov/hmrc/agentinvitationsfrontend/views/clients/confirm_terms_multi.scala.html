@@ -138,6 +138,14 @@
    if(changingConsent) Messages("change.consent.heading") else Messages("confirm-terms.multi.heading")
 }
 
+    @label(serviceKey: String) = @{
+        if(pageConfig.clientType == "business" && serviceKey == "cgt") {
+            Messages(s"confirm-terms-multi.${serviceKey}.business.label", pageConfig.agencyName)
+        } else {
+            Messages(s"confirm-terms-multi.${serviceKey}.label", pageConfig.agencyName)
+        }
+    }
+
 @mainTemplate(bannerTitle = "banner.clients", title =  errorPrefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
 
@@ -174,13 +182,13 @@
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                             @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
                             @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                                '_label -> Messages(s"confirm-terms-multi.${consent.serviceKey}.label", pageConfig.agencyName),
+                                '_label -> label(consent.serviceKey),
                                 '_groupDivClass -> "div-underline",
                                 '_value -> "true")
                         } else {
                             @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
                             @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                '_label -> Messages(s"confirm-terms-multi.${consent.serviceKey}.label", pageConfig.agencyName),
+                                '_label -> label(consent.serviceKey),
                                 '_groupDivClass -> "div-underline")
                         }
                     }

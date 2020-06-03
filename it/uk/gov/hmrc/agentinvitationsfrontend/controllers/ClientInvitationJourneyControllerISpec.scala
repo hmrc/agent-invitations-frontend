@@ -459,7 +459,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l8"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l9"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.cgt.business.p1.l10"))
-      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Capital Gains Tax on UK property account details.")
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage a trust’s Capital Gains Tax on UK property account.")
 
     }
   }

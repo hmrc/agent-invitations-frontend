@@ -522,6 +522,7 @@ confirm-terms.multi-individual.heading=Change your consent
 confirm-terms.multi.p1=Giving your consent means employees of {0} will be able to access your data. It will last until you remove their authorisation to act on your behalf.
 confirm-terms.legend.multi=Select the services for which you consent to HMRC sharing your information with {0}
 confirm-terms.legend.single=Select if you consent to HMRC sharing your information with {0}
+
 confirm-terms-multi.itsa.heading=Manage my Income Tax
 confirm-terms-multi.itsa.p1=If you consent to HMRC allowing {0} to manage your Income Tax, this means {0} can:
 confirm-terms-multi.itsa.list.item1=view your income and expenses information
@@ -592,25 +593,10 @@ confirm-terms-multi.cgt.business.p1.l7=residence status
 confirm-terms-multi.cgt.business.p1.l8=liability for current and previous tax years
 confirm-terms-multi.cgt.business.p1.l9=amounts due and paid
 confirm-terms-multi.cgt.business.p1.l10=penalty details
+confirm-terms-multi.cgt.business.label=I consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account.
 
-confirm-terms-multi.cgt.business.p2=I also consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account, so they can:
-confirm-terms-multi.cgt.business.p2.l1=view, change and submit the trust’s current returns
-confirm-terms-multi.cgt.business.p2.l2=view and change the trust’s previous return details
-confirm-terms-multi.cgt.business.p2.l3=view and change the trust’s contact preferences
-confirm-terms-multi.cgt.business.p2.l4=contact HMRC to discuss the trust’s returns, payments and any penalties
-
-confirm-terms.itsa.bullet1=your Income Tax updates information
-confirm-terms.itsa.bullet2=our calculation of your Income Tax estimate
 confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Income Tax.
 
-confirm-terms.afi.bullet1=who you have worked for in the past
-confirm-terms.afi.bullet2=taxable benefits like medical insurance and company car
-confirm-terms.afi.bullet3=pensions
-confirm-terms.afi.bullet4=your PAYE employment start and end dates
-
-confirm-terms.vat.bullet1=your VAT registration details, such as business name and contact details
-confirm-terms.vat.bullet2=your VAT returns submitted online for the last 15 months
-confirm-terms.vat.bullet3=how your VAT returns have been calculated
 confirm-terms.vat.p1=This tax agent needs access to this information to manage your VAT.
 
 #Check answers
