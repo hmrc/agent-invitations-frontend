@@ -595,24 +595,8 @@ confirm-terms-multi.cgt.business.p1.l9=y symiau sy’n ddyledus a’r symiau syd
 confirm-terms-multi.cgt.business.p1.l10=manylion cosbau’r ymddiriedolaeth
 confirm-terms-multi.cgt.business.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli manylion cyfrif Treth Enillion Cyfalaf ymddiriedolaeth ar eiddo yn y DU.
 
-confirm-terms-multi.cgt.business.p2=Rwyf hefyd yn rhoi fy nghaniatâd i CThEM ganiatáu i {0} reoli cyfrif yr ymddiriedolaeth o ran Treth Enillion Cyfalaf ar warediadau eiddo yn y DU, er mwyn iddo allu:
-confirm-terms-multi.cgt.business.p2.l1=bwrw golwg dros Ffurflenni TAW presennol yr ymddiriedolaeth, eu newid a’u cyflwyno
-confirm-terms-multi.cgt.business.p2.l2=bwrw golwg dros fanylion Ffurflenni TAW blaenorol yr ymddiriedolaeth, a’u newid
-confirm-terms-multi.cgt.business.p2.l3=bwrw golwg dros ddulliau cysylltu dewisol yr ymddiriedolaeth, a’u newid
-confirm-terms-multi.cgt.business.p2.l4=cysylltu â CThEM i drafod Ffurflenni TAW yr ymddiriedolaeth, ei thaliadau ac unrhyw gosbau
-
-confirm-terms.itsa.bullet1=gwybodaeth am eich diweddariadau Treth Incwm
-confirm-terms.itsa.bullet2=ein cyfrifiad o’ch Treth Incwm amcangyfrifedig
 confirm-terms.itsa.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch Treth Incwm.
 
-confirm-terms.afi.bullet1=i bwy rydych wedi gweithio yn y gorffennol
-confirm-terms.afi.bullet2=buddiannau trethadwy megis yswiriant meddygol a char cwmni
-confirm-terms.afi.bullet3=pensiynau
-confirm-terms.afi.bullet4=dyddiadau dechrau a gorffen eich cyflogaeth TWE
-
-confirm-terms.vat.bullet1=manylion eich cofrestriad TAW, megis enw’r busnes a manylion cyswllt
-confirm-terms.vat.bullet2=eich Ffurflenni TAW a gyflwynwyd ar-lein ar gyfer y 15 mis diwethaf
-confirm-terms.vat.bullet3=sut y mae’ch Ffurflenni TAW wedi’u cyfrifo
 confirm-terms.vat.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch TAW.
 
 #Check answers
