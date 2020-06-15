@@ -201,11 +201,11 @@ invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once.
 invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
 invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
 invitation-sent.l3=<span>Make sure they respond by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
-invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs. If your client does not have a user ID, they can create one when they go to your link.
-invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate. If your client does not have a user ID, they can create one when they go to your link.
+invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs.
+invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs.
+invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
+invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs.
+invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
 invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
 invitation-sent.p1.start=You can
 invitation-sent.p1.link=track your recent authorisation requests

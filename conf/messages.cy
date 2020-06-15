@@ -201,11 +201,11 @@ invitation-sent.l1.p.personal.HMRC-CGT-PD=Dim ond unwaith y mae angen i chi ei a
 invitation-sent.l1.p.business.HMRC-CGT-PD=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;">ymddiriedolaethau neu ystadau</span>.
 invitation-sent.l2=Gofynnwch i’ch cleient ddilyn y cysylltiad er mwyn iddo allu derbyn eich cais am awdurdodiad.
 invitation-sent.l3=<span>Gwnewch yn siŵr ei fod yn ateb erbyn <span style="font-weight:bold;">{0}</span>, neu bydd eich cysylltiad yn dod i ben.</span>
-invitation-sent.l4.personal.personal=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol. Os nad oes gan eich cleient Ddynodydd Defnyddiwr (ID), gall greu un pan fydd yn dilyn eich cysylltiad.
-invitation-sent.l4.business.HMRC-MTD-VAT=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth busnes. Os nad oes gan eich cleient Ddynodydd Defnyddiwr (ID), gall greu un pan fydd yn dilyn eich cysylltiad.
-invitation-sent.l4.business.HMRC-TERS-ORG=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd. Os nad oes gan eich cleient Ddynodydd Defnyddiwr (ID), gall greu un pan fydd yn dilyn eich cysylltiad.
-invitation-sent.l4.personal.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol. Os nad oes gan eich cleient Ddynodydd Defnyddiwr (ID), gall greu un pan fydd yn dilyn eich cysylltiad.
-invitation-sent.l4.business.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd. Os nad oes gan eich cleient Ddynodydd Defnyddiwr (ID), gall greu un pan fydd yn dilyn eich cysylltiad.
+invitation-sent.l4.personal.personal=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol.
+invitation-sent.l4.business.HMRC-MTD-VAT=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth busnes.
+invitation-sent.l4.business.HMRC-TERS-ORG=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd.
+invitation-sent.l4.personal.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol.
+invitation-sent.l4.business.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd.
 invitation-sent.email.p=Byddwn yn anfon e-bost at {0} os yw’ch cleient yn derbyn neu’n gwrthod eich cais, neu os nad yw’n ateb erbyn {1}.
 invitation-sent.p1.start=Gallwch
 invitation-sent.p1.link=olrhain eich ceisiadau awdurdodi diweddar
