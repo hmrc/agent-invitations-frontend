@@ -445,8 +445,8 @@ landing-page.service.vat.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth os y
 # Warm up
 warm-up.header=Penodi {0} i ddelio â CThEM ar eich rhan
 warm-up.p1=Defnyddiwch y gwasanaeth i ganiatáu i {0} eich helpu i reoli’ch materion treth.
-warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>. Gallwch greu Dynodydd Defnyddiwr (ID) nawr os nad oes gennych un.
-warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>. Gallwch greu Dynodydd Defnyddiwr (ID) nawr os nad oes gennych un.
+warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
+warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>.
 warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
 warm-up.link=Ni hoffwn benodi {0}
 
