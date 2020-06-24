@@ -29,7 +29,7 @@
     ga('create', '@token', '@analyticsHost');
 
     @for(consent <- config.consents) {
-        if(@consent.consent) {
+        @if(consent.consent) {
             ga('send', 'event', 'invitation', 'accepted', '@consent.service');
         } else {
             ga('send', 'event', 'invitation', 'declined', '@consent.service');
