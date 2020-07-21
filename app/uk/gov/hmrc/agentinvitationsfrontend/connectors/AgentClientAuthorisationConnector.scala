@@ -96,7 +96,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
-      http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation) map { r =>
+      http.POST[AgentInvitation, HttpResponse](
+        createInvitationUrl(arn).toString,
+        agentInvitation,
+        Seq("Origin" -> "agent-invitations-frontend")) map { r =>
         r.header("location")
       }
     }
