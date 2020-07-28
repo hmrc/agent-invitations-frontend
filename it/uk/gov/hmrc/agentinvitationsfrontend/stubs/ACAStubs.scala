@@ -73,21 +73,42 @@ trait ACAStubs {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
                          |    "expiryDate": "9999-11-01",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |           "time" : 1595502969891,
+                         |           "status" : "$status"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
                          |    "expiryDate": "9999-03-05",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events": [
+                         |        {
+                         |           "time": 1595502969892,
+                         |           "status": "$status"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
                          |    "expiryDate": "9999-12-25",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969893,
+                         |            "status" : "$status"
+                         |        }
+                         |    ]
                          |  }
                          |]
                          |""".stripMargin)
@@ -107,21 +128,42 @@ trait ACAStubs {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
                          |    "expiryDate": "9999-11-01",
-                         |    "status": "Accepted"
+                         |    "status": "Accepted",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969898,
+                         |            "status" : "Accepted"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
                          |    "expiryDate": "9999-03-05",
-                         |    "status": "Cancelled"
+                         |    "status": "Cancelled",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969899,
+                         |            "status" : "Cancelled"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
                          |    "expiryDate": "9999-12-25",
-                         |    "status": "Cancelled"
+                         |    "status": "Cancelled",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969890,
+                         |            "status" : "Cancelled"
+                         |        }
+                         |    ]
                          |  }
                          |]
                          |""".stripMargin)
@@ -141,28 +183,56 @@ trait ACAStubs {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
                          |    "expiryDate": "9999-11-01",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969897,
+                         |            "status" : "$status"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
                          |     "expiryDate": "9999-03-05",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969896,
+                         |            "status" : "$status"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
                          |    "expiryDate": "9999-12-25",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969895,
+                         |            "status" : "$status"
+                         |        }
+                         |    ]
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "DF99K6PXSBHTF"
                          |    },
                          |    "expiryDate": "9999-12-25",
-                         |    "status": "$status"
+                         |    "status": "$status",
+                         |    "isRelationshipEnded" : false,
+                         |    "events" : [
+                         |        {
+                         |            "time" : 1595502969894,
+                         |            "status" : "$status"
+                         |        }
+                         |    ]
                          |  }
                          |]
                          |""".stripMargin)
