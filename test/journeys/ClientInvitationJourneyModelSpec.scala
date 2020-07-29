@@ -16,7 +16,7 @@
 
 package journeys
 
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
@@ -111,7 +111,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "submitting intent to continue" should {
         "transition to Consent when the invitation is found" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  invitationStatus,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -127,7 +134,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation has a status of Accepted" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Accepted)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Accepted,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Accepted)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -138,7 +152,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation has a status of Cancelled" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Cancelled)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Cancelled)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -149,7 +170,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation has a status of Expired" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Expired)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Expired,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Expired)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -162,8 +190,19 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
-                InvitationDetails(invitationIdItsa, expiryDate, Expired),
-                InvitationDetails(invitationIdItsa, expiryDate, Accepted)))
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Expired,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Expired))),
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Accepted,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Accepted)))
+              ))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -174,7 +213,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdTrust, expiryDate, invitationStatus)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdTrust,
+                  expiryDate,
+                  invitationStatus,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
@@ -184,7 +230,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to SuspendedAgent when agent is suspended for one or more of consent services" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  invitationStatus,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getSuspendedForItsa(arn: Arn) = Future(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -214,7 +267,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "submitting intent to decline" should {
         "transition to ConfirmDecline when the invitation is found" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  invitationStatus,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
@@ -230,7 +290,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "transition to NotFoundInvitation when the invitation status is Rejected" in {
           def getInvitationDetails(uid: String) =
-            Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Rejected)))
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Rejected,
+                  false,
+                  List(StatusChangeEvent(DateTime.now(), Rejected)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when

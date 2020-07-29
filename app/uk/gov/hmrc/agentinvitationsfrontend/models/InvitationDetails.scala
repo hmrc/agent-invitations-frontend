@@ -16,13 +16,45 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
-import play.api.libs.json.{Format, Json}
+import org.joda.time.{DateTime, LocalDate}
+import play.api.libs.json.{Format, JsResult, JsSuccess, JsValue, Json}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
-case class InvitationDetails(invitationId: InvitationId, expiryDate: LocalDate, status: InvitationStatus)
+case class StatusChangeEvent(time: DateTime, status: InvitationStatus)
+
+object StatusChangeEvent {
+  implicit val statusChangeEventFormat = new Format[StatusChangeEvent] {
+    override def reads(json: JsValue): JsResult[StatusChangeEvent] = {
+      val time = new DateTime((json \ "time").as[Long])
+      val status = InvitationStatus((json \ "status").as[String])
+      JsSuccess(StatusChangeEvent(time, status))
+    }
+
+    override def writes(o: StatusChangeEvent): JsValue =
+      Json.obj(
+        "time"   -> o.time.getMillis,
+        "status" -> o.status.toString
+      )
+  }
+}
+
+case class InvitationDetails(
+  invitationId: InvitationId,
+  expiryDate: LocalDate,
+  status: InvitationStatus,
+  isRelationshipEnded: Boolean,
+  events: List[StatusChangeEvent]) {
+
+  def firstEvent(): StatusChangeEvent =
+    events.head
+
+  def mostRecentEvent(): StatusChangeEvent =
+    events.last
+
+  def mostRecentStatus: InvitationStatus = mostRecentEvent().status
+}
 
 object InvitationDetails {
   implicit val format: Format[InvitationDetails] = Json.format[InvitationDetails]
