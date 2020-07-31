@@ -4,7 +4,7 @@ import play.api.mvc.Results.Ok
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class RedirectUrlActionsISpec extends BaseISpec {

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{JsPath, Json, OFormat, Reads}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Reads}
 
 case class FastTrackErrors(
   clientType: Option[String],

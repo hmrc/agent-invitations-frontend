@@ -11,7 +11,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
@@ -35,7 +35,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation" should {
     "redirect to the client type page when there is no current state" in {
-      journeyState.clear(hc, ec)
+      journeyState.clear
       val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
       val root = controller.agentLedDeauthRoot()
       val result = root(authorisedAsValidAgent(request, arn.value))
@@ -66,7 +66,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         checkResultContainsBackLink(result, s"http://localhost:$wireMockPort/agent-services-account/home")
       }
       "there is no state or breadcrumbs redirect to the client type page" in {
-        journeyState.clear(hc, ec)
+        journeyState.clear
         val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
         val selectClientType = controller.showClientType()
 

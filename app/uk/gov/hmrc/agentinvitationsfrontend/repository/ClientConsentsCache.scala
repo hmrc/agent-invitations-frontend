@@ -17,11 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import com.google.inject.Singleton
-import javax.inject.{Inject, Named}
-import play.modules.reactivemongo.ReactiveMongoComponent
+import javax.inject.Inject
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsentsJourneyState
-
-import scala.concurrent.ExecutionContext
 
 @Singleton
 class ClientConsentsCache @Inject()(val cacheRepository: SessionCacheRepository)

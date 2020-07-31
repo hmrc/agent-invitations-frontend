@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.forms
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 
 object CommonConfirmationForms {

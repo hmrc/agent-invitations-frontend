@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.i18n.Messages
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 /** The set of services available that an agent can choose for authorisation
   *

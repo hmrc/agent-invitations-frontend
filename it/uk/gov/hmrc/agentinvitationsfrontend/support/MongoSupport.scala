@@ -11,8 +11,6 @@ import scala.language.postfixOps
 trait MongoSupport extends MongoSpecSupport with BeforeAndAfterEach {
   me: Suite =>
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-
   protected def mongoConfiguration =
     Map(
       "mongodb.uri" -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default")

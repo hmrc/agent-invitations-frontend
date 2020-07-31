@@ -40,7 +40,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
 import scala.concurrent.ExecutionContext

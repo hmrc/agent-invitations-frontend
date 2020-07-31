@@ -22,7 +22,6 @@ import play.api.data.format.Formats._
 import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 
