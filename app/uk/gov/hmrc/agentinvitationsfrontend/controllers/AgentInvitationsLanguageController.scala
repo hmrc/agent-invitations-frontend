@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.Inject
 import play.api.Configuration
 import play.api.i18n.{Lang, MessagesApi}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Flash}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 

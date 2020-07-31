@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class SelectServicePageConfigCancel(
   featureFlags: FeatureFlags,

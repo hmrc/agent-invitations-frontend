@@ -24,7 +24,6 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -137,7 +136,8 @@ class TrackService @Inject()(
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int)
 
   def bindInvitationsAndRelationships(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int, pageInfo: PageInfo)(
-    implicit hc: HeaderCarrier): Future[TrackResultsPage] = {
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[TrackResultsPage] = {
     implicit val now = LocalDate.now(DateTimeZone.UTC)
     val allResults = for {
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)

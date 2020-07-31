@@ -37,14 +37,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   before {
-    journeyState.clear(hc, ec)
+    journeyState.clear
   }
 
   "GET /agents" should {
     val request = FakeRequest("GET", "/agents")
 
     "redirect to /agents/client-type if no current state" in {
-      journeyState.clear(hc, ec)
+      journeyState.clear
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
@@ -65,7 +65,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the client type page" when {
       "there is no journey history (first visit)" in {
-        journeyState.clear(hc, ec)
+        journeyState.clear
 
         behave like itShowsClientTypePage(
           withBackLinkUrl = externalUrls.agentServicesAccountUrl)

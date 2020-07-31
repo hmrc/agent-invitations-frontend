@@ -17,9 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import org.joda.time.{DateTime, LocalDate}
-import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext
 
 case class TrackedInvitation(
   clientType: Option[String],

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{JsError, JsResult, JsString, JsSuccess, JsValue, Reads, Writes}
+import play.api.libs.json._
 import uk.gov.hmrc.http.BadRequestException
 
 sealed trait IVResult {

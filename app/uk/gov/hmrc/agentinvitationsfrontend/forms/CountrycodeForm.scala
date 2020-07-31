@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CountryCode, Postcode}
+import uk.gov.hmrc.agentinvitationsfrontend.models.CountryCode
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
 object CountrycodeForm {

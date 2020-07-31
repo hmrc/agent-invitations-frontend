@@ -14,15 +14,13 @@
  * limitations under the License.
  *@
 
-@import org.joda.time.LocalDate
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ConfirmedTerms
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-@import uk.gov.hmrc.play.views.html.helpers.{errorSummary, form}
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template,

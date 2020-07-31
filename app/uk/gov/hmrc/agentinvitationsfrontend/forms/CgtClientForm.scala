@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Form
 import play.api.data.Forms.mapping
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CgtClient, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validCgtRef}
 import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 

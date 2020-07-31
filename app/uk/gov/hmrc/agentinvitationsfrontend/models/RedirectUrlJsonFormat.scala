@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
+import uk.gov.hmrc.play.bootstrap.binders.{RedirectUrl, UnsafePermitAll}
 
 object RedirectUrlJsonFormat {
 

@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
 case class AuthorisedAgent(arn: Arn, isWhitelisted: Boolean) {

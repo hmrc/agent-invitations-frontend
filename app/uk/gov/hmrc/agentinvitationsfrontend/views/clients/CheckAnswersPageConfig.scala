@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 case class CheckAnswersPageConfig(
   consents: Seq[ClientConsent],

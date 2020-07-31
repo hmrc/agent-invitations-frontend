@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.business
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
