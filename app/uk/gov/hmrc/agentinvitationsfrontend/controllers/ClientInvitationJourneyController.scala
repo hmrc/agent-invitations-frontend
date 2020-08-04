@@ -70,7 +70,8 @@ class ClientInvitationJourneyController @Inject()(
   allResponsesFailedView: all_responses_failed,
   someResponsesFailedView: some_responses_failed,
   trustNotClaimedView: trust_not_claimed,
-  suspendedAgentView: suspended_agent)(
+  suspendedAgentView: suspended_agent,
+  errorCannotViewRequestView: error_cannot_view_request)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -241,6 +242,20 @@ class ClientInvitationJourneyController @Inject()(
 
   def submitSomeResponsesFailed = action { implicit request =>
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
+  }
+
+  def showErrorCannotViewRequest(ggSignInUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      journeyService.currentState.flatMap {
+        case Some(stateAndBreadCrumbs) =>
+          stateAndBreadCrumbs._1 match {
+            case WarmUp(clientType, _, _, _, _) =>
+              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType), ggSignInUrl))
+            case _ => Future successful Forbidden(notAuthorisedAsClientView())
+          }
+        case None => Future successful Forbidden(notAuthorisedAsClientView())
+      }
+    }
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>

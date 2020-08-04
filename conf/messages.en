@@ -925,6 +925,8 @@ error.cannot-view-request.p1=You have signed in using an agent user ID.
 error.cannot-view-request.p2=If you are the agent, ask your client to respond to the authorisation request link.
 error.cannot-view-request.p3=If you are not an agent, sign in with the Government Gateway user ID that you use for your {0}.
 error.cannot-view-request.button=Continue
+error.cannot-view-request.client-type.business=business tax affairs
+error.cannot-view-request.client-type.personal=personal tax affairs
 
 #session time out
 timeout-dialog.title=You are about to be signed out

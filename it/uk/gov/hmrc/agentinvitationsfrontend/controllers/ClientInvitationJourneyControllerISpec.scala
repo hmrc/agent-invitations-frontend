@@ -225,12 +225,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to not authorised when an agent tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
-      val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
+      val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
 
       val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
       status(result) shouldBe 303
+
+      val continueUrlEncoded =
+        URLEncoder.encode("http://localhost:9025/gg/sign-in?continue=/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
       redirectLocation(result) shouldBe Some(
-        routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent().url)
+      s"/invitations/respond/error/cannot-view-request?ggSignInUrl=$continueUrlEncoded"
+      )
     }
 
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
@@ -1113,6 +1117,31 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p2"))
+    }
+  }
+
+  "GET /respond/error/cannot-view-request" should {
+    "display the error cannot view request page when current state is WarmUp" in {
+      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      val result = controller.showErrorCannotViewRequest(None)(authorisedAsValidAgent(FakeRequest(), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.p2"))
+      checkHtmlResultWithBodyText(result , "If you are not an agent, sign in with the Government Gateway user ID that you use for your personal tax affairs.")
+    }
+
+    "display the not authorised as client view if the current state is not WarmUp" in {
+      journeyState.set(TrustNotClaimed, Nil)
+      val result = controller.showErrorCannotViewRequest(None)(authorisedAsValidAgent(FakeRequest(), arn.value))
+
+      status(result) shouldBe 403
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
     }
   }
 

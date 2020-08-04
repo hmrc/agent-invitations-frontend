@@ -26,6 +26,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
 
   val companyAuthUrl = appConfig.companyAuthFrontendExternalUrl
   val companyAuthSignOutPath = appConfig.companyAuthFrontendSignoutPath
+  val companyAuthSignInPath = appConfig.companyAuthFrontendSigninPath
   val businessTaxAccountUrl = appConfig.btaExternalUrl
   val agentServicesAccountUrl = s"${appConfig.asaFrontendExternalUrl}/agent-services-account/home"
   val contactFrontendUrl = appConfig.contactFrontendExternalUrl
@@ -47,6 +48,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val guidanceUrlSaNew = s"${appConfig.govUkGuidanceExternalUrl}/use-software-to-send-income-tax-updates"
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
+  val companyAuthFrontendSignInUrl = s"$companyAuthUrl$companyAuthSignInPath"
 
   private def contactFrontendServiceId(isAgent: Boolean) =
     if (isAgent) agentOriginToken else clientOriginToken
