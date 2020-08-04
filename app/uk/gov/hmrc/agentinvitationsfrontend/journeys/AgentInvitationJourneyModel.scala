@@ -291,16 +291,24 @@ object AgentInvitationJourneyModel extends JourneyModel {
       }
     }
 
+    private def removeSpaceFromPostcode(postcode: String): String =
+      postcode.replace(" ", "")
+
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       postcode: Postcode): Transition =
       Transition {
-        case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) =>
-          if (postcodeFromDes.contains(postcode.value)) {
+        case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) => {
+          val userPostcodeWithoutSpace = removeSpaceFromPostcode(postcode.value)
+          val desPostcodeWithoutSpace = removeSpaceFromPostcode(postcodeFromDes.getOrElse("no_des_postcode"))
+
+          if (desPostcodeWithoutSpace == userPostcodeWithoutSpace) {
             goto(ConfirmClientCgt(AuthorisationRequest(name, CgtInvitation(cgtRef, Some(clientType))), basket))
           } else {
-            Logger(getClass).warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes.getOrElse("not found")} and user entered ${postcode.value}")
+            Logger(getClass).warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes
+              .getOrElse("not found")} and user entered ${postcode.value}")
             goto(KnownFactNotMatched(basket))
           }
+        }
       }
 
     def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
