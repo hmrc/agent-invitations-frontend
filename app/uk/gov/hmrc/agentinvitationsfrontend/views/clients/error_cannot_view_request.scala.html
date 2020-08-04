@@ -1,0 +1,21 @@
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+        mainTemplate: main_template
+)
+
+@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("error.cannot_view_request.header"), serviceMessageKey))) {
+
+    <h1 class="heading-xlarge">@Messages("error.cannot-view-request.header")</h1>
+
+    <p>@Messages("error.cannot-view-request.p1")</p>
+    <p>@Messages("error.cannot-view-request.p2")</p>
+    <p>@Messages("error.cannot-view-request.p3", )</p>
+
+    <a href=@externalUrls.signOutUrl(false, Some(false)) class="button">@Messages("cannot-view-request.button")</a>
+
+}
