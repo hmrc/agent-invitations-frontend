@@ -298,7 +298,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
           if (postcodeFromDes.contains(postcode.value)) {
             goto(ConfirmClientCgt(AuthorisationRequest(name, CgtInvitation(cgtRef, Some(clientType))), basket))
           } else {
-            Logger.info(s"CGT postcode match failed. DES postcode was ${postcodeFromDes.getOrElse("not found")} and user entered ${postcode.value}")
+            Logger(getClass).warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes.getOrElse("not found")} and user entered ${postcode.value}")
             goto(KnownFactNotMatched(basket))
           }
       }
