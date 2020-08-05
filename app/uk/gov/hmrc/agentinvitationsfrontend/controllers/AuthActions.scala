@@ -31,6 +31,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
+import views.html.helper.urlEncode
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -108,8 +109,12 @@ class AuthActionsImpl @Inject()(
                 body(AuthorisedClient(affinity, enrols))
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
-            case (AffinityGroup.Agent, _) =>
-              Future successful Redirect(routes.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent())
+            case (AffinityGroup.Agent, _) => {
+              val continueUrl = continueUrlWithJourneyId(journeyId)
+              val ggSignInUrl = s"${externalUrls.companyAuthFrontendSignInUrl}?continue=$continueUrl"
+              Future successful Redirect(
+                routes.ClientInvitationJourneyController.showErrorCannotViewRequest(Some(ggSignInUrl)))
+            }
             case (affinityGroup, _) =>
               Logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
               Future successful Forbidden
@@ -174,13 +179,15 @@ class AuthActionsImpl @Inject()(
     Future successful Redirect(personalDetailsValidationUrl)
   }
 
+  private def continueUrlWithJourneyId(journeyId: Option[String])(implicit request: Request[_]): String = {
+    val url = localFriendlyUrl(env, appConfig)(request.uri, request.host)
+    journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
+  }
+
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
     implicit request: Request[_]): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession ⇒ {
-      val url = localFriendlyUrl(env, appConfig)(request.uri, request.host)
-      val ggContinueUrl = journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
-      toGGLogin(ggContinueUrl)
-    }
+    case _: NoActiveSession ⇒
+      toGGLogin(continueUrlWithJourneyId(journeyId))
 
     case _: InsufficientEnrolments ⇒
       Logger.warn(s"Logged in user does not have required enrolments")

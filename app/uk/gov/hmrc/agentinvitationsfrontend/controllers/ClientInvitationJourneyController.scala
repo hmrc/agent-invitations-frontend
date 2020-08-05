@@ -60,7 +60,6 @@ class ClientInvitationJourneyController @Inject()(
   requestCancelledView: request_cancelled,
   invitationExpiredView: invitation_expired,
   invitationAlreadyRespondedView: invitation_already_responded,
-  cannotViewRequestView: cannot_view_request,
   warmupView: warm_up,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
@@ -70,7 +69,8 @@ class ClientInvitationJourneyController @Inject()(
   allResponsesFailedView: all_responses_failed,
   someResponsesFailedView: some_responses_failed,
   trustNotClaimedView: trust_not_claimed,
-  suspendedAgentView: suspended_agent)(
+  suspendedAgentView: suspended_agent,
+  errorCannotViewRequestView: error_cannot_view_request)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -170,10 +170,6 @@ class ClientInvitationJourneyController @Inject()(
     case InvitationAlreadyResponded =>
   }
 
-  val showCannotViewRequest = actionShowStateWhenAuthorised(AsClient) {
-    case CannotViewRequest =>
-  }
-
   def submitConsent = action { implicit request =>
     whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
   }
@@ -241,6 +237,20 @@ class ClientInvitationJourneyController @Inject()(
 
   def submitSomeResponsesFailed = action { implicit request =>
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
+  }
+
+  def showErrorCannotViewRequest(ggSignInUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { _ =>
+      journeyService.currentState.flatMap {
+        case Some(stateAndBreadCrumbs) =>
+          stateAndBreadCrumbs._1 match {
+            case WarmUp(clientType, _, _, _, _) =>
+              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType), ggSignInUrl))
+            case _ => Future successful Forbidden(notAuthorisedAsClientView())
+          }
+        case None => Future successful Forbidden(notAuthorisedAsClientView())
+      }
+    }
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
@@ -364,7 +374,6 @@ class ClientInvitationJourneyController @Inject()(
     case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
     case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
     case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
-    case CannotViewRequest          => routes.ClientInvitationJourneyController.showCannotViewRequest()
     case _: MultiConsent            => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent           => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers            => routes.ClientInvitationJourneyController.showCheckAnswers()
@@ -418,10 +427,6 @@ class ClientInvitationJourneyController @Inject()(
     case InvitationAlreadyResponded =>
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
       Ok(invitationAlreadyRespondedView(serviceMessageKey))
-
-    case CannotViewRequest =>
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(cannotViewRequestView(serviceMessageKey))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)

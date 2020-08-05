@@ -918,6 +918,16 @@ active-authorisation-exists.p1.HMRC-CGT-PD=Mae’r cleient hwn eisoes wedi’ch 
 active-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
+#Error Cannot View Request
+error.cannot-view-request.title=You cannot view this authorisation request
+error.cannot-view-request.header=You cannot view this authorisation request
+error.cannot-view-request.p1=You have signed in using an agent user ID.
+error.cannot-view-request.p2=If you are the agent, ask your client to respond to the authorisation request link.
+error.cannot-view-request.p3=If you are not an agent, sign in with the Government Gateway user ID that you use for your {0}.
+error.cannot-view-request.button=Continue
+error.cannot-view-request.client-type.business=business tax affairs
+error.cannot-view-request.client-type.personal=personal tax affairs
+
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
 timeout-dialog.seconds=eiliad
