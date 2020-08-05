@@ -1094,19 +1094,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  "GET /cannot-view-request" should {
-    def request = requestWithJourneyIdInCookie("GET", "/cannot-view-request")
-    "display the page as expected" in {
-      journeyState.set(CannotViewRequest, Nil)
-
-      val result = controller.showCannotViewRequest(authorisedAsAnyIndividualClient(request))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-view-request.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-view-request.p1"))
-    }
-  }
-
   "GET /trust-not-claimed" should {
     def request = requestWithJourneyIdInCookie("GET", "/trust-not-claimed")
     "display the page as expected" in {

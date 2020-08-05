@@ -60,7 +60,6 @@ class ClientInvitationJourneyController @Inject()(
   requestCancelledView: request_cancelled,
   invitationExpiredView: invitation_expired,
   invitationAlreadyRespondedView: invitation_already_responded,
-  cannotViewRequestView: cannot_view_request,
   warmupView: warm_up,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
@@ -169,10 +168,6 @@ class ClientInvitationJourneyController @Inject()(
 
   val showInvitationAlreadyResponded = actionShowStateWhenAuthorised(AsClient) {
     case InvitationAlreadyResponded =>
-  }
-
-  val showCannotViewRequest = actionShowStateWhenAuthorised(AsClient) {
-    case CannotViewRequest =>
   }
 
   def submitConsent = action { implicit request =>
@@ -379,7 +374,6 @@ class ClientInvitationJourneyController @Inject()(
     case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
     case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
     case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
-    case CannotViewRequest          => routes.ClientInvitationJourneyController.showCannotViewRequest()
     case _: MultiConsent            => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent           => routes.ClientInvitationJourneyController.showConsentChange()
     case _: CheckAnswers            => routes.ClientInvitationJourneyController.showCheckAnswers()
@@ -433,10 +427,6 @@ class ClientInvitationJourneyController @Inject()(
     case InvitationAlreadyResponded =>
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
       Ok(invitationAlreadyRespondedView(serviceMessageKey))
-
-    case CannotViewRequest =>
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(cannotViewRequestView(serviceMessageKey))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)

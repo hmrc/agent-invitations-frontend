@@ -173,7 +173,6 @@ GET         /request-cancelled                                          uk.gov.h
 GET         /request-expired                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestExpired
 GET         /already-responded                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationAlreadyResponded
 GET         /respond/error/cannot-view-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotViewRequest(ggSignInUrl: Option[String] ?= None)
-GET         /cannot-view-request                                        uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotViewRequest
 GET         /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 POST        /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
 GET         /change-consent                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange
