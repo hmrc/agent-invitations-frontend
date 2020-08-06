@@ -239,18 +239,23 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
   }
 
-  def showErrorCannotViewRequest(ggSignInUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+  def showErrorCannotViewRequest(continueUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       journeyService.currentState.flatMap {
         case Some(stateAndBreadCrumbs) =>
           stateAndBreadCrumbs._1 match {
             case WarmUp(clientType, _, _, _, _) =>
-              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType), ggSignInUrl))
+              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType), continueUrl))
             case _ => Future successful Forbidden(notAuthorisedAsClientView())
           }
         case None => Future successful Forbidden(notAuthorisedAsClientView())
       }
     }
+  }
+
+  def signOutAndRedirect(continueUrl: String): Action[AnyContent] = Action.async { implicit request =>
+    val url = s"${externalUrls.companyAuthUrl}/gg/sign-in?continue=$continueUrl"
+    Future successful Redirect(url)
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>

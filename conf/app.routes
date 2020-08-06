@@ -172,7 +172,7 @@ GET         /action-needed                                              uk.gov.h
 GET         /request-cancelled                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestCancelled
 GET         /request-expired                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestExpired
 GET         /already-responded                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationAlreadyResponded
-GET         /respond/error/cannot-view-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotViewRequest(ggSignInUrl: Option[String] ?= None)
+GET         /respond/error/cannot-view-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotViewRequest(continueUrl: Option[String] ?= None)
 GET         /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 POST        /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
 GET         /change-consent                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange
@@ -197,6 +197,7 @@ GET         /locked-out                                                 uk.gov.h
 GET         /pdv-complete                                               uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)
 GET         /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSuspendedAgent
 POST        /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSuspendedAgent
+GET         /sign-out-redirect/:continueUrl                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOutAndRedirect(continueUrl: String)
 
 GET         /keep-alive                                                 uk.gov.hmrc.agentinvitationsfrontend.controllers.TimeoutController.keepAlive
 

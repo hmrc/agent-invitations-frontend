@@ -222,7 +222,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
     }
 
-    "redirect to not authorised when an agent tries to respond to a clients invitation" in {
+    "redirect to /respond/error/cannot-view-request when an agent tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
@@ -231,9 +231,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 303
 
       val continueUrlEncoded =
-        URLEncoder.encode("http://localhost:9025/gg/sign-in?continue=/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
+        URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
       redirectLocation(result) shouldBe Some(
-      s"/invitations/respond/error/cannot-view-request?ggSignInUrl=$continueUrlEncoded"
+      s"/invitations/respond/error/cannot-view-request?continueUrl=$continueUrlEncoded"
       )
     }
 
