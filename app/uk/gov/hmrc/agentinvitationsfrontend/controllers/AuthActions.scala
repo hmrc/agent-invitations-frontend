@@ -111,9 +111,8 @@ class AuthActionsImpl @Inject()(
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
             case (AffinityGroup.Agent, _) => {
               val continueUrl = continueUrlWithJourneyId(journeyId)
-              val ggSignInUrl = s"${externalUrls.companyAuthFrontendSignInUrl}?continue=$continueUrl"
               Future successful Redirect(
-                routes.ClientInvitationJourneyController.showErrorCannotViewRequest(Some(ggSignInUrl)))
+                routes.ClientInvitationJourneyController.showErrorCannotViewRequest(Some(continueUrl)))
             }
             case (affinityGroup, _) =>
               Logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
