@@ -253,8 +253,9 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def signOutAndRedirect(continueUrl: String): Action[AnyContent] = Action.async { implicit request =>
-    val url = s"${externalUrls.companyAuthUrl}/gg/sign-in?continue=$continueUrl"
+  def signOutAndRedirect(continueUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    val authSignIn = s"${externalUrls.companyAuthUrl}/gg/sign-in"
+    val url = continueUrl.fold(externalUrls.companyAuthFrontendSignOutUrl)(c => s"$authSignIn?continue=$c")
     Future successful Redirect(url)
   }
 

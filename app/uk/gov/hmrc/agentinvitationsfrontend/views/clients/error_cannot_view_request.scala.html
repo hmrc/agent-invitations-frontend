@@ -33,6 +33,6 @@
     <p>@Messages("error.cannot-view-request.p2")</p>
     <p>@Messages("error.cannot-view-request.p3", Messages(s"error.cannot-view-request.client-type.$clientType"))</p>
 
-    <a class="margin-top-20 button" href=@routes.ClientInvitationJourneyController.signOutAndRedirect(continueUrl.getOrElse(externalUrls.companyAuthFrontendSignOutUrl))>@Messages("error.cannot-view-request.button")</a>
+    <a class="margin-top-20 button" href=@routes.ClientInvitationJourneyController.signOutAndRedirect(continueUrl)>@Messages("error.cannot-view-request.button")</a>
 
 }

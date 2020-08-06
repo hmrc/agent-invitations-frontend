@@ -197,7 +197,7 @@ GET         /locked-out                                                 uk.gov.h
 GET         /pdv-complete                                               uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)
 GET         /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSuspendedAgent
 POST        /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSuspendedAgent
-GET         /sign-out-redirect/:continueUrl                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOutAndRedirect(continueUrl: String)
+GET         /sign-out-redirect                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOutAndRedirect(continueUrl: Option[String] ?= None)
 
 GET         /keep-alive                                                 uk.gov.hmrc.agentinvitationsfrontend.controllers.TimeoutController.keepAlive
 
