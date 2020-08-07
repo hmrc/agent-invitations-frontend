@@ -31,7 +31,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import views.html.helper.urlEncode
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -110,9 +109,7 @@ class AuthActionsImpl @Inject()(
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
             case (AffinityGroup.Agent, _) => {
-              val continueUrl = continueUrlWithJourneyId(journeyId)
-              Future successful Redirect(
-                routes.ClientInvitationJourneyController.showErrorCannotViewRequest(Some(continueUrl)))
+              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
             }
             case (affinityGroup, _) =>
               Logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")

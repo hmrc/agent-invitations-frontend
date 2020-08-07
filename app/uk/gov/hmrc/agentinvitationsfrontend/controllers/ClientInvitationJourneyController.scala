@@ -239,13 +239,13 @@ class ClientInvitationJourneyController @Inject()(
     whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
   }
 
-  def showErrorCannotViewRequest(continueUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+  val showErrorCannotViewRequest: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       journeyService.currentState.flatMap {
         case Some(stateAndBreadCrumbs) =>
           stateAndBreadCrumbs._1 match {
             case WarmUp(clientType, _, _, _, _) =>
-              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType), continueUrl))
+              Future successful Forbidden(errorCannotViewRequestView(ClientType.fromEnum(clientType)))
             case _ => Future successful Forbidden(notAuthorisedAsClientView())
           }
         case None => Future successful Forbidden(notAuthorisedAsClientView())
@@ -253,10 +253,12 @@ class ClientInvitationJourneyController @Inject()(
     }
   }
 
-  def signOutAndRedirect(continueUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    val authSignIn = s"${externalUrls.companyAuthUrl}/gg/sign-in"
-    val url = continueUrl.fold(externalUrls.companyAuthFrontendSignOutUrl)(c => s"$authSignIn?continue=$c")
-    Future successful Redirect(url)
+  val signOutAndRedirect: Action[AnyContent] = Action.async { implicit request =>
+    request.session
+      .get("clientInvitationJourney")
+      .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(jid =>
+        Future successful Redirect(routes.ClientInvitationJourneyController.submitWarmUp()).withNewSession
+          .addingToSession("clientInvitationJourney" -> jid))
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
