@@ -230,10 +230,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
       status(result) shouldBe 303
 
-      val continueUrlEncoded =
-        URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
       redirectLocation(result) shouldBe Some(
-      s"/invitations/respond/error/cannot-view-request?continueUrl=$continueUrlEncoded"
+      "/invitations/respond/error/cannot-view-request"
       )
     }
 
@@ -1110,7 +1108,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/cannot-view-request" should {
     "display the error cannot view request page when current state is WarmUp" in {
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
-      val result = controller.showErrorCannotViewRequest(None)(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
 
       status(result) shouldBe 403
 
@@ -1122,13 +1120,32 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the not authorised as client view if the current state is not WarmUp" in {
       journeyState.set(TrustNotClaimed, Nil)
-      val result = controller.showErrorCannotViewRequest(None)(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
 
       status(result) shouldBe 403
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
+    }
+  }
+
+  "GET /sign-out-redirect" should {
+    "clear current session and redirect to /warm-up when the journeyId is in session" in {
+      val result = controller.signOutAndRedirect(authorisedAsValidAgent(FakeRequest()
+        .withSession("clientInvitationJourney" -> "foo"),arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUp().url)
+    }
+
+    "redirect to /gg/-sign-out when journeyId is not in session" in {
+      val result = controller.signOutAndRedirect(authorisedAsValidAgent(FakeRequest(),arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some("http://localhost:9025/gg/sign-out")
     }
   }
 
