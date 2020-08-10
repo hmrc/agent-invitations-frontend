@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -45,6 +45,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
     case object NotFoundInvitation extends State with IsError
+
+    case object NoOutstandingRequests extends State with IsError
 
     case object AllRequestsCancelled extends State with IsError
 
@@ -163,65 +165,91 @@ object ClientInvitationJourneyModel extends JourneyModel {
       getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
         case WarmUp(clientType, uid, arn, agentName, _) => {
-          getInvitationDetails(uid).flatMap { invitationDetails =>
-            if (invitationDetails.isEmpty) {
-              Logger.warn(
-                s"no invitations returned for uid: $uid, probably client not signed up ?, client enrolments: ${tempEnrolLog(
-                  client.enrolments)}")
-              //goto(ActionNeeded(clientType))
+          enrolmentCoverage(client) match {
+            case NoSupportedMTDEnrolments => {
+              Logger(getClass).warn(
+                s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
               goto(NotFoundInvitation)
-            } else if (invitationDetails.forall(i => i.status == Accepted || i.status == Rejected)) {
-              Logger.warn(s"InvitationAlreadyResponded (either Accepted or Rejected) for uid: $uid")
-              //goto(InvitationAlreadyResponded)
-              goto(NotFoundInvitation)
-            } else if (invitationDetails.forall(_.status == Cancelled)) {
-              Logger.warn(s"Invitation Cancelled for uid: $uid")
-              //goto(AllRequestsCancelled)
-              goto(NotFoundInvitation)
-            } else if (invitationDetails.forall(_.status == Expired)) {
-              Logger.warn(s"Invitation Expired for uid: $uid")
-              //goto(AllRequestsExpired)
-              goto(NotFoundInvitation)
-            } else {
-              val consents: Seq[ClientConsent] =
-                getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid)
+            }
+            case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
+              getInvitationDetails(uid).flatMap { invitationDetails =>
+                if (invitationDetails.isEmpty) {
+                  Logger(getClass).warn(
+                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: ${tempEnrolLog(
+                      client.enrolments)}")
+                  goto(NoOutstandingRequests)
+                } else if (invitationDetails.forall(i =>
+                             i.status == Accepted || i.status == Rejected || i.status == Cancelled || i.status == Expired)) {
+                  Logger(getClass).warn(
+                    s"${invitationDetails.size} authorisation requests returned for uid: $uid; none were in 'Pending' state. client had ${maybeAll.str}")
+                  goto(NoOutstandingRequests)
+                } else {
+                  val consents: Seq[ClientConsent] =
+                    getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid)
 
-              val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
-              val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
-              if (containsTrust && butNoTrustEnrolment) {
-                Logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
-                goto(TrustNotClaimed)
-              } else {
-                consents match {
-                  case _ if consents.nonEmpty && agentSuspensionEnabled =>
-                    getSuspensionDetails(arn).flatMap { suspensionDetails =>
-                      val consentServices: Set[String] =
-                        consents.map(consent => consent.service).toSet
-                      val nonSuspendedConsents =
-                        consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
-                      if (suspensionDetails.isAgentSuspended(consentServices))
-                        goto(
-                          SuspendedAgent(
-                            clientType,
-                            uid,
-                            agentName,
-                            suspensionDetails.getSuspendedRegimes(consentServices),
-                            nonSuspendedConsents))
-                      else {
-                        goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
-                      }
+                  val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
+                  val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+                  if (containsTrust && butNoTrustEnrolment) {
+                    Logger(getClass).warn(
+                      "client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                    goto(TrustNotClaimed)
+                  } else {
+                    consents match {
+                      case _ if consents.nonEmpty && agentSuspensionEnabled =>
+                        getSuspensionDetails(arn).flatMap { suspensionDetails =>
+                          val consentServices: Set[String] =
+                            consents.map(consent => consent.service).toSet
+                          val nonSuspendedConsents =
+                            consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
+                          if (suspensionDetails.isAgentSuspended(consentServices))
+                            goto(
+                              SuspendedAgent(
+                                clientType,
+                                uid,
+                                agentName,
+                                suspensionDetails.getSuspendedRegimes(consentServices),
+                                nonSuspendedConsents))
+                          else {
+                            goto(idealTargetState(clientType, uid, agentName, nonSuspendedConsents))
+                          }
+                        }
+                      case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
+                      case _ =>
+                        Logger(getClass).warn(s"No pending invitations are found for uid: $uid")
+                        // goto(CannotViewRequest)
+                        goto(NotFoundInvitation)
                     }
-                  case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
-                  case _ =>
-                    Logger.warn(s"No pending invitations are found for uid: $uid")
-                    // goto(CannotViewRequest)
-                    goto(NotFoundInvitation)
+                  }
                 }
               }
-            }
           }
         }
       }
+
+    private def enrolmentCoverage(client: AuthorisedClient): EnrolmentCoverage = {
+      val enrolKeys: Set[String] = client.enrolments.enrolments.map(_.key)
+      client.affinityGroup match {
+        case Individual => {
+          val coverage = enrolKeys.intersect(individualSupportedServices)
+          if (coverage.size == individualSupportedServices.size) AllSupportedMTDEnrolments
+          else if (coverage.isEmpty) NoSupportedMTDEnrolments
+          else SomeSupportedMTDEnrolments
+        }
+        case Organisation => {
+          val businessCoverage = enrolKeys.intersect(businessSupportedServices)
+          val trustOrEstateCoverage = enrolKeys.intersect(trustOrEstatesSupportedServices)
+          if (businessCoverage.isEmpty) {
+            if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
+            else if (trustOrEstateCoverage.size == trustOrEstatesSupportedServices.size) AllSupportedMTDEnrolments
+            else SomeSupportedMTDEnrolments
+          } else {
+            if (businessCoverage.size == businessSupportedServices.size) AllSupportedMTDEnrolments
+            else SomeSupportedMTDEnrolments
+          }
+        }
+        case e => throw new RuntimeException(s"client had unexpected Affinity Group: $e")
+      }
+    }
 
     private def tempEnrolLog(enrolments: Enrolments): String =
       enrolments.enrolments

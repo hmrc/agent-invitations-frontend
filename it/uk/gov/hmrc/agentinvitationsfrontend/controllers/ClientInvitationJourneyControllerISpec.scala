@@ -156,49 +156,49 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
       }
 
-      "redirect to /not-found if there are no invitations found" in {
+      "redirect to /respond/error/no-outstanding-requests if there are no invitations found" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /not-found if the invitation has status of Accepted or Rejected" in {
+      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Accepted or Rejected" in {
         givenAllInvitationIdsByStatus(uid, "Accepted")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /not-found if the invitation has status of Cancelled" in {
+      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Cancelled" in {
         givenAllInvitationIdsByStatus(uid, "Cancelled")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /not-found if the invitation has status of Expired" in {
+      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Expired" in {
         givenAllInvitationIdsByStatus(uid, "Expired")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /not-found if the invitation has mixed statuses, none of which are Pending" in {
+      "redirect to /respond/error/no-outstanding-requests if the invitation has mixed statuses, none of which are Pending" in {
         givenAllInvitationIdsWithMixedStatus(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -305,13 +305,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
       }
 
-      "redirect to /not-found" in {
+      "redirect to /respond/error/no-outstanding-requests" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
@@ -340,6 +340,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
+
+    }
+  }
+
+  "GET /respond/error/no-outstanding-requests" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/no-outstanding-requests")
+
+    behave like anActionHandlingSessionExpiry(controller.showErrorNoOutstandingRequests)
+
+    "display the no outstanding requests page" in {
+      journeyState.set(NoOutstandingRequests, Nil)
+
+      val result = controller.showErrorNoOutstandingRequests(authorisedAsAnyIndividualClient(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-outstanding-requests.heading"))
+      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl\">view your request history.</a>")
 
     }
   }
