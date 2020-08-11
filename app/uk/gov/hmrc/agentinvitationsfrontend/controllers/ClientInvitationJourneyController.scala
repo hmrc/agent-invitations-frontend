@@ -70,7 +70,8 @@ class ClientInvitationJourneyController @Inject()(
   someResponsesFailedView: some_responses_failed,
   trustNotClaimedView: trust_not_claimed,
   suspendedAgentView: suspended_agent,
-  errorCannotViewRequestView: error_cannot_view_request)(
+  errorCannotViewRequestView: error_cannot_view_request,
+  noOutstandingRequestsView: no_outstanding_requests)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -156,6 +157,10 @@ class ClientInvitationJourneyController @Inject()(
 
   val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
     case NotFoundInvitation =>
+  }
+
+  val showErrorNoOutstandingRequests = actionShowStateWhenAuthorised(AsClient) {
+    case NoOutstandingRequests =>
   }
 
   val showRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
@@ -378,6 +383,7 @@ class ClientInvitationJourneyController @Inject()(
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation         => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case NoOutstandingRequests      => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
     case _: ActionNeeded            => routes.ClientInvitationJourneyController.showActionNeeded()
     case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
     case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
@@ -422,6 +428,11 @@ class ClientInvitationJourneyController @Inject()(
     case NotFoundInvitation => {
       val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
       Ok(notFoundInvitationView(serviceMessageKey))
+    }
+
+    case NoOutstandingRequests => {
+      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+      Ok(noOutstandingRequestsView(serviceMessageKey))
     }
 
     case AllRequestsCancelled =>

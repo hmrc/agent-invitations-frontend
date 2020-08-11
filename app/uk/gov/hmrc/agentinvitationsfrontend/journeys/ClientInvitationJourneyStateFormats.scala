@@ -52,6 +52,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "MissingJourneyHistory"      => JsSuccess(MissingJourneyHistory)
     case "WarmUp"                     => WarmUpFormat.reads(properties)
     case "NotFoundInvitation"         => JsSuccess(NotFoundInvitation)
+    case "NoOutstandingRequests"      => JsSuccess(NoOutstandingRequests)
     case "ActionNeeded"               => ActionNeededFormat.reads(properties)
     case "AllRequestsCancelled"       => JsSuccess(AllRequestsCancelled)
     case "AllRequestsExpired"         => JsSuccess(AllRequestsExpired)

@@ -45,8 +45,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       await(super.apply(transition))
   }
 
-  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
-  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("some-key"))))
+  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("HMRC-MTD-IT"))))
+  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
+  val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
+  val authorisedIndividualClientWithoutRelevantEnrolments =
+    AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
+  val authorisedOrganisationClientWithoutRelevantEnrolments =
+    AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
 
   val nino = "AB123456A"
@@ -132,7 +137,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Accepted" in {
+        "transition to NoOutstandingRequests when the invitation has a status of Accepted" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -147,10 +152,10 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Cancelled" in {
+        "transition to NoOutstandingRequests when the invitation has a status of Cancelled" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -165,10 +170,10 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Expired" in {
+        "transition to NoOutstandingRequests when the invitation has a status of Expired" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -183,10 +188,10 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the status of the invitations is mixed and impossible to determine" in {
+        "transition to NoOutstandingRequests when the status of the invitations is mixed" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -208,7 +213,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
         "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
@@ -224,8 +229,29 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
-            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedBusinessClient) should
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedTrustOrEstateClient) should
             thenGo(TrustNotClaimed)
+        }
+
+        "transition to NotFoundInvitation when the client has AffinityGroup Individual and no relevant enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithoutRelevantEnrolments) should
+            thenGo(NotFoundInvitation)
+        }
+
+        "transition to NotFoundInvitation when the client has AffinityGroup Organisation and no relevant enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedOrganisationClientWithoutRelevantEnrolments) should
+            thenGo(NotFoundInvitation)
         }
 
         "transition to SuspendedAgent when agent is suspended for one or more of consent services" in {
@@ -288,7 +314,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NotFoundInvitation when the invitation status is Rejected" in {
+        "transition to NoOutstandingRequests when the invitation status is Rejected" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -303,7 +329,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
       }
     }

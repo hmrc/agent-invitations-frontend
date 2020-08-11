@@ -928,6 +928,10 @@ error.cannot-view-request.button=Sign in
 error.cannot-view-request.client-type.business=business tax affairs
 error.cannot-view-request.client-type.personal=personal tax affairs
 
+#No Outstanding Requests
+no-outstanding-requests.heading=There are no outstanding authorisation requests for you to respond to
+no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history.</a>
+
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
 timeout-dialog.seconds=eiliad
