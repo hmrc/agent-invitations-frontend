@@ -1,9 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel}
+import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs {
@@ -85,6 +84,41 @@ trait AuthStubs {
          |  ]
          |  $ninoRetrieval
          |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+  }
+
+
+  def authorisedAsAnyCGTIndividualClientWithLowCL[A](request: FakeRequest[A], hasNino: Boolean = true)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
+    val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
+    givenAuthorisedFor(
+      payload = """
+                  |{
+                  |"authorise": [ {
+                  |  "authProviders": [ "GovernmentGateway" ]
+                  |}],
+                  |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments", "nino" ]
+                  |}
+       """.stripMargin,
+      responseBody = s"""
+                        |{
+                        |  "affinityGroup":"Individual",
+                        |  "confidenceLevel": 50,
+                        |  "allEnrolments":
+                        |  [
+                        |    {
+                        |      "key": "HMRC-CGT-PD",
+                        |      "identifiers": [
+                        |         {"key":"CGTPDRef", "value": "ABCDEF123456789"}
+                        |      ]
+                        |     }
+                        |  ]
+                        |  $ninoRetrieval
+                        |}
           """.stripMargin
     )
     request.withSession(
