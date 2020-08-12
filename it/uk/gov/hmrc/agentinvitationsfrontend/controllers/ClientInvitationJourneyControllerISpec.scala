@@ -356,7 +356,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-outstanding-requests.heading"))
-      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl\">view your request history.</a>")
+      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history</a>")
 
     }
   }

@@ -28,6 +28,6 @@
 
     <h1 class="heading-xlarge">@Messages("no-outstanding-requests.heading")</h1>
 
-    <p>@Html(Messages("no-outstanding-requests.p", externalUrls.agentClientManagementUrl))</p>
+    <p>@Html(Messages("no-outstanding-requests.p", s"${externalUrls.agentClientManagementUrl}#history"))</p>
 
 }
