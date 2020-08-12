@@ -144,6 +144,21 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       behave like anIndividualWithLowConfidenceLevelWithoutNinoGetEndpoint(request(), controller.submitWarmUp)
     }
 
+    "user is authenticated as CGT individual and low confidence level" should {
+      "not go through IV and redirect to consent page if the invitation is found" in {
+        val request = () => requestWithJourneyIdInQuery("POST", "/warm-up")
+        authorisedAsAnyCGTIndividualClientWithLowCL(request())
+
+        givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
+        givenAllInvitationIdsByStatus(uid, "Pending")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+      }
+    }
+
     def warmupSubmitAccept(request: () => FakeRequest[AnyContentAsEmpty.type]): Unit = {
 
       "redirect to consent page if the invitation is found" in {
