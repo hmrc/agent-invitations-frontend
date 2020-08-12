@@ -16,6 +16,34 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{allSupportedServicesForBusiness, allSupportedServicesForIndividual, allSupportedServicesForTrustOrEstate}
+import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolments}
 
-case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments)
+case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments) {
+
+  def enrolmentCoverage: EnrolmentCoverage = {
+    val enrolKeys: Set[String] = this.enrolments.enrolments.map(_.key)
+    this.affinityGroup match {
+      case Individual => {
+        val coverage = enrolKeys.intersect(allSupportedServicesForIndividual)
+        if (coverage.size == allSupportedServicesForIndividual.size) AllSupportedMTDEnrolments
+        else if (coverage.isEmpty) NoSupportedMTDEnrolments
+        else SomeSupportedMTDEnrolments
+      }
+      case Organisation => {
+        val businessCoverage = enrolKeys.intersect(allSupportedServicesForBusiness)
+        val trustOrEstateCoverage = enrolKeys.intersect(allSupportedServicesForTrustOrEstate)
+        if (businessCoverage.isEmpty) {
+          if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
+          else if (trustOrEstateCoverage.size == allSupportedServicesForTrustOrEstate.size) AllSupportedMTDEnrolments
+          else SomeSupportedMTDEnrolments
+        } else {
+          if (businessCoverage.size == allSupportedServicesForBusiness.size) AllSupportedMTDEnrolments
+          else SomeSupportedMTDEnrolments
+        }
+      }
+      case e => throw new RuntimeException(s"client had unexpected Affinity Group: $e")
+    }
+  }
+}

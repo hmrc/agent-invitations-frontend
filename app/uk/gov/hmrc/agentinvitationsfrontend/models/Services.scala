@@ -31,9 +31,9 @@ object Services {
   val HMRCNI = "HMRC-NI"
 
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
-  val individualSupportedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
-  val businessSupportedServices = Set(HMRCMTDVAT)
-  val trustOrEstatesSupportedServices = Set(HMRCCGTPD, TRUST)
+  val allSupportedServicesForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
+  val allSupportedServicesForBusiness = Set(HMRCMTDVAT)
+  val allSupportedServicesForTrustOrEstate = Set(HMRCCGTPD, TRUST)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef")
 
   def determineServiceMessageKey(invitationId: InvitationId): String =

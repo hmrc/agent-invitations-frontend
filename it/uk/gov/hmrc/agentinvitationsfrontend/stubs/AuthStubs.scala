@@ -46,7 +46,7 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasMtdVat: Boolean = true, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
@@ -75,7 +75,7 @@ trait AuthStubs {
          |      "identifiers": [
          |         {"key":"NINO", "value": "AB123456A"}
          |      ]
-         |     },
+         |     }${if(hasMtdVat)},
          |     {
          |      "key": "HMRC-MTD-VAT",
          |      "identifiers": [

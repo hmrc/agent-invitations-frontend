@@ -932,6 +932,11 @@ error.cannot-view-request.client-type.personal=personal tax affairs
 no-outstanding-requests.heading=There are no outstanding authorisation requests for you to respond to
 no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history.</a>
 
+#Request Expired
+request-expired.header=This authorisation request has expired
+request-expired.p=This request expired on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
+request-expired.link-text=View your request history
+
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
 timeout-dialog.seconds=eiliad

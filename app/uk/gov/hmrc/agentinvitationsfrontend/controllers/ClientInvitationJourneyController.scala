@@ -71,7 +71,10 @@ class ClientInvitationJourneyController @Inject()(
   trustNotClaimedView: trust_not_claimed,
   suspendedAgentView: suspended_agent,
   errorCannotViewRequestView: error_cannot_view_request,
-  noOutstandingRequestsView: no_outstanding_requests)(
+  noOutstandingRequestsView: no_outstanding_requests,
+  requestExpiredView: request_expired,
+  agentCancelledRequestView: agent_cancelled_request,
+  alreadyRespondedView: already_responded)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -163,16 +166,16 @@ class ClientInvitationJourneyController @Inject()(
     case NoOutstandingRequests =>
   }
 
-  val showRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
-    case AllRequestsCancelled =>
+  val showErrorRequestExpired = actionShowStateWhenAuthorised(AsClient) {
+    case _: RequestExpired =>
   }
 
-  val showRequestExpired = actionShowStateWhenAuthorised(AsClient) {
-    case AllRequestsExpired =>
+  val showErrorAgentCancelledRequest = actionShowStateWhenAuthorised(AsClient) {
+    case _: AgentCancelledRequest =>
   }
 
-  val showInvitationAlreadyResponded = actionShowStateWhenAuthorised(AsClient) {
-    case InvitationAlreadyResponded =>
+  val showErrorAlreadyRespondedToRequest = actionShowStateWhenAuthorised(AsClient) {
+    case _: AlreadyRespondedToRequest =>
   }
 
   def submitConsent = action { implicit request =>
@@ -382,23 +385,23 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case NotFoundInvitation         => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case NoOutstandingRequests      => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
-    case _: ActionNeeded            => routes.ClientInvitationJourneyController.showActionNeeded()
-    case AllRequestsCancelled       => routes.ClientInvitationJourneyController.showRequestCancelled()
-    case AllRequestsExpired         => routes.ClientInvitationJourneyController.showRequestExpired()
-    case InvitationAlreadyResponded => routes.ClientInvitationJourneyController.showInvitationAlreadyResponded()
-    case _: MultiConsent            => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent           => routes.ClientInvitationJourneyController.showConsentChange()
-    case _: CheckAnswers            => routes.ClientInvitationJourneyController.showCheckAnswers()
-    case _: ConfirmDecline          => routes.ClientInvitationJourneyController.showConfirmDecline()
-    case _: InvitationsAccepted     => routes.ClientInvitationJourneyController.showInvitationsAccepted()
-    case _: InvitationsDeclined     => routes.ClientInvitationJourneyController.showInvitationsDeclined()
-    case AllResponsesFailed         => routes.ClientInvitationJourneyController.showAllResponsesFailed()
-    case _: SomeResponsesFailed     => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
-    case TrustNotClaimed            => routes.ClientInvitationJourneyController.showTrustNotClaimed()
-    case _: SuspendedAgent          => routes.ClientInvitationJourneyController.showSuspendedAgent()
-    case _                          => throw new Exception(s"Link not found for $state")
+    case NotFoundInvitation           => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case NoOutstandingRequests        => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
+    case _: RequestExpired            => routes.ClientInvitationJourneyController.showErrorRequestExpired()
+    case _: AgentCancelledRequest     => routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest()
+    case _: AlreadyRespondedToRequest => routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest()
+    case _: ActionNeeded              => routes.ClientInvitationJourneyController.showActionNeeded()
+    case _: MultiConsent              => routes.ClientInvitationJourneyController.showConsent()
+    case _: SingleConsent             => routes.ClientInvitationJourneyController.showConsentChange()
+    case _: CheckAnswers              => routes.ClientInvitationJourneyController.showCheckAnswers()
+    case _: ConfirmDecline            => routes.ClientInvitationJourneyController.showConfirmDecline()
+    case _: InvitationsAccepted       => routes.ClientInvitationJourneyController.showInvitationsAccepted()
+    case _: InvitationsDeclined       => routes.ClientInvitationJourneyController.showInvitationsDeclined()
+    case AllResponsesFailed           => routes.ClientInvitationJourneyController.showAllResponsesFailed()
+    case _: SomeResponsesFailed       => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
+    case TrustNotClaimed              => routes.ClientInvitationJourneyController.showTrustNotClaimed()
+    case _: SuspendedAgent            => routes.ClientInvitationJourneyController.showSuspendedAgent()
+    case _                            => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -420,32 +423,29 @@ class ClientInvitationJourneyController @Inject()(
           )))
 
     //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
-    case ActionNeeded(clientType) => {
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    case ActionNeeded(clientType) =>
+      val serviceMessageKey = fromSession
       Ok(actionNeededView(clientType, serviceMessageKey))
-    }
 
-    case NotFoundInvitation => {
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    case NotFoundInvitation =>
+      val serviceMessageKey = fromSession
       Ok(notFoundInvitationView(serviceMessageKey))
-    }
 
-    case NoOutstandingRequests => {
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
+    case NoOutstandingRequests =>
+      val serviceMessageKey = fromSession
       Ok(noOutstandingRequestsView(serviceMessageKey))
-    }
 
-    case AllRequestsCancelled =>
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(requestCancelledView(serviceMessageKey))
+    case RequestExpired(expiredOn) =>
+      val serviceMessageKey = fromSession
+      Ok(requestExpiredView(serviceMessageKey, expiredOn))
 
-    case AllRequestsExpired =>
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(invitationExpiredView(serviceMessageKey))
+    case AgentCancelledRequest(cancelledOn) =>
+      val serviceMessageKey = fromSession
+      Ok(agentCancelledRequestView(serviceMessageKey, cancelledOn))
 
-    case InvitationAlreadyResponded =>
-      val serviceMessageKey = request.session.get("clientService").getOrElse("Service Is Missing")
-      Ok(invitationAlreadyRespondedView(serviceMessageKey))
+    case AlreadyRespondedToRequest(respondedOn) =>
+      val serviceMessageKey = fromSession
+      Ok(alreadyRespondedView(serviceMessageKey, respondedOn))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)
@@ -537,6 +537,9 @@ class ClientInvitationJourneyController @Inject()(
     case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
       Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
   }
+
+  def fromSession(implicit request: Request[_]): String =
+    request.session.get("clientService").getOrElse("service_is_missing")
 }
 
 object ClientInvitationJourneyController {

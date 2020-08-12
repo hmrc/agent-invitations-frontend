@@ -169,11 +169,11 @@ GET         /warm-up                                                    uk.gov.h
 GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET         /action-needed                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showActionNeeded
-GET         /request-cancelled                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestCancelled
-GET         /request-expired                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showRequestExpired
-GET         /already-responded                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationAlreadyResponded
 GET         /respond/error/cannot-view-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotViewRequest
 GET         /respond/error/no-outstanding-requests                      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorNoOutstandingRequests
+GET         /respond/error/request-expired                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorRequestExpired
+GET         /respond/error/agent-cancelled-request                      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAgentCancelledRequest
+GET         /respond/error/already-responded-to-request                 uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest
 GET         /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 POST        /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
 GET         /change-consent                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange

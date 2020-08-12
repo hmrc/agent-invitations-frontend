@@ -76,23 +76,23 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-      "InvitationAlreadyResponded" in {
-        val state = InvitationAlreadyResponded
-        val json = Json.parse("""{"state":"InvitationAlreadyResponded"}""")
+      "AlreadyRespondedToRequest" in {
+        val state = AlreadyRespondedToRequest("d/M/yyyy")
+        val json = Json.parse("""{"state":"AlreadyRespondedToRequest", "properties": {"respondedOn": "d/M/yyyy"}}"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-      "AllRequestsCancelled" in {
-        val state = AllRequestsCancelled
-        val json = Json.parse("""{"state":"AllRequestsCancelled"}""")
+      "AgentCancelledRequest" in {
+        val state = AgentCancelledRequest("d/M/yyyy")
+        val json = Json.parse("""{"state":"AgentCancelledRequest", "properties": {"cancelledOn": "d/M/yyyy"}}"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
-      "AllRequestsExpired" in {
-        val state = AllRequestsExpired
-        val json = Json.parse("""{"state":"AllRequestsExpired"}""")
+      "RequestExpired" in {
+        val state = RequestExpired("d/M/yyyy")
+        val json = Json.parse("""{"state":"RequestExpired", "properties": {"expiredOn": "d/M/yyyy"}}"}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
