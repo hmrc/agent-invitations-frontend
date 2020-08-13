@@ -53,7 +53,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "journey ID is already present in the session cookie, show the warmup page" should {
       "work when signed in" in new Setup {
         val reqAuthorisedWithJourneyId =
-          authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
@@ -66,7 +66,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "remove spaces in the url" in new Setup {
         val reqAuthorisedWithJourneyId =
-          authorisedAsAnyIndividualClient(requestWithJourneyIdInCookie("GET", endpointUrl))
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency ")(reqAuthorisedWithJourneyId)
         checkWarmUpPageIsShown(result)
       }
@@ -96,7 +96,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "journey ID is not already present in the session cookie, redirect to same page saving the journey ID in the session" should {
       "work when signed in" in new Setup {
-        def request = authorisedAsAnyIndividualClient(FakeRequest("GET", endpointUrl))
+        def request = authorisedAsIndividualClientWithSomeSupportedEnrolments(FakeRequest("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(request)
         checkRedirectedWithJourneyId(result, request, journeyIdKey)
       }
@@ -151,43 +151,85 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if there are no invitations found" in {
+      "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
+        "and the client has SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Accepted or Rejected" in {
+      "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
+        "and the client has ALL supported MTD enrolments" in {
+        givenAllInvitationIdsByStatusReturnsEmpty(uid)
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+      }
+
+      "redirect to /not-found if the client has no supported MTD enrolments" in {
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithNoSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      }
+
+      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Accepted or Rejected " +
+        "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatus(uid, "Accepted")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Cancelled" in {
-        givenAllInvitationIdsByStatus(uid, "Cancelled")
+      "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
+        "and the client has ALL supported MTD enrolments" in {
+        givenAllInvitationIdsWithMixedStatus(uid, "Rejected")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest().url)
+      }
+
+      "redirect to /respond/error/agent-cancelled-request if the most recent authorisation request has status of Cancelled " +
+        "and the client has ALL supported MTD enrolments" in {
+        givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest().url)
+      }
+
+      "redirect to /respond/error/no-outstanding-requests if the most recent authorisation request has status of Cancelled " +
+        "and the client has only SOME supported MTD enrolments" in {
+        givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
+        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Expired" in {
-        givenAllInvitationIdsByStatus(uid, "Expired")
+      "redirect to /respond/error/no-outstanding-requests if the most recent authorisation request has status of Expired " +
+        "and the client has only SOME supported MTD enrolments" in {
+        givenAllInvitationIdsWithMixedStatus(uid, "Expired")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
@@ -196,7 +238,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenAllInvitationIdsWithMixedStatus(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
@@ -206,7 +248,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSuspendedAgent().url)
       }
@@ -267,7 +309,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
       journeyState.set(SuspendedAgent(personal, "uid", "name", Set("ITSA", "VATC"), Seq()), Nil)
 
-      val result = controller.showSuspendedAgent(authorisedAsAnyIndividualClient(request))
+      val result = controller.showSuspendedAgent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
@@ -300,7 +342,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenAllInvitationIdsByStatus(uid, "Pending")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
       }
@@ -309,7 +351,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyIndividualClient(request()))
+        val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
@@ -333,7 +375,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the not found invitation page" in {
       journeyState.set(NotFoundInvitation, Nil)
 
-      val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
+      val result = controller.showNotFoundInvitation(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
@@ -352,7 +394,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the no outstanding requests page" in {
       journeyState.set(NoOutstandingRequests, Nil)
 
-      val result = controller.showErrorNoOutstandingRequests(authorisedAsAnyIndividualClient(request))
+      val result = controller.showErrorNoOutstandingRequests(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-outstanding-requests.heading"))
@@ -369,7 +411,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the action required page" in {
       journeyState.set(ActionNeeded(personal), Nil)
 
-      val result = controller.showActionNeeded(authorisedAsAnyIndividualClient(request))
+      val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.header"))
@@ -390,7 +432,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true))),
         Nil)
 
-      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
@@ -414,7 +456,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
         Nil)
 
-      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
@@ -446,7 +488,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
         Nil)
 
-      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.legend.multi", "My Agency"))
@@ -462,7 +504,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
         Nil)
 
-      val result = controller.showConsent(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.multi.heading"))
@@ -498,7 +540,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil)
 
       val result =
-        controller.submitConsent(authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+        controller.submitConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers().url)
     }
@@ -531,7 +573,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
@@ -565,7 +607,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         )
       )
 
-      val result = controller.showConsentChange(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConsentChange(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.heading"))
@@ -591,7 +633,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.showCheckAnswers(authorisedAsAnyIndividualClient(request))
+      val result = controller.showCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("check-answers.heading"))
@@ -629,7 +671,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.submitCheckAnswers(authorisedAsAnyIndividualClient(request))
+      val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
     }
@@ -657,7 +699,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.submitCheckAnswers(authorisedAsAnyIndividualClient(request))
+      val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
     }
@@ -683,7 +725,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.submitCheckAnswers(authorisedAsAnyIndividualClient(request))
+      val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
     }
@@ -708,7 +750,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.submitCheckAnswers(authorisedAsAnyIndividualClient(request))
+      val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
     }
@@ -728,7 +770,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
         Nil)
 
-      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
@@ -744,7 +786,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
         Nil)
 
-      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.heading"))
@@ -764,7 +806,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil
       )
 
-      val result = controller.showConfirmDecline(authorisedAsAnyIndividualClient(request))
+      val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-decline.sub-header", "My Agency"))
@@ -790,7 +832,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil)
 
       val result = controller.submitConfirmDecline(
-        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
     }
@@ -805,7 +847,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil)
 
       val result = controller.submitConfirmDecline(
-        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "false")))
+        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
     }
@@ -823,7 +865,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         Nil)
 
       val result = controller.submitConfirmDecline(
-        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
     }
@@ -847,7 +889,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       )
 
       val result = controller.submitConfirmDecline(
-        authorisedAsAnyIndividualClient(request.withFormUrlEncodedBody("accepted" -> "true")))
+        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
     }
@@ -870,7 +912,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Nil
         )
 
-      val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
+      val result = controller.showInvitationsAccepted(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.multi.header"))
@@ -890,7 +932,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             business),
           Nil)
 
-      val result = controller.showInvitationsAccepted(authorisedAsAnyIndividualClient(request))
+      val result = controller.showInvitationsAccepted(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-complete.header"))
@@ -911,7 +953,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             personal),
           Nil)
 
-      val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
+      val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
@@ -927,7 +969,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             personal),
           Nil)
 
-      val result = controller.showInvitationsDeclined(authorisedAsAnyIndividualClient(request))
+      val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-declined.header"))
@@ -943,7 +985,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState
         .set(AllResponsesFailed, Nil)
 
-      val result = controller.showAllResponsesFailed(authorisedAsAnyIndividualClient(request))
+      val result = controller.showAllResponsesFailed(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("all-responses-failed.header"))
@@ -969,7 +1011,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Nil
         )
 
-      val result = controller.showSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
+      val result = controller.showSomeResponsesFailed(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("some-responses-failed.header"))
@@ -994,7 +1036,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Nil
         )
 
-      val result = controller.submitSomeResponsesFailed(authorisedAsAnyIndividualClient(request))
+      val result = controller.submitSomeResponsesFailed(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
 
@@ -1027,7 +1069,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(NotFoundInvitation, Nil)
 
-      val result = controller.showNotFoundInvitation(authorisedAsAnyIndividualClient(request))
+      val result = controller.showNotFoundInvitation(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
@@ -1042,7 +1084,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected for clientType=personal" in {
       journeyState.set(ActionNeeded(personal), Nil)
 
-      val result = controller.showActionNeeded(authorisedAsAnyIndividualClient(request))
+      val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.header"))
@@ -1056,7 +1098,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected for clientType=business" in {
       journeyState.set(ActionNeeded(business), Nil)
 
-      val result = controller.showActionNeeded(authorisedAsAnyIndividualClient(request))
+      val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.header"))
@@ -1069,43 +1111,46 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   }
   }
 
-  "GET /already-responded" should {
-    def request = requestWithJourneyIdInCookie("GET", "/already-responded")
+  "GET /respond/error/already-responded-to-request" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/already-responded-to-request")
     "display the page as expected" in {
-      journeyState.set(InvitationAlreadyResponded, Nil)
+      journeyState.set(AlreadyRespondedToRequest("1/1/2020"), Nil)
 
-      val result = controller.showInvitationAlreadyResponded(authorisedAsAnyIndividualClient(request))
+      val result = controller.showErrorAlreadyRespondedToRequest(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-already-responded.description"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("already-responded.header"))
+      checkIncludesText(result,"You responded to this request on 1/1/2020.")
+      checkIncludesText(result,"If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history")
     }
   }
 
-  "GET /request-cancelled" should {
-    def request = requestWithJourneyIdInCookie("GET", "/request-cancelled")
+  "GET /respond/error/agent-cancelled-request" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/agent-cancelled-request")
     "display the page as expected" in {
-      journeyState.set(AllRequestsCancelled, Nil)
+      journeyState.set(AgentCancelledRequest("d/M/yyyy"), Nil)
 
-      val result = controller.showRequestCancelled(authorisedAsAnyIndividualClient(request))
+      val result = controller.showErrorAgentCancelledRequest(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-request-cancelled.header"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("client-request-cancelled.p"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("agent-cancelled-request.header"))
+      checkIncludesText(result, "This request was cancelled on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
+      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None,true)
+
     }
   }
 
-  "GET /request-expired" should {
-    def request = requestWithJourneyIdInCookie("GET", "/request-expired")
+  "GET /respond/error/request-expired" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/request-expired")
     "display the page as expected" in {
-      journeyState.set(AllRequestsExpired, Nil)
+      journeyState.set(RequestExpired("d/M/yyyy"), Nil)
 
-      val result = controller.showRequestExpired(authorisedAsAnyIndividualClient(request))
+      val result = controller.showErrorRequestExpired(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.heading"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.p1"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("invitation-expired.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("request-expired.header"))
+      checkIncludesText(result, "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
+      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None,true)
     }
   }
 
@@ -1114,7 +1159,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(TrustNotClaimed, Nil)
 
-      val result = controller.showTrustNotClaimed(authorisedAsAnyIndividualClient(request))
+      val result = controller.showTrustNotClaimed(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("trust-not-claimed.client.p1"))
@@ -1342,7 +1387,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   private def anActionHandlingSessionExpiry(action: Action[AnyContent]) =
     "redirect to /session-timeout if there is no journey ID/history available" when {
       "logged in" in {
-        checkRedirectsToSessionExpiry(authorisedAsAnyIndividualClient(FakeRequest()))
+        checkRedirectsToSessionExpiry(authorisedAsIndividualClientWithSomeSupportedEnrolments(FakeRequest()))
       }
 
       "not logged in" in {

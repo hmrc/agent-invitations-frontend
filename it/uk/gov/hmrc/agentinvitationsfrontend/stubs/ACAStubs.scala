@@ -115,7 +115,7 @@ trait ACAStubs {
         )
     )
 
-  def givenAllInvitationIdsWithMixedStatus(uid: String): StubMapping =
+  def givenAllInvitationIdsWithMixedStatus(uid: String, mostRecentStatus: String = "Cancelled"): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
         .willReturn(
@@ -142,12 +142,12 @@ trait ACAStubs {
                          |      "value": "B9SCS2T4NZBAX"
                          |    },
                          |    "expiryDate": "9999-03-05",
-                         |    "status": "Cancelled",
+                         |    "status": "$mostRecentStatus",
                          |    "isRelationshipEnded" : false,
                          |    "events" : [
                          |        {
                          |            "time" : 1595502969899,
-                         |            "status" : "Cancelled"
+                         |            "status" : "$mostRecentStatus"
                          |        }
                          |    ]
                          |  },

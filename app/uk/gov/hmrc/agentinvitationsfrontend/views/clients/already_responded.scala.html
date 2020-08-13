@@ -28,7 +28,7 @@
 
     <h1 class="heading-xlarge">@Messages("already-responded.header")</h1>
 
-    <p>@Messages("already-responded.p", respondedOn)</p>
+    <p>@Messages("already-responded.p1", respondedOn)</p>
 
-    <a href=@externalUrls.agentClientManagementUrl>@Messages("responded-on.link-text")</a>
+    <p>@Html(Messages("already-responded.p2", s"${externalUrls.agentClientManagementUrl}#history"))</p>
 }

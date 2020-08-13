@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{allSupportedServicesForBusiness, allSupportedServicesForIndividual, allSupportedServicesForTrustOrEstate}
+import uk.gov.hmrc.agentinvitationsfrontend.models.EnrolmentCoverage.{allSupportedServicesForBusiness, allSupportedServicesForIndividual, allSupportedServicesForTrustOrEstate}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolments}
 

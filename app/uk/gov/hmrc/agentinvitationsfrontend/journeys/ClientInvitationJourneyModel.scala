@@ -213,7 +213,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
                           case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
                           case _ =>
                             Logger(getClass).warn(s"No pending invitations are found for uid: $uid")
-                            // goto(CannotViewRequest)
                             goto(NotFoundInvitation)
                         }
                       }
@@ -226,20 +225,23 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     private def determineStateForNonPending(
       invitationDetails: Seq[InvitationDetails],
-      enrolmentCoverage: EnrolmentCoverage): Future[State] =
+      enrolmentCoverage: EnrolmentCoverage): Future[State] = {
+      val state = gotoState(_: State)(enrolmentCoverage)
       invitationDetails
         .sortBy(_.mostRecentEvent())
+        .reverse
         .headOption
         .fold(
           goto(NotFoundInvitation)
         )(i =>
           i.status match {
-            case Expired   => gotoState(RequestExpired(dateString(i.mostRecentEvent().time)))(enrolmentCoverage)
-            case Cancelled => gotoState(AgentCancelledRequest(dateString(i.mostRecentEvent().time)))(enrolmentCoverage)
+            case Expired   => state(RequestExpired(dateString(i.mostRecentEvent().time)))
+            case Cancelled => state(AgentCancelledRequest(dateString(i.mostRecentEvent().time)))
             case Accepted | Rejected =>
-              gotoState(AlreadyRespondedToRequest(dateString(i.mostRecentEvent().time)))(enrolmentCoverage)
-            case e => throw new RuntimeException(s"unexpected status $e")
+              state(AlreadyRespondedToRequest(dateString(i.mostRecentEvent().time)))
+            case e => throw new RuntimeException(s"transition exception unexpected status $e")
         })
+    }
 
     private def dateString(date: DateTime): String = {
       val fmt = DateTimeFormat.forPattern("d/M/yyy")
@@ -249,7 +251,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
     private def gotoState(targetState: State)(enrolmentCoverage: EnrolmentCoverage): Future[State] =
       if (enrolmentCoverage == AllSupportedMTDEnrolments) goto(targetState)
       else {
-        println(s"state is $targetState and enrols were $enrolmentCoverage")
         goto(NoOutstandingRequests)
       }
 
