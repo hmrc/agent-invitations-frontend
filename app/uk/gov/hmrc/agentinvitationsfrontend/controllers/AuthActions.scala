@@ -21,7 +21,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -48,6 +48,8 @@ class AuthActionsImpl @Inject()(
 
   val isDevEnv: Boolean =
     if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.contains("Dev")
+
+  private val requiredCL = ConfidenceLevel.L200
 
   private def getArn(enrolments: Enrolments) =
     for {
@@ -104,7 +106,7 @@ class AuthActionsImpl @Inject()(
         case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
-              withConfidenceLevelUplift(cl, ConfidenceLevel.L200, journeyId, maybeNino) {
+              withConfidenceLevelUplift(cl, maybeNino, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               }
             case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
@@ -126,20 +128,27 @@ class AuthActionsImpl @Inject()(
 
   private def withConfidenceLevelUplift[A, BodyArgs](
     currentLevel: ConfidenceLevel,
-    requiredLevel: ConfidenceLevel,
-    journeyId: Option[String],
-    mayBeNino: Option[String])(body: => Future[Result])(implicit request: Request[A]): Future[Result] =
-    if (currentLevel >= requiredLevel) {
+    mayBeNino: Option[String],
+    enrols: Enrolments)(body: => Future[Result])(implicit request: Request[A]): Future[Result] = {
+
+    //APB-4856: Clients with only CGT enrol dont need to go through IV
+    val isCgtOnlyClient: Boolean = {
+      val enrolKeys: Set[String] = enrols.enrolments.map(_.key)
+      enrolKeys.intersect(Services.supportedEnrolmentKeys) == Set(Services.HMRCCGTPD)
+    }
+
+    if (currentLevel >= requiredCL || isCgtOnlyClient) {
       body
     } else if (request.method == "GET" && mayBeNino.isDefined) {
-      redirectToIdentityVerification(requiredLevel)
+      redirectToIdentityVerification()
     } else if (request.method == "GET") {
       redirectToPersonalDetailsValidation()
     } else {
       Future.successful(Redirect(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url))
     }
+  }
 
-  private def redirectToIdentityVerification[A](requiredLevel: ConfidenceLevel)(implicit request: Request[A]) = {
+  private def redirectToIdentityVerification[A]()(implicit request: Request[A]) = {
     val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, appConfig) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
     val rawFailureUrl =
@@ -151,7 +160,7 @@ class AuthActionsImpl @Inject()(
     val ivUpliftUrl = CallOps.addParamsToUrl(
       personalIVUrl,
       "origin"          -> Some("aif"),
-      "confidenceLevel" -> Some(requiredLevel.level.toString),
+      "confidenceLevel" -> Some(requiredCL.toString),
       "completionURL"   -> Some(successUrl),
       "failureURL"      -> Some(failureUrl)
     )
