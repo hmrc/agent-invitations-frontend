@@ -1,8 +1,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
+import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs {
@@ -45,7 +46,41 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsAnyIndividualClient[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+  def authorisedAsIndividualClientWithNoSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
+    val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
+    givenAuthorisedFor(
+      payload = """
+                  |{
+                  |"authorise": [ {
+                  |  "authProviders": [ "GovernmentGateway" ]
+                  |}],
+                  |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments", "nino" ]
+                  |}
+       """.stripMargin,
+      responseBody = s"""
+                        |{
+                        |  "affinityGroup":"Individual",
+                        |  "confidenceLevel":$confidenceLevel,
+                        |  "allEnrolments":
+                        |  [
+                        |    {
+                        |      "key": "HMCE-VATVAR-ORG",
+                        |      "identifiers": [
+                        |         {"key":"VRN", "value": "101747696"}
+                        |      ]
+                        |     }
+                        |  ]
+                        |  $ninoRetrieval
+                        |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+  }
+
+  def authorisedAsIndividualClientWithSomeSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
@@ -84,6 +119,58 @@ trait AuthStubs {
          |  ]
          |  $ninoRetrieval
          |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Client Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
+  }
+
+  def authorisedAsIndividualClientWithAllSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
+    val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
+    givenAuthorisedFor(
+      payload = """
+                  |{
+                  |"authorise": [ {
+                  |  "authProviders": [ "GovernmentGateway" ]
+                  |}],
+                  |  "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments", "nino" ]
+                  |}
+       """.stripMargin,
+      responseBody = s"""
+                        |{
+                        |  "affinityGroup":"Individual",
+                        |  "confidenceLevel":$confidenceLevel,
+                        |  "allEnrolments":
+                        |  [
+                        |    {
+                        |      "key": "HMRC-MTD-IT",
+                        |      "identifiers": [
+                        |         {"key":"MTDITID", "value": "ABCDEF123456789"}
+                        |      ]
+                        |     },
+                        |     {
+                        |      "key": "HMRC-NI",
+                        |      "identifiers": [
+                        |         {"key":"NINO", "value": "AB123456A"}
+                        |      ]
+                        |     },
+                        |     {
+                        |      "key": "HMRC-MTD-VAT",
+                        |      "identifiers": [
+                        |         {"key":"VRN", "value": "101747696"}
+                        |      ]
+                        |     },
+                        |     {
+                        |      "key": "HMRC-CGT-PD",
+                        |      "identifiers": [
+                        |         {"key":"CGTPDRef", "value": "XMCGTP485579071"}
+                        |      ]
+                        |     }
+                        |  ]
+                        |  $ninoRetrieval
+                        |}
           """.stripMargin
     )
     request.withSession(

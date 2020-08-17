@@ -932,6 +932,21 @@ error.cannot-view-request.client-type.personal=personal tax affairs
 no-outstanding-requests.heading=There are no outstanding authorisation requests for you to respond to
 no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
 
+#Request Expired
+request-expired.header=This authorisation request has expired
+request-expired.p=This request expired on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
+request-expired.link-text=View your request history
+
+#Agent Cancelled Request
+agent-cancelled-request.header=Your agent cancelled this authorisation request
+agent-cancelled-request.p=This request was cancelled on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
+agent-cancelled-request.link-text=View your request history
+
+#Already Responded
+already-responded.header=You have already responded to this authorisation request
+already-responded.p1=You responded to this request on {0}.
+already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
+
 #session time out
 timeout-dialog.title=You are about to be signed out
 timeout-dialog.seconds=seconds

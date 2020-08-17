@@ -21,7 +21,6 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logger, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.individualSupportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._

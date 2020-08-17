@@ -38,6 +38,9 @@ object StatusChangeEvent {
         "status" -> o.status.toString
       )
   }
+
+  implicit val ord: Ordering[StatusChangeEvent] = Ordering.by(_.time.getMillis)
+
 }
 
 case class InvitationDetails(
