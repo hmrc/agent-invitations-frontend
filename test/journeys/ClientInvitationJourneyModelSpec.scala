@@ -16,6 +16,7 @@
 
 package journeys
 
+import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
@@ -45,8 +46,32 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       await(super.apply(transition))
   }
 
-  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
-  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("some-key"))))
+  private val now = DateTime.now()
+
+  private def dateString(date: DateTime): String = {
+    val fmt = DateTimeFormat.forPattern("d/M/yyy")
+    date.toString(fmt)
+  }
+
+  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("HMRC-MTD-IT"))))
+  val authorisedIndividualClientWithAllSupportedEnrolments =
+    AuthorisedClient(
+      AffinityGroup.Individual,
+      Enrolments(
+        Set(
+          Enrolment("HMRC-MTD-IT"),
+          Enrolment("HMRC-CGT-PD"),
+          Enrolment("HMRC-MTD-VAT"),
+          Enrolment("HMRC-NI")
+        )
+      )
+    )
+  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
+  val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
+  val authorisedIndividualClientWithoutRelevantEnrolments =
+    AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
+  val authorisedOrganisationClientWithoutRelevantEnrolments =
+    AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
 
   val nino = "AB123456A"
@@ -132,25 +157,34 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Accepted" in {
+        "transition to NoOutstandingRequests when the invitation has a status of Accepted and " +
+          "the client does not have all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
-            Future(
-              Seq(
-                InvitationDetails(
-                  invitationIdItsa,
-                  expiryDate,
-                  Accepted,
-                  false,
-                  List(StatusChangeEvent(DateTime.now(), Accepted)))))
+            Future(Seq(
+              InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Cancelled" in {
+        "transition to AlreadyRespondedToRequest when the invitation has a status of Accepted and " +
+          "the client has ALL supported MTD enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq(
+              InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(AlreadyRespondedToRequest(dateString(now)))
+        }
+
+        "transition to NoOutstandingRequests when the invitation has a status of Cancelled and " +
+          "the client does not have all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -165,10 +199,30 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the invitation has a status of Expired" in {
+        "transition to AgentCancelledRequest when the invitation has a status of Cancelled and " +
+          "the client has ALL supported MTD enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(now, Cancelled)))))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(AgentCancelledRequest(dateString(now)))
+        }
+
+        "transition to NoOutstandingRequests when the invitation has a status of Expired and " +
+          "the client does not have all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -183,10 +237,25 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
 
-        "transition to NotFoundInvitation when the status of the invitations is mixed and impossible to determine" in {
+        "transition to RequestExpired when the invitation has a status of Expired and " +
+          "the client has ALL supported MTD enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(
+              Seq(
+                InvitationDetails(invitationIdItsa, expiryDate, Expired, false, List(StatusChangeEvent(now, Expired)))))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(RequestExpired(dateString(now)))
+        }
+
+        "transition to NoOutstandingRequests when the status of the invitations is mixed and " +
+          "the client does not have all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -208,7 +277,67 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
+        }
+
+        "transition to AlreadyRespondedToRequest when there are several authorisation requests and " +
+          "the latest status change event is Accepted (or Declined) and the client has ALL supported MTD enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(now.minusDays(1), Cancelled))),
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Expired,
+                  false,
+                  List(StatusChangeEvent(now.minusDays(5), Expired))),
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(now.minusDays(2), Cancelled))),
+                InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))
+              ))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(AlreadyRespondedToRequest(dateString(now)))
+        }
+
+        "transition to RequestExpired when there are several authorisation requests and " +
+          "the latest status change event is Expired and the client has ALL supported MTD enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(
+              Seq(
+                InvitationDetails(
+                  invitationIdItsa,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(now.minusDays(1), Cancelled))),
+                InvitationDetails(
+                  invitationIdVat,
+                  expiryDate,
+                  Cancelled,
+                  false,
+                  List(StatusChangeEvent(now.minusDays(2), Cancelled))),
+                InvitationDetails(invitationIdIrv, expiryDate, Expired, false, List(StatusChangeEvent(now, Expired)))
+              ))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(RequestExpired(dateString(now)))
         }
 
         "transition to TrustNotClaimed when the invitation contains trust but the client doesn't have HMRC-TERS-ORG enrolment" in {
@@ -224,8 +353,29 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
-            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedBusinessClient) should
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedTrustOrEstateClient) should
             thenGo(TrustNotClaimed)
+        }
+
+        "transition to NotFoundInvitation when the client has AffinityGroup Individual and no relevant enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithoutRelevantEnrolments) should
+            thenGo(NotFoundInvitation)
+        }
+
+        "transition to NotFoundInvitation when the client has AffinityGroup Organisation and no relevant enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedOrganisationClientWithoutRelevantEnrolments) should
+            thenGo(NotFoundInvitation)
         }
 
         "transition to SuspendedAgent when agent is suspended for one or more of consent services" in {
@@ -288,7 +438,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NotFoundInvitation when the invitation status is Rejected" in {
+        "transition to NoOutstandingRequests when the invitation status is Rejected" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -303,7 +453,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NotFoundInvitation)
+            thenGo(NoOutstandingRequests)
         }
       }
     }

@@ -919,14 +919,33 @@ active-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi a
 active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Error Cannot View Request
-error.cannot-view-request.title=You cannot view this authorisation request
-error.cannot-view-request.header=You cannot view this authorisation request
-error.cannot-view-request.p1=You have signed in using an agent user ID.
-error.cannot-view-request.p2=If you are the agent, ask your client to respond to the authorisation request link.
-error.cannot-view-request.p3=If you are not an agent, sign in with the Government Gateway user ID that you use for your {0}.
-error.cannot-view-request.button=Continue
-error.cannot-view-request.client-type.business=business tax affairs
-error.cannot-view-request.client-type.personal=personal tax affairs
+error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
+error.cannot-view-request.header=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
+error.cannot-view-request.p1=Rydych wedi mewngofnodi gan ddefnyddio Dynodydd Defnyddiwr (ID) asiant.
+error.cannot-view-request.p2=Os mai chi yw’r asiant, gofynnwch i’ch cleient ddilyn y cysylltiad er mwyn ymateb i’r cais am awdurdodiad.
+error.cannot-view-request.p3=Os nad ydych yn asiant, mewngofnodwch gyda’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth rydych yn ei ddefnyddio ar gyfer eich {0}.
+error.cannot-view-request.button=Mewngofnodi
+error.cannot-view-request.client-type.business=materion treth busnes
+error.cannot-view-request.client-type.personal=materion treth personol
+
+#No Outstanding Requests
+no-outstanding-requests.heading=Nid oes unrhyw geisiadau am awdurdodiad dros ben i chi ymateb iddynt
+no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a target="_blank" href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+
+#Request Expired
+request-expired.header=This authorisation request has expired
+request-expired.p=This request expired on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
+request-expired.link-text=View your request history
+
+#Agent Cancelled Request
+agent-cancelled-request.header=Your agent cancelled this authorisation request
+agent-cancelled-request.p=This request was cancelled on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
+agent-cancelled-request.link-text=View your request history
+
+#Already Responded
+already-responded.header=You have already responded to this authorisation request
+already-responded.p1=You responded to this request on {0}.
+already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi

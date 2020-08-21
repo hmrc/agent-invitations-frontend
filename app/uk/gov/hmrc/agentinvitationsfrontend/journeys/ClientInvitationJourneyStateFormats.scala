@@ -34,39 +34,46 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmDeclineFormat = Json.format[ConfirmDecline]
   val SuspendedAgentFormat = Json.format[SuspendedAgent]
   val ActionNeededFormat = Json.format[ActionNeeded]
+  val AgentCancelledRequestFormat = Json.format[AgentCancelledRequest]
+  val AlreadyRespondedToRequestFormat = Json.format[AlreadyRespondedToRequest]
+  val RequestExpiredFormat = Json.format[RequestExpired]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: WarmUp              => WarmUpFormat.writes(s)
-    case s: MultiConsent        => MultiConsentFormat.writes(s)
-    case s: SingleConsent       => SingleConsentFormat.writes(s)
-    case s: CheckAnswers        => CheckAnswersFormat.writes(s)
-    case s: InvitationsAccepted => InvitationsAcceptedFormat.writes(s)
-    case s: InvitationsDeclined => InvitationsDeclinedFormat.writes(s)
-    case s: SomeResponsesFailed => SomeResponsesFailedFormat.writes(s)
-    case s: ConfirmDecline      => ConfirmDeclineFormat.writes(s)
-    case s: SuspendedAgent      => SuspendedAgentFormat.writes(s)
-    case s: ActionNeeded        => ActionNeededFormat.writes(s)
+    case s: WarmUp                    => WarmUpFormat.writes(s)
+    case s: MultiConsent              => MultiConsentFormat.writes(s)
+    case s: SingleConsent             => SingleConsentFormat.writes(s)
+    case s: CheckAnswers              => CheckAnswersFormat.writes(s)
+    case s: InvitationsAccepted       => InvitationsAcceptedFormat.writes(s)
+    case s: InvitationsDeclined       => InvitationsDeclinedFormat.writes(s)
+    case s: SomeResponsesFailed       => SomeResponsesFailedFormat.writes(s)
+    case s: ConfirmDecline            => ConfirmDeclineFormat.writes(s)
+    case s: SuspendedAgent            => SuspendedAgentFormat.writes(s)
+    case s: ActionNeeded              => ActionNeededFormat.writes(s)
+    case s: AgentCancelledRequest     => AgentCancelledRequestFormat.writes(s)
+    case s: RequestExpired            => RequestExpiredFormat.writes(s)
+    case s: AlreadyRespondedToRequest => AlreadyRespondedToRequestFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
-    case "MissingJourneyHistory"      => JsSuccess(MissingJourneyHistory)
-    case "WarmUp"                     => WarmUpFormat.reads(properties)
-    case "NotFoundInvitation"         => JsSuccess(NotFoundInvitation)
-    case "ActionNeeded"               => ActionNeededFormat.reads(properties)
-    case "AllRequestsCancelled"       => JsSuccess(AllRequestsCancelled)
-    case "AllRequestsExpired"         => JsSuccess(AllRequestsExpired)
-    case "InvitationAlreadyResponded" => JsSuccess(InvitationAlreadyResponded)
-    case "CannotViewRequest"          => JsSuccess(CannotViewRequest)
-    case "MultiConsent"               => MultiConsentFormat.reads(properties)
-    case "SingleConsent"              => SingleConsentFormat.reads(properties)
-    case "CheckAnswers"               => CheckAnswersFormat.reads(properties)
-    case "InvitationsAccepted"        => InvitationsAcceptedFormat.reads(properties)
-    case "InvitationsDeclined"        => InvitationsDeclinedFormat.reads(properties)
-    case "SomeResponsesFailed"        => SomeResponsesFailedFormat.reads(properties)
-    case "AllResponsesFailed"         => JsSuccess(AllResponsesFailed)
-    case "ConfirmDecline"             => ConfirmDeclineFormat.reads(properties)
-    case "TrustNotClaimed"            => JsSuccess(TrustNotClaimed)
-    case "SuspendedAgent"             => SuspendedAgentFormat.reads(properties)
+    case "MissingJourneyHistory"     => JsSuccess(MissingJourneyHistory)
+    case "WarmUp"                    => WarmUpFormat.reads(properties)
+    case "NotFoundInvitation"        => JsSuccess(NotFoundInvitation)
+    case "NoOutstandingRequests"     => JsSuccess(NoOutstandingRequests)
+    case "ActionNeeded"              => ActionNeededFormat.reads(properties)
+    case "AgentCancelledRequest"     => AgentCancelledRequestFormat.reads(properties)
+    case "AlreadyRespondedToRequest" => AlreadyRespondedToRequestFormat.reads(properties)
+    case "RequestExpired"            => RequestExpiredFormat.reads(properties)
+    case "CannotViewRequest"         => JsSuccess(CannotViewRequest)
+    case "MultiConsent"              => MultiConsentFormat.reads(properties)
+    case "SingleConsent"             => SingleConsentFormat.reads(properties)
+    case "CheckAnswers"              => CheckAnswersFormat.reads(properties)
+    case "InvitationsAccepted"       => InvitationsAcceptedFormat.reads(properties)
+    case "InvitationsDeclined"       => InvitationsDeclinedFormat.reads(properties)
+    case "SomeResponsesFailed"       => SomeResponsesFailedFormat.reads(properties)
+    case "AllResponsesFailed"        => JsSuccess(AllResponsesFailed)
+    case "ConfirmDecline"            => ConfirmDeclineFormat.reads(properties)
+    case "TrustNotClaimed"           => JsSuccess(TrustNotClaimed)
+    case "SuspendedAgent"            => SuspendedAgentFormat.reads(properties)
   }
 
 }

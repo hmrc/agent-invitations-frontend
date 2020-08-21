@@ -48,7 +48,7 @@ trait AuthBehaviours extends AuthStubs {
     "redirect to Personal Details Validation when confidence level is below 200 for an Individual without a NINO" in {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
-      val result = await(action(authorisedAsAnyIndividualClient(request, confidenceLevel = 50, hasNino = false)))
+      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50, hasNino = false)))
 
       // validationId will be added later by PDV on return
       val completionUrl: String =
@@ -68,7 +68,7 @@ trait AuthBehaviours extends AuthStubs {
     "redirect to Identity Verification when confidence level is below 200 for an Individual with a NINO" in {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
-      val result = await(action(authorisedAsAnyIndividualClient(request, confidenceLevel = 50)))
+      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50)))
       val failureUrl: String =
         URLEncoder.encode(
           routes.ClientInvitationJourneyController.showCannotConfirmIdentity(success = Some(request.uri)).url,
@@ -86,7 +86,7 @@ trait AuthBehaviours extends AuthStubs {
     "redirect to cannot confirm identity when the confidence level is below 200 on a post request" in {
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
-      val result = await(action(authorisedAsAnyIndividualClient(request, confidenceLevel = 50)))
+      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50)))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url)

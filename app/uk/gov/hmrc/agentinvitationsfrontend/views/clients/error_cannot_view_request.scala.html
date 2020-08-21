@@ -17,12 +17,13 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
 @this(
         mainTemplate: main_template
 )
 
-@(clientType: String, ggSignInUrl: Option[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("error.cannot_view_request.header"), "afi"))) {
 
@@ -32,6 +33,6 @@
     <p>@Messages("error.cannot-view-request.p2")</p>
     <p>@Messages("error.cannot-view-request.p3", Messages(s"error.cannot-view-request.client-type.$clientType"))</p>
 
-    <a class="margin-top-20 button" href=@ggSignInUrl.getOrElse(externalUrls.signOutUrl(false, Some(false)))>@Messages("error.cannot-view-request.button")</a>
+    <a class="margin-top-20 button" href=@routes.ClientInvitationJourneyController.signOutAndRedirect()>@Messages("error.cannot-view-request.button")</a>
 
 }
