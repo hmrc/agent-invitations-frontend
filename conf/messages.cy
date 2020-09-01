@@ -933,19 +933,19 @@ no-outstanding-requests.heading=Nid oes unrhyw geisiadau am awdurdodiad dros ben
 no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a target="_blank" href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
 
 #Request Expired
-request-expired.header=This authorisation request has expired
-request-expired.p=This request expired on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
-request-expired.link-text=View your request history
+request-expired.header=Mae’r cais am awdurdodiad hwn wedi dod i ben
+request-expired.p=Daeth y cais hwn i ben ar {0}. Gofynnwch i’ch asiant anfon cysylltiad arall atoch er mwyn cyflwyno cais am awdurdodiad os hoffech ei awdurdodi o hyd.
+request-expired.link-text=Bwrw golwg dros hanes eich ceisiadau
 
 #Agent Cancelled Request
-agent-cancelled-request.header=Your agent cancelled this authorisation request
-agent-cancelled-request.p=This request was cancelled on {0}. Ask your agent to send you another authorisation request link if you still want to authorise them.
-agent-cancelled-request.link-text=View your request history
+agent-cancelled-request.header=Mae’ch asiant wedi canslo’r cais am awdurdodiad hwn
+agent-cancelled-request.p=Cafodd y cais hwn ei ganslo ar {0}. Gofynnwch i’ch asiant anfon cysylltiad arall atoch er mwyn cyflwyno cais am awdurdodiad os hoffech ei awdurdodi o hyd.
+agent-cancelled-request.link-text=Bwrw golwg dros hanes eich ceisiadau
 
 #Already Responded
-already-responded.header=You have already responded to this authorisation request
-already-responded.p1=You responded to this request on {0}.
-already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
+already-responded.header=Rydych eisoes wedi ymateb i’r cais am awdurdodiad hwn
+already-responded.p1=Gwnaethoch ymateb i’r cais hwn ar {0}.
+already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a target="_blank" href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
