@@ -45,28 +45,32 @@
     }
 
     @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
+        <div class="form-group @if(postcodeForm.hasErrors){form-field--error soft--ends}">
+                    <h1 class="heading-xlarge">
+                        <label class="heading-xlarge" for="postcode">@Messages("confirm-postcode-cgt.header")</label>
+                    </h1>
+                <p>@Messages("confirm-postcode-cgt.p1")</p>
+                <span class="form-hint margin-bottom-10" id="postcode-hint">@Messages("confirm-postcode-cgt.hint")</span>
+                @postcodeForm.error("postcode").map { formError =>
+                    <span class="error-notification" id="postcode-error" data-journey="search-page:error:postcode">
+                        <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
 
-        <div class="form-group @if(postcodeForm.hasErrors){form-field--error padding-0}">
-            <h1 class="form-label soft--ends @if(postcodeForm.hasErrors){push--top}">
-                <label class="heading-xlarge margin-bottom-10 @if(postcodeForm.hasErrors){push--top}" for="postcode">
-                @Messages("confirm-postcode-cgt.header")
-                </label>
-            </h1>
-            <p class="margin-bottom-30">@Messages("confirm-postcode-cgt.p1")</p>
-            <p>@Messages("confirm-postcode-cgt.label")</p>
-            <p class="form-hint">@Messages("confirm-postcode-cgt.hint")</p>
-            @postcodeForm.error("postcode").map{formError =>
-                <span class="error-notification">
-                    <span class="visuallyhidden">@Messages("error.prefix")</span>
-                @Messages(formError.message)
-                </span>
-            }
-            <input class="form-control" name="postcode" id="postcode">
-
+                }
+                <input
+                class="form-control"
+                type="text"
+                id="postcode"
+                name="postcode"
+                spellcheck="false"
+                    @postcodeForm.data.get("postcode").map{ v => value="@v"}
+                    aria-describedby="postcode-hint @if(postcodeForm.hasErrors){postcode-error}"
+                >
         </div>
 
-    <div class="form-group">
-        <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-    </div>
+
+            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+
+
+
     }
 }

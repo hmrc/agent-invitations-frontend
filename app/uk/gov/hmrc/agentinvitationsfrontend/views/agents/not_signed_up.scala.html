@@ -36,17 +36,17 @@
 
         <h1 class="margin-bottom-50 heading-xlarge">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
 
-        <p class="">@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
+        <p>@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
 
     @htmlPartial.getOrElse("")
 
         @if(hasRequests) {
-            <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button">@Messages("review-auths.link")</a>
+            <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button" role="button">@Messages("review-auths.link")</a>
         } else {
             @if(!isDeAuthJourney) {
-                <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button">@Messages("new-request.button")</a>
+                <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button" role="button">@Messages("new-request.button")</a>
             } else {
-                <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button">@Messages("new-request.button")</a>
+                <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button" role="button">@Messages("new-request.button")</a>
             }
         }
 }

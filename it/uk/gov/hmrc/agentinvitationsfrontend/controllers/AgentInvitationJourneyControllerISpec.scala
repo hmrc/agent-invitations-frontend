@@ -935,7 +935,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "confirm-postcode-cgt.header",
         "confirm-postcode-cgt.p1",
-        "confirm-postcode-cgt.label",
         "confirm-postcode-cgt.hint",
         "continue.button"
       )

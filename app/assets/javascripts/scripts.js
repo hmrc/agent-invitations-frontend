@@ -4,13 +4,13 @@ $(function() {
     $input = $('input:text')
     //Error summary focus
     if (errorSummary){ errorSummary.focus() }
-    $input.each( function(){
+    /*$input.each( function(){
         if($(this).closest('label').hasClass('form-field--error')){
             $(this).attr('aria-invalid', true)
         }else{
             $(this).attr('aria-invalid', false)
         }
-    });
+    });*/
     //Trim inputs and Capitalize postcode
     $('[type="submit"]').click(function(){
         $input.each( function(){
@@ -72,6 +72,29 @@ $(function() {
             $('#country-auto-complete-select').val('').attr("selected", "selected");
         }
 
+    });
+
+    $('a[role=button]').keyup(function(e) {
+        // get the target element
+        var target = e.target;
+        // if the element has a role='button' and the pressed key is a space, we'll simulate a click
+        if (e.keyCode === 32) {
+            e.preventDefault();
+            // trigger the target's click event
+            target.click()
+        }
+    });
+
+
+
+    // ------------------------------------
+    // Introduce direct skip link control, to work around voiceover failing of hash links
+    // https://bugs.webkit.org/show_bug.cgi?id=179011
+    // https://axesslab.com/skip-links/
+    // ------------------------------------
+    $('.skiplink').click(function(e) {
+        e.preventDefault();
+        $(':header:first').attr('tabindex', '-1').focus();
     });
 
     GOVUK.details.init()

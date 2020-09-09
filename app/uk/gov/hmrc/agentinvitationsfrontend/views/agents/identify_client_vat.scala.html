@@ -24,7 +24,7 @@
     errorPrefix: error_prefix,
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+    uiDateFields: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.date_input
 )
 
 @(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -45,23 +45,31 @@
         @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
     }
 
-    <h2>@agentInvitationsForm.errors</h2>
-
-  <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
-
-  <p>@Messages("identify-client.vat.p1")</p>
-
  @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
 
-     <div class="form-group margin-top-20 @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error error-container}">
-         <label for="clientIdentifier" class="soft--ends @if(agentInvitationsForm.hasErrors){push--top}">@Html(Messages("identify-client.vrn.label"))</label>
-         <span class="form-hint">@Html(Messages("identify-client.vrn.hint"))</span>
-         @agentInvitationsForm.error("clientIdentifier").map{formError =>
-             <span class="error-notification" role="tooltip" data-journey="search-page:error:vrn">
+     <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
+
+     <p>@Messages("identify-client.vat.p1")</p>
+
+     <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error soft--ends}">
+         <label class="form-label" for="clientIdentifier">@Messages("identify-client.vrn.label")</label>
+         <span class="form-hint" id="vrn-hint">@Messages("identify-client.vrn.hint")</span>
+         @agentInvitationsForm.error("clientIdentifier").map { formError =>
+             <span class="error-notification" data-journey="search-page:error:vrn" id="vrn-error">
                  <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
          }
-         <input type="text" class="form-control" id="clientIdentifier" name="clientIdentifier" aria-invalid="true">
+         <input
+         type="text"
+         class="form-control"
+         id="clientIdentifier"
+         name="clientIdentifier"
+         spellcheck="false"
+         pattern="[0-9]*"
+         inputmode="numeric"
+         aria-describedby="vrn-hint @if(agentInvitationsForm.error("clientIdentifier").isDefined) { vrn-error}"
+             @agentInvitationsForm.data.get("clientIdentifier").map { v => value="@v"}
+         >
      </div>
 
          <div @if(agentInvitationsForm.error("registrationDate").isDefined){class="nojs-date-fields-error"}>
@@ -74,9 +82,10 @@
              )
         </div>
 
-     <div class="form-group">
+
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-     </div>
+
+
 
  }
  }

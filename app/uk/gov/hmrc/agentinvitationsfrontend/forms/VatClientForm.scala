@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 import play.api.data.Forms._
 import play.api.data._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.formatDateFromFields
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 

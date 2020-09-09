@@ -41,7 +41,6 @@
     @uiFormHelper(
         action = submitCall,
         'class -> "form js-form") {
-        <div class="form-group">
         @uiInputRadioGroup(
             choiceForm("accepted"),
             Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
@@ -51,9 +50,8 @@
             '_legendClass -> "margin-bottom-10"
 
         )
-        </div>
 
-        <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
+        <button class="button form-field--submit margin-top-10" type="submit" id="continue">@Messages("continue.button")</button>
     }
 }
 
