@@ -67,9 +67,9 @@
 
 
 @if(config.hasContinueUrl) {
-    <a href="@config.continueUrl" class="button form-field-group" id="continue">@Messages("invitation-sent.continueJourney.button")</a>
+    <a href="@config.continueUrl" class="button form-field-group" id="continue" role="button">@Messages("invitation-sent.continueJourney.button")</a>
 } else {
-    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
+    <h2 class="heading-medium">@Messages("invitation-sent.header.links")</h2>
     <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
     <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.continueToASAccount.button")</a>
 }

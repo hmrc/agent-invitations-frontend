@@ -38,10 +38,10 @@
 
     @if(basket.isEmpty) {
         <p>@Messages("agent-suspended.p2.single")</p>
-        <a href="@routes.AgentInvitationJourneyController.agentsRoot().url" class="button">@Messages("start-again.button")</a>
+        <a href="@routes.AgentInvitationJourneyController.agentsRoot().url" class="button" role="button">@Messages("start-again.button")</a>
     }else {
         <p>@Html(Messages("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
-        <a href='@routes.AgentInvitationJourneyController.showReviewAuthorisations' class="button">@Messages("continue.button")</a>
+        <a href='@routes.AgentInvitationJourneyController.showReviewAuthorisations' class="button" role="button">@Messages("continue.button")</a>
     }
 
 }

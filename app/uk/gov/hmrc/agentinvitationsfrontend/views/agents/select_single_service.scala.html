@@ -25,7 +25,7 @@
         uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
         uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
         uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-        uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -41,20 +41,15 @@
     @uiFormHelper(
         action = config.submitCall,
         'class -> "form js-form") {
-
-        <h1 class="heading-xlarge margin-bottom-20">@config.selectSingleHeaderMessage</h1>
-
-
-        <div class="form-group">
-        @uiInputRadioGroup(
+        @uiInputRadioGroupCustom(
             choiceForm("accepted"),
-            Seq("true" -> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='service'"""),
+            Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
+            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
+            '_groupDivClass -> "form-group",
+            '_fieldsetAttributes -> Html("""id='accepted'"""),
             '_legendClass -> "margin-bottom-10"
-        )
-        </div>
 
+        )
         <details id="selectServiceHelper">
             <summary id="selectServiceSummary">
                 <span id="selectServiceAlt" class="summary">
@@ -68,6 +63,7 @@
         </details>
 
         <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
+
     }
 
     @if(config.basket.nonEmpty) {

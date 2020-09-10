@@ -46,7 +46,7 @@
   Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> Messages("cancel-authorisation.confirm-cancel.no")),
   '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
   '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
-  '_groupDivClass -> "form-group soft--ends",
+  '_groupDivClass -> "form-group",
   '_fieldsetAttributes -> Html("""id='accepted'""")
  )
 

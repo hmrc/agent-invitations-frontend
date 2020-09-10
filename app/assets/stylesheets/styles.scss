@@ -217,7 +217,11 @@ fieldset .div-underline:last-child {
 }
 
 .hint-text {
-    color: #6f777b;
+    color: #505A5F;
+}
+
+.form-hint {
+    color: #505A5F;
 }
 
 #confirmDecline h2 {
@@ -375,5 +379,6 @@ details .panel[aria-hidden=true] a {
 
 
     @import 'partials/_accessibleAutocomplete';
-    @import 'partials/_focus';
     @import 'partials/_palette';
+    @import 'partials/_focus';
+

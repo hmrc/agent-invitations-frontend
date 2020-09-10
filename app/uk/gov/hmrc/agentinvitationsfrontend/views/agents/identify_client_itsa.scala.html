@@ -46,26 +46,40 @@
  @uiFormHelper(
   action = submitFormCall, 'class -> "form js-form") {
 
-     <div class="form-group @if(agentInvitationsForm.hasErrors){form-field--error}">
-         <label class="form-label soft--ends @if(agentInvitationsForm.hasErrors){push--top}" for="clientIdentifier">@Messages("identify-client.nino.label")</label>
-         <span class="form-hint">@Messages("identify-client.nino.hint")</span>
-         @agentInvitationsForm.error("clientIdentifier").map{formError => <span class="error-message"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>}
-         <input class="form-control" name="clientIdentifier" id="clientIdentifier" type="text">
+     <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined){form-field--error soft--ends}">
+         <label class="form-label" for="clientIdentifier">@Messages("identify-client.nino.label")</label>
+         <span class="form-hint" id="nino-hint">@Messages("identify-client.nino.hint")</span>
+         @agentInvitationsForm.error("clientIdentifier").map{formError => <span class="error-message" id="nino-error">
+             <span class="visuallyhidden">@Messages("error.prefix")</span>
+             @Messages(formError.message)</span>}
+         <input
+         class="form-control"
+         name="clientIdentifier"
+         id="clientIdentifier"
+         type="text"
+         spellcheck="false"
+             @agentInvitationsForm.data.get("clientIdentifier").map { v => value="@v"}
+             aria-describedby="nino-hint @if(agentInvitationsForm.error("clientIdentifier").isDefined){nino-error}"
+         >
 
      </div>
 
-     <div class="form-group @if(agentInvitationsForm.hasErrors){form-field--error}">
-         <label class="form-label soft--ends" for="postcode">@Messages("identify-client.postcode.label")</label>
-         <span class="form-hint">@Messages("identify-client.postcode.hint")</span>
-         @agentInvitationsForm.error("postcode").map{formError => <span class="error-message"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>}
-         <input class="form-control" name="postcode" id="postcode" type="text">
+     <div class="form-group @if(agentInvitationsForm.error("postcode").isDefined){form-field--error soft--ends}">
+         <label class="form-label" for="postcode">@Messages("identify-client.postcode.label")</label>
+         <span class="form-hint" id="postcode-hint">@Messages("identify-client.postcode.hint")</span>
+         @agentInvitationsForm.error("postcode").map{formError => <span class="error-message" id="postcode-error"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>}
+         <input class="form-control" name="postcode" id="postcode" type="text" spellcheck="false"
+             @agentInvitationsForm.data.get("postcode").map { v => value="@v"}
+         aria-describedby="postcode-hint @if(agentInvitationsForm.error("postcode").isDefined){postcode-error}"
+         >
+
      </div>
 
 
 
-     <div class="form-group margin-top-30">
+
          <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-     </div>
+
  }
 
  }

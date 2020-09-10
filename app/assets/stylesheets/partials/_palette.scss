@@ -1,6 +1,8 @@
 // =========================
+// updated 13 July 2020 11:52 BST
 // Palette change
 // https://designnotes.blog.gov.uk/2019/07/29/weve-updated-the-gov-uk-colours-and-font/
+// to check for updates visit https://gist.github.com/adamliptrot-oc/f77250a6f69fb31fabd935e2002f4964
 // =========================
 
 // #DEE0E2 to #f3f2f1
@@ -131,13 +133,15 @@ a,
 .paye-statements .sidebar-links__item.selected,
 option:active,
 option:checked,
-select:focus::-ms-value,
 .phase-banner .phase-tag,
 .phase-banner-alpha .phase-tag,
 .phase-banner-beta .phase-tag,
 .phase-tag,
 .full-width-banner,
 .hmrc-banner .phase-tag {
+  background-color: #1d70b8;
+}
+select:focus::-ms-value {
   background-color: #1d70b8;
 }
 .button--notification:active {
@@ -234,15 +238,13 @@ button:active,
   box-shadow: 0 0 0 #d4351c;
 }
 .email-form-errors .error-notification,
-.error-notification,
 .annual-summaries--group .alert--text,
 .sent-in-error,
 .business-tax .content__body .flag.flag--urgent,
 .error-message,
 .error-summary .error-summary-list a,
 .error-summary .error-summary-list .link-style,
-.error-summary .error-summary-list .button--link-style,
-.flash.error-summary a, .flash.error-summary .link-style, .flash.error-summary .button--link-style {
+.error-summary .error-summary-list .button--link-style {
   color: #d4351c;
 }
 .email-form-errors .error-notification,
@@ -258,4 +260,18 @@ input.form-control-error[type="text"],
 input.form-control-error[type="password"],
 .error-summary {
   border-color: #d4351c;
+}
+// override for AF
+.form-control-error.form-control-error.form-control-error {
+  border-color: #d4351c;
+}
+
+// confirmation panel
+.govuk-box-highlight {
+  background-color: #00703c;
+}
+
+// faded text in banner (eg lang toggle)
+.header__menu__proposition-links .faded-text--small {
+  color: #A7A7A7
 }

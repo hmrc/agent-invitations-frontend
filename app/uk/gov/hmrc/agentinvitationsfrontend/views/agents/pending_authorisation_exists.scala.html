@@ -46,9 +46,9 @@
   }else {
       @if(!config.fromFastTrack) {
 
-          <a href="@config.clientTypeCall" class="button">@Messages("pending-authorisation-exists.new-request.button")</a>
+          <a href="@config.clientTypeCall" class="button" role="button">@Messages("pending-authorisation-exists.new-request.button")</a>
       } else {
-          <a href=@routes.AgentsRequestTrackingController.showTrackRequests() class="button">@Messages("pending-authorisation-exists.track.button")</a>
+          <a class="button" role="button" href=@routes.AgentsRequestTrackingController.showTrackRequests()>@Messages("pending-authorisation-exists.track.button")</a>
       }
   }
 

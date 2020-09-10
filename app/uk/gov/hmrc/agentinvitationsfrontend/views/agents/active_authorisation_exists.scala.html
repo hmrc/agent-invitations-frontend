@@ -36,10 +36,10 @@
   <p>@Messages("active-authorisation-exists.p2")</p>
 
   @if(authRequestsExist && !fromFastTrack) {
-    <a href=@reviewAuthsCall class="button">@Messages("active-authorisation-exists.return")</a>
+    <a href=@reviewAuthsCall class="button" role="button">@Messages("active-authorisation-exists.return")</a>
   }else {
      @if(!fromFastTrack) {
-      <div><a href=@clientTypeCall class="button">@Messages("pending-authorisation-exists.new-request.button")</a></div>
+      <div><a href=@clientTypeCall class="button" role="button">@Messages("pending-authorisation-exists.new-request.button")</a></div>
      }
   }
 }

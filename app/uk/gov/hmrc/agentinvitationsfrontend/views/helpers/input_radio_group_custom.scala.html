@@ -22,30 +22,37 @@
 
 @elements = @{new FieldElements(field.id, field, null, args.toMap, messages) }
 @groupDivClass = {@elements.args.get('_groupDivClass)@if(elements.hasErrors){ form-field--error}}
-@fieldsetClass = {@elements.args.get('_groupClass)}
-@labelAfter = @{ elements.args.get('_labelAfter).getOrElse(false).asInstanceOf[Boolean] }
+@labelAfter = @{ elements.args.getOrElse('_labelAfter, false).asInstanceOf[Boolean] }
 
 <div class="@groupDivClass @if(elements.hasErrors){error-container}">
-    <fieldset class="@fieldsetClass"
-        @if(elements.args.get('_fieldsetAttributes).isDefined) { @elements.args.get('_fieldsetAttributes)}>
-        @if(elements.args.get('_legend).isDefined) {
-            <legend @if(elements.args.get('_legendClass).isDefined) {class="@elements.args.get('_legendClass)"}
-                @if(elements.args.get('_legendID).isDefined) {id="@elements.args.get('_legendID)"}>
-            @elements.args.get('_legend)
+    <fieldset @elements.args.get('_groupClass).map{ groupClass => class='@groupClass'}
+        @elements.args.getOrElse('_fieldsetAttributes, "")
+        @if(elements.hasErrors || elements.args.contains('_inputHint)){ aria-describedBy='@if(elements.args.contains('_inputHint)){radio-select-hint}@if(elements.hasErrors){ radio-select-error}'}
+    >
+        @if(elements.args.contains('_legend)) {
+            <legend @elements.args.get('_legendClass).map { legendClass => class='@legendClass'}
+                    @elements.args.get('_legendID).map { legendId => id='@legendId'}
+
+            >
+                    @elements.args.get('_legend)
             </legend>
         }
-        @if(elements.args.get('_inputHint).isDefined){
-            <p @if(elements.args.get('_inputHintClass).isDefined){class="@elements.args.get('_inputHintClass)"}>
+        @if(elements.args.contains('_inputHint)){
+            <p
+                @elements.args.get('_inputHintClass).map { inputHintClass => class='@inputHintClass'}
+                id="radio-select-hint"
+
+            >
             @elements.args.get('_inputHint)
             </p>
 
         }
-        @if(elements.args.get('_fieldsetDiv).isDefined){
-            <div @if(elements.args.get('_fieldsetDivClass).isDefined){class="@elements.args.get('_fieldsetDivClass)"}>
+        @if(elements.args.contains('_fieldsetDiv)){
+            <div @elements.args.get('_fieldsetDivClass).map { fieldsetDivClass => class='@fieldsetDivClass'}>
                 @elements.args.get('_fieldsetDiv)
             </div>
         }
-        @elements.errors.map{error => <span class="error-notification"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(error.toString)</span>}
+        @elements.errors.map{error => <span class="error-notification" id="radio-select-error"><span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(error.toString)</span>}
 
         @radioOptions.map { case (value, label) =>
             @defining(s"${elements.field.name}-${value.toLowerCase.replace(" ","_")}")  { inputId =>
@@ -55,12 +62,12 @@
                     id="@inputId"
                     name="@elements.field.name"
                     value="@value"
-                        @elements.args.get('_inputClass).map{inputClass => class="@inputClass"}
-                        @if(elements.args.contains('_dataAttributes) ){ @elements.args.get('_dataAttributes)}
+                        @elements.args.get('_inputClass).map { inputClass => class="@inputClass"}
+                        @elements.args.getOrElse('_dataAttributes, "")
                         @field.value.filter( _ == value).map{_ => checked="checked"}/>
 
                     <label for="@inputId"
-                        @elements.args.get('_labelClass).map{labelClass => class="@labelClass@field.value.filter( _ == value).map{_ => selected}"}>
+                        @elements.args.get('_labelClass).map { labelClass => class="@labelClass@field.value.filter( _ == value).map{_ => selected}"}>
                         @if(!labelAfter) {
                             @if(elements.args.get('_stackedLabel)) {
                                 @if(label.toString().split(" ").length < 2) {<br>@label

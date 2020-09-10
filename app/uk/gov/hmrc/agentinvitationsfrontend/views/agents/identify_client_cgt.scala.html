@@ -41,25 +41,34 @@
 
     <!-- TODO use client type here (personal or trust) -->
 
-    <h1 class="heading-xlarge margin-bottom-10">@Messages(s"identify-cgt-client.header")</h1>
-
-    <p>@Html(Messages("identify-cgt-client.p1"))</p>
-
     @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
-        <div class="form-group margin-top-20 @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error}">
-            <label for="cgtRef" class="soft--ends margin-bottom-10">@Html(Messages("identify-cgt-client.p3"))</label>
-            <span class="form-hint margin-bottom-10">@Html(Messages("identify-cgt-client.hint"))</span>
-        @if(cgtClientForm.error("cgtRef").isDefined){
-            <span class="error-notification" role="tooltip" data-journey="search-page:error:cgtRef">
-                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages("error.cgt.required")</span>
+        <div class="form-group @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error soft--ends}">
+                <h1>
+                    <label class="heading-xlarge" for="cgtRef">@Messages(s"identify-cgt-client.header")</label>
+                </h1>
+
+            <p>@Messages("identify-cgt-client.p1")</p>
+            <span class="form-hint margin-bottom-10" id="cgt-hint">@Messages("identify-cgt-client.hint")</span>
+        @cgtClientForm.error("cgtRef").map { formError =>
+            <span class="error-notification" data-journey="search-page:error:cgtRef" id="cgt-error">
+                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
 
         }
-            <input type="text" class="form-control" id="cgtRef" name="cgtRef" value="" aria-invalid="true">
+            <input
+            class="form-control"
+            name="cgtRef"
+            id="cgtRef"
+            type="text"
+            spellcheck="false"
+            @cgtClientForm.data.get("cgtRef").map { v => value="@v"}
+            aria-describedby="cgt-hint @if(cgtClientForm.hasErrors){cgt-error}"
+            >
+
             </div>
 
-        <div class="form-group">
             <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-        </div>
+
+
 
     }
 }

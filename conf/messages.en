@@ -101,7 +101,7 @@ select-service.header=What do you want the client to authorise you to do?
 ## Helper Text
 select-service.alternative=I need authorisation for something else
 select-service.alt-suggestion=You can use this service to ask a client to authorise you for the services listed here.
-select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new window or tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
+select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
 select-service.review-auth-link=Return to authorisation requests
 
 # single service selection headers and errors
@@ -371,15 +371,15 @@ not-enrolled.p.HMRC-TERS-ORG=claimed a trust.
 
 not-enrolled.existing.header=Existing {0} clients
 not-enrolled.existing.p=If you copied an existing {0} authorisation for this client to your agent services account, you can {1}
-not-enrolled.existing.p.HMRC-MTD-IT=<a target="_blank" href="{0}">sign them up to Making Tax Digital pilot for Income Tax (opens in a new window or tab).</a>
-not-enrolled.existing.p.HMRC-MTD-VAT=<a target="_blank" href="{0}">sign them up to Making Tax Digital for VAT (opens in a new window or tab).</a>
+not-enrolled.existing.p.HMRC-MTD-IT=<a target="_blank" href="{0}">sign them up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a>
+not-enrolled.existing.p.HMRC-MTD-VAT=<a target="_blank" href="{0}">sign them up to Making Tax Digital for VAT (opens in a new tab).</a>
 
 not-enrolled.mapping.p=Find out how to {0}
 not-enrolled.mapping.link=<a href="{0}">copy across an existing authorisation</a>
 
 not-enrolled.new.header=New {0} clients
-not-enrolled.new.HMRC-MTD-IT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital pilot for Income Tax (opens in a new window or tab).</a> You cannot do this step for them.
-not-enrolled.new.HMRC-MTD-VAT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital for VAT (opens in a new window or tab).</a> You cannot do this step for them.
+not-enrolled.new.HMRC-MTD-IT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a> You cannot do this step for them.
+not-enrolled.new.HMRC-MTD-VAT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital for VAT (opens in a new tab).</a> You cannot do this step for them.
 
 # Not Matched
 not-matched.header=We could not find your client
@@ -508,9 +508,9 @@ confirm-terms.p1=We need your consent to share your personal information with {0
 confirm-terms.subheading1=What this means
 confirm-terms.subheading1.p1=By giving your consent, you agree that HMRC will share the following information with {0}:
 confirm-terms.subheading2=How to withdraw your consent
-confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new window or tab)</a>.
+confirm-terms.subheading2.p1=You can withdraw your consent at any time by using <a href="{0}" target="_blank" rel="noopener noreferrer">manage who can deal with HMRC for you (opens in a new tab)</a>.
 confirm-terms.subheading3=Our privacy policy
-confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new window or tab)</a>. If you appoint someone overseas to act for you, we will need to share your data outside of the UK.
+confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new tab)</a>. If you appoint someone overseas to act for you, we will need to share your data outside of the UK.
 confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent’s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
 confirm-terms.radio1=Yes
@@ -680,7 +680,7 @@ action-needed.vat.link-text=Making Tax Digital for VAT
 action-needed.itsa.link-text=the Making Tax Digital pilot for Income Tax
 action-needed.details.p1=Make sure you have signed up to {0}.
 action-needed.details.p2=Find out how to {0}
-action-needed.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new window or tab)</a>.
+action-needed.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new tab)</a>.
 action-needed.details.ters.p1=You will need to claim a trust or an estate before you can continue.
 action-needed.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
 

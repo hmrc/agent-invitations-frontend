@@ -51,14 +51,17 @@
 
             <p class="hint-text">@Messages("identify-client.itsa.p1")</p>
 
-        <div class="form-group margin-top-20 @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error}">
-            <label for="clientIdentifier" class="soft--ends @if(agentInvitationsForm.hasErrors){push--top}">@Html(Messages("identify-client.nino.label"))</label>
-            <span class="form-hint">@Html(Messages("identify-client.nino.hint"))</span>
-            @agentInvitationsForm.error("clientIdentifier").map{formError =>
-                <span class="error-notification" role="tooltip" data-journey="search-page:error:nino">
+        <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error soft--ends}">
+            <label class="form-label" for="clientIdentifier">@Messages("identify-client.nino.label")</label>
+            <span class="form-hint" id="nino-hint">@Messages("identify-client.nino.hint")</span>
+            @agentInvitationsForm.error("clientIdentifier").map { formError =>
+                <span class="error-notification" data-journey="search-page:error:nino" id="nino-error">
                     <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
             }
-            <input type="text" class="form-control" id="clientIdentifier" name="clientIdentifier" aria-invalid="true">
+            <input class="form-control" id="clientIdentifier" name="clientIdentifier" type="text" spellcheck="false"
+                @agentInvitationsForm.data.get("clientIdentifier").map { v => value="@v"}
+                aria-describedby="nino-hint @if(agentInvitationsForm.error("clientIdentifier").isDefined){nino-error}"
+            >
         </div>
 
             <div @if(agentInvitationsForm.error("dob").isDefined){class="nojs-date-fields-error"}>

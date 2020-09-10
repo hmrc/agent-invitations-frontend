@@ -525,7 +525,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         "confirm-postcode-cgt.header",
         "confirm-postcode-cgt.p1",
-        "confirm-postcode-cgt.label",
         "confirm-postcode-cgt.hint",
         "continue.button"
       )
@@ -874,7 +873,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p", "signed up."))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"))
+      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"), false, true)
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
     }
   }
