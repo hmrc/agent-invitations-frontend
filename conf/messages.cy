@@ -963,3 +963,8 @@ timed-out.p2=<a href="{0}">Mewngofnodwch eto</a> i ddefnyddio’r gwasanaeth hwn
 timed-out.button=Dechrau eto
 timed-out.minutes=munud
 timed-out.seconds=eiliad
+
+#Date Fields
+date.fields.day=Diwrnod
+date.fields.month=Mis
+date.fields.year=Blwyddyn

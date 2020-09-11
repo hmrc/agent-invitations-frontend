@@ -45,25 +45,97 @@
   @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
  }
 
-<label for="knownFact"> <h1 class="heading-xlarge margin-bottom-30" flushHeading>@Messages(s"known-fact.${config.service}.heading")</h1></label>
+    @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
+
+ <div class="form-group @if(knownFactForm.hasErrors){form-field--error error-container}">
+
+   <h1>
+     <label class="heading-xlarge margin-bottom-30" for="knownFact">
+       @Messages(s"known-fact.${config.service}.heading")
+     </label>
+   </h1>
+
 <p>@Messages("known-fact.p1")</p>
-<span class="form-hint">@Messages(s"known-fact.${config.service}.helper")</span>
 
- @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
+<span class="form-hint margin-bottom-10" id="known-fact-hint">@Messages(s"known-fact.${config.service}.helper")</span>
+
   @if(config.service == "HMRC-MTD-IT") {
-   <div class="form-group">
+      @knownFactForm.error("knownFact").map{ formError => <span class="error-notification" id="known-fact-error">
+          <span class="govuk-visually-hidden">@Messages("error.prefix")</span>
+          @Messages(formError.message)
+      </span>}
        <!--don't use play-ui's Input element as it sends an empty label which will be an issue for DAC accessibility -->
-       <input type="text" class="form-control" name="knownFact" id="knownFact" value=""/>
-   </div>
-  }else {
-   <div class="@noJsDateFieldsError">
-        @uiDateFields(knownFactForm, "knownFact")
-   </div>
-  }
+       <input
+       type="text"
+       class="form-control"
+       name="knownFact"
+       id="knownFact"
+       spellcheck="false"
+       @knownFactForm.data.get("knownFact").map { v => value="@v"}
+       aria-describedby="known-fact-hint @if(knownFactForm.hasErrors){known-fact-error}"
+       >
 
-  <div class="form-group">
+  }else {
+      <div>
+          <fieldset class="form-date" id="knownFact">
+              <legend>
+                  <span>
+                  </span>
+                  <span class="error-notification">
+                      @for(error <- knownFactForm.errors){
+                          @Messages(error.message) <br>
+                      }
+                  </span>
+              </legend>
+              <label for="knownFact.day" class="form-group form-group-day">
+                  <span>
+                      @Messages("date.fields.day")
+                  </span>
+                  <input
+                  class="form-control input--xsmall"
+                  name="knownFact.day"
+                  id="knownFact.day"
+                  type="text"
+                  pattern="[0-9]*"
+                  inputmode="numeric"
+                  @knownFactForm.data.get("knownFact.day").map { v => value="@v"}
+                  >
+              </label>
+              <label for="knownFact.month" class="form-group form-group-month">
+                  <span>
+                  @Messages("date.fields.month")
+                  </span>
+                  <input
+                  class="form-control input--xsmall"
+                  name="knownFact.month"
+                  id="knownFact.month"
+                  type="text"
+                  pattern="[0-9]*"
+                  inputmode="numeric"
+                      @knownFactForm.data.get("knownFact.month").map { v => value="@v"}
+                  >
+              </label>
+              <label for="knownFact.year" class="form-group form-group-year">
+                  <span>
+                  @Messages("date.fields.year")
+                  </span>
+                  <input
+                  class="form-control input--xsmall"
+                  name="knownFact.year"
+                  id="knownFact.year"
+                  type="text"
+                  pattern="[0-9]*"
+                  inputmode="numeric"
+                      @knownFactForm.data.get("knownFact.year").map { v => value="@v"}
+                  >
+              </label>
+          </fieldset>
+      </div>
+  }
+ </div>
+
       <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-  </div>
+
 
  }
 }

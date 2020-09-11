@@ -861,7 +861,7 @@ confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be
 
 confirm-cancel.radio.yes=Yes
 confirm-cancel.radio.no=No
-error.confirmCancel.invalid=This field is required
+error.confirmCancel.invalid=Select yes if you want to cancel this authorisation request
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
@@ -963,3 +963,8 @@ timed-out.p2=<a href="{0}">Sign in again</a> to use this service.
 timed-out.button=Start again
 timed-out.minutes=minutes
 timed-out.seconds=seconds
+
+#Date Fields
+date.fields.day=Day
+date.fields.month=Month
+date.fields.year=Year

@@ -38,7 +38,7 @@
     <h1 class="heading-xlarge margin-bottom-30">@Messages("timed-out.header")</h1>
     <p>@Messages("timed-out.p1", timeString)</p>
             @if(isAgent){
-                <p>@Html(Messages("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" href="@continueUrl">@Messages("timed-out.button")</a>}
+                <p>@Html(Messages("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" role="button" href="@continueUrl">@Messages("timed-out.button")</a>}
 
 
 }

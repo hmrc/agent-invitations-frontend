@@ -38,5 +38,8 @@
     <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{index}" value="@{invitationOrRelationship.clientIdType}">
     <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{index}" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="knownFact" id="knownFact-@{index}" value="">
-    <button class="button--link-style" type="submit" id="resendRequest-@{index}">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</button>
+    <button class="button--link-style" type="submit" id="resendRequest-@{index}">
+        <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
+        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}") @invitationOrRelationship.clientName.getOrElse("") @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
+    </button>
 }
