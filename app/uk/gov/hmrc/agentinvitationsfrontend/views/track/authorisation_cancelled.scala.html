@@ -35,6 +35,6 @@
     <h2 class="heading-medium">@Messages("authorisation-cancelled.subheader")</h2>
     <p>@Html(Messages(s"authorisation-cancelled.p1.$service", clientName))</p>
 
-    <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button">@Messages(s"authorisation-cancelled.track.button")</a>
+    <a class="button" role="button" href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages(s"authorisation-cancelled.track.button")</a>
 
     }

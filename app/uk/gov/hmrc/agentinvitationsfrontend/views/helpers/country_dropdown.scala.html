@@ -31,7 +31,7 @@
 
     @if(elements.args.contains('_additionalTitleText)){<p>@elements.args.get('_additionalTitleText)</p>}
     @if(elements.args.contains('_errorsAboveInput)){
-    @elements.errors.map { error => <span style="display: block" class="error-notification">@Messages(error.toString)</span>}
+    @elements.errors.map { error => <span style="display: block" class="error-notification" id="@elements.field.name-error">@Messages(error.toString)</span>}
     }
     <div @elements.args.get(
     '_selectWrapper) >

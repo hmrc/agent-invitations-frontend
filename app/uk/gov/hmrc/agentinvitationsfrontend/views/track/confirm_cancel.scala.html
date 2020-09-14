@@ -52,12 +52,13 @@
         '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-10 $marginTop">${Messages("confirm-cancel.header")}</h1>"""),
         '_inputHint -> Messages(s"confirm-cancel.subheader.$service"),
         '_inputHintClass -> "hint-text",
+            '_groupDivClass -> "form-group",
         '_fieldsetAttributes -> Html("""id='confirmCancel'""")
         )
 
-        <div class="form-group  margin-top-30">
+
             <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
-        </div>
+
     }
 
     }

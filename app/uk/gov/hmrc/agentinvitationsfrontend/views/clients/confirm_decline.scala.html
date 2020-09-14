@@ -26,11 +26,28 @@
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@inputHint = {
+@if(config.serviceKeys.length == 1){
+    <p id="radio-select-hint">
+    @Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)
+    </p>
+} else {
+            <div id="radio-select-hint">
+            <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
+            <ul class="list list-bullet">
+            @for(key <- config.serviceKeys) {
+                <li>@Messages(s"confirm-decline.$key.service-name")</li>
+            }
+            </ul>
+            </div>
+
+    }
+}
 
 @mainTemplate(bannerTitle = "banner.clients", title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
 
@@ -40,30 +57,33 @@
         @uiErrorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
     }
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
-    @if(config.serviceKeys.length == 1){
-        <p>@Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)</p>
-    } else {
-        <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
-        <ul class="list list-bullet">
-        @for(key <- config.serviceKeys){
-            <li>@Messages(s"confirm-decline.$key.service-name")</li>
-        }
-        </ul>
-    }
-
-    @uiFormHelper(config.submitUrl){
-
-        @uiInputRadioGroup(
-            confirmDeclineForm("accepted"),
-            Seq(("true", Messages("confirm-decline.radio1")),("false",Messages("confirm-decline.radio2"))),
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='accepted'"""),
-        '_errorPrefix -> Messages("error.prefix")
-        )
-
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+    @uiFormHelper(action = config.submitUrl, 'class -> "form js-form") {
+        <div class="form-group @if(confirmDeclineForm.hasErrors){ form-field--error error-container}">
+        <fieldset id="accepted" aria-describedby="radio-select-hint @if(confirmDeclineForm.hasErrors){radio-select-error}">
+            <legend>
+                <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
+            </legend>
+            @inputHint
+            @confirmDeclineForm.errors.map { formError => <span class="error-notification" id="radio-select-error">
+                <span class="govuk-visually-hidden">@Messages("error.prefix")</span>
+                @Messages(formError.message)
+            </span>
+            }
+            <div class="multiple-choice">
+                <input type="radio" id="accepted-true" name="accepted" value="true">
+                <label for="accepted-true">
+                    @Messages("confirm-decline.radio1")
+                </label>
+            </div>
+            <div class="multiple-choice">
+                <input type="radio" id="accepted-false" name="accepted" value="false">
+                <label for="accepted-false">
+                @Messages("confirm-decline.radio2")
+                </label>
+            </div>
+        </fieldset>
         </div>
+        <button class="button form-field--submit" type="submit" id="continue">@Messages("confirm-decline.button")</button>
     }
 }
+

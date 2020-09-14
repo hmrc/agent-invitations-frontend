@@ -48,20 +48,21 @@
             </dd>
             <dd class="app-check-your-answers__change">
                 @uiFormHelper(pageConfig.changeCall(consent.serviceKey)) {
-              <button type="submit" class="button--link-style">@Messages("check-answers.change-link")</button>
+              <button type="submit" class="button--link-style">
+                  <span aria-hidden="true">@Messages("check-answers.change-link")</span>
+                  <span class="govuk-visually-hidden">@Messages("check-answers.change-link") @Messages(s"check-answers.service.${consent.serviceKey}")</span>
+              </button>
             }
 
-             <span class="govuk-visually-hidden"> @Messages(s"check-answers.service.${consent.serviceKey}")</span>
+
             </dd>
         </div>
     }
     </dl>
 
     @uiFormHelper(Call("POST", pageConfig.submitCall.url)){
-
-        <div class="form-group">
             <button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button>
-        </div>
+
     }
 
 }

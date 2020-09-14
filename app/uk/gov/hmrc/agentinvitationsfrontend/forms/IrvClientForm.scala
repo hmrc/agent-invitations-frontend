@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 
@@ -26,7 +27,7 @@ object IrvClientForm {
   def form: Form[IrvClient] = Form(
     mapping(
       "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
-      "dob"              -> dateOfBirthMapping
+      "dob"              -> DateFieldHelper.dateFieldsMapping("irv-date-of-birth")
     )(IrvClient.apply)(IrvClient.unapply)
   )
 }

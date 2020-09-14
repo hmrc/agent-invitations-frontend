@@ -36,8 +36,6 @@
                 else routes.AgentInvitationJourneyController.submitConfirmCgtCountryCode
                }
 
-
-
 @value = @{ countryCodeForm("countryCode").value match { case Some(x) => x case None => "" case x => x }}
 
 @mainTemplate(title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
@@ -50,13 +48,14 @@
 
     @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
         <div class="form-group soft--ends @if(countryCodeForm.hasErrors) {form-field--error}">
-            <fieldset>
+            <fieldset aria-describedby="countryCode-hint @if(countryCodeForm.hasErrors){countryCode-error}">
                 <legend>
                     <h1 class="heading-xlarge margin-bottom-10">@Messages("confirm-countryCode-cgt.header")</h1>
                 </legend>
+                <div id="countryCode-hint">
                 <p class="body-text">@Messages("confirm-countryCode-cgt.p1")</p>
                 <p class="hint-text">@Messages("confirm-countryCode-cgt.hint")</p>
-
+                </div>
 
                 @country_dropdown(
                     countryCodeForm("countryCode"),
@@ -66,14 +65,12 @@
                     '_label -> Messages("confirm-countryCode-cgt.label"),
                     '_inputClass -> "form-control input--cleared",
                     '_labelClass -> "soft--ends",
-                    '_selectWrapper -> Html("""class="autocomplete-wrapper"""")
+                    '_selectWrapper -> Html("""class="autocomplete-wrapper" id="countryCode"""")
                 )
             </fieldset>
         </div>
 
-        <div class="form-group margin-top-30">
             <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-        </div>
 
             }
 }

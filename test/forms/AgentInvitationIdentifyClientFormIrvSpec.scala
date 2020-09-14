@@ -21,6 +21,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.IrvClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.play.test.UnitSpec
 
+import scala.collection.mutable
+
 class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
   val ninoEmptyMessage: String = "error.nino.required"
@@ -29,15 +31,28 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
   val ninoEmptyFormError: FormError = FormError("clientIdentifier", List(ninoEmptyMessage))
   val ninoFormatFormError: FormError = FormError("clientIdentifier", List(ninoFormatMessage))
 
-  val dayFormatMessage: String = "error.day.invalid-format"
-  val monthFormatMessage: String = "error.month.invalid-format"
-  val yearFormatMessage: String = "error.year.invalid-format"
-  val dateRequiredMessage: String = "error.irv-date-of-birth.required"
+  val dayFormatMessage: String = "error.irv-date-of-birth-date.day"
+  val monthFormatMessage: String = "error.irv-date-of-birth-date.month"
+  val yearFormatMessage: String = "error.irv-date-of-birth-date.year"
+  val dateRequiredMessage: String = "error.irv-date-of-birth-date.required"
+  val dateInvalidMessage: String = "enter-irv-date-of-birth-date.invalid-format"
+  val dayMonthFormatMessage: String = "error.irv-date-of-birth-date.day-month"
+  val dayYearFormatMessage: String = "error.irv-date-of-birth-date.day-year"
+  val monthYearFormatMessage: String = "error.irv-date-of-birth-date.month-year"
 
-  val dayFormatFormError: FormError = FormError("dob.day", List(dayFormatMessage))
-  val monthFormatFormError: FormError = FormError("dob.month", List(monthFormatMessage))
-  val yearFormatFormError: FormError = FormError("dob.year", List(yearFormatMessage))
-  val dateRequiredFormError: FormError = FormError("dob", List(dateRequiredMessage))
+  val dayFormatFormError: FormError = FormError("dob", List(dayFormatMessage), Seq("inputFieldClass"     -> "day"))
+  val monthFormatFormError: FormError = FormError("dob", List(monthFormatMessage), Seq("inputFieldClass" -> "month"))
+  val yearFormatFormError: FormError = FormError("dob", List(yearFormatMessage), Seq("inputFieldClass"   -> "year"))
+  val dateRequiredFormError: FormError =
+    FormError("dob", List(dateRequiredMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val invalidDateFormError: FormError =
+    FormError("dob", List(dateInvalidMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val dayMonthFormatFormError: FormError =
+    FormError("dob", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val dayYearFormatFormError: FormError =
+    FormError("dob", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val monthYearFormatFormError: FormError =
+    FormError("dob", List(monthYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
 
   "agentInvitationIdentifyClientFormIrv" when {
     val validData: Map[String, String] = Map(
@@ -94,8 +109,8 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
           "dob.day"          -> "gh"
         )
         val ninoForm = agentInvitationIdentifyClientForm.bind(invalidDate)
-        ninoForm.errors shouldBe Seq(yearFormatFormError, monthFormatFormError, dayFormatFormError)
-        ninoForm.errors.length shouldBe 3
+        ninoForm.errors shouldBe Seq(invalidDateFormError)
+        ninoForm.errors.length shouldBe 1
       }
 
       "return an error message for no date" in {
@@ -116,6 +131,68 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
         val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
         ninoForm.errors shouldBe Seq(ninoEmptyFormError, dateRequiredFormError)
         ninoForm.errors.length shouldBe 2
+      }
+
+      "return an error message for day field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "2012", "dob.month" -> "12", "dob.day" -> "dd")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(dayFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message for month field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "2012", "dob.month" -> "dd", "dob.day" -> "2")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(monthFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message for year field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "", "dob.month" -> "12", "dob.day" -> "2")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(yearFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message for day and month field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "20", "dob.month" -> "", "dob.day" -> "dd")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(dayMonthFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message for day and year field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "ss", "dob.month" -> "12", "dob.day" -> "dd")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(dayYearFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message for month and year field error" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "kdhs", "dob.month" -> "jdgh", "dob.day" -> "31")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(monthYearFormatFormError)
+        ninoForm.errors.length shouldBe 1
+
+      }
+
+      "return an error message when date does not parse as LocalDate" in {
+        val invalidData: Map[String, String] =
+          Map("clientIdentifier" -> "WM123456C", "dob.year" -> "2012", "dob.month" -> "2", "dob.day" -> "31")
+        val ninoForm = agentInvitationIdentifyClientForm.bind(invalidData)
+        ninoForm.errors shouldBe Seq(invalidDateFormError)
+        ninoForm.errors.length shouldBe 1
       }
     }
   }

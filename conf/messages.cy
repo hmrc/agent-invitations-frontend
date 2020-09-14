@@ -69,18 +69,32 @@ error.vat-registration-date.required=Nodwch ddyddiad cofrestru TAW eich cleient
 error.day.invalid-format=Rhaid i’r diwrnod gynnwys rhifau yn unig
 error.month.invalid-format=Rhaid i’r mis gynnwys rhifau yn unig
 error.year.invalid-format=Rhaid i’r flwyddyn gynnwys rhifau yn unig
+error.vat-registration-date.day=VAT registration date must include a day
+error.vat-registration-date.month=VAT registration date must include a month
+error.vat-registration-date.year=VAT registration date must include a year
+error.vat-registration-date.day-month=VAT registration date must include a day and month
+error.vat-registration-date.day-year=VAT registration date must include a day and year
+error.vat-registration-date.month-year=VAT registration date must include a month and year
+
 
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Dyddiad geni
 identify-client.irv-date-of-birth.hint=Er enghraifft, 31 3 1980
-error.irv-date-of-birth.required=Nodwch ddyddiad geni’ch cleient
-enter-irv-date-of-birth.invalid-format=Nodwch ddyddiad dilys
+error.irv-date-of-birth-date.required=Enter your client’s date of birth
+enter-irv-date-of-birth-date.invalid-format=Enter a valid date
+error.irv-date-of-birth-date.day=Date of birth must include a day
+error.irv-date-of-birth-date.month=Date of birth must include a month
+error.irv-date-of-birth-date.year=Date of birth must include a year
+error.irv-date-of-birth-date.day-month=Date of birth must include a day and month
+error.irv-date-of-birth-date.day-year=Date of birth must include a day and year
+error.irv-date-of-birth-date.month-year=Date of birth must include a month and year
 
 ### Selecting services
 
 select-service.yes=Iawn
 select-service.no=Na
+
 select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
 select-service.hint=Dewiswch opsiwn.
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
@@ -963,3 +977,8 @@ timed-out.p2=<a href="{0}">Mewngofnodwch eto</a> i ddefnyddio’r gwasanaeth hwn
 timed-out.button=Dechrau eto
 timed-out.minutes=munud
 timed-out.seconds=eiliad
+
+#Date Fields
+date.fields.day=Diwrnod
+date.fields.month=Mis
+date.fields.year=Blwyddyn
