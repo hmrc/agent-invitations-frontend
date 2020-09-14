@@ -387,7 +387,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "This field is required")
+      checkHtmlResultWithBodyText(result, "Select yes if you want to cancel this authorisation request")
     }
   }
 
@@ -605,7 +605,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "This field is required")
+      checkHtmlResultWithBodyText(result, "Select yes if you want to cancel this authorisation request")
     }
   }
 

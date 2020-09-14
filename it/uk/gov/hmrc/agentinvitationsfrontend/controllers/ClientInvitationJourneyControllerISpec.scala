@@ -1150,7 +1150,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("agent-cancelled-request.header"))
       checkIncludesText(result, "This request was cancelled on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
-      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None,true)
+      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None)
 
     }
   }
@@ -1165,7 +1165,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("request-expired.header"))
       checkIncludesText(result, "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
-      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None,true)
+      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None)
     }
   }
 
@@ -1344,7 +1344,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "cannot-confirm-identity.header",
           "cannot-confirm-identity.p1",
           "cannot-confirm-identity.p2")
-        checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"))
+        checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"), false, true )
       }
     }
   }
@@ -1389,7 +1389,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
                 "cannot-confirm-identity.header",
                 "cannot-confirm-identity.p1",
                 "cannot-confirm-identity.p2")
-              checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"))
+              checkResultContainsLink(result, "/invitations/warm-up", "Try again", Some("button"), false, true)
             }
             case UserAborted | TimedOut => resultCode shouldBe 303
             case LockedOut              => resultCode shouldBe 303

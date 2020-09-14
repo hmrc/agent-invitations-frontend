@@ -42,7 +42,7 @@
             }
             @formItem.errors.filter(error => fieldNames.contains(error.key)).map { error => <span class="error-notification">
                 @args.toMap.get('_errorPrefix).map { errorPrefix =>
-                    <span class="visually-hidden">@errorPrefix </span>
+                    <span class="visually-hidden">@errorPrefix</span>
                 }
                 @Messages(error.message, error.args: _*)
             </span>}

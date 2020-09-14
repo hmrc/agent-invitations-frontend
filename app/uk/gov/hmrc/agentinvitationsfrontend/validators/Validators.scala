@@ -20,7 +20,7 @@ import play.api.data.Forms.{of, text}
 import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, validDobDateFormat, validateDate}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -83,8 +83,41 @@ object Validators {
     else Valid
   }
 
+  val dayFieldRegex = "^[0-9]{1,4}$"
+  val monthFieldRegex = "^(0?[1-9]|1[012])$"
+  val yearFieldRegex = "^[0-9]{1,4}$"
+  val year = "year"
+  val month = "month"
+  val day = "day"
+
   val validVrn: Constraint[String] =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure")
+
+  def validateDateFields(formMessageKey: String) =
+    Constraint[(String, String, String)] { s: (String, String, String) =>
+      (s._1.matches(yearFieldRegex), s._2.matches(monthFieldRegex), s._3.matches(dayFieldRegex)) match {
+        //y   //m   //d
+        case a @ (true, true, true) =>
+          if (parseDate(s"${s._1}-${s._2}-${s._3}")) Valid
+          else invalid(s"enter-$formMessageKey-date.invalid-format", s"$day-$month-$year")
+        case (true, true, false)  => invalid(s"error.$formMessageKey-date.day", day)
+        case (true, false, false) => invalid(s"error.$formMessageKey-date.day-month", s"$day-$month-$year")
+        case (true, false, true)  => invalid(s"error.$formMessageKey-date.month", month)
+        case (false, true, true)  => invalid(s"error.$formMessageKey-date.year", year)
+        case (false, false, true) =>
+          invalid(s"error.$formMessageKey-date.month-year", s"$day-$month-$year")
+        case (false, true, false) => invalid(s"error.$formMessageKey-date.day-year", s"$day-$month-$year")
+        case (false, false, false) =>
+          invalid(
+            if (s._1.isEmpty && s._2.isEmpty && s._3.isEmpty) s"error.$formMessageKey-date.required"
+            else s"enter-$formMessageKey-date.invalid-format",
+            s"$day-$month-$year"
+          )
+      }
+    }
+
+  private def invalid(messageKey: String, inputFieldClass: String): Invalid =
+    Invalid(ValidationError(messageKey, "inputFieldClass" -> inputFieldClass))
 
   val validVatDateFormat: Constraint[String] =
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
@@ -92,8 +125,6 @@ object Validators {
 
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
-
-  def dateOfBirthMapping: Mapping[String] = dateFieldsMapping(validDobDateFormat)
 
   def validUtr(): Constraint[String] =
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
@@ -139,6 +170,4 @@ object Validators {
     else
       Invalid(ValidationError(errorMessageKey))
   }
-
-  def vatRegDateMapping: Mapping[String] = dateFieldsMapping(validVatDateFormat)
 }

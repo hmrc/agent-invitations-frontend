@@ -718,7 +718,7 @@ object AgentInvitationFastTrackJourneyController {
   def IdentifyVatClientForm: Form[VatClient] = Form(
     mapping(
       "clientIdentifier" -> normalizedText.verifying(validVrn),
-      "registrationDate" -> DateFieldHelper.dateFieldsMapping(validVatDateFormat)
+      "registrationDate" -> DateFieldHelper.dateFieldsMapping("vat-registration")
     )(VatClient.apply)(VatClient.unapply)
   )
 
@@ -731,7 +731,7 @@ object AgentInvitationFastTrackJourneyController {
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(
       "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
-      "dob"              -> dateOfBirthMapping
+      "dob"              -> DateFieldHelper.dateFieldsMapping("irv-date-of-birth")
     )(IrvClient.apply)(IrvClient.unapply)
   )
 
@@ -742,10 +742,10 @@ object AgentInvitationFastTrackJourneyController {
     knownFactsForm(postcodeMapping)
 
   def agentFastTrackDateOfBirthForm: Form[String] =
-    knownFactsForm(dateOfBirthMapping)
+    knownFactsForm(DateFieldHelper.dateFieldsMapping("irv-date-of-birth"))
 
   def agentFastTrackVatRegDateForm: Form[String] =
-    knownFactsForm(vatRegDateMapping)
+    knownFactsForm(DateFieldHelper.dateFieldsMapping("vat-registration"))
 
   private def getKnownFactFormForService(service: String) =
     service match {

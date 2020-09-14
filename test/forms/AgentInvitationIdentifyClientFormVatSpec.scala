@@ -24,6 +24,32 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
+  val dayFormatMessage: String = "error.vat-registration-date.day"
+  val monthFormatMessage: String = "error.vat-registration-date.month"
+  val yearFormatMessage: String = "error.vat-registration-date.year"
+  val dateRequiredMessage: String = "error.vat-registration-date.required"
+  val dateInvalidMessage: String = "enter-vat-registration-date.invalid-format"
+  val dayMonthFormatMessage: String = "error.vat-registration-date.day-month"
+  val dayYearFormatMessage: String = "error.vat-registration-date.day-year"
+  val monthYearFormatMessage: String = "error.vat-registration-date.month-year"
+
+  val dayFormatFormError: FormError =
+    FormError("registrationDate", List(dayFormatMessage), Seq("inputFieldClass" -> "day"))
+  val monthFormatFormError: FormError =
+    FormError("registrationDate", List(monthFormatMessage), Seq("inputFieldClass" -> "month"))
+  val yearFormatFormError: FormError =
+    FormError("registrationDate", List(yearFormatMessage), Seq("inputFieldClass" -> "year"))
+  val dateRequiredFormError: FormError =
+    FormError("registrationDate", List(dateRequiredMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val invalidDateFormError: FormError =
+    FormError("registrationDate", List(dateInvalidMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val dayMonthFormatFormError: FormError =
+    FormError("registrationDate", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val dayYearFormatFormError: FormError =
+    FormError("registrationDate", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+  val monthYearFormatFormError: FormError =
+    FormError("registrationDate", List(monthYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+
   "agentInvitationIdentifyClientFormVat" when {
 
     val agentInvitationIdentifyClientForm = VatClientForm.form
@@ -77,8 +103,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           "registrationDate.day"   -> "1"
         )
         val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidRegistrationDate)
-        registrationDateForm.errors shouldBe Seq(
-          FormError("registrationDate", List("enter-vat-registration-date.invalid-format")))
+        registrationDateForm.errors shouldBe Seq(monthFormatFormError)
       }
 
       "registrationDate is partially empty" in {
@@ -89,8 +114,51 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           "registrationDate.day"   -> "1"
         )
         val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-        registrationDateForm.errors shouldBe Seq(
-          FormError("registrationDate", List("error.vat-registration-date.required")))
+        registrationDateForm.errors shouldBe Seq(monthFormatFormError)
+      }
+
+      "registrationDate has month and year invalid chars" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "fdfd",
+          "registrationDate.month" -> "dd",
+          "registrationDate.day"   -> "1"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(monthYearFormatFormError)
+      }
+
+      "registrationDate has day and year invalid chars" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "ewe",
+          "registrationDate.month" -> "2",
+          "registrationDate.day"   -> "dd"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(dayYearFormatFormError)
+      }
+
+      "registrationDate has day and month invalid chars" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "2010",
+          "registrationDate.month" -> "fdf",
+          "registrationDate.day"   -> "dd"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(dayMonthFormatFormError)
+      }
+
+      "registrationDate does not parse into LocalDate" in {
+        val dataWithEmptyRegistrationDate = Map(
+          "clientIdentifier"       -> "101747696",
+          "registrationDate.year"  -> "2010",
+          "registrationDate.month" -> "2",
+          "registrationDate.day"   -> "31"
+        )
+        val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
+        registrationDateForm.errors shouldBe Seq(invalidDateFormError)
       }
 
       "registrationDate is empty" in {
@@ -100,8 +168,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           "registrationDate.month" -> "",
           "registrationDate.day"   -> "")
         val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
-        registrationDateForm.errors shouldBe Seq(
-          FormError("registrationDate", List("error.vat-registration-date.required")))
+        registrationDateForm.errors shouldBe Seq(dateRequiredFormError)
       }
 
       "registrationDate is missing" in {
@@ -120,12 +187,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
           "registrationDate.day"   -> "gh"
         )
         val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithInvalidCharactersRegistrationDate)
-        registrationDateForm.errors should contain(FormError("registrationDate.day", List("error.day.invalid-format")))
-        registrationDateForm.errors should contain(
-          FormError("registrationDate.month", List("error.month.invalid-format")))
-        registrationDateForm.errors should contain(
-          FormError("registrationDate.year", List("error.year.invalid-format")))
-
+        registrationDateForm.errors should contain(invalidDateFormError)
       }
 
       "VRN is invalid for regex" in {
@@ -163,22 +225,6 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
         unboundForm("registrationDate.month") shouldBe "1"
         unboundForm("registrationDate.day") shouldBe "1"
         unboundForm("clientIdentifier") shouldBe "101747696"
-      }
-    }
-
-    "parseDateIntoFields" should {
-      "Convert a date string into it's day, month and year fields" in {
-        DateFieldHelper.parseDateIntoFields("2000-01-01") shouldBe Some(("2000", "1", "1"))
-      }
-
-      "Return None when date cannot be converted" in {
-        DateFieldHelper.parseDateIntoFields("20010101") shouldBe None
-      }
-    }
-
-    "formatDateFromFields" should {
-      "Convert a date in fields to a string" in {
-        DateFieldHelper.formatDateFromFields("2000", "1", "1") shouldBe "2000-01-01"
       }
     }
   }
