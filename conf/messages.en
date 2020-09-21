@@ -94,6 +94,7 @@ error.irv-date-of-birth-date.month-year=Date of birth must include a month and y
 
 select-service.yes=Yes
 select-service.no=No
+
 select-service.p1=You need to create a separate request for each type of authorisation
 select-service.hint=Select an option
 service.type.invalid=Select what you want the client to authorise you to do

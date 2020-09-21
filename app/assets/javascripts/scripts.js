@@ -4,13 +4,7 @@ $(function() {
     $input = $('input:text')
     //Error summary focus
     if (errorSummary){ errorSummary.focus() }
-    /*$input.each( function(){
-        if($(this).closest('label').hasClass('form-field--error')){
-            $(this).attr('aria-invalid', true)
-        }else{
-            $(this).attr('aria-invalid', false)
-        }
-    });*/
+
     //Trim inputs and Capitalize postcode
     $('[type="submit"]').click(function(){
         $input.each( function(){

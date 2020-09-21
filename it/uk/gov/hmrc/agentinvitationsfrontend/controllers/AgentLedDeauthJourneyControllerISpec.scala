@@ -573,7 +573,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result,
         "confirm-countryCode-cgt.header",
         "confirm-countryCode-cgt.p1",
-        "confirm-countryCode-cgt.label",
         "confirm-countryCode-cgt.hint",
         "continue.button"
       )

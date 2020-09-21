@@ -69,26 +69,26 @@ error.vat-registration-date.required=Nodwch ddyddiad cofrestru TAW eich cleient
 error.day.invalid-format=Rhaid i’r diwrnod gynnwys rhifau yn unig
 error.month.invalid-format=Rhaid i’r mis gynnwys rhifau yn unig
 error.year.invalid-format=Rhaid i’r flwyddyn gynnwys rhifau yn unig
-error.vat-registration-date.day=VAT registration date must include a day
-error.vat-registration-date.month=VAT registration date must include a month
-error.vat-registration-date.year=VAT registration date must include a year
-error.vat-registration-date.day-month=VAT registration date must include a day and month
-error.vat-registration-date.day-year=VAT registration date must include a day and year
-error.vat-registration-date.month-year=VAT registration date must include a month and year
+error.vat-registration-date.day=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod
+error.vat-registration-date.month=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis
+error.vat-registration-date.year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys blwyddyn
+error.vat-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a mis
+error.vat-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a blwyddyn
+error.vat-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis a blwyddyn
 
 
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Dyddiad geni
 identify-client.irv-date-of-birth.hint=Er enghraifft, 31 3 1980
-error.irv-date-of-birth-date.required=Enter your client’s date of birth
-enter-irv-date-of-birth-date.invalid-format=Enter a valid date
-error.irv-date-of-birth-date.day=Date of birth must include a day
-error.irv-date-of-birth-date.month=Date of birth must include a month
-error.irv-date-of-birth-date.year=Date of birth must include a year
-error.irv-date-of-birth-date.day-month=Date of birth must include a day and month
-error.irv-date-of-birth-date.day-year=Date of birth must include a day and year
-error.irv-date-of-birth-date.month-year=Date of birth must include a month and year
+error.irv-date-of-birth-date.required=Nodwch ddyddiad geni’ch cleient
+enter-irv-date-of-birth-date.invalid-format=Mae’n rhaid i’r dyddiad geni fod yn ddyddiad dilys
+error.irv-date-of-birth-date.day=Mae’n rhaid i’r dyddiad geni gynnwys diwrnod
+error.irv-date-of-birth-date.month=Mae’n rhaid i’r dyddiad geni gynnwys mis
+error.irv-date-of-birth-date.year=Mae’n rhaid i’r dyddiad geni gynnwys blwyddyn
+error.irv-date-of-birth-date.day-month=Mae’n rhaid i’r dyddiad geni gynnwys diwrnod a mis
+error.irv-date-of-birth-date.day-year=Mae’n rhaid i’r dyddiad geni gynnwys diwrnod a blwyddyn
+error.irv-date-of-birth-date.month-year=Mae’n rhaid i’r dyddiad geni gynnwys mis a blwyddyn
 
 ### Selecting services
 
