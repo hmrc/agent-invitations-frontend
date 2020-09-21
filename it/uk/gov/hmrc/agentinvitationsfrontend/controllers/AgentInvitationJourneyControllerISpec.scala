@@ -1013,7 +1013,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "confirm-countryCode-cgt.header",
         "confirm-countryCode-cgt.p1",
-        "confirm-countryCode-cgt.label",
         "confirm-countryCode-cgt.hint",
         "continue.button"
       )

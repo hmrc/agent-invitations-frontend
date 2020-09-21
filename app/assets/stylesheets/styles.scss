@@ -133,7 +133,7 @@ caption.caption-normal {
 }
 
 .nojs-date-fields-error input {
-    border: 4px solid #b10e1e;
+    border: 4px solid #d4351c;
 }
 
 .nojs-date-fields-error input:focus{
@@ -154,7 +154,7 @@ caption.caption-normal {
 /* form overrides */
 
 .flash.error-summary {
-    border: 5px solid #b10e1e;
+    border: 5px solid #d4351c;
     margin-top: 30px;
     margin-bottom: 30px;
     padding: 20px 15px 15px;
@@ -172,17 +172,22 @@ caption.caption-normal {
     font-weight: bold;
     font-size: 19px;
     line-height: 1.31579;
+    color: #d4351c;
 }
 
 .form-field--error {
-    border-left: 5px solid #b10e1e;
+    border-left: 5px solid #d4351c;
     padding-left: 15px;
     margin-right: 15px;
 }
 
 .form-field--error input[type="text"] {
-    border: 4px solid #b10e1e;
+    border: 4px solid #d4351c;
     height: 40px;
+}
+
+.flash.error-summary a, .flash.error-summary .link-style, .flash.error-summary .button--link-style {
+    color: #d4351c;
 }
 
 .form-field--error legend h1 {
@@ -373,6 +378,21 @@ details .panel[aria-hidden=true] a {
 
     .table-row {
         margin-bottom: 0;
+    }
+}
+
+.js-enabled .autocomplete-wrapper select{
+    visibility: hidden;
+}
+input[type="text"].autocomplete__input {
+    width: 100%
+}
+.autocomplete-wrapper {
+    width: 100%
+}
+@media (min-width: 48.0625em) {
+    .autocomplete-wrapper {
+        width: 50%
     }
 }
 
