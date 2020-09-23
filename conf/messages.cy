@@ -539,8 +539,16 @@ confirm-terms.legend.single=Dewiswch a ydych yn rhoi’ch caniatâd i CThEM rann
 
 confirm-terms-multi.itsa.heading=Rheoli fy Nhreth Incwm
 confirm-terms-multi.itsa.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch Treth Incwm, mae hyn yn golygu y gall {0} wneud y canlynol:
-confirm-terms-multi.itsa.list.item1=bwrw golwg dros wybodaeth am eich incwm a’ch treuliau
-confirm-terms-multi.itsa.list.item2=bwrw golwg dros sut y mae amcangyfrifon eich Treth Incwm wedi’u cyfrifo
+confirm-terms-multi.itsa.list.item1=trafod eich Ffurflenni Treth cyfredol a blaenorol gyda CThEM
+confirm-terms-multi.itsa.list.item2=bwrw golwg dros a newid eich manylion Treth Incwm, megis ffynonellau incwm
+confirm-terms-multi.itsa.list.item3=rhoi manylion banc i CThEM ar gyfer ad-daliadau pan fo ad-daliad yn ddyledus
+confirm-terms-multi.itsa.list.item4=bwrw golwg dros a chyflwyno’ch diweddariadau Treth Incwm (incwm a threuliau)
+confirm-terms-multi.itsa.list.item5=cwblhau eich sefyllfa dreth gyffredinol
+confirm-terms-multi.itsa.list.item6=bwrw golwg dros eich cyfrifiadau Treth Incwm a’r symiau dyledus a’r symiau sydd wedi’u talu
+confirm-terms-multi.itsa.list.item7=eich cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm neu eich optio allan ohono
+confirm-terms-multi.itsa.list.item8=rheoli’ch Treth Incwm gan ddefnyddio meddalwedd
+confirm-terms-multi.itsa.list.item9=canslo’ch cofrestriad Hunanasesiad
+confirm-terms-multi.itsa.list.item10=cael mynediad at eich manylion Hunanasesiad, megis eich enw, cyfeiriad, rhif Yswiriant Gwladol a Chyfeirnod Unigryw y Trethdalwr
 confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy Nhreth Incwm.
 
 confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {0} rhag iddo ddod i ben.

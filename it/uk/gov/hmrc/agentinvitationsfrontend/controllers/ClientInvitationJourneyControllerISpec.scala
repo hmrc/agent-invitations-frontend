@@ -458,6 +458,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.itsa.p1", "My Agency"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item5"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item6"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item7"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item8"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item9"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item10"))
       checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Income Tax.")
 
     }
