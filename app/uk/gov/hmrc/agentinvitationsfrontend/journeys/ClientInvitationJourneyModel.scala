@@ -58,6 +58,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     case class AgentCancelledRequest(cancelledOn: String) extends State with IsError
 
+    case class CannotFindRequest(clientType: ClientType, agencyName: String) extends State with IsError
+
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
 
@@ -171,7 +173,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
             case NoSupportedMTDEnrolments => {
               Logger(getClass).warn(
                 s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
-              goto(NotFoundInvitation)
+              goto(CannotFindRequest(clientType, agentName))
             }
             case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
               getInvitationDetails(uid).flatMap { invitationDetails =>
@@ -179,7 +181,8 @@ object ClientInvitationJourneyModel extends JourneyModel {
                   Logger(getClass).warn(
                     s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: ${tempEnrolLog(
                       client.enrolments)}")
-                  goto(NoOutstandingRequests)
+                  if (maybeAll == SomeSupportedMTDEnrolments) goto(CannotFindRequest(clientType, agentName))
+                  else goto(NoOutstandingRequests)
                 } else {
                   getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
                     case Nil => determineStateForNonPending(invitationDetails, maybeAll)

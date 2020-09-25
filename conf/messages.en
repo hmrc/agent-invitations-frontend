@@ -952,7 +952,7 @@ error.cannot-view-request.client-type.personal=personal tax affairs
 
 #No Outstanding Requests
 no-outstanding-requests.heading=There are no outstanding authorisation requests for you to respond to
-no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
+no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a href="{0}">view your request history</a>
 
 #Request Expired
 request-expired.header=This authorisation request has expired
@@ -967,7 +967,15 @@ agent-cancelled-request.link-text=View your request history
 #Already Responded
 already-responded.header=You have already responded to this authorisation request
 already-responded.p1=You responded to this request on {0}.
-already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a target="_blank" href="{0}">view your request history</a>
+already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a href="{0}">view your request history</a>
+
+#Cannot find request
+cannot-find-request.header=We cannot find this authorisation request
+cannot-find-request.p1=We cannot find a request from {0}.
+cannot-find-request.p2=Make sure you have signed up for the tax service you need. Ask your agent if you are not sure.
+cannot-find-request.p3=You need to sign in with the correct Government Gateway user ID. It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service the authorisation request is for. <a href={0}>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your {1}).
+cannot-find-request.business=business tax affairs
+cannot-find-request.personal=personal tax affairs
 
 #session time out
 timeout-dialog.title=You are about to be signed out

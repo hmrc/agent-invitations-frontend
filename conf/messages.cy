@@ -952,7 +952,7 @@ error.cannot-view-request.client-type.personal=materion treth personol
 
 #No Outstanding Requests
 no-outstanding-requests.heading=Nid oes unrhyw geisiadau am awdurdodiad dros ben i chi ymateb iddynt
-no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a target="_blank" href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
 
 #Request Expired
 request-expired.header=Mae’r cais am awdurdodiad hwn wedi dod i ben
@@ -967,7 +967,15 @@ agent-cancelled-request.link-text=Bwrw golwg dros hanes eich ceisiadau
 #Already Responded
 already-responded.header=Rydych eisoes wedi ymateb i’r cais am awdurdodiad hwn
 already-responded.p1=Gwnaethoch ymateb i’r cais hwn ar {0}.
-already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a target="_blank" href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+
+#Cannot find request
+cannot-find-request.header=We cannot find this authorisation request
+cannot-find-request.p1=We cannot find a request from {0}.
+cannot-find-request.p2=Make sure you have signed up for the tax service you need. Ask your agent if you are not sure.
+cannot-find-request.p3=You need to sign in with the correct Government Gateway user ID. It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service the authorisation request is for. <a href={0}>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your {1}).
+cannot-find-request.business=business tax affairs
+cannot-find-request.personal=personal tax affairs
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi

@@ -74,7 +74,8 @@ class ClientInvitationJourneyController @Inject()(
   noOutstandingRequestsView: no_outstanding_requests,
   requestExpiredView: request_expired,
   agentCancelledRequestView: agent_cancelled_request,
-  alreadyRespondedView: already_responded)(
+  alreadyRespondedView: already_responded,
+  cannotFindRequestView: cannot_find_request)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -176,6 +177,14 @@ class ClientInvitationJourneyController @Inject()(
 
   val showErrorAlreadyRespondedToRequest = actionShowStateWhenAuthorised(AsClient) {
     case _: AlreadyRespondedToRequest =>
+  }
+
+  val showErrorCannotFindRequest = action { implicit request =>
+    showStateWhenAuthorised(AsClient) {
+      case _: CannotFindRequest =>
+    }.andThen {
+      case Success(_) => journeyService.stepBack
+    }
   }
 
   def submitConsent = action { implicit request =>
@@ -390,6 +399,7 @@ class ClientInvitationJourneyController @Inject()(
     case _: RequestExpired            => routes.ClientInvitationJourneyController.showErrorRequestExpired()
     case _: AgentCancelledRequest     => routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest()
     case _: AlreadyRespondedToRequest => routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest()
+    case _: CannotFindRequest         => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
     case _: ActionNeeded              => routes.ClientInvitationJourneyController.showActionNeeded()
     case _: MultiConsent              => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent             => routes.ClientInvitationJourneyController.showConsentChange()
@@ -446,6 +456,10 @@ class ClientInvitationJourneyController @Inject()(
     case AlreadyRespondedToRequest(respondedOn) =>
       val serviceMessageKey = fromSession
       Ok(alreadyRespondedView(serviceMessageKey, respondedOn))
+
+    case CannotFindRequest(clientType, agentName) =>
+      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+      Ok(cannotFindRequestView(clientTypeStr, agentName))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)
