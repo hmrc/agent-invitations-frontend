@@ -30,7 +30,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   lazy val controller: AgentInvitationFastTrackJourneyController =
     app.injector.instanceOf[AgentInvitationFastTrackJourneyController]
 
-  import journeyState.model.State._
+  import journeyState.model._
 
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
   val emptyBasket = Set.empty[AuthorisationRequest]
@@ -1512,7 +1512,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "show the invitation sent page for a business service" in {
-      val ftr = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, Some(validRegistrationDate))
       journeyState.set(InvitationSentBusiness("invitation/sent/url", None, "abc@xyz.com"), List())
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))

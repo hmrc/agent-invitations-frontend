@@ -19,7 +19,7 @@ import play.api.http.HeaderNames
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
 import play.twirl.api.Html
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.{AuthRedirects, HttpAuditEvent}
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
+import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,7 +45,7 @@ class ErrorHandler @Inject()(
   externalUrls: ExternalUrls,
   appConfig: AppConfig,
   val messagesApi: MessagesApi)
-    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames {
+    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames with Logging {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
@@ -62,11 +62,11 @@ class ErrorHandler @Inject()(
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     auditServerError(request, exception)
-    implicit val r = Request(request, "")
+    implicit val r: Request[String] = Request(request, "")
     val response = exception match {
 
       case ex: OtacFailureThrowable =>
-        Logger(getClass).warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
+        logger.warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(
           errorTemplate(
             Messages("global.error.passcode.title"),
@@ -74,7 +74,7 @@ class ErrorHandler @Inject()(
             Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
 
       case ex =>
-        Logger(getClass).warn(s"There has been a failure", ex)
+        logger.warn(s"There has been a failure", ex)
         InternalServerError(errorTemplate5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
     }
     Future.successful(response)

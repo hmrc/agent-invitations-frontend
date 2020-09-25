@@ -22,15 +22,15 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
-import play.api.Logger
+import play.api.http.Status._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,19 +42,17 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
 
   val baseUrl = new URL(appConfig.afiBaseUrl)
 
+  val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+
   def createRelationship(arn: Arn, service: String, clientId: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
-      val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
       http
         .PUT[JsObject, HttpResponse](url.toString, body)
         .map(_.status)
-        .recover {
-          case _: Upstream5xxResponse => 500
-        }
     }
 
   def deleteRelationship(arn: Arn, service: String, clientId: String)(
@@ -62,13 +60,13 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
     ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
-      http
-        .DELETE[HttpResponse](url.toString)
-        .map(_ => Some(true))
-        .recover {
-          case _: NotFoundException   => Some(false)
-          case _: Upstream5xxResponse => None
+      http.DELETE[HttpResponse](url.toString).map { r =>
+        r.status match {
+          case OK                => Some(true)
+          case NOT_FOUND         => Some(false)
+          case s if s / 100 == 5 => None
         }
+      }
     }
 
   val getInactiveIrvRelationshipUrl: URL =
@@ -77,10 +75,12 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   def getInactiveIrvRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-InactiveIrvRelationships-GET") {
       http
-        .GET[Seq[IrvTrackRelationship]](getInactiveIrvRelationshipUrl.toString)
-        .recover {
-          case _: NotFoundException =>
-            Seq.empty
+        .GET[HttpResponse](getInactiveIrvRelationshipUrl.toString)
+        .map { r =>
+          r.status match {
+            case OK        => r.json.as[Seq[IrvTrackRelationship]]
+            case NOT_FOUND => Seq.empty
+          }
         }
     }
 
@@ -94,12 +94,12 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
     ec: ExecutionContext): Future[Option[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
       http
-        .GET[Seq[IrvTrackRelationship]](getActiveIrvRelationshipUrl(arn, clientId).toString)
-        .map(_.headOption)
-        .recover {
-          case _: NotFoundException =>
-            Logger(getClass).warn("No active relationships were found for IRV")
-            None
+        .GET[HttpResponse](getActiveIrvRelationshipUrl(arn, clientId).toString)
+        .map { r =>
+          r.status match {
+            case OK        => r.json.as[Seq[IrvTrackRelationship]].headOption
+            case NOT_FOUND => None
+          }
         }
     }
 
@@ -115,14 +115,10 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
     val url = new URL(
       baseUrl,
       s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
-    val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
     val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
     http
       .PUT[JsObject, HttpResponse](url.toString, body)
       .map(_.status)
-      .recover {
-        case _: Upstream5xxResponse => 500
-      }
   }
 
   /* TEST ONLY Connector method for delete relationship. This method should not be used in production code */
@@ -132,12 +128,12 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
     val url = new URL(
       baseUrl,
       s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
-    http
-      .DELETE[HttpResponse](url.toString)
-      .map(_ => Some(true))
-      .recover {
-        case _: NotFoundException   => Some(false)
-        case _: Upstream5xxResponse => None
+    http.DELETE[HttpResponse](url.toString).map { r =>
+      r.status match {
+        case OK                => Some(true)
+        case NOT_FOUND         => Some(false)
+        case s if s / 100 == 5 => None
       }
+    }
   }
 }

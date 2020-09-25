@@ -25,6 +25,7 @@ import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, Re
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
 @Singleton
 class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
 
@@ -34,7 +35,7 @@ class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
 
   def getRefererUrl[A](implicit request: Request[A]): Option[RedirectUrl] = getUrl(request.headers.get("Referer"))
 
-  def getUrl[A](urlOpt: Option[String])(implicit request: Request[A]): Option[RedirectUrl] =
+  def getUrl[A](urlOpt: Option[String]): Option[RedirectUrl] =
     urlOpt match {
       case Some(redirectUrl) =>
         Try(RedirectUrl(redirectUrl)) match {
@@ -46,10 +47,8 @@ class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
         None
     }
 
-  def maybeRedirectUrlOrBadRequest(redirectUrlOpt: Option[RedirectUrl])(block: Option[String] => Future[Result])(
-    implicit request: Request[Any],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] = {
+  def maybeRedirectUrlOrBadRequest(redirectUrlOpt: Option[RedirectUrl])(
+    block: Option[String] => Future[Result])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
 
     val whitelistPolicy = AbsoluteWithHostnameFromWhitelist(ssoConnector.getWhitelistedDomains())
 

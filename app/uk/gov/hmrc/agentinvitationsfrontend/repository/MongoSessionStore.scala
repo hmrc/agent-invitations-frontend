@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.repository
 
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.cache.model.Id
@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MongoSessionStore[T] {
+trait MongoSessionStore[T] extends Logging {
 
   val sessionName: String
   val cacheRepository: CacheRepository
@@ -59,7 +59,6 @@ trait MongoSessionStore[T] {
           }
 
       case None ⇒
-        Logger.warn("no sessionId found in the HeaderCarrier to query mongo")
         Right(None)
     }
 

@@ -1,8 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import uk.gov.hmrc.agentinvitationsfrontend.stubs.CitizenDetailsStub
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -30,7 +29,7 @@ class CitizenDetailsConnectorISpec extends BaseISpec {
 
     "return BAD_REQUEST if nino not valid" in {
       givenCitizenDetailsReturns400For(nino)
-      a[BadRequestException] shouldBe thrownBy {
+      a[RuntimeException] shouldBe thrownBy {
         await(connector.getCitizenDetails(validNino))
       }
     }

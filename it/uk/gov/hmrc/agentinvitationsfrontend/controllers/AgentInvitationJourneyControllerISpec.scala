@@ -29,8 +29,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   lazy private val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
   lazy private val externalUrls = app.injector.instanceOf[ExternalUrls]
 
-  import journeyState.model.State
-  import journeyState.model.State._
+  import journeyState.model._
 
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD)

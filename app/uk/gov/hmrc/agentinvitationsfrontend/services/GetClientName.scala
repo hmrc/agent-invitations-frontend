@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait GetClientName {
+trait GetClientName extends Logging {
 
   def citizenDetailsConnector: CitizenDetailsConnector
   def acaConnector: AgentClientAuthorisationConnector
@@ -71,7 +71,7 @@ trait GetClientName {
     acaConnector.getTrustName(utr).map(_.response).map {
       case Right(trustName) => Some(trustName.name)
       case Left(invalidTrust) =>
-        Logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
+        logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
         None
     }
 
@@ -79,7 +79,7 @@ trait GetClientName {
     acaConnector.getCgtSubscription(cgtRef).map {
       case Some(cgtSubscription) => Some(cgtSubscription.name)
       case None =>
-        Logger.warn(s"no cgtSubscription found to retrieve name for reference: ${cgtRef.value}")
+        logger.warn(s"no cgtSubscription found to retrieve name for reference: ${cgtRef.value}")
         None
     }
 

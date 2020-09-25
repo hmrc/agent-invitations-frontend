@@ -77,7 +77,6 @@ class AgentLedDeauthJourneyController @Inject()(
   override def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
   import authActions._
-  import cancelAuthorisation._
   import invitationsService._
   import relationshipsService._
   import uk.gov.hmrc.play.fsm.OptionalFormOps._

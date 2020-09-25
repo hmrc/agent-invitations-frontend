@@ -21,8 +21,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.IrvClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.collection.mutable
-
 class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
   val ninoEmptyMessage: String = "error.nino.required"
