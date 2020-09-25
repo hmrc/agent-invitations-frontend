@@ -37,6 +37,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val AgentCancelledRequestFormat = Json.format[AgentCancelledRequest]
   val AlreadyRespondedToRequestFormat = Json.format[AlreadyRespondedToRequest]
   val RequestExpiredFormat = Json.format[RequestExpired]
+  val CannotFindRequestFormat = Json.format[CannotFindRequest]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp                    => WarmUpFormat.writes(s)
@@ -52,6 +53,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: AgentCancelledRequest     => AgentCancelledRequestFormat.writes(s)
     case s: RequestExpired            => RequestExpiredFormat.writes(s)
     case s: AlreadyRespondedToRequest => AlreadyRespondedToRequestFormat.writes(s)
+    case s: CannotFindRequest         => CannotFindRequestFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -62,6 +64,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ActionNeeded"              => ActionNeededFormat.reads(properties)
     case "AgentCancelledRequest"     => AgentCancelledRequestFormat.reads(properties)
     case "AlreadyRespondedToRequest" => AlreadyRespondedToRequestFormat.reads(properties)
+    case "CannotFindRequest"         => CannotFindRequestFormat.reads(properties)
     case "RequestExpired"            => RequestExpiredFormat.reads(properties)
     case "CannotViewRequest"         => JsSuccess(CannotViewRequest)
     case "MultiConsent"              => MultiConsentFormat.reads(properties)

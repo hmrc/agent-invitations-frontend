@@ -358,24 +358,46 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(TrustNotClaimed)
         }
 
-        "transition to NotFoundInvitation when the client has AffinityGroup Individual and no relevant enrolments" in {
+        "transition to CannotFindRequest when the client has AffinityGroup Individual and no relevant enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithoutRelevantEnrolments) should
-            thenGo(NotFoundInvitation)
+            thenGo(CannotFindRequest(personal, agentName))
         }
 
-        "transition to NotFoundInvitation when the client has AffinityGroup Organisation and no relevant enrolments" in {
+        "transition to CannotFindRequest when the client has AffinityGroup Organisation and no relevant enrolments" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedOrganisationClientWithoutRelevantEnrolments) should
+            thenGo(CannotFindRequest(business, agentName))
+        }
+
+        "transition to CannotFindRequest when the client has AffinityGroup Individual and some " +
+          "relevant enrolments and there are no authorisation requests 'old' or current" in {
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
-              authorisedOrganisationClientWithoutRelevantEnrolments) should
-            thenGo(NotFoundInvitation)
+              authorisedIndividualClient) should
+            thenGo(CannotFindRequest(personal, agentName))
+        }
+
+        "transition to NoOutstandingRequests when the client has AffinityGroup Individual and all " +
+          "relevant enrolments and there are no authorisation requests 'old' or current" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              authorisedIndividualClientWithAllSupportedEnrolments) should
+            thenGo(NoOutstandingRequests)
         }
 
         "transition to SuspendedAgent when agent is suspended for one or more of consent services" in {

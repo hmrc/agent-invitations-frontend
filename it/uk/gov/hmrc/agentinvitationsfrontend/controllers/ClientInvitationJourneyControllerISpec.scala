@@ -171,14 +171,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
+      "redirect to /respond/error/cannot-find-request if there are no invitations found " +
         "and the client has SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
       }
 
       "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
@@ -191,12 +191,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
       }
 
-      "redirect to /not-found if the client has no supported MTD enrolments" in {
+      "redirect to /cannot-find-request if the client has no supported MTD enrolments" in {
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithNoSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
       }
 
       "redirect to /respond/error/no-outstanding-requests if the invitation has status of Accepted or Rejected " +
@@ -362,13 +362,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests" in {
+      "redirect to /respond/error/cannot-find-request" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
       }
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
@@ -413,7 +413,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-outstanding-requests.heading"))
-      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history</a>")
+      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history</a>")
 
     }
   }
@@ -1144,7 +1144,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("already-responded.header"))
       checkIncludesText(result,"You responded to this request on 1/1/2020.")
-      checkIncludesText(result,"If you think this is wrong, contact the agent who sent you the request or <a target=\"_blank\" href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history")
+      checkIncludesText(result,"If you think this is wrong, contact the agent who sent you the request or <a href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history")
     }
   }
 
@@ -1212,6 +1212,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-authorised.description.p2"))
+    }
+  }
+
+  "GET /respond/error/cannot-find-request" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/cannot-find-request")
+    "display the page as expected" in {
+      journeyState.set(CannotFindRequest(personal, "My Agency"), Nil)
+
+      val result = controller.showErrorCannotFindRequest(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.header"))
+      checkIncludesText(result,"We cannot find a request from My Agency.")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.p2"))
+      checkIncludesText(result,"You need to sign in with the correct Government Gateway user ID. " +
+        "It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service " +
+        "the authorisation request is for. <a href=/invitations/sign-out-redirect>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your personal tax affairs).")
     }
   }
 
