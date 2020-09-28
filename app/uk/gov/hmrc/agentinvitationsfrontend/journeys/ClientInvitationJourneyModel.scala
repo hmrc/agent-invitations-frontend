@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
+import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -59,6 +59,16 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case class AgentCancelledRequest(cancelledOn: String) extends State with IsError
 
     case class CannotFindRequest(clientType: ClientType, agencyName: String) extends State with IsError
+
+    case class AuthorisationRequestExpired(
+      expiredOn: String,
+      clientType: ClientType
+    ) extends State with IsError
+
+    case class AuthorisationRequestCancelled(cancelledOn: String, clientType: ClientType) extends State with IsError
+
+    case class AuthorisationRequestAlreadyResponded(respondedOn: String, clientType: ClientType)
+        extends State with IsError
 
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
         extends State
@@ -185,7 +195,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                   else goto(NoOutstandingRequests)
                 } else {
                   getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
-                    case Nil => determineStateForNonPending(invitationDetails, maybeAll)
+                    case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
                     case consents =>
                       val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
                       val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
@@ -228,21 +238,26 @@ object ClientInvitationJourneyModel extends JourneyModel {
 
     private def determineStateForNonPending(
       invitationDetails: Seq[InvitationDetails],
-      enrolmentCoverage: EnrolmentCoverage): Future[State] = {
-      val state = gotoState(_: State)(enrolmentCoverage)
+      enrolmentCoverage: EnrolmentCoverage,
+      clientType: ClientType): Future[State] = {
+      val state = gotoState(_: State, _: State)(enrolmentCoverage)
       invitationDetails
         .sortBy(_.mostRecentEvent())
         .reverse
         .headOption
         .fold(
           goto(NotFoundInvitation)
-        )(i =>
+        )(i => {
+          val eventDate = dateString(i.mostRecentEvent().time)
           i.status match {
-            case Expired   => state(RequestExpired(dateString(i.mostRecentEvent().time)))
-            case Cancelled => state(AgentCancelledRequest(dateString(i.mostRecentEvent().time)))
+            case Expired =>
+              state(RequestExpired(eventDate), AuthorisationRequestExpired(eventDate, clientType))
+            case Cancelled =>
+              state(AgentCancelledRequest(eventDate), AuthorisationRequestCancelled(eventDate, clientType))
             case Accepted | Rejected =>
-              state(AlreadyRespondedToRequest(dateString(i.mostRecentEvent().time)))
+              state(AlreadyRespondedToRequest(eventDate), AuthorisationRequestAlreadyResponded(eventDate, clientType))
             case e => throw new RuntimeException(s"transition exception unexpected status $e")
+          }
         })
     }
 
@@ -251,10 +266,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
       date.toString(fmt)
     }
 
-    private def gotoState(targetState: State)(enrolmentCoverage: EnrolmentCoverage): Future[State] =
+    private def gotoState(targetState: State, fallbackState: State)(
+      enrolmentCoverage: EnrolmentCoverage): Future[State] =
       if (enrolmentCoverage == AllSupportedMTDEnrolments) goto(targetState)
       else {
-        goto(NoOutstandingRequests)
+        goto(fallbackState)
       }
 
     private def tempEnrolLog(enrolments: Enrolments): String =
