@@ -20,7 +20,7 @@ import play.api.data.Forms.{of, text}
 import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation._
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{dateFieldsMapping, parseDate, validateDate}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino

@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment, Logger, Mode}
+import play.api.{Configuration, Environment, Logging, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -42,7 +42,7 @@ class AuthActionsImpl @Inject()(
   val config: Configuration,
   val authConnector: AuthConnector,
   val appConfig: AppConfig)
-    extends AuthorisedFunctions with AuthRedirects {
+    extends AuthorisedFunctions with AuthRedirects with Logging {
 
   val pdvStartUrl = s"${externalUrls.pdvFrontendUrl}/start"
 
@@ -67,7 +67,7 @@ class AuthActionsImpl @Inject()(
           getArn(enrolments) match {
             case Some(arn) => body(AuthorisedAgent(arn, isWhitelisted))
             case None =>
-              Logger.warn("Arn not found for the logged in agent")
+              logger.warn("Arn not found for the logged in agent")
               Future successful Forbidden
           }
         }
@@ -86,11 +86,11 @@ class AuthActionsImpl @Inject()(
           if (affinity == AffinityGroup.Individual) {
             body(providerId)
           } else {
-            Logger.warn(s"affinity group: $affinityGroup is not individual cannot progress")
+            logger.warn(s"affinity group: $affinityGroup is not individual cannot progress")
             Future successful Forbidden
           }
         case _ =>
-          Logger.warn(s"problem retrieving affinity group $affinityGroup or credentials")
+          logger.warn(s"problem retrieving affinity group $affinityGroup or credentials")
           Future successful Forbidden
       }
       .recover {
@@ -114,12 +114,12 @@ class AuthActionsImpl @Inject()(
               Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
             }
             case (affinityGroup, _) =>
-              Logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
+              logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
               Future successful Forbidden
           }
 
         case _ =>
-          Logger.warn("the logged in client had no affinity group")
+          logger.warn("the logged in client had no affinity group")
           Future successful Forbidden
       }
       .recover {
@@ -195,11 +195,11 @@ class AuthActionsImpl @Inject()(
       toGGLogin(continueUrlWithJourneyId(journeyId))
 
     case _: InsufficientEnrolments ⇒
-      Logger.warn(s"Logged in user does not have required enrolments")
+      logger.warn(s"Logged in user does not have required enrolments")
       if (isAgent) Redirect(externalUrls.subscriptionURL) else Forbidden
 
     case _: UnsupportedAuthProvider ⇒
-      Logger.warn(s"user logged in with unsupported auth provider")
+      logger.warn(s"user logged in with unsupported auth provider")
       Forbidden
   }
 }

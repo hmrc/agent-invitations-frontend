@@ -17,23 +17,19 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.Inject
-import play.api.Configuration
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class TimeoutController @Inject()(timedOutTemplate: timed_out, authActions: AuthActionsImpl)(
-  implicit configuration: Configuration,
+class TimeoutController @Inject()()(
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
-  ec: ExecutionContext,
   val appConfig: AppConfig)
     extends FrontendController(mcc) {
 
-  def keepAlive: Action[AnyContent] = Action.async { implicit request =>
+  def keepAlive: Action[AnyContent] = Action.async { _ =>
     Future successful Ok("OK")
   }
 }

@@ -21,15 +21,16 @@ import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
+import play.api.http.Status._
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFlags)(
   implicit appConfig: AppConfig,
   metrics: Metrics)
-    extends HttpAPIMonitor {
+    extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -77,14 +78,15 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   def getInactiveRelationships(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext,
-    evidence: HttpReads[Seq[InactiveTrackRelationship]]): Future[Seq[InactiveTrackRelationship]] =
+    ec: ExecutionContext): Future[Seq[InactiveTrackRelationship]] =
     monitor(s"ConsumedApi-Get-InactiveRelationships-GET") {
       http
-        .GET[Seq[InactiveTrackRelationship]](inactiveRelationshipUrl)
-        .recover {
-          case _: NotFoundException =>
-            Seq.empty
+        .GET[HttpResponse](inactiveRelationshipUrl)
+        .map { r =>
+          r.status match {
+            case OK        => r.json.as[Seq[InactiveTrackRelationship]]
+            case NOT_FOUND => Seq.empty
+          }
         }
     }
 
@@ -94,14 +96,16 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     if (isServiceEnabled(service)) {
       monitor(s"ConsumedAPI-DELETE-${serviceShortNames(service)}Relationship-DELETE") {
         val url = getRelationshipUrlFor(service, arn, identifier)
-
-        http.DELETE[HttpResponse](url).map(_ => Some(true))
-      }.recover {
-        case _: NotFoundException => Some(false)
-        case _                    => None
+        http.DELETE[HttpResponse](url).map { r =>
+          r.status match {
+            case NO_CONTENT => Some(true)
+            case NOT_FOUND  => Some(false)
+            case _          => None
+          }
+        }
       }
     } else {
-      Logger(getClass).warn(s"${serviceShortNames(service)} is disabled - cannot delete relationship")
+      logger.warn(s"${serviceShortNames(service)} is disabled - cannot delete relationship")
       Future successful None
     }
 
@@ -131,19 +135,17 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     if (isServiceEnabled(service)) {
       monitor("ConsumedApi-Get-CheckItsaRelationship-GET") {
         val url = getRelationshipUrlFor(service, arn, identifier)
-
         http
           .GET[HttpResponse](url)
-          .map(_ => true)
-          .recover {
-            case _: NotFoundException =>
-              Logger(getClass).warn(
-                s"No relationships were found for this agent and client for ${serviceShortNames(service)}")
-              false
+          .map { r =>
+            r.status match {
+              case OK        => true
+              case NOT_FOUND => false
+            }
           }
       }
     } else {
-      Logger.warn(s"${serviceShortNames(service)} is disabled - cannot check relationships")
+      logger.warn(s"${serviceShortNames(service)} is disabled - cannot check relationships")
       Future successful false
     }
 

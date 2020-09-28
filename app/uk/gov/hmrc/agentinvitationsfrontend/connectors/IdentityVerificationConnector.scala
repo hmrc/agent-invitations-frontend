@@ -19,19 +19,19 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
-import play.api.http.Status
+import play.api.Logging
+import play.api.http.Status._
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.{IVResult, NinoClStoreEntry}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
-    extends HttpAPIMonitor {
+    extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -47,16 +47,11 @@ class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val app
         .GET[HttpResponse](getIVResultUrl(journeyId).toString)
         .map { response =>
           response.status match {
-            case 200 =>
+            case OK =>
               val result = (response.json \ "result").as[IVResult]
-              Logger.warn(s"identity verification returned result $result for journeyId $journeyId")
+              logger.warn(s"identity verification returned result $result for journeyId $journeyId")
               Some(result)
-          }
-        }
-        .recover {
-          case e: NotFoundException => {
-            Logger.warn(s"identity verification did not recognise the journeyId $journeyId $e")
-            None
+            case NOT_FOUND => None
           }
         }
     }
@@ -72,10 +67,5 @@ class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val app
       http
         .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)
         .map(_.status)
-        .recover {
-          case e: Upstream5xxResponse =>
-            Logger.error(s"identity-verification did not update entry ${e.getMessage}")
-            Status.INTERNAL_SERVER_ERROR
-        }
     }
 }

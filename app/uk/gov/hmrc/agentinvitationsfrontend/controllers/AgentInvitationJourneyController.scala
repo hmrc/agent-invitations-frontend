@@ -86,8 +86,7 @@ class AgentInvitationJourneyController @Inject()(
   import acaConnector._
   import authActions._
   import invitationsService._
-  import journeyService.model.State._
-  import journeyService.model.{State, Transitions}
+  import journeyService.model._
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc

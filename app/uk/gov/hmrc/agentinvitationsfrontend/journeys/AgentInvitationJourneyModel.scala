@@ -15,8 +15,9 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
+
 import org.joda.time.LocalDate
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -27,87 +28,81 @@ import uk.gov.hmrc.play.fsm.JourneyModel
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object AgentInvitationJourneyModel extends JourneyModel {
+object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
   sealed trait State
 
-  val root: State = State.SelectClientType(Set.empty)
+  val root: State = SelectClientType(Set.empty)
+
+  case class SelectClientType(basket: Basket) extends State
+
+  case class SelectPersonalService(services: Set[String], basket: Basket) extends State
+  case object SelectBusinessService extends State
+  case class SelectTrustService(services: Set[String], basket: Basket) extends State
+
+  case class IdentifyPersonalClient(service: String, basket: Basket) extends State
+  case object IdentifyBusinessClient extends State
+  case class IdentifyTrustClient(service: String, basket: Basket) extends State
+
+  case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
+  case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
+  case class KnownFactNotMatched(basket: Basket) extends State
+  case class CannotCreateRequest(basket: Basket) extends State
+  case class TrustNotFound(basket: Basket) extends State
+  case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
+
+  case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
+  case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
+  case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
+  case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
+  case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
+  case class ConfirmPostcodeCgt(
+    cgtRef: CgtRef,
+    clientType: ClientType,
+    basket: Basket,
+    postcode: Option[String],
+    clientName: String)
+      extends State
+  case class ConfirmCountryCodeCgt(
+    cgtRef: CgtRef,
+    clientType: ClientType,
+    basket: Basket,
+    countryCode: String,
+    clientName: String)
+      extends State
+
+  case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
+  case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
+
+  case class SomeAuthorisationsFailed(
+    invitationLink: String,
+    continueUrl: Option[String],
+    agencyEmail: String,
+    basket: Basket)
+      extends State
+  case class AllAuthorisationsFailed(basket: Basket) extends State
+  case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
+  case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
+      extends State
+  case class InvitationSentPersonal(
+    invitationLink: String,
+    continueUrl: Option[String],
+    agencyEmail: String,
+    services: Set[String])
+      extends State
+  case class InvitationSentBusiness(
+    invitationLink: String,
+    continueUrl: Option[String],
+    agencyEmail: String,
+    services: Set[String])
+      extends State
+  case class ClientNotSignedUp(service: String, basket: Basket) extends State
+  case object AllAuthorisationsRemoved extends State
+  case class AgentSuspended(suspendedService: String, basket: Basket) extends State
 
   type Basket = Set[AuthorisationRequest]
 
-  /* State should contain only minimal set of data required to proceed */
-  object State {
-
-    case class SelectClientType(basket: Basket) extends State
-
-    case class SelectPersonalService(services: Set[String], basket: Basket) extends State
-    case object SelectBusinessService extends State
-    case class SelectTrustService(services: Set[String], basket: Basket) extends State
-
-    case class IdentifyPersonalClient(service: String, basket: Basket) extends State
-    case object IdentifyBusinessClient extends State
-    case class IdentifyTrustClient(service: String, basket: Basket) extends State
-
-    case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
-    case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
-    case class KnownFactNotMatched(basket: Basket) extends State
-    case class CannotCreateRequest(basket: Basket) extends State
-    case class TrustNotFound(basket: Basket) extends State
-    case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
-
-    case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
-    case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
-    case class ConfirmPostcodeCgt(
-      cgtRef: CgtRef,
-      clientType: ClientType,
-      basket: Basket,
-      postcode: Option[String],
-      clientName: String)
-        extends State
-    case class ConfirmCountryCodeCgt(
-      cgtRef: CgtRef,
-      clientType: ClientType,
-      basket: Basket,
-      countryCode: String,
-      clientName: String)
-        extends State
-
-    case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
-    case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
-
-    case class SomeAuthorisationsFailed(
-      invitationLink: String,
-      continueUrl: Option[String],
-      agencyEmail: String,
-      basket: Basket)
-        extends State
-    case class AllAuthorisationsFailed(basket: Basket) extends State
-    case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
-    case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
-        extends State
-    case class InvitationSentPersonal(
-      invitationLink: String,
-      continueUrl: Option[String],
-      agencyEmail: String,
-      services: Set[String])
-        extends State
-    case class InvitationSentBusiness(
-      invitationLink: String,
-      continueUrl: Option[String],
-      agencyEmail: String,
-      services: Set[String])
-        extends State
-    case class ClientNotSignedUp(service: String, basket: Basket) extends State
-    case object AllAuthorisationsRemoved extends State
-    case class AgentSuspended(suspendedService: String, basket: Basket) extends State
-  }
-
   object Transitions {
-    import State._
-
     val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
@@ -240,7 +235,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
                   ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr)), basket)
                 )
               case Left(invalidTrust) =>
-                Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
                 goto(TrustNotFound(basket))
             }
           }
@@ -304,7 +299,7 @@ object AgentInvitationJourneyModel extends JourneyModel {
           if (desPostcodeWithoutSpace == userPostcodeWithoutSpace) {
             goto(ConfirmClientCgt(AuthorisationRequest(name, CgtInvitation(cgtRef, Some(clientType))), basket))
           } else {
-            Logger(getClass).warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes
+            logger.warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes
               .getOrElse("not found")} and user entered ${postcode.value}")
             goto(KnownFactNotMatched(basket))
           }
@@ -461,12 +456,8 @@ object AgentInvitationJourneyModel extends JourneyModel {
                  else goto(someFailedState(processedRequests))
       } yield result
 
-    private def checkIfPendingOrActiveAndGoto(successState: State)(
-      clientType: ClientType,
-      arn: Arn,
-      clientIdentifier: String,
-      service: String,
-      basket: Basket = Set.empty)(
+    private def checkIfPendingOrActiveAndGoto(
+      successState: State)(clientType: ClientType, arn: Arn, clientIdentifier: String, service: String, basket: Basket)(
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship): Future[State] =
       for {

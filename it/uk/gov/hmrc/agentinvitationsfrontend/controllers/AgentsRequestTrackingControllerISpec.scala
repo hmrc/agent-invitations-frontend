@@ -89,8 +89,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
 
-      val y = List("recent-invitations.invitation.service.HMRC-TERS-ORG", "recent-invitations.invitation.service.HMRC-CGT-PD.personal")
-
       val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
@@ -236,7 +234,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in expiryDate" in {
-      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
       val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), "foo"))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))

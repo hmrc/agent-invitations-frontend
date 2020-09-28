@@ -85,7 +85,7 @@ lazy val root = (project in file("."))
       "-Yrangepos",
       "-Xplugin-require:semanticdb",
       "-P:semanticdb:synthetics:on",
-      //"-Xfatal-warnings",
+      "-Xfatal-warnings",
       "-Xlint:-missing-interpolator,_",
       "-Yno-adapted-args",
       "-Ywarn-value-discard",
@@ -94,10 +94,11 @@ lazy val root = (project in file("."))
       "-feature",
       "-unchecked",
       "-language:implicitConversions",
-      "-P:silencer:pathFilters=Routes.scala"
+      "-P:silencer:pathFilters=views;routes;TestStorage"
     )
   )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .disablePlugins(JUnitXmlReportPlugin)
 
 inConfig(IntegrationTest)(scalafmtCoreSettings)
 

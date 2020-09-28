@@ -1,8 +1,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CgtAddressDetails, CgtSubscription, IndividualName, InvalidTrust, SubscriptionDetails, TrustName, TrustResponse, TypeOfPersonDetails}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, MtdItId, Utr, Vrn}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 
 trait TestDataCommonSupport {

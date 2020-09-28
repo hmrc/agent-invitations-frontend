@@ -218,8 +218,7 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containLinkWithSubstring(expectedSubstring: String, expectedHref: String)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containLinkWithSubstring(expectedSubstring: String, expectedHref: String): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)

@@ -17,12 +17,8 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.format.DateTimeFormat
-import play.api.data.Forms.{mapping, text, tuple}
-import play.api.data.Mapping
-import play.api.data.validation.Constraint
+import play.api.data.Forms.{text, tuple}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.validateDateFields
-
-import scala.util.control.NonFatal
 
 object DateFieldHelper {
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.joda.time.DateTime
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
@@ -30,7 +30,7 @@ import uk.gov.hmrc.play.fsm.JourneyModel
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object ClientInvitationJourneyModel extends JourneyModel {
+object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
   sealed trait State
   sealed trait IsError
@@ -49,8 +49,6 @@ object ClientInvitationJourneyModel extends JourneyModel {
     case object NotFoundInvitation extends State with IsError
 
     case object NoOutstandingRequests extends State with IsError
-
-    case object CannotViewRequest extends State with IsError
 
     case class RequestExpired(expiredOn: String) extends State with IsError
 
@@ -138,11 +136,11 @@ object ClientInvitationJourneyModel extends JourneyModel {
                          }
                        case Some(r) =>
                          val names = r.normalisedAgentNames.mkString(",")
-                         Logger.warn(
+                         logger.warn(
                            s"Agency name not matching for uid: $uid, record has [$names], but url provided: [$agentName]")
                          goto(NotFoundInvitation)
                        case _ =>
-                         Logger.warn(s"No agent reference record found matching uid: $uid")
+                         logger.warn(s"No agent reference record found matching uid: $uid")
                          goto(NotFoundInvitation)
                      }
           } yield result
@@ -181,16 +179,16 @@ object ClientInvitationJourneyModel extends JourneyModel {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           client.enrolmentCoverage match {
             case NoSupportedMTDEnrolments => {
-              Logger(getClass).warn(
+              logger.warn(
                 s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
               goto(CannotFindRequest(clientType, agentName))
             }
             case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
               getInvitationDetails(uid).flatMap { invitationDetails =>
                 if (invitationDetails.isEmpty) {
-                  Logger(getClass).warn(
-                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: ${tempEnrolLog(
-                      client.enrolments)}")
+                  logger.warn(
+                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: [${tempEnrolLog(
+                      client.enrolments)}]")
                   if (maybeAll == SomeSupportedMTDEnrolments) goto(CannotFindRequest(clientType, agentName))
                   else goto(NoOutstandingRequests)
                 } else {
@@ -200,7 +198,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                       val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
                       val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
                       if (containsTrust && butNoTrustEnrolment) {
-                        Logger(getClass).warn(
+                        logger.warn(
                           "client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
                         goto(TrustNotClaimed)
                       } else {
@@ -225,7 +223,7 @@ object ClientInvitationJourneyModel extends JourneyModel {
                             }
                           case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, consents))
                           case _ =>
-                            Logger(getClass).warn(s"No pending invitations are found for uid: $uid")
+                            logger.warn(s"No pending invitations are found for uid: $uid")
                             goto(NotFoundInvitation)
                         }
                       }
