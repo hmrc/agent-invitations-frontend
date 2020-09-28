@@ -18,9 +18,8 @@ package journeys
 
 import org.joda.time.LocalDate
 import play.api.http.Status
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.{AgentInvitationJourneyModel, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._

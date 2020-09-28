@@ -17,8 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.State._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[State] {

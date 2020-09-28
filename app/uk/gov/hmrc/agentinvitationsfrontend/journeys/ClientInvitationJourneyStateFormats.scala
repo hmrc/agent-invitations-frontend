@@ -66,7 +66,6 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "AlreadyRespondedToRequest" => AlreadyRespondedToRequestFormat.reads(properties)
     case "CannotFindRequest"         => CannotFindRequestFormat.reads(properties)
     case "RequestExpired"            => RequestExpiredFormat.reads(properties)
-    case "CannotViewRequest"         => JsSuccess(CannotViewRequest)
     case "MultiConsent"              => MultiConsentFormat.reads(properties)
     case "SingleConsent"             => SingleConsentFormat.reads(properties)
     case "CheckAnswers"              => CheckAnswersFormat.reads(properties)

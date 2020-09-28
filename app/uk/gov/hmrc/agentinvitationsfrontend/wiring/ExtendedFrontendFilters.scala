@@ -22,7 +22,7 @@ import play.api.Configuration
 import play.api.http.HttpFilters
 import play.api.http.HttpVerbs.POST
 import play.api.mvc.{EssentialFilter, Filter, RequestHeader, Result}
-import uk.gov.hmrc.play.bootstrap.filters.FrontendFilters
+import uk.gov.hmrc.play.bootstrap.frontend.filters.FrontendFilters
 
 import scala.concurrent.Future
 

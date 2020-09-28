@@ -15,6 +15,7 @@
  */
 
 package journeys
+
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}

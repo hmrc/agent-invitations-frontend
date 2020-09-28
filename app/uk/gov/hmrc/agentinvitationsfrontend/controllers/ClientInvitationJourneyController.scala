@@ -92,6 +92,8 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
+  private val logger = Logger(getClass)
+
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier =
     appendJourneyId(super.hc)
 
@@ -346,16 +348,16 @@ class ClientInvitationJourneyController @Inject()(
                     .map {
                       case 200 | 201 => Redirect(targetUrl)
                       case status =>
-                        Logger.error(s"identity-verification upsert /nino/credId returned: $status")
+                        logger.error(s"identity-verification upsert /nino/credId returned: $status")
                         InternalServerError("identity-verification upsert NINO failed")
                     }
                 case Left(pdvError) => Future.successful(pdvErrorResult(pdvError, validId))
               }
           case (None, _) =>
-            Logger.error(s"no targetUrl returned from personal-details-validation - assuming technical error")
+            logger.error(s"no targetUrl returned from personal-details-validation - assuming technical error")
             Future.successful(InternalServerError("no targetUrl in /pdv-compelete"))
           case (_, None) =>
-            Logger.error(s"no validationId returned from personal-details-validation - assuming technical error")
+            logger.error(s"no validationId returned from personal-details-validation - assuming technical error")
             Future.successful(InternalServerError("no validationId in /pdv-compelete"))
         }
       }

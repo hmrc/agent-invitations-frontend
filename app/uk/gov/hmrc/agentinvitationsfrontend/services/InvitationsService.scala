@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
@@ -35,7 +35,7 @@ class InvitationsService @Inject()(
   val acaConnector: AgentClientAuthorisationConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
   auditService: AuditService)
-    extends GetClientName {
+    extends GetClientName with Logging {
 
   def createInvitation(arn: Arn, invitation: Invitation)(
     implicit hc: HeaderCarrier,
@@ -49,7 +49,7 @@ class InvitationsService @Inject()(
       locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
       invitation <- acaConnector
                      .getInvitation(locationOpt.getOrElse {
-                       throw new Exception("Invitation location expected; but missing.")
+                       throw new Exception("location expected after invitation creation ; but missing.")
                      })
     } yield invitation)
       .map(storedInvitation => {
@@ -62,7 +62,7 @@ class InvitationsService @Inject()(
       })
       .recoverWith {
         case NonFatal(e) =>
-          Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+          logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
           auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage))
           Future.failed(e)
       }
@@ -98,7 +98,7 @@ class InvitationsService @Inject()(
         })
         .recover {
           case NonFatal(e) =>
-            Logger(getClass).warn(s"Invitation Creation Failed: ${e.getMessage}")
+            logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
             auditService
               .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage))
             authRequest.copy(state = AuthorisationRequest.FAILED)
@@ -145,11 +145,6 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     acaConnector.rejectVATInvitation(vrn, invitationId)
-
-  def getClientInvitation(clientId: String, invitationId: InvitationId, apiIdentifier: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[StoredInvitation] =
-    acaConnector.getInvitation(clientInvitationUrl(invitationId, clientId, apiIdentifier))
 
   def getAgencyName(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[String] =
     acaConnector.getAgencyName(arn.value).map {
@@ -243,8 +238,4 @@ class InvitationsService @Inject()(
                                 .getAllPendingInvitationsForClient(arn, clientId, service)
                                 .map(s => s.nonEmpty)
     } yield hasPendingInvitations
-
-  private def clientInvitationUrl(invitationId: InvitationId, clientId: String, apiIdentifier: String): String =
-    s"/agent-client-authorisation/clients/$apiIdentifier/$clientId/invitations/received/${invitationId.value}"
-
 }

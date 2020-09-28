@@ -17,7 +17,6 @@
 package forms
 
 import play.api.data.FormError
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
 import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 import uk.gov.hmrc.play.test.UnitSpec

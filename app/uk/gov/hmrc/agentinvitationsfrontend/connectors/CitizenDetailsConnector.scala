@@ -19,12 +19,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.{Inject, Singleton}
+import play.api.http.Status._
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HttpClient, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -55,8 +56,12 @@ class CitizenDetailsConnector @Inject()(http: HttpClient)(implicit val appConfig
   def getCitizenDetails(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Citizen] =
     monitor(s"ConsumedAPI-CitizenDetails-GET") {
       val url = s"${appConfig.cidBaseUrl}/citizen-details/nino/${nino.value}"
-      http.GET[Citizen](url).recover {
-        case _: NotFoundException => Citizen(None, None, None)
+      http.GET[HttpResponse](url).map { r =>
+        r.status match {
+          case OK        => r.json.as[Citizen]
+          case NOT_FOUND => Citizen(None, None, None)
+          case s         => throw new RuntimeException(s"unexpected error during getCitizenDetails, status: $s")
+        }
       }
     }
 }

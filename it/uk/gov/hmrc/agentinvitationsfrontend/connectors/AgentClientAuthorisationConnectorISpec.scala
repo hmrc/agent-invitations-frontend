@@ -5,7 +5,7 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgencyEmailNotFound, AgencyNameNotFound, AgentInvitation, AgentReferenceRecord, CustomerDetails, IndividualDetails, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -33,11 +33,9 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         )
       }
 
-      "return an error if unexpected response when creating multi-invitation link" in {
+      "return None if unexpected response when creating multi-invitation link" in {
         givenAgentReferenceNotFound(arn, personal)
-        intercept[NotFoundException] {
-          await(connector.createAgentLink(arn, "personal"))
-        }
+        await(connector.createAgentLink(arn, "personal")) shouldBe None
       }
     }
 
@@ -71,11 +69,9 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           "agent-client-authorisation/clients/MTDITID/AB123456B/invitations/received/ABERULMHCKKW3")
       }
 
-      "return an error if unexpected response when creating ITSA invitation" in {
+      "return None if unexpected response when creating ITSA invitation" in {
         givenInvitationCreationFails(arn)
-        intercept[BadRequestException] {
-          await(connector.createInvitation(arn, agentInvitationITSA))
-        }
+        await(connector.createInvitation(arn, agentInvitationITSA)) shouldBe None
       }
     }
 
@@ -98,9 +94,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if unexpected response when creating PIR invitation" in {
         givenInvitationCreationFails(arn)
-        intercept[BadRequestException] {
-          await(connector.createInvitation(arn, agentInvitationPIR))
-        }
+        await(connector.createInvitation(arn, agentInvitationPIR)) shouldBe None
       }
     }
 
@@ -123,9 +117,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if unexpected response when creating VAT invitation" in {
         givenInvitationCreationFails(arn)
-        intercept[BadRequestException] {
-          await(connector.createInvitation(arn, agentInvitationVAT))
-        }
+        await(connector.createInvitation(arn, agentInvitationVAT)) shouldBe None
       }
     }
 
@@ -148,9 +140,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if unexpected response when creating Trust invitation" in {
         givenInvitationCreationFails(arn)
-        intercept[BadRequestException] {
-          await(connector.createInvitation(arn, agentInvitationTrust))
-        }
+        await(connector.createInvitation(arn, agentInvitationTrust)) shouldBe None
       }
     }
   }
@@ -239,7 +229,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if invitation not found" in {
         givenInvitationNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
-        an[NotFoundException] shouldBe thrownBy(
+        an[RuntimeException] shouldBe thrownBy(
           await(connector
             .getInvitation(getITSAInvitation)))
       }
@@ -258,7 +248,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if PIR invitation not found" in {
         givenInvitationNotFound(validNino.value, invitationIdPIR, identifierPIR)
-        an[NotFoundException] shouldBe thrownBy(
+        an[RuntimeException] shouldBe thrownBy(
           await(connector
             .getInvitation(getPIRInvitation)))
       }
@@ -277,7 +267,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return an error if VAT invitation not found" in {
         givenInvitationNotFound(validVrn.value, invitationIdVAT, identifierVAT)
-        an[NotFoundException] shouldBe thrownBy(
+        an[RuntimeException] shouldBe thrownBy(
           await(connector
             .getInvitation(getVATInvitation)))
       }
@@ -523,7 +513,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "throws 5xx is DES/ETMP is unavailable" in {
       givenServiceUnavailableITSA(validNino, validPostcode)
 
-      assertThrows[Upstream5xxResponse] {
+      assertThrows[RuntimeException] {
         await(connector.checkPostcodeForClient(validNino, validPostcode))
       }
 
@@ -572,7 +562,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 502)
 
-      assertThrows[Upstream5xxResponse] {
+      assertThrows[RuntimeException] {
         await(connector.checkVatRegisteredClient(validVrn, suppliedDate))
       }
 

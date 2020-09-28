@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetTrustName}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -28,7 +28,7 @@ import uk.gov.hmrc.play.fsm.JourneyModel
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object AgentLedDeauthJourneyModel extends JourneyModel {
+object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
   sealed trait State
 
@@ -209,7 +209,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel {
               case Right(TrustName(name)) =>
                 goto(ConfirmClientTrust(name, trustClient.utr))
               case Left(invalidTrust) =>
-                Logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
                 goto(TrustNotFound)
             }
           }
