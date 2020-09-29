@@ -977,6 +977,21 @@ cannot-find-request.p3=You need to sign in with the correct Government Gateway u
 cannot-find-request.business=business tax affairs
 cannot-find-request.personal=personal tax affairs
 
+#Authorisation request error template
+error.authorisation-request-error-template.header=This authorisation request {0}
+error.authorisation-request-error-template.header.Expired=has already expired
+error.authorisation-request-error-template.header.Cancelled=has been cancelled
+error.authorisation-request-error-template.header.AlreadyResponded=has already been responded to
+error.authorisation-request-error-template.p1=This request {0}. For details, <a href={1}>view your history</a> to check for any expired, cancelled or outstanding requests.
+error.authorisation-request-error-template.p1.Expired=expired on {0}
+error.authorisation-request-error-template.p1.Cancelled=was cancelled by your agent on {0}
+error.authorisation-request-error-template.p1.AlreadyResponded=has already been responded to on {0}
+error.authorisation-request-error-template.p2=If your agent has sent you a recent request, make sure you have signed up to the tax service you need.
+error.authorisation-request-error-template.p3=You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for.
+error.authorisation-request-error-template.p4=<a href={0}>Sign in with the Government Gateway user ID</a> you use for managing your {1}.
+error.authorisation-request-error-template.business=business tax affairs
+error.authorisation-request-error-template.personal=personal tax affairs
+
 #session time out
 timeout-dialog.title=You are about to be signed out
 timeout-dialog.seconds=seconds

@@ -75,7 +75,8 @@ class ClientInvitationJourneyController @Inject()(
   requestExpiredView: request_expired,
   agentCancelledRequestView: agent_cancelled_request,
   alreadyRespondedView: already_responded,
-  cannotFindRequestView: cannot_find_request)(
+  cannotFindRequestView: cannot_find_request,
+  authorisationRequestErrorTemplateView: authorisation_request_error_template)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
@@ -181,12 +182,20 @@ class ClientInvitationJourneyController @Inject()(
     case _: AlreadyRespondedToRequest =>
   }
 
-  val showErrorCannotFindRequest = action { implicit request =>
-    showStateWhenAuthorised(AsClient) {
-      case _: CannotFindRequest =>
-    }.andThen {
-      case Success(_) => journeyService.stepBack
-    }
+  val showErrorCannotFindRequest = actionShowStateWhenAuthorised(AsClient) {
+    case _: CannotFindRequest =>
+  }
+
+  val showErrorAuthorisationRequestExpired = actionShowStateWhenAuthorised(AsClient) {
+    case _: AuthorisationRequestExpired =>
+  }
+
+  val showErrorAuthorisationRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
+    case _: AuthorisationRequestCancelled =>
+  }
+
+  val showErrorAuthorisationRequestAlreadyResponded = actionShowStateWhenAuthorised(AsClient) {
+    case _: AuthorisationRequestAlreadyResponded =>
   }
 
   def submitConsent = action { implicit request =>
@@ -273,11 +282,12 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   val signOutAndRedirect: Action[AnyContent] = Action.async { implicit request =>
-    request.session
-      .get("clientInvitationJourney")
-      .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(jid =>
-        Future successful Redirect(routes.ClientInvitationJourneyController.submitWarmUp()).withNewSession
-          .addingToSession("clientInvitationJourney" -> jid))
+    journeyId
+      .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(
+        jid =>
+          journeyService.stepBack.map(_ =>
+            Redirect(routes.ClientInvitationJourneyController.submitWarmUp()).withNewSession
+              .addingToSession("clientInvitationJourney" -> jid)))
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
@@ -402,18 +412,24 @@ class ClientInvitationJourneyController @Inject()(
     case _: AgentCancelledRequest     => routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest()
     case _: AlreadyRespondedToRequest => routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest()
     case _: CannotFindRequest         => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
-    case _: ActionNeeded              => routes.ClientInvitationJourneyController.showActionNeeded()
-    case _: MultiConsent              => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent             => routes.ClientInvitationJourneyController.showConsentChange()
-    case _: CheckAnswers              => routes.ClientInvitationJourneyController.showCheckAnswers()
-    case _: ConfirmDecline            => routes.ClientInvitationJourneyController.showConfirmDecline()
-    case _: InvitationsAccepted       => routes.ClientInvitationJourneyController.showInvitationsAccepted()
-    case _: InvitationsDeclined       => routes.ClientInvitationJourneyController.showInvitationsDeclined()
-    case AllResponsesFailed           => routes.ClientInvitationJourneyController.showAllResponsesFailed()
-    case _: SomeResponsesFailed       => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
-    case TrustNotClaimed              => routes.ClientInvitationJourneyController.showTrustNotClaimed()
-    case _: SuspendedAgent            => routes.ClientInvitationJourneyController.showSuspendedAgent()
-    case _                            => throw new Exception(s"Link not found for $state")
+    case _: AuthorisationRequestExpired =>
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired()
+    case _: AuthorisationRequestCancelled =>
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestCancelled()
+    case _: AuthorisationRequestAlreadyResponded =>
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestAlreadyResponded()
+    case _: ActionNeeded        => routes.ClientInvitationJourneyController.showActionNeeded()
+    case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
+    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
+    case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
+    case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline()
+    case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted()
+    case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined()
+    case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
+    case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
+    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
+    case _: SuspendedAgent      => routes.ClientInvitationJourneyController.showSuspendedAgent()
+    case _                      => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -462,6 +478,36 @@ class ClientInvitationJourneyController @Inject()(
     case CannotFindRequest(clientType, agentName) =>
       val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
       Ok(cannotFindRequestView(clientTypeStr, agentName))
+
+    case AuthorisationRequestExpired(expiredOn, clientType) =>
+      val serviceMessageKey = fromSession
+      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+      Ok(
+        authorisationRequestErrorTemplateView(
+          serviceMessageKey,
+          clientTypeStr,
+          expiredOn,
+          AuthRequestErrorCase.Expired))
+
+    case AuthorisationRequestCancelled(cancelledOn, clientType) =>
+      val serviceMessageKey = fromSession
+      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+      Ok(
+        authorisationRequestErrorTemplateView(
+          serviceMessageKey,
+          clientTypeStr,
+          cancelledOn,
+          AuthRequestErrorCase.Cancelled))
+
+    case AuthorisationRequestAlreadyResponded(respondedOn, clientType) =>
+      val serviceMessageKey = fromSession
+      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+      Ok(
+        authorisationRequestErrorTemplateView(
+          serviceMessageKey,
+          clientTypeStr,
+          respondedOn,
+          AuthRequestErrorCase.AlreadyResponded))
 
     case MultiConsent(clientType, uid, agentName, consents) =>
       val clientTypeStr = ClientType.fromEnum(clientType)

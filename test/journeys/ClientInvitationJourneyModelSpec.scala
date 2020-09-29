@@ -157,8 +157,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NoOutstandingRequests when the invitation has a status of Accepted and " +
-          "the client does not have all supported MTD enrolments" in {
+        "transition to AuthorisationRequestAlreadyResponded when the invitation has a status of Accepted and " +
+          "the client has some but not all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(Seq(
               InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))))
@@ -167,7 +167,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NoOutstandingRequests)
+            thenGo(AuthorisationRequestAlreadyResponded(dateString(now), personal))
         }
 
         "transition to AlreadyRespondedToRequest when the invitation has a status of Accepted and " +
@@ -183,8 +183,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(AlreadyRespondedToRequest(dateString(now)))
         }
 
-        "transition to NoOutstandingRequests when the invitation has a status of Cancelled and " +
-          "the client does not have all supported MTD enrolments" in {
+        "transition to AuthorisationRequestCancelled when the invitation has a status of Cancelled and " +
+          "the client has some but not all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -199,7 +199,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NoOutstandingRequests)
+            thenGo(AuthorisationRequestCancelled(dateString(now), personal))
         }
 
         "transition to AgentCancelledRequest when the invitation has a status of Cancelled and " +
@@ -221,8 +221,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(AgentCancelledRequest(dateString(now)))
         }
 
-        "transition to NoOutstandingRequests when the invitation has a status of Expired and " +
-          "the client does not have all supported MTD enrolments" in {
+        "transition to AuthorisationRequestExpired when the invitation has a status of Expired and " +
+          "the client has some but not all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -237,7 +237,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NoOutstandingRequests)
+            thenGo(AuthorisationRequestExpired(dateString(now), personal))
         }
 
         "transition to RequestExpired when the invitation has a status of Expired and " +
@@ -254,8 +254,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             thenGo(RequestExpired(dateString(now)))
         }
 
-        "transition to NoOutstandingRequests when the status of the invitations is mixed and " +
-          "the client does not have all supported MTD enrolments" in {
+        "transition to AuthorisationRequestExpired when the status of the invitations is mixed with most recent Expired and " +
+          "the client has some but not all supported MTD enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -270,14 +270,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                   expiryDate,
                   Accepted,
                   false,
-                  List(StatusChangeEvent(DateTime.now(), Accepted)))
+                  List(StatusChangeEvent(DateTime.now().minusDays(1), Accepted)))
               ))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NoOutstandingRequests)
+            thenGo(AuthorisationRequestExpired(dateString(now), personal))
         }
 
         "transition to AlreadyRespondedToRequest when there are several authorisation requests and " +
@@ -460,7 +460,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
-        "transition to NoOutstandingRequests when the invitation status is Rejected" in {
+        "transition to AuthorisationRequestAlreadyResponded when the invitation status is Rejected" in {
           def getInvitationDetails(uid: String) =
             Future(
               Seq(
@@ -475,7 +475,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClient) should
-            thenGo(NoOutstandingRequests)
+            thenGo(AuthorisationRequestAlreadyResponded(dateString(DateTime.now()), personal))
         }
       }
     }

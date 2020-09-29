@@ -199,14 +199,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the invitation has status of Accepted or Rejected " +
+      "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Accepted or Rejected " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatus(uid, "Accepted")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestAlreadyResponded().url)
       }
 
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
@@ -229,33 +229,33 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the most recent authorisation request has status of Cancelled " +
+      "redirect to /respond/error/authorisation-request-cancelled if the most recent authorisation request has status of Cancelled " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestCancelled().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the most recent authorisation request has status of Expired " +
+      "redirect to /respond/error/authorisation-request-expired if the most recent authorisation request has status of Expired " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Expired")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired().url)
       }
 
-      "redirect to /respond/error/no-outstanding-requests if the invitation has mixed statuses, none of which are Pending" in {
-        givenAllInvitationIdsWithMixedStatus(uid)
+      "redirect to /respond/error/authorisation-request-expired if the invitation has mixed statuses, none of which are Pending" in {
+        givenAllInvitationIdsWithMixedStatus(uid, "Expired")
         journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired().url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -1174,6 +1174,54 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("request-expired.header"))
       checkIncludesText(result, "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
       checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None)
+    }
+  }
+
+  "GET /respond/error/authorisation-request-expired" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-expired")
+    "display the page as expected" in {
+      journeyState.set(AuthorisationRequestExpired("d/M/yyyy", personal), Nil)
+
+      val result = controller.showErrorAuthorisationRequestExpired(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      status(result) shouldBe 200
+
+      checkIncludesText(result, "This authorisation request has already expired")
+      checkIncludesText(result, "This request expired on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
+      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
+    }
+  }
+
+  "GET /respond/error/authorisation-request-cancelled" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-cancelled")
+    "display the page as expected" in {
+      journeyState.set(AuthorisationRequestCancelled("d/M/yyyy", personal), Nil)
+
+      val result = controller.showErrorAuthorisationRequestCancelled(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      status(result) shouldBe 200
+
+      checkIncludesText(result, "This authorisation request has been cancelled")
+      checkIncludesText(result, "This request was cancelled by your agent on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
+      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
+    }
+  }
+
+  "GET /respond/error/authorisation-request-already-responded" should {
+    def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-already-responded")
+    "display the page as expected" in {
+      journeyState.set(AuthorisationRequestAlreadyResponded("d/M/yyyy", personal), Nil)
+
+      val result = controller.showErrorAuthorisationRequestAlreadyResponded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      status(result) shouldBe 200
+
+      checkIncludesText(result, "This authorisation request has already been responded to")
+      checkIncludesText(result, "This request has already been responded to on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
+      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
     }
   }
 
