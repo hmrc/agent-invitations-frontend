@@ -970,27 +970,27 @@ already-responded.p1=Gwnaethoch ymateb i’r cais hwn ar {0}.
 already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
 
 #Cannot find request
-cannot-find-request.header=We cannot find this authorisation request
-cannot-find-request.p1=We cannot find a request from {0}.
-cannot-find-request.p2=Make sure you have signed up for the tax service you need. Ask your agent if you are not sure.
-cannot-find-request.p3=You need to sign in with the correct Government Gateway user ID. It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service the authorisation request is for. <a href={0}>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your {1}).
-cannot-find-request.business=business tax affairs
-cannot-find-request.personal=personal tax affairs
+cannot-find-request.header=Ni allwn ddod o hyd i’r cais hwn am awdurdodiad
+cannot-find-request.p1=Ni allwn ddod o hyd i gais gan {0}.
+cannot-find-request.p2=Gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch. Gofynnwch i’ch asiant os nad ydych yn siŵr.
+cannot-find-request.p3=Mae angen i chi fewngofnodi gan ddefnyddio'r Dynodydd Defnyddiwr (ID) cywir ar gyfer Porth y Llywodraeth. Mae’n bosibl cael mwy nag un, felly gwnewch yn siŵr ei fod yr un peth â'r Dynodydd Defnyddiwr a ddefnyddioch i gofrestru ar gyfer y gwasanaeth treth y mae’r cais am awdurdodiad ar ei gyfer. <a href={0}>Rhowch gynnig ar fewngofnodi gan ddefnyddio Dynodydd Defnyddiwr (ID) gwahanol ar gyfer Porth y Llywodraeth</a> (yr un a ddefnyddiwch i reoli’ch {1}).
+cannot-find-request.business=materion treth busnes
+cannot-find-request.personal=materion treth personol
 
 #Authorisation request error template
-error.authorisation-request-error-template.header=This authorisation request {0}
-error.authorisation-request-error-template.header.Expired=has already expired
-error.authorisation-request-error-template.header.Cancelled=has been cancelled
-error.authorisation-request-error-template.header.AlreadyResponded=has already been responded to
-error.authorisation-request-error-template.p1=This request {0}. For details, <a href={1}>view your history</a> to check for any expired, cancelled or outstanding requests.
-error.authorisation-request-error-template.p1.Expired=expired on {0}
-error.authorisation-request-error-template.p1.Cancelled=was cancelled by your agent on {0}
-error.authorisation-request-error-template.p1.AlreadyResponded=has already been responded to on {0}
-error.authorisation-request-error-template.p2=If your agent has sent you a recent request, make sure you have signed up to the tax service you need.
-error.authorisation-request-error-template.p3=You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for.
-error.authorisation-request-error-template.p4=<a href={0}>Sign in with the Government Gateway user ID</a> you use for managing your {1}.
-error.authorisation-request-error-template.business=business tax affairs
-error.authorisation-request-error-template.personal=personal tax affairs
+error.authorisation-request-error-template.header=Mae’r cais hwn am awdurdodiad {0}
+error.authorisation-request-error-template.header.Expired=wedi dod i ben eisoes
+error.authorisation-request-error-template.header.Cancelled=wedi ei ganslo
+error.authorisation-request-error-template.header.AlreadyResponded=wedi cael ei ateb eisoes
+error.authorisation-request-error-template.p1=Mae’r cais hwn {0}. Ar gyfer manylion, <a href={1}>ewch ati i fwrw golwg dros eich hanes</a> i weld unrhyw geisiadau sydd wedi dod i ben, unrhyw geisiadau sydd wedi’u canslo neu unrhyw geisiadau dros ben.
+error.authorisation-request-error-template.p1.Expired=wedi dod i ben ar {0}
+error.authorisation-request-error-template.p1.Cancelled=wedi’i ganslo gan eich asiant ar {0}
+error.authorisation-request-error-template.p1.AlreadyResponded=wedi cael ei ateb eisoes ar {0}
+error.authorisation-request-error-template.p2=Os yw’ch asiant wedi anfon cais atoch yn ddiweddar, gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch.
+error.authorisation-request-error-template.p3=Gallwch hefyd wirio eich bod wedi mewngofnodi â’r Dynodydd Defnyddiwr (ID) cywir ar gyfer Porth y Llywodraeth. Mae’n rhaid iddo fod yr un Dynodydd Defnyddiwr (ID) a ddefnyddiwyd gennych i gofrestru ar gyfer y gwasanaeth treth y mae’r cais am awdurdodiad ar ei gyfer.
+error.authorisation-request-error-template.p4=<a href={0}>Mewngofnodwch â’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth</a> yr ydych yn ei ddefnyddio ar gyfer rheoli’ch {1}.
+error.authorisation-request-error-template.business=materion treth busnes
+error.authorisation-request-error-template.personal=materion treth personol
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
