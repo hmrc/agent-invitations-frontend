@@ -35,6 +35,7 @@ case class StoredInvitation(
   expiryDate: LocalDate,
   invitationId: String,
   isRelationshipEnded: Boolean,
+  relationshipEndedBy: Option[String] = None,
   selfUrl: URL)
     extends ServiceAndClient
 
@@ -60,6 +61,7 @@ object StoredInvitation {
     expiryDate: LocalDate,
     invitationId: String,
     isRelationshipEnded: Boolean,
+    relationshipEndedBy: Option[String],
     selfUrl: URL): StoredInvitation =
     StoredInvitation(
       arn,
@@ -75,6 +77,7 @@ object StoredInvitation {
       expiryDate,
       invitationId,
       isRelationshipEnded,
+      relationshipEndedBy,
       selfUrl
     )
 

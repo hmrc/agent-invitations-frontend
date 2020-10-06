@@ -133,13 +133,60 @@ class TrackService @Inject()(
       }
       .getOrElse(Future.successful(None))
 
-  case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int)
+  case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 
-  def bindInvitationsAndRelationships(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int, pageInfo: PageInfo)(
+  def bindInvitationsAndRelationships(
+    arn: Arn,
+    isPirWhitelisted: Boolean,
+    showLastDays: Int,
+    pageInfo: PageInfo,
+    filterByClient: Option[String],
+    filterByStatus: Option[String])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
+    allResults(arn, isPirWhitelisted, showLastDays).map { all =>
+      val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
+
+      val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
+      val until = from + pageInfo.resultsPerPage
+      val pageItems: Seq[TrackInformationSorted] = filteredResults.slice(from, until)
+
+      TrackResultsPage(pageItems, filteredResults.size, all.flatMap(_.clientName).toSet)
+    }
+
+  def applyFilter(unfilteredResults: Seq[TrackInformationSorted])(
+    filterByClient: Option[String],
+    filterByStatus: Option[String]): Seq[TrackInformationSorted] =
+    filterByClient.fold(unfilteredResults)(client => unfilteredResults.filter(_.clientName.getOrElse("") == client))
+
+  /*
+   * match each InvalidRelationship with corresponding Accepted and remove the latter so we don't show both events in the list, taking
+   * care not to remove what could be one (and the latest) Accepted (and bearing in mind we have only config.showLastDays results).
+   * */
+  private def removeAcceptedForInvalid(allResults: Seq[TrackInformationSorted]) =
+    allResults diff allResults.collect {
+      case a: TrackInformationSorted if a.status == "InvalidRelationship" => {
+        allResults
+          .filter(
+            b =>
+              b.status == "Accepted" &&
+                b.clientId == a.clientId &&
+                b.service == a.service &&
+                isOnOrBefore(b.date, a.date))
+          .take(1)
+      }
+    }.flatten
+
+  private def isOnOrBefore(a: Option[LocalDate], b: Option[LocalDate]) =
+    try {
+      !a.get.isAfter(b.get)
+    } catch {
+      case e: Exception => false
+    }
+
+  def allResults(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[TrackResultsPage] = {
+    ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
     implicit val now = LocalDate.now(DateTimeZone.UTC)
-    val allResults = for {
+    for {
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
 
@@ -152,7 +199,8 @@ class TrackService @Inject()(
                                    _,
                                    expiryDate,
                                    invitationId,
-                                   isRelationshipEnded) if status == "Pending" || status == "Expired" =>
+                                   isRelationshipEnded,
+                                   relationshipEndedBy) if status == "Pending" || status == "Expired" =>
                                  Future successful TrackInformationSorted(
                                    clientType,
                                    service,
@@ -163,7 +211,8 @@ class TrackService @Inject()(
                                    None,
                                    Some(expiryDate),
                                    Some(invitationId),
-                                   isRelationshipEnded)
+                                   isRelationshipEnded,
+                                   relationshipEndedBy)
 
                                case TrackedInvitation(
                                    clientType,
@@ -174,7 +223,8 @@ class TrackService @Inject()(
                                    lastUpdated,
                                    _,
                                    invitationId,
-                                   isRelationshipEnded) =>
+                                   isRelationshipEnded,
+                                   relationshipEndedBy) =>
                                  Future successful TrackInformationSorted(
                                    clientType,
                                    service,
@@ -185,7 +235,8 @@ class TrackService @Inject()(
                                    Some(LocalDate.parse(lastUpdated.toLocalDate.toString)),
                                    None,
                                    Some(invitationId),
-                                   isRelationshipEnded
+                                   isRelationshipEnded,
+                                   relationshipEndedBy
                                  )
                                case _ =>
                                  Future successful TrackInformationSorted(
@@ -198,7 +249,8 @@ class TrackService @Inject()(
                                    None,
                                    None,
                                    None,
-                                   false)
+                                   false,
+                                   None)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
@@ -213,7 +265,8 @@ class TrackService @Inject()(
                                      dateTo,
                                      None,
                                      None,
-                                     true)
+                                     true,
+                                     None)
                                  case _ =>
                                    Future successful TrackInformationSorted(
                                      None,
@@ -225,27 +278,17 @@ class TrackService @Inject()(
                                      None,
                                      None,
                                      None,
-                                     true)
+                                     true,
+                                     None)
                                }
+      refinedResults = removeAcceptedForInvalid(trackInfoInvitations ++ trackInfoRelationships)
+      finalResult <- Future.traverse(refinedResults) { trackInfo =>
+                      for {
+                        name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
+                      } yield trackInfo.copy(clientName = name)
+                    }
     } yield
-      (trackInfoInvitations ++ trackInfoRelationships)
+      finalResult
         .sorted(TrackInformationSorted.orderingByDate)
-
-    allResults.flatMap { all =>
-      // get one page of the results and fetch client names for each item
-
-      val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
-      val until = from + pageInfo.resultsPerPage
-      val pageItems: Seq[TrackInformationSorted] = all.slice(from, until)
-
-      Future
-        .traverse(pageItems) { trackInfo =>
-          for {
-            name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
-          } yield trackInfo.copy(clientName = name)
-        }
-        .map(TrackResultsPage(_, all.size))
-    }
-
   }
 }

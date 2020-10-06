@@ -29,7 +29,8 @@
     mainTemplate: main_template,
     pendingForm: pending_form,
     cancelAuthForm: cancel_authorisation_form,
-    newRequestForm: new_request_form
+    newRequestForm: new_request_form,
+        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
 )
 
 @(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
@@ -38,14 +39,47 @@
 
     @back_link(externalUrls.agentServicesAccountUrl)
 
-    <div class="text">
-        <h1 class="heading-xlarge margin-bottom-40">@Messages(s"recent-invitations.header")</h1>
-    </div>
+
+    <p> client set : @config.clientSet</p>
+    <p>client search: @config.filterByClient</p>
+    <p>status search: @config.filterByStatus</p>
+    <p>additional query params: @config.additionalQueryParams</p>
+
+    @if(config.showFilterForm){
+
+        @uiFormHelper(action = config.filterFormSubmitUrl, 'class -> "form js-form") {
+            <fieldset class="">
+                <legend>
+                    <h1 class="heading-xlarge">@Messages(s"recent-invitations.header")</h1>
+                </legend>
+                <p class="margin-bottom-40">
+                @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
+                </p>
+                <div class="form-group">
+                    <label for="client">Search by client</label>
+                    <input class="form-control full-width" type="text" id="client" name="client" @config.filterByClient.map{ v => value="@v"}>
+                </div>
+                <div class="form-group">
+                    <label for="status">Filter by status</label>
+                    <input class="form-control" type="text" id="status" name="status">
+                </div>
+            </fieldset>
+            <div class="margin-bottom-40">
+            <button class="button margin-right-5" type="submit" id="filter-button" name="filter" value="filter">Filter</button>
+                <button class="button--secondary" id="clear-button" name="filter" value="clear">Clear all filters</button>
+            </div>
+        }
+    } else {
+
+        <div class="text">
+            <h1 class="heading-xlarge margin-bottom-40">@Messages(s"recent-invitations.header")</h1>
+        </div>
 
 
-    <p class="margin-bottom-40">
-    @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
-    </p>
+        <p class="margin-bottom-40">
+        @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
+        </p>
+    }
 
     @if(config.hasInvitationsOrRelationships) {
         <div class="table text-small">
@@ -147,18 +181,18 @@
     </style>
     <ul class="pager-items all-sub" style="float: right; display: flex">
         @if(config.pageInfo.page > 1) {
-          <li class="prev"><a class="home" href="?page=@(config.pageInfo.page - 1)"><span class="visually-hidden">page</span>Prev </a></li>
+          <li class="prev"><a class="home" href="?page=@(config.pageInfo.page - 1)@config.additionalQueryParams"><span class="visually-hidden">page</span>Prev </a></li>
         }
         @for(pageNum <- (1 to config.numberOfPages)) {
             @if(pageNum == config.pageInfo.page) {
                 <li class="selected-pagination-item">@pageNum</li>
             } else {
-                <li><a class="home" href="?page=@pageNum"><span class="visually-hidden">Page</span>@pageNum</a></li>
+                <li><a class="home" href="?page=@pageNum@config.additionalQueryParams"><span class="visually-hidden">Page</span>@pageNum</a></li>
             }
         }
 
         @if(config.hasNextPage) {
-          <li class="next"><a class="home" href="?page=@(config.pageInfo.page + 1)"><span class="visually-hidden">page</span>Next </a></li>
+          <li class="next"><a class="home" href="?page=@(config.pageInfo.page + 1)@config.additionalQueryParams"><span class="visually-hidden">page</span>Next </a></li>
         }
     </ul>
 }
