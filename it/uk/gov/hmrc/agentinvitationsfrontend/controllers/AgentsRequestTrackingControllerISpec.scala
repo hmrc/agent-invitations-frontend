@@ -489,7 +489,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for ITSA" in {
       givenCancelledAuthorisationItsa(arn, validNino, 204)
-      givenSetRelationshipEndedReturns(arn, invitationIdITSA, 204)
+      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -504,7 +504,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for IRV" in {
       givenTerminateAfiRelationshipSucceeds(arn, "PERSONAL-INCOME-RECORD", validNino.value)
-      givenSetRelationshipEndedReturns(arn, invitationIdPIR, 204)
+      givenSetRelationshipEndedReturns(invitationIdPIR, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -519,7 +519,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for VAT" in {
       givenCancelledAuthorisationVat(arn, validVrn, 204)
-      givenSetRelationshipEndedReturns(arn, invitationIdVAT, 204)
+      givenSetRelationshipEndedReturns(invitationIdVAT, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -534,7 +534,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, but service is session is not supported throw error" in {
       givenCancelledAuthorisationVat(arn, validVrn, 204)
-      givenSetRelationshipEndedReturns(arn, invitationIdVAT, 204)
+      givenSetRelationshipEndedReturns(invitationIdVAT, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -550,7 +550,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "mark the relationship as ended in ACA and go to showAuthorisationCancelledPage even if relationship service returns 404" in {
       givenCancelledAuthorisationItsa(arn, validNino, 404)
-      givenSetRelationshipEndedReturns(arn, invitationIdITSA, 204)
+      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -564,7 +564,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "go to problem page when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {
       givenCancelledAuthorisationItsa(arn, validNino, 403)
-      givenSetRelationshipEndedReturns(arn, invitationIdITSA, 204)
+      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request

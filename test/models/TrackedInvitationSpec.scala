@@ -88,6 +88,7 @@ class TrackedInvitationSpec extends UnitSpec {
     now.plusDays(10),
     "",
     false,
+    None,
     new URL(s"http://localhost:9432/agent-client-authorisation/agencies/TARN0000001/invitations/sent/foo1")
   )
 }

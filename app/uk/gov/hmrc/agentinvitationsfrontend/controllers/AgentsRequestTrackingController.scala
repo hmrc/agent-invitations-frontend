@@ -275,7 +275,7 @@ class AgentsRequestTrackingController @Inject()(
             if (data.value.getOrElse(true)) {
               for {
                 acrResponse <- deleteRelationshipForService(service, agent.arn, clientId)
-                acaResponse <- acaConnector.setRelationshipEnded(agent.arn, invitationId)
+                acaResponse <- acaConnector.setRelationshipEnded(invitationId)
               } yield {
                 if (acrResponse.isDefined && acaResponse.contains(true))
                   Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())

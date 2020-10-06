@@ -361,6 +361,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         now.minusDays(1),
         "foo",
         false,
+        None,
         new URL("http://foo/")
       )
 
