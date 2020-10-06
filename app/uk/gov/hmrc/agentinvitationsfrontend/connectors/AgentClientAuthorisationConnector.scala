@@ -114,10 +114,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def cancelInvitationUrl(arn: Arn, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel")
 
-  private[connectors] def setRelationshipEndedUrl(arn: Arn, invitationId: InvitationId) =
+  private[connectors] def setRelationshipEndedUrl(invitationId: InvitationId, endedBySource: String = "Agent") =
     new URL(
-      baseUrl,
-      s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/relationship-ended")
+      s"$baseUrl/agent-client-authorisation/invitations/${invitationId.value}/relationship-ended?endedBy=$endedBySource")
 
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
     new URL(
@@ -391,11 +390,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def setRelationshipEnded(arn: Arn, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def setRelationshipEnded(
+    invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Set-Relationship-Ended-PUT") {
-      http.PUT[String, HttpResponse](setRelationshipEndedUrl(arn, invitationId).toString, "").map { r =>
+      http.PUT[String, HttpResponse](setRelationshipEndedUrl(invitationId).toString, "").map { r =>
         r.status match {
           case NO_CONTENT => Some(true)
           case NOT_FOUND  => Some(false)

@@ -731,10 +731,10 @@ trait ACAStubs {
         )
     )
 
-  def givenSetRelationshipEndedReturns(arn: Arn, invitationId: InvitationId, status: Int) =
+  def givenSetRelationshipEndedReturns(invitationId: InvitationId, status: Int) =
     stubFor(
       put(
-        urlEqualTo(s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/relationship-ended"))
+        urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}/relationship-ended?endedBy=Agent"))
         .willReturn(
           aResponse()
             .withStatus(status)
