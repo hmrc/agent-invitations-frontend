@@ -16,14 +16,22 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.{PageInfo, TrackInformationSorted}
+import play.api.data.Form
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, FilterTrackRequests, PageInfo, TrackInformationSorted}
+import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 
 case class TrackPageConfig(
   invitationsAndRelationships: Seq[TrackInformationSorted], // should be just one page of results
   trackRequestsShowLastDays: Int,
   cancelAuthActionFlag: Boolean,
   pageInfo: PageInfo,
-  totalResults: Int) {
+  totalResults: Int,
+  clientSet: Set[String],
+  filterByClient: Option[String],
+  filterByStatus: Option[FilterFormStatus],
+  filterForm: Option[Form[FilterTrackRequests]]) {
 
   val firstResult: Int = (pageInfo.page - 1) * pageInfo.resultsPerPage + 1
   val lastResult: Int = firstResult + invitationsAndRelationships.size - 1
@@ -32,4 +40,13 @@ case class TrackPageConfig(
   val hasNextPage: Boolean = numberOfPages > 1 && pageInfo.page < numberOfPages
 
   val hasInvitationsOrRelationships: Boolean = invitationsAndRelationships.nonEmpty
+  val showFilterForm
+    : Boolean = filterByClient.isDefined || filterByStatus.isDefined || totalResults > pageInfo.resultsPerPage
+  val filterFormSubmitUrl = routes.AgentsRequestTrackingController.submitFilterTrackRequests()
+  val additionalQueryParams: String =
+    s"""${filterByClient.fold("")(clientName => s"&client=$clientName")}${filterByStatus.fold("")(status =>
+      s"&status=$status")}"""
+
+  val statuses: Seq[FilterFormStatus] = FilterFormStatus.statuses
+
 }

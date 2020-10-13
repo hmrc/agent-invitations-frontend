@@ -133,13 +133,104 @@ class TrackService @Inject()(
       }
       .getOrElse(Future.successful(None))
 
-  case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int)
+  case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 
-  def bindInvitationsAndRelationships(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int, pageInfo: PageInfo)(
+  def bindInvitationsAndRelationships(
+    arn: Arn,
+    isPirWhitelisted: Boolean,
+    showLastDays: Int,
+    pageInfo: PageInfo,
+    filterByClient: Option[String],
+    filterByStatus: Option[FilterFormStatus])(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[TrackResultsPage] = {
+    ec: ExecutionContext): Future[TrackResultsPage] =
+    allResults(arn, isPirWhitelisted, showLastDays).map { all =>
+      val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
+
+      val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
+      val until = from + pageInfo.resultsPerPage
+      val pageItems: Seq[TrackInformationSorted] = filteredResults.slice(from, until)
+
+      val clientNames: Set[String] = all.flatMap(_.clientName).toSet //we need all client names for filtering
+
+      TrackResultsPage(pageItems, filteredResults.size, clientNames)
+    }
+
+  def applyFilter(unfilteredResults: Seq[TrackInformationSorted])(
+    filterByClient: Option[String],
+    filterByStatus: Option[FilterFormStatus]): Seq[TrackInformationSorted] = {
+
+    val maybeClientFiltered =
+      filterByClient.fold(unfilteredResults)(client => unfilteredResults.filter(_.clientName.getOrElse("") == client))
+
+    filterByStatus.fold(maybeClientFiltered)(status => maybeClientFiltered.filter(status.filterForStatus))
+  }
+
+  def clientNames(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Set[String]] =
+    allResults(arn, isPirWhitelisted, showLastDays).map(r => r.flatMap(_.clientName).toSet)
+
+  private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
+    invitationsAndInvalids.flatMap {
+      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded => {
+        invitationsAndInvalids
+          .find(
+            b =>
+              b.status == "InvalidRelationship" &&
+                b.clientId == a.clientId &&
+                b.service == a.service &&
+                isOnOrAfter(b.date, a.date)) match {
+          case Some(invalid) => {
+            Some(a.copy(date = invalid.date))
+          }
+          case None => Some(a)
+        }
+      }
+      case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
+        invitationsAndInvalids
+          .find(
+            b =>
+              b.status == "Accepted" &&
+                b.isRelationshipEnded &&
+                b.clientId == a.clientId &&
+                b.service == a.service &&
+                isOnOrBefore(b.date, a.date)) match {
+          case Some(i) => None
+          case None    => Some(a)
+
+        }
+      case a: TrackInformationSorted => Some(a)
+    }
+
+  private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
+    unrefined.map {
+      case a: TrackInformationSorted
+          if a.status == "Accepted" && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
+        a.copy(status = s"AcceptedThenCancelledBy${a.relationshipEndedBy.get}")
+      }
+      case b: TrackInformationSorted => b
+    }
+
+  private def isOnOrAfter(a: Option[LocalDate], that: Option[LocalDate]) =
+    try {
+      !a.get.isBefore(that.get)
+    } catch {
+      case e: Exception => false
+    }
+
+  private def isOnOrBefore(a: Option[LocalDate], that: Option[LocalDate]) =
+    try {
+      !a.get.isAfter(that.get)
+    } catch {
+      case e: Exception => false
+    }
+
+  def allResults(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
     implicit val now = LocalDate.now(DateTimeZone.UTC)
-    val allResults = for {
+    for {
       invitations <- getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       trackInfoInvitations <- Future.traverse(invitations) {
 
@@ -234,25 +325,15 @@ class TrackService @Inject()(
                                      true,
                                      None)
                                }
+      matched = matchAndDiscard(trackInfoInvitations ++ trackInfoRelationships)
+      refinedResults = refineStatus(matched)
+      finalResult <- Future.traverse(refinedResults) { trackInfo =>
+                      for {
+                        name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
+                      } yield trackInfo.copy(clientName = name)
+                    }
     } yield
-      (trackInfoInvitations ++ trackInfoRelationships)
+      finalResult
         .sorted(TrackInformationSorted.orderingByDate)
-
-    allResults.flatMap { all =>
-      // get one page of the results and fetch client names for each item
-
-      val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
-      val until = from + pageInfo.resultsPerPage
-      val pageItems: Seq[TrackInformationSorted] = all.slice(from, until)
-
-      Future
-        .traverse(pageItems) { trackInfo =>
-          for {
-            name <- getClientNameByService(trackInfo.clientId, trackInfo.service)
-          } yield trackInfo.copy(clientName = name)
-        }
-        .map(TrackResultsPage(_, all.size))
-    }
-
   }
 }

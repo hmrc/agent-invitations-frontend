@@ -26,10 +26,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
+import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PageInfo}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{confirm_cancel, _}
@@ -78,30 +78,78 @@ class AgentsRequestTrackingController @Inject()(
     extends FrontendController(cc) with I18nSupport {
   import authActions._
 
-  def showTrackRequests(page: Int): Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { agent =>
-      implicit val now: LocalDate = LocalDate.now()
-      val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
-      for {
-        trackResultsPage <- trackService.bindInvitationsAndRelationships(
-                             agent.arn,
-                             agent.isWhitelisted,
-                             appConfig.trackRequestsShowLastDays,
-                             pageInfo)
-      } yield {
-        val config = TrackPageConfig(
-          trackResultsPage.results,
-          appConfig.trackRequestsShowLastDays,
-          featureFlags.enableTrackCancelAuth,
-          pageInfo,
-          trackResultsPage.totalResults)
-        if (trackResultsPage.totalResults > 0 && page > config.numberOfPages) {
-          Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
-        } else {
-          Ok(trackView(config))
+  def showTrackRequests(page: Int, client: Option[String], status: Option[FilterFormStatus]): Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { agent =>
+        implicit val now: LocalDate = LocalDate.now()
+        trackPageConfig(page, agent, client, status).map { config =>
+          if (config.totalResults > 0 && page > config.numberOfPages) {
+            Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
+          } else {
+            Ok(trackView(config))
+          }
         }
       }
+    }
 
+  private def trackPageConfig(
+    page: Int,
+    agent: AuthorisedAgent,
+    client: Option[String],
+    status: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+    val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
+    for {
+      trackResultsPage <- trackService.bindInvitationsAndRelationships(
+                           agent.arn,
+                           agent.isWhitelisted,
+                           appConfig.trackRequestsShowLastDays,
+                           pageInfo,
+                           client,
+                           status
+                         )
+    } yield {
+      TrackPageConfig(
+        trackResultsPage.results,
+        appConfig.trackRequestsShowLastDays,
+        featureFlags.enableTrackCancelAuth,
+        pageInfo,
+        trackResultsPage.totalResults,
+        trackResultsPage.clientSet,
+        client,
+        status,
+        None
+      )
+    }
+  }
+
+  def submitFilterTrackRequests: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { agent =>
+      implicit val now: LocalDate = LocalDate.now()
+      trackService
+        .clientNames(agent.arn, agent.isWhitelisted, appConfig.trackRequestsShowLastDays)
+        .flatMap { clientNames =>
+          FilterTrackRequestsForm
+            .form(clientNames)
+            .bindFromRequest
+            .fold(
+              formWithError => {
+                trackPageConfig(1, agent, None, None).map { config =>
+                  Ok(trackView(config.copy(filterForm = Some(formWithError))))
+                }
+              },
+              filterForm => {
+                val filterAndStatus: (Option[String], Option[FilterFormStatus]) = request.body.asFormUrlEncoded
+                  .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("filter", Seq.empty))
+                  .headOption match {
+                  case Some("filter") => (filterForm.client, filterForm.status)
+                  case Some("clear")  => (None, None)
+                  case e              => throw new RuntimeException(s"unexpected value found in submitFilterTrackRequests $e")
+                }
+                Future successful Redirect(
+                  routes.AgentsRequestTrackingController.showTrackRequests(1, filterAndStatus._1, filterAndStatus._2))
+              }
+            )
+        }
     }
   }
 

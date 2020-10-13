@@ -59,6 +59,14 @@
     margin-bottom: 60px !important;
 }
 
+.margin-right-5 {
+    margin-right: 5px !important;
+}
+
+.full-width {
+    width: 100% !important;
+}
+
 .bold {
     font-weight: bold !important;
 }
@@ -182,6 +190,11 @@ caption.caption-normal {
 }
 
 .form-field--error input[type="text"] {
+    border: 4px solid #d4351c;
+    height: 40px;
+}
+
+.form-field--error select {
     border: 4px solid #d4351c;
     height: 40px;
 }
@@ -391,8 +404,11 @@ input[type="text"].autocomplete__input {
     width: 100%
 }
 @media (min-width: 48.0625em) {
-    .autocomplete-wrapper {
+    .autocomplete-wrapper #countryCode {
         width: 50%
+    }
+    .autocomplete-wrapper #client {
+        width: 100%
     }
 }
 

@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.validators
 
-import play.api.data.Forms.{of, text}
+import play.api.data.Forms.{of, optional, text}
 import play.api.data.Mapping
 import play.api.data.format.Formats._
 import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 
@@ -60,6 +61,38 @@ object Validators {
     trimmedUppercaseText.verifying(
       validPostcode("enter-postcode.invalid-format", "error.postcode.required", "enter-postcode.invalid-characters")
     )
+
+  val filterStatusValidation: Mapping[Option[String]] = optional(text).verifying(validFilterStatus)
+
+  private def validFilterStatus: Constraint[Option[String]] = Constraint { fieldValue: Option[String] =>
+    if (fieldValue.isDefined) {
+      val o = fieldValue.get.trim
+      nonEmptyWithMessage("recent-invitations.error.status-empty")(o) match {
+        case Valid =>
+          try {
+            FilterFormStatus.toEnum(o)
+            Valid
+          } catch {
+            case _: Exception => Invalid(ValidationError("recent-invitations.error.status-invalid"))
+          }
+        case i: Invalid => i
+      }
+    } else Valid
+  }
+
+  def filterClientValidation(clients: Set[String]): Mapping[Option[String]] =
+    optional(text).verifying(validClient(clients))
+
+  private def validClient(clients: Set[String]): Constraint[Option[String]] = Constraint { fieldValue: Option[String] =>
+    if (fieldValue.isDefined) {
+      val o = fieldValue.get.trim
+      nonEmptyWithMessage("recent-invitations.error.client-empty")(o) match {
+        case Valid =>
+          if (clients.contains(o)) Valid else Invalid(ValidationError("recent-invitations.error.client-invalid"))
+        case i: Invalid => i
+      }
+    } else Valid
+  }
 
   def countryCode(validCountryCodes: Set[String]): Mapping[String] = text.verifying(validCountryCode(validCountryCodes))
 
