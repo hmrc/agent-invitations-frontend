@@ -35,6 +35,13 @@ $(function() {
 
     });
 
+    $('body').on('change', '#client-auto-complete', function () {
+        if (!$(this).val()) {
+            $('#client select option').removeAttr('selected')
+        }
+
+    });
+
     var selectCountryEl = document.querySelector('#country-auto-complete')
     if (selectCountryEl) {
         accessibleAutocomplete.enhanceSelectElement({
@@ -45,8 +52,24 @@ $(function() {
         })
     }
 
+    var selectClientEl = document.querySelector('#client-auto-complete')
+    if (selectClientEl) {
+        accessibleAutocomplete.enhanceSelectElement({
+            autoselect: true,
+            defaultValue: selectClientEl.options[selectClientEl.options.selectedIndex].innerHTML,
+            minLength: 2,
+            selectElement: selectClientEl
+        })
+    }
+
+
+
     function findCountry(country) {
         return country == $("#country-auto-complete").val();
+    }
+
+    function findClient(client) {
+        return client == $("#client-auto-complete").val();
     }
 
     //custom handle for not found countries
@@ -64,6 +87,25 @@ $(function() {
 
         } else if (array == "") {
             $('#country-auto-complete-select').val('').attr("selected", "selected");
+        }
+
+    });
+
+    //custom handle for not found clients
+    $('#client-auto-complete').change(function () {
+        var changedValue = $(this).val()
+        var array = [];
+
+        $('.autocomplete__menu li').each(function () {
+            array.push($(this).text())
+        })
+
+        if (array == "No results found") {
+            $('#client-auto-complete-select').append('<option id="notFound" value="NOTFOUND">No results found</option>')
+            $('#client-auto-complete-select').val('NOTFOUND').attr("selected", "selected");
+
+        } else if (array == "") {
+            $('#client-auto-complete-select').val('').attr("selected", "selected");
         }
 
     });

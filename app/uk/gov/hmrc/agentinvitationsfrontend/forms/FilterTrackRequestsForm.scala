@@ -17,16 +17,17 @@
 package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, optional, text}
-import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
+import play.api.data.Forms.mapping
+import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, FilterTrackRequests}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{filterClientValidation, filterStatusValidation}
 
 object FilterTrackRequestsForm {
 
-  def form(clientNames: Seq[String]): Form[FilterTrackRequests] = Form(
+  def form(clientNames: Set[String]): Form[FilterTrackRequests] = Form(
     mapping(
-      "client" -> optional(text),
-      "status" -> optional(text)
+      "client" -> filterClientValidation(clientNames),
+      "status" -> filterStatusValidation
+        .transform[Option[FilterFormStatus]](FilterFormStatus.optionalToEnum, FilterFormStatus.optionalFromEnum)
     )(FilterTrackRequests.apply)(FilterTrackRequests.unapply)
   )
-
 }

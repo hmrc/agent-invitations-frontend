@@ -18,12 +18,15 @@ package binders
 
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import uk.gov.hmrc.agentinvitationsfrontend.binders.{ErrorConstants, UrlBinders}
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AllStatuses
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.play.test.UnitSpec
 
 class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
 
-  private val error = Left(ErrorConstants.InvitationIdNotFound)
+  private val invitationIdError = Left(ErrorConstants.InvitationIdNotFound)
+  private val statusError = Left(ErrorConstants.StatusError)
 
   "InvitationId binder" should {
     "bind an invitation id from a valid string" in {
@@ -31,16 +34,32 @@ class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
     }
 
     "return error if the input has an invalid format" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCBBBBBKKW3") shouldBe error
-      UrlBinders.invitationIdBinder.bind("invitationId", "123") shouldBe error
+      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCBBBBBKKW3") shouldBe invitationIdError
+      UrlBinders.invitationIdBinder.bind("invitationId", "123") shouldBe invitationIdError
     }
 
     "return error if the input has an invalid CRC" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCKKXX") shouldBe error
+      UrlBinders.invitationIdBinder.bind("invitationId", "ABERULMHCKKXX") shouldBe invitationIdError
     }
 
     "return error if the input has an invalid prefix" in {
-      UrlBinders.invitationIdBinder.bind("invitationId", "XG3HFG43HW2PF") shouldBe error
+      UrlBinders.invitationIdBinder.bind("invitationId", "XG3HFG43HW2PF") shouldBe invitationIdError
+    }
+  }
+
+  "FilterFormStatus binder" should {
+    "bind a filter status from a valid string" in {
+      UrlBinders.filterFormStatusBinder.bind("status", Map("status" -> List("AllStatuses"))) shouldBe Some(
+        Right(AllStatuses))
+    }
+
+    "unbind a valid status to a String" in {
+      UrlBinders.filterFormStatusBinder
+        .unbind("status", FilterFormStatus.AcceptedByClient) shouldBe "status=AcceptedByClient"
+    }
+
+    "return an error if the input is not a valid status" in {
+      UrlBinders.filterFormStatusBinder.bind("status", Map("status" -> List("NotAStatus"))) shouldBe Some(statusError)
     }
   }
 }

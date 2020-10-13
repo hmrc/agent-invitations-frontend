@@ -29,44 +29,71 @@
     mainTemplate: main_template,
     pendingForm: pending_form,
     cancelAuthForm: cancel_authorisation_form,
+        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     newRequestForm: new_request_form,
         uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
 )
 
 @(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
+@clientFieldError = @{config.filterForm.flatMap { f => f.error("client")}}
+@statusFieldError =@{config.filterForm.flatMap { f => f.error("status")}}
+
 @mainTemplate(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
 
     @back_link(externalUrls.agentServicesAccountUrl)
 
-
-    <p> client set : @config.clientSet</p>
-    <p>client search: @config.filterByClient</p>
-    <p>status search: @config.filterByStatus</p>
-    <p>additional query params: @config.additionalQueryParams</p>
+    @config.filterForm.map{ form => @if(form.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), form, Seq.empty, Some("filter-form"))
+    }}
 
     @if(config.showFilterForm){
 
         @uiFormHelper(action = config.filterFormSubmitUrl, 'class -> "form js-form") {
-            <fieldset class="">
+            <fieldset aria-describedby="client-label status-label">
                 <legend>
                     <h1 class="heading-xlarge">@Messages(s"recent-invitations.header")</h1>
                 </legend>
                 <p class="margin-bottom-40">
                 @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
                 </p>
-                <div class="form-group">
-                    <label for="client">Search by client</label>
-                    <input class="form-control full-width" type="text" id="client" name="client" @config.filterByClient.map{ v => value="@v"}>
+                <div class="form-group @if(clientFieldError.isDefined){form-field--error soft--ends}">
+                    <label class="label" for="client" id="client-label">@Messages("recent-invitations.filter-client.label")</label>
+                    @clientFieldError.map { formError =>
+                            <span class="error-notification" data-journey="search-page:error:client-filter" id="client-error">
+                                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
+                        }
+                <div class="autocomplete-wrapper" id="client">
+                    <select id="client-auto-complete" name="client">
+                        <option value=""></option>
+                        @for(option <- config.clientSet) {
+                            <option
+                            value="@option"
+                                @config.filterByClient.map {v => @if(v == option){selected}}>@option</option>
+                        }
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label for="status">Filter by status</label>
-                    <input class="form-control" type="text" id="status" name="status">
                 </div>
+               <div class="form-group @if(statusFieldError.isDefined){ form-field--error soft--ends}">
+                   <label class="label" for="status">@Messages("recent-invitations.filter-status.label")</label>
+                   @statusFieldError.map { formError =>
+                           <span class="error-notification" data-journey="search-page:error:client-status" id="status-error">
+                               <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
+                       }
+                   <select class="form-control" id="status" name="status">
+                       @for(status <- config.statuses) {
+                                <option
+                                value="@status"
+                                @config.filterByStatus.map{ s => @if(s == status){selected}}>
+                                @Messages(s"recent-invitations.filter-status.$status")
+                                </option>
+                       }
+                   </select>
+               </div>
             </fieldset>
             <div class="margin-bottom-40">
-            <button class="button margin-right-5" type="submit" id="filter-button" name="filter" value="filter">Filter</button>
-                <button class="button--secondary" id="clear-button" name="filter" value="clear">Clear all filters</button>
+            <button class="button margin-right-5" type="submit" id="filter-button" name="filter" value="filter">@Messages("recent-invitations.filter.filter.button")</button>
+                <button class="button--secondary" id="clear-button" name="filter" value="clear">@Messages("recent-invitations.filter.clear.button")</button>
             </div>
         }
     } else {

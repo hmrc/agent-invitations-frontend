@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.binders
 
-import play.api.mvc.PathBindable
+import play.api.mvc.{PathBindable, QueryStringBindable}
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 
 object UrlBinders {
@@ -36,8 +37,33 @@ object UrlBinders {
 
     override def unbind(key: String, id: InvitationId): String = stringBinder.unbind(key, id.value)
   }
+
+  implicit val filterFormStatusBinder: QueryStringBindable[FilterFormStatus] = getFilterFormStatusBinder
+
+  def getFilterFormStatusBinder(implicit queryStringBinder: QueryStringBindable[String]) =
+    new QueryStringBindable[FilterFormStatus] {
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, FilterFormStatus]] =
+        for {
+          status <- queryStringBinder.bind(key, params)
+        } yield
+          status match {
+            case Right(s) =>
+              try {
+                Right(FilterFormStatus.toEnum(s))
+              } catch {
+                case e: Exception => Left(ErrorConstants.StatusError)
+              }
+            case _ => Left(ErrorConstants.StatusError)
+          }
+
+      override def unbind(key: String, ffs: FilterFormStatus): String =
+        queryStringBinder.unbind(key, FilterFormStatus.fromEnum(ffs))
+    }
 }
 
 object ErrorConstants {
   val InvitationIdNotFound = "INVITATION_ID_NOTFOUND"
+  val StatusError = "FORM_FILTER_STATUS_INVALID"
+
 }

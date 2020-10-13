@@ -23,7 +23,10 @@ import org.jsoup.Jsoup
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.ClientNotYetResponded
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -38,11 +41,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
-    val showTrackRequestsPageOne = controller.showTrackRequests(1)
-    val showTrackRequestsPageTwo = controller.showTrackRequests(2)
-    val showTrackRequestsPageThree = controller.showTrackRequests(3)
+    val showTrackRequestsPageOne = controller.showTrackRequests(1, None, None)
+    val showTrackRequestsPageTwo = controller.showTrackRequests(2, None, None)
+    val showTrackRequestsPageThree = controller.showTrackRequests(3, None, None)
 
-    "render a page listing non-empty invitations with client's names resolved" in {
+    "render a page with filter form listing non-empty invitations with client's names resolved" in {
       givenGetInvitations(arn) // 18 invitations
       givenInactiveRelationships(arn)
       givenInactiveAfiRelationship(arn)  // 2 relationships
@@ -80,6 +83,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyMsgs(
         resultPageOne,
         "recent-invitations.header",
+        "recent-invitations.filter-client.label",
+        "recent-invitations.filter-status.label",
+        "recent-invitations.filter.filter.button",
+        "recent-invitations.filter.clear.button",
         "recent-invitations.table-row-header.clientName",
         "recent-invitations.table-row-header.service",
         "recent-invitations.table-row-header.status",
@@ -136,6 +143,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
       givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
       givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -185,7 +193,167 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.empty.continue")
     }
 
+    "accept valid request with filter by client query param" in {
+
+      val request = FakeRequest("GET", "/track?page=1&client=FooBar+Ltd.")
+      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("FooBar Ltd."), None)
+
+        givenGetInvitations(arn) // 18 invitations
+        givenInactiveRelationships(arn)
+        givenInactiveAfiRelationship(arn) // 2 relationships
+        givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+        givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
+        givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+        givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+        givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+        givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+        givenClientDetails(Vrn("101747696"))
+        givenClientDetails(Vrn("101747641"))
+
+        givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
+        givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+        val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
+        status(resultPageOne) shouldBe 200
+
+      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
+
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-2").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-4").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-5").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-6").toString should include("FooBar Ltd.")
+    }
+
+    "accept valid request with filter by client and status query params" in {
+
+      val request = FakeRequest("GET", "/track?page=1&client=FooBar+Ltd.&status=ClientNotYetResponded")
+      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("FooBar Ltd."), Some(ClientNotYetResponded))
+
+      givenGetInvitations(arn) // 18 invitations
+      givenInactiveRelationships(arn)
+      givenInactiveAfiRelationship(arn) // 2 relationships
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+      givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
+
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
+      status(resultPageOne) shouldBe 200
+
+      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
+
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("FooBar Ltd.")
+
+    }
+
     behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
+  }
+
+  "POST /track" should {
+
+    "accept form with valid inputs" in {
+
+      val request = FakeRequest("POST", "/track")
+      val postTrack = controller.submitFilterTrackRequests
+
+      givenGetInvitations(arn) // 18 invitations
+      givenInactiveRelationships(arn)
+      givenInactiveAfiRelationship(arn) // 2 relationships
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+      givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
+
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      val formData = FilterTrackRequestsForm.form(Set("")).fill(FilterTrackRequests(Some("FooBar Ltd."),Some(ClientNotYetResponded)))
+      val formDataWithButton = (formData.data + ("filter" -> "filter")).toSeq
+      val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showTrackRequests(1, Some("FooBar Ltd."), Some(ClientNotYetResponded)).url)
+
+    }
+
+    "have a clear button to clear the filter" in {
+
+      val request = FakeRequest("POST", "/track")
+      val postTrack = controller.submitFilterTrackRequests
+
+      givenGetInvitations(arn) // 18 invitations
+      givenInactiveRelationships(arn)
+      givenInactiveAfiRelationship(arn) // 2 relationships
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+      givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
+
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      val formData = FilterTrackRequestsForm.form(Set("")).bind(Map("filter" -> "clear"))
+      val formDataWithButton = formData.data.toSeq
+      val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showTrackRequests(1, None, None).url)
+
+    }
+
+    "show form with error when client name submitted is not a recognised clientName or the status is not valid" in {
+
+      val request = FakeRequest("POST", "/track")
+      val postTrack = controller.submitFilterTrackRequests
+
+      givenGetInvitations(arn) // 18 invitations
+      givenInactiveRelationships(arn)
+      givenInactiveAfiRelationship(arn) // 2 relationships
+      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
+      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
+      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
+      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
+      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
+      givenClientDetails(Vrn("101747696"))
+      givenClientDetails(Vrn("101747641"))
+
+      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
+      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
+
+      val formData = FilterTrackRequestsForm.form(Set("")).bind(Map("client" -> "Not a name we know", "status" -> "Bad status" ))
+      val formDataWithButton = (formData.data + ("filter" -> "filter")).toSeq
+      val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result,
+      "There is a problem",
+        "You must select a name from the list",
+        "You must select a status from the list"
+      )
+    }
   }
 
   "POST /resend-link" should {

@@ -19,36 +19,97 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import org.joda.time.LocalDate
 
 trait FilterFormStatus {
-  val filterFunction: TrackInformationSorted => Boolean
+  val filterForStatus: TrackInformationSorted => Boolean
 }
 
 object FilterFormStatus {
 
   case object AllStatuses extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => true
+    override val filterForStatus = (_: TrackInformationSorted) => true
   }
   case object ExpireInNext5Days extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) =>
+    override val filterForStatus = (i: TrackInformationSorted) =>
       i.status == "Pending" && i.expiryDate.fold(false)(_.minusDays(5).isBefore(LocalDate.now()))
   }
   case object ActivityWithinLast5Days extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) =>
+    override val filterForStatus = (i: TrackInformationSorted) =>
       i.date.fold(false)(_.plusDays(5).isAfter(LocalDate.now()))
   }
   case object ClientNotYetResponded extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => i.status == "Pending"
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Pending"
   }
   case object AgentCancelledAuthorisation extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => i.status == "Cancelled"
+    override val filterForStatus = (i: TrackInformationSorted) =>
+      // need to temporarily (until 1/11?) include not client nor hmrc as only recently cancelled auth requests include the endedBy field
+      (i.status ==
+        "AcceptedThenCancelledByAgent") ||
+        (i.status == "Accepted" && i.isRelationshipEnded && !(i.relationshipEndedBy
+          .getOrElse("") == "Client" || i.relationshipEndedBy.getOrElse("") == "HMRC"))
   }
   case object DeclinedByClient extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => i.status == "Rejected"
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Rejected"
   }
   case object AcceptedByClient extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => i.status == "Accepted"
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Accepted" && !i.isRelationshipEnded
   }
   case object Expired extends FilterFormStatus {
-    override val filterFunction = (i: TrackInformationSorted) => i.status == "Expired"
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Expired"
   }
+  case object ClientCancelledAuthorisation extends FilterFormStatus {
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByClient"
+  }
+  case object HMRCCancelledAuthorisation extends FilterFormStatus {
+    override val filterForStatus = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByHMRC"
+  }
+
+  def optionalToEnum: Option[String] => Option[FilterFormStatus] = {
+    case Some(str) => Some(toEnum(str))
+    case _         => None
+  }
+
+  def optionalFromEnum: Option[FilterFormStatus] => Option[String] = {
+    case Some(status) => Some(fromEnum(status))
+    case _            => None
+  }
+
+  def toEnum: String => FilterFormStatus = {
+    case "AllStatuses"                  => AllStatuses
+    case "ExpireInNext5Days"            => ExpireInNext5Days
+    case "ActivityWithinLast5Days"      => ActivityWithinLast5Days
+    case "ClientNotYetResponded"        => ClientNotYetResponded
+    case "AgentCancelledAuthorisation"  => AgentCancelledAuthorisation
+    case "DeclinedByClient"             => DeclinedByClient
+    case "AcceptedByClient"             => AcceptedByClient
+    case "Expired"                      => Expired
+    case "ClientCancelledAuthorisation" => ClientCancelledAuthorisation
+    case "HMRCCancelledAuthorisation"   => HMRCCancelledAuthorisation
+    case e                              => throw new Exception(s"unexpected input $e")
+  }
+
+  def fromEnum: FilterFormStatus => String = {
+    case AllStatuses                  => "AllStatuses"
+    case ExpireInNext5Days            => "ExpireInNext5Days"
+    case ActivityWithinLast5Days      => "ActivityWithinLast5Days"
+    case ClientNotYetResponded        => "ClientNotYetResponded"
+    case AgentCancelledAuthorisation  => "AgentCancelledAuthorisation"
+    case DeclinedByClient             => "DeclinedByClient"
+    case AcceptedByClient             => "AcceptedByClient"
+    case Expired                      => "Expired"
+    case ClientCancelledAuthorisation => "ClientCancelledAuthorisation"
+    case HMRCCancelledAuthorisation   => "HMRCCancelledAuthorisation"
+  }
+
+  val statuses: Seq[FilterFormStatus] = List(
+    AllStatuses,
+    ExpireInNext5Days,
+    ActivityWithinLast5Days,
+    ClientNotYetResponded,
+    AgentCancelledAuthorisation,
+    DeclinedByClient,
+    AcceptedByClient,
+    Expired,
+    ClientCancelledAuthorisation,
+    HMRCCancelledAuthorisation
+  )
 
 }

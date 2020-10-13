@@ -194,6 +194,11 @@ caption.caption-normal {
     height: 40px;
 }
 
+.form-field--error select {
+    border: 4px solid #d4351c;
+    height: 40px;
+}
+
 .flash.error-summary a, .flash.error-summary .link-style, .flash.error-summary .button--link-style {
     color: #d4351c;
 }
@@ -399,8 +404,11 @@ input[type="text"].autocomplete__input {
     width: 100%
 }
 @media (min-width: 48.0625em) {
-    .autocomplete-wrapper {
+    .autocomplete-wrapper #countryCode {
         width: 50%
+    }
+    .autocomplete-wrapper #client {
+        width: 100%
     }
 }
 

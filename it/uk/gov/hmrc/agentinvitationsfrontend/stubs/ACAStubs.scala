@@ -915,31 +915,31 @@ trait ACAStubs {
           aResponse()
             .withStatus(200)
             .withBody(halEnvelope(Seq(
-              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2017-12-18"),
-              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18"),
-              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2017-12-18"),
-              invitation(arn, "Accepted", "HMRC-MTD-IT", "ni", "AB123456A", "foo4", "2017-12-18"),
-              invitation(arn, "Accepted", "HMRC-MTD-VAT", "vrn", "101747696", "foo5", "2017-12-18"),
-              invitation(arn, "Accepted", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo6", "2017-12-18"),
-              invitation(arn, "Rejected", "HMRC-MTD-IT", "ni", "AB123456A", "foo7", "2017-12-18"),
-              invitation(arn, "Rejected", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18"),
-              invitation(arn, "Rejected", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo8", "2017-12-18"),
-              invitation(arn, "Cancelled", "HMRC-MTD-IT", "ni", "AB123456A", "foo9", "2017-12-18"),
-              invitation(arn, "Cancelled", "HMRC-MTD-VAT", "vrn", "101747696", "fo10", "2017-12-18"),
-              invitation(arn, "Cancelled", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo11", "2017-12-18"),
-              invitation(arn, "Expired", "HMRC-MTD-IT", "ni", "AB123456A", "fo12", "2017-12-18"),
-              invitation(arn, "Expired", "HMRC-MTD-VAT", "vrn", "101747696", "fo13", "2017-12-18"),
-              invitation(arn, "Expired", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo14", "2017-12-18"),
-              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2099-01-01"),
-              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2099-01-01"),
-              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01")
+              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2017-12-18", false, None),
+              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18", false, None),
+              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2017-12-18", false, None),
+              invitation(arn, "Accepted", "HMRC-MTD-IT", "ni", "AB123456A", "foo4", "2017-12-18", false, None),
+              invitation(arn, "Accepted", "HMRC-MTD-VAT", "vrn", "101747696", "foo5", "2017-12-18", false, None),
+              invitation(arn, "Accepted", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo6", "2017-12-18", false, None),
+              invitation(arn, "Rejected", "HMRC-MTD-IT", "ni", "AB123456A", "foo7", "2017-12-18", false, None),
+              invitation(arn, "Rejected", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18", false, None),
+              invitation(arn, "Rejected", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo8", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", "HMRC-MTD-IT", "ni", "AB123456A", "foo9", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", "HMRC-MTD-VAT", "vrn", "101747696", "fo10", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo11", "2017-12-18", false, None),
+              invitation(arn, "Expired", "HMRC-MTD-IT", "ni", "AB123456A", "fo12", "2017-12-18", false, None),
+              invitation(arn, "Expired", "HMRC-MTD-VAT", "vrn", "101747696", "fo13", "2017-12-18", false, None),
+              invitation(arn, "Expired", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo14", "2017-12-18", false, None),
+              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2099-01-01", false, None),
+              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2099-01-01", false, None),
+              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01", false, None)
             ).mkString("[", ",", "]")))))
 
   def givenGetAllPendingInvitationsReturnsSome(arn: Arn, clientId: String, service: String) = {
     val body = halEnvelope(Seq(service match {
-      case  "HMRC-MTD-IT" => invitation(arn, "Pending", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18")
-      case  "HMRC-MTD-VAT" => invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", clientId, "foo2", "2017-12-18")
-      case  "PERSONAL-INCOME-RECORD" => invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", clientId, "foo3", "2017-12-18")
+      case  "HMRC-MTD-IT" => invitation(arn, "Pending", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)
+      case  "HMRC-MTD-VAT" => invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", clientId, "foo2", "2017-12-18", false, None)
+      case  "PERSONAL-INCOME-RECORD" => invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", clientId, "foo3", "2017-12-18", false, None)
     }).mkString("[", ",", "]"))
 
     stubFor(get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
@@ -977,7 +977,9 @@ trait ACAStubs {
     clientIdType: String,
     clientId: String,
     invitationId: String,
-    expiryDate: String) => s"""
+    expiryDate: String,
+                   isRelationshipEnded: Boolean,
+                   relationshipEndedBy: Option[String]) => s"""
                               |{
                               |  "arn" : "${arn.value}",
                               |  "clientType" : "personal",
@@ -991,7 +993,8 @@ trait ACAStubs {
                               |  "lastUpdated" : "2018-09-11T21:02:00.000Z",
                               |  "expiryDate" : "$expiryDate",
                               |  "invitationId": "$invitationId",
-                              |  "isRelationshipEnded": false,
+                              |  "isRelationshipEnded": $isRelationshipEnded,
+                              |  ${relationshipEndedBy.map(v => s""" "relationshipEndedBy" : "$v", """).getOrElse("")}
                               |  "_links": {
                               |    	"self" : {
                               |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/${arn.value}/invitations/sent/$invitationId"

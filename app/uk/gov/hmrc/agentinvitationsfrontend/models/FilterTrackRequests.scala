@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-case class FilterTrackRequests(client: Option[String], status: Option[String])
+case class FilterTrackRequests(client: Option[String], status: Option[FilterFormStatus])

@@ -151,7 +151,7 @@ GET         /agents/cancel-authorisation/not-authorised                 uk.gov.h
 GET         /agents/cancel-authorisation/response-failed                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showResponseFailed
 
 # Request tracking
-GET         /track                                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests(page: Int ?= 1, client: Option[String] ?= None, status: Option[String] ?= None)
+GET         /track                                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showTrackRequests(page: Int ?= 1, client: Option[String] ?= None, status: Option[uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus] ?= None)
 POST        /track                                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitFilterTrackRequests
 POST        /resend-link                                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToResendLink
 POST        /confirm-cancel                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.submitToConfirmCancel
