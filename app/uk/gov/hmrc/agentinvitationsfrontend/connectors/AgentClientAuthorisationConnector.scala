@@ -466,7 +466,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     monitor(s"ConsumedAPI-Get-Trust-KnownFacts-GET") {
       http.GET[HttpResponse](url).map { response =>
         response.status match {
-          case OK => response.json.as[TrustResponse]
+          case OK    => response.json.as[TrustResponse]
+          case other => throw new RuntimeException(s"unexpected $other error when calling 'getTrustName'")
         }
       }
     }

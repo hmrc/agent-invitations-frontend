@@ -86,6 +86,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
           r.status match {
             case OK        => r.json.as[Seq[InactiveTrackRelationship]]
             case NOT_FOUND => Seq.empty
+            case other     => throw new RuntimeException(s"unexpected $other error when calling 'getInactiveRelationships'")
           }
         }
     }
