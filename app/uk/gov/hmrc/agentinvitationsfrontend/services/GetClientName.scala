@@ -38,7 +38,11 @@ trait GetClientName extends Logging {
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[String]] =
     service match {
-      case Services.HMRCMTDIT  => getItsaTradingName(Nino(clientId))
+      case Services.HMRCMTDIT =>
+        if (clientId.isEmpty) {
+          logger.warn(s"no client Id as Nino available so not calling getTradingName")
+          Future successful None
+        } else getItsaTradingName(Nino(clientId))
       case Services.HMRCPIR    => getCitizenName(Nino(clientId))
       case Services.HMRCMTDVAT => getVatName(Vrn(clientId))
       case Services.TRUST      => getTrustName(Utr(clientId))
