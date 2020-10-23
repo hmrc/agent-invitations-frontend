@@ -31,7 +31,7 @@
     <h1 class="heading-xlarge">@Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase"))</h1>
 
     <p>@Html(Messages(s"error.authorisation-request-error-template.p1", Messages(s"error.authorisation-request-error-template.p1.$errorCase", eventDate), s"${externalUrls.agentClientManagementUrl}#history"))</p>
-    <p>@Messages("error.authorisation-request-error-template.p2") <a href="@externalUrls.guidanceAuthoriseAgent">@Messages("error.authorisation-request-error-template.p4")</a></p>
+    <p>@Messages("error.authorisation-request-error-template.p2") <a href="@externalUrls.guidanceAuthoriseAgent">@Messages("error.authorisation-request-error-template.p25")</a></p>
     <p>@Messages("error.authorisation-request-error-template.p3")</p>
     <p>@Html(Messages("error.authorisation-request-error-template.p4", routes.ClientInvitationJourneyController.signOutAndRedirect(), Messages(s"error.authorisation-request-error-template.$clientType")))</p>
 

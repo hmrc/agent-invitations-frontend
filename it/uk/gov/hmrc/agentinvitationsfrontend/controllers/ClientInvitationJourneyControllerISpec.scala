@@ -1189,7 +1189,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkIncludesText(result, "This request expired on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p4"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p25"))
       checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
     }
   }
