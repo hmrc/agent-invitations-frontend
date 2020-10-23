@@ -1189,6 +1189,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkIncludesText(result, "This request expired on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p5"))
       checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
     }
   }
@@ -1277,6 +1278,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkIncludesText(result,"You need to sign in with the correct Government Gateway user ID. " +
         "It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service " +
         "the authorisation request is for. <a href=/invitations/sign-out-redirect>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your personal tax affairs).")
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.p4"))
     }
   }
 

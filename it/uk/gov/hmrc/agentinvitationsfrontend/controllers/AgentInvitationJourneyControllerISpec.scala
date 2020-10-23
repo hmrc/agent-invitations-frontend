@@ -1566,7 +1566,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
           htmlEscapedMessage("title.suffix.agents"),
-          htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
+          htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
+          htmlEscapedMessage("invitation-sent.l9")
         )
       )
 
@@ -1596,7 +1597,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
           htmlEscapedMessage("title.suffix.agents"),
-          htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com")
+          htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
+          htmlEscapedMessage("invitation-sent.l9")
         )
       )
 
