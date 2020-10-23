@@ -32,7 +32,7 @@
     <h1 class="heading-xlarge">@Messages("cannot-find-request.header")</h1>
 
     <p>@Messages("cannot-find-request.p1", agencyName)</p>
-    <p>@Messages("cannot-find-request.p2")</p>
+    <p><a href="@externalUrls.guidanceAuthoriseAgent">@Messages("cannot-find-request.p2")</a> @Messages("cannot-find-request.p4")</p>
     <p>@Html(Messages("cannot-find-request.p3", routes.ClientInvitationJourneyController.signOutAndRedirect(), Messages(s"cannot-find-request.${clientType}")))</p>
 
 

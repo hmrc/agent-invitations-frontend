@@ -220,6 +220,8 @@ invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Gov
 invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
 invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs.
 invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
+invitation-sent.l45=They can read
+invitation-sent.l46=guidance on how to accept an authorisation request from an agent.
 invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
 invitation-sent.p1.start=You can
 invitation-sent.p1.link=track your recent authorisation requests
@@ -997,7 +999,8 @@ already-responded.p2=If you think this is wrong, contact the agent who sent you 
 #Cannot find request
 cannot-find-request.header=We cannot find this authorisation request
 cannot-find-request.p1=We cannot find a request from {0}.
-cannot-find-request.p2=Make sure you have signed up for the tax service you need. Ask your agent if you are not sure.
+cannot-find-request.p2=Make sure you have signed up for the tax service you need.
+cannot-find-request.p4=Ask your agent if you are not sure.
 cannot-find-request.p3=You need to sign in with the correct Government Gateway user ID. It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service the authorisation request is for. <a href={0}>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your {1}).
 cannot-find-request.business=business tax affairs
 cannot-find-request.personal=personal tax affairs
@@ -1011,7 +1014,8 @@ error.authorisation-request-error-template.p1=This request {0}. For details, <a 
 error.authorisation-request-error-template.p1.Expired=expired on {0}
 error.authorisation-request-error-template.p1.Cancelled=was cancelled by your agent on {0}
 error.authorisation-request-error-template.p1.AlreadyResponded=has already been responded to on {0}
-error.authorisation-request-error-template.p2=If your agent has sent you a recent request, make sure you have signed up to the tax service you need.
+error.authorisation-request-error-template.p2=If your agent has sent you a recent request,
+error.authorisation-request-error-template.p4=make sure you have signed up to the tax service you need.
 error.authorisation-request-error-template.p3=You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for.
 error.authorisation-request-error-template.p4=<a href={0}>Sign in with the Government Gateway user ID</a> you use for managing your {1}.
 error.authorisation-request-error-template.business=business tax affairs

@@ -54,7 +54,10 @@
         </li>
         <li>@Messages("invitation-sent.l2")</li>
         <li>@Html(Messages("invitation-sent.l3", displayDateForLang(config.expiryDate)))</li>
-        <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.serviceType}")</li>
+        <li>
+            @Messages(s"invitation-sent.l4.${config.clientType}.${config.serviceType}")
+            @Messages("invitation-sent.l45") <a href="@externalUrls.guidanceAuthoriseAgent">@Messages("invitation-sent.l46")</a>
+        </li>
     </ol>
 
   <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDateForLang(config.expiryDate))</p>
