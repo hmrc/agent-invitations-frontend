@@ -843,6 +843,7 @@ recent-invitations.description=Gwirio statws eich ceisiadau am awdurdodiad i gle
 recent-invitations.empty=Nid oes gennych unrhyw geisiadau diweddar am awdurdodiad.
 recent-invitations.empty.continue=Dechrau cais am awdurdodiad newydd
 recent-invitations.table-row-header.clientName=Manylion y cleient
+recent-invitations.table-row-header.clientNameUnknown=Methu adfer enw cleient
 recent-invitations.table-row-header.service=Cais am awdurdodiad wedi’i anfon
 recent-invitations.table-row-header.status=Statws
 recent-invitations.table-row-header.actions=Camau gweithredu

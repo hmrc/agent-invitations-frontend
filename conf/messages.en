@@ -843,6 +843,7 @@ recent-invitations.description=Check the status of your authorisation requests t
 recent-invitations.empty=You do not have any recent authorisation requests.
 recent-invitations.empty.continue=Start a new authorisation request
 recent-invitations.table-row-header.clientName=Client’s details
+recent-invitations.table-row-header.clientNameUnknown=Unable to retrieve client name
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
 recent-invitations.table-row-header.actions=Actions
