@@ -126,7 +126,7 @@
                 <div class="table-cell taxpayerName">
                     <h2 class="sr-only">Row @index</h2>
                     <h3 class="context">@Messages("recent-invitations.table-row-header.clientName")</h3>
-                    <span>@invitationOrRelationship.clientName.getOrElse("")</span>
+                    <span>@invitationOrRelationship.clientName.getOrElse(Messages("recent-invitations.table-row-header.clientNameUnknown"))</span>
                 </div>
                 <div class="table-cell serviceInfo">
                     <h3 class="context">@Messages("recent-invitations.table-row-header.service")</h3>
