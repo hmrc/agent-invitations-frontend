@@ -237,8 +237,8 @@ invitation-sent.continueJourney.button=Yn eich blaen
 invitation-sent.trackRequests=Olrhain eich ceisiadau diweddar am awdurdodiad
 invitation-sent.new-window=(yn agor ffenestr neu dab newydd)
 invitation-sent.startNewAuthRequest=Dechrau cais am awdurdodiad newydd
-invitation-sent.l8=WLSThey can read
-invitation-sent.l9=WLSguidance on how to accept an authorisation request from an agent.
+invitation-sent.l8=Mae’n gallu darllen
+invitation-sent.l9=arweiniad ar sut i dderbyn cais am awdurdodiad gan asiant.
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
