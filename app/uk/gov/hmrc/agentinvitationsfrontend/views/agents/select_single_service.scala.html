@@ -44,11 +44,9 @@
         @uiInputRadioGroupCustom(
             choiceForm("accepted"),
             Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
+            '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
             '_groupDivClass -> "form-group",
-            '_fieldsetAttributes -> Html("""id='accepted'"""),
-            '_legendClass -> "margin-bottom-10"
-
+            '_fieldsetAttributes -> Html("""id='accepted'""")
         )
         <details id="selectServiceHelper">
             <summary id="selectServiceSummary">

@@ -47,12 +47,11 @@
                     <label class="heading-xlarge" for="cgtRef">@Messages(s"identify-cgt-client.header")</label>
                 </h1>
 
-            <p>@Messages("identify-cgt-client.p1")</p>
+            <p class="hint-text" id="cgt-info">@Messages("identify-cgt-client.p1")</p>
             <span class="form-hint margin-bottom-10" id="cgt-hint">@Messages("identify-cgt-client.hint")</span>
         @cgtClientForm.error("cgtRef").map { formError =>
             <span class="error-notification" data-journey="search-page:error:cgtRef" id="cgt-error">
                 <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-
         }
             <input
             class="form-control"
@@ -61,7 +60,7 @@
             type="text"
             spellcheck="false"
             @cgtClientForm.data.get("cgtRef").map { v => value="@v"}
-            aria-describedby="cgt-hint @if(cgtClientForm.hasErrors){cgt-error}"
+            aria-describedby="cgt-info cgt-hint @if(cgtClientForm.hasErrors){cgt-error}"
             >
 
             </div>

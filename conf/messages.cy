@@ -96,7 +96,6 @@ select-service.yes=Iawn
 select-service.no=Na
 
 select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
-select-service.hint=Dewiswch opsiwn.
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
 # multi-choice selections
@@ -200,7 +199,7 @@ button.back=Yn ôl
 finish.button=Gorffen ac allgofnodi
 
 # Confirm Client
-confirm-client.header=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
+confirm-client.header=Is {0} the client you want authorisation from?
 confirm-client.yes=Iawn
 confirm-client.no=Na – mae angen i mi ddechrau eto
 error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
@@ -278,6 +277,7 @@ review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.remove=Dileu
+review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
 review-authorisations.radio.yes=Iawn
 review-authorisations.radio.no=Na
@@ -298,7 +298,7 @@ cancel-authorisation.select-service.trust=Cynnal ymddiriedolaeth neu ystâd
 cancel-authorisation.select-service.cgt=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
 cancel-authorisation.select-service.hint=Dewiswch opsiwn.
 
-cancel-authorisation.confirm-client.header=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
+cancel-authorisation.confirm-client.header=Is {0} the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Iawn – hwn yw’r cleient
 cancel-authorisation.confirm-client.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
@@ -866,11 +866,15 @@ recent-invitations.invitation.status.acceptedthencancelledbyclient=Derbyniwyd ga
 recent-invitations.invitation.status.acceptedthencancelledbyhmrc=Derbyniwyd gan y cleient. Gwnaeth CThEM ganslo’ch awdurdodiad yn nes ymlaen
 recent-invitations.invitation.status.invalidrelationship=Gwnaethoch ganslo’ch awdurdodiad
 recent-invitations.invitations.actions.acceptedthencancelledbyagent=Dechrau cais newydd
+recent-invitations.invitations.actions.aria-text=Start a new request for {0} to {1}
 recent-invitations.invitations.actions.acceptedthencancelledbyclient=Dechrau cais newydd
 recent-invitations.invitations.actions.acceptedthencancelledbyhmrc=Dechrau cais newydd
 recent-invitations.invitations.actions.pending=Ailanfon cais at y cleient
+recent-invitations.invitations.actions.pending.aria-text=Resend request to client {0} to {1}
 recent-invitations.invitations.actions.pending.cancel=Canslo’r cais hwn
+recent-invitations.invitations.actions.pending.cancel.aria-text=Cancel this request for {0} to {1}
 recent-invitations.invitations.actions.accepted=Canslo’ch awdurdodiad
+recent-invitations.invitations.actions.accepted.aria-text=Cancel your authorisation for {0} to {1}
 recent-invitations.invitations.actions.rejected=Dechrau cais newydd
 recent-invitations.invitations.actions.expired=Dechrau cais newydd
 recent-invitations.invitations.actions.cancelled=Dechrau cais newydd
@@ -927,12 +931,11 @@ request-cancelled.p2=Os gwnaethoch ganslo’ch cais am awdurdodiad drwy ddamwain
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli ei Dreth Incwm mwyach.
-confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach.
-confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach.
-confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach.
-confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch bellach yn gallu rheoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo'r DU
-confirm-authorisation-cancelled.warning=Ni fyddwch yn gallu dadwneud y weithred hon:
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli ei Dreth Incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon:
+confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon:
+confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon:
+confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon:
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch bellach yn gallu rheoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo'r DU. Ni fyddwch yn gallu dadwneud y weithred hon:
 confirm-authorisation-cancelled.radio.yes=Iawn
 confirm-authorisation-cancelled.radio.no=Na
 

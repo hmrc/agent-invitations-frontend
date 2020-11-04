@@ -49,7 +49,7 @@
                     <h1 class="heading-xlarge">
                         <label class="heading-xlarge" for="postcode">@Messages("confirm-postcode-cgt.header")</label>
                     </h1>
-                <p>@Messages("confirm-postcode-cgt.p1")</p>
+                <p class="hint-text" id="postcode-info">@Messages("confirm-postcode-cgt.p1")</p>
                 <span class="form-hint margin-bottom-10" id="postcode-hint">@Messages("confirm-postcode-cgt.hint")</span>
                 @postcodeForm.error("postcode").map { formError =>
                     <span class="error-notification" id="postcode-error" data-journey="search-page:error:postcode">
@@ -63,7 +63,7 @@
                 name="postcode"
                 spellcheck="false"
                     @postcodeForm.data.get("postcode").map{ v => value="@v"}
-                    aria-describedby="postcode-hint @if(postcodeForm.hasErrors){postcode-error}"
+                    aria-describedby="postcode-info postcode-hint @if(postcodeForm.hasErrors){postcode-error}"
                 >
         </div>
 

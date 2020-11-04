@@ -44,10 +44,10 @@
 
         <div class="form-group margin-top-20 @if(trustClientForm.error("utr").isDefined) {form-field--error soft--ends}">
             <h1>
-                <label for="utr" class="heading-xlarge margin-bottom-10">
+                <label for="utr" class="heading-xlarge">
                 @Html(Messages("identify-trust-client.header"))</label>
             </h1>
-            <p class="form-hint margin-bottom-20">@Html(Messages("identify-trust-client.p1"))</p>
+            <p class="form-hint margin-bottom-20" id="utr-info">@Html(Messages("identify-trust-client.p1"))</p>
             <p class="form-hint" id="utr-hint">@Html(Messages("identify-trust-client.p2"))</p>
             @trustClientForm.error("utr").map{ formError =>
                 <span class="error-notification" data-journey="search-page:error:utr" id="utr-error">
@@ -60,7 +60,7 @@
             type="text"
             spellcheck="false"
             @trustClientForm.data.get("utr").map { v => value="@v"}
-            aria-describedby="utr-hint @if(trustClientForm.hasErrors){utr-error}"
+            aria-describedby="utr-info utr-hint @if(trustClientForm.hasErrors){utr-error}"
             >
         </div>
 

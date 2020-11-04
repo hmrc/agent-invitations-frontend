@@ -41,7 +41,7 @@
     @Messages("recent-invitations.invitations.actions.pending")
     </span>
         <span class="govuk-visually-hidden">
-        @Messages("recent-invitations.invitations.actions.pending") @invitationOrRelationship.clientName.getOrElse("") @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
+        @Messages("recent-invitations.invitations.actions.pending.aria-text", invitationOrRelationship.clientName.getOrElse(""),  Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))
         </span>
     </button></div>
 }
@@ -57,7 +57,7 @@
     <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
     <button class="button--link-style" type="submit" id="confirmCancelRequest-@{index}">
         <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</span>
-        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.pending.cancel") @invitationOrRelationship.clientName.getOrElse("") @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
+        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.pending.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
 }
 

@@ -50,11 +50,11 @@
 
      <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
 
-     <p>@Messages("identify-client.vat.p1")</p>
+     <p class="hint-text">@Messages("identify-client.vat.p1")</p>
 
      <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error soft--ends}">
          <label class="form-label" for="clientIdentifier">@Messages("identify-client.vrn.label")</label>
-         <span class="form-hint" id="vrn-hint">@Messages("identify-client.vrn.hint")</span>
+         <span class="hint-text" id="vrn-hint">@Messages("identify-client.vrn.hint")</span>
          @agentInvitationsForm.error("clientIdentifier").map { formError =>
              <span class="error-notification" data-journey="search-page:error:vrn" id="vrn-error">
                  <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>

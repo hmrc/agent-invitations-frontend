@@ -44,10 +44,11 @@
         @uiInputRadioGroupCustom(
             agentInvitationsForm("clientType"),
             config.clientTypes,
-        '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("client-type.header")}</h1>"""),
+        '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("client-type.header")}</h1>"""),
         '_inputHint -> Messages("client-type.p1"),
+            '_inputHintClass -> "hint-text",
         '_fieldsetAttributes -> Html("""id='clientType'"""),
-        '_groupDivClass -> "form-group margin-bottom-10"
+        '_groupDivClass -> "form-group"
         )
 
     <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>

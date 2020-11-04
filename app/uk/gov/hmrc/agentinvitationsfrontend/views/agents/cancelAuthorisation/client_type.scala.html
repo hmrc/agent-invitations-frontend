@@ -45,9 +45,10 @@
         @uiInputRadioGroupCustom(
             agentForm("clientType"),
             config.clientTypes,
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>"""),
+            '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>"""),
             '_inputHint -> Messages("cancel-authorisation.client-type.p1"),
-            '_groupDivClass -> "form-group soft--ends margin-bottom-10",
+            '_inputHintClass -> "hint-text",
+            '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='clientType'""")
         )
 
