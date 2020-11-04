@@ -48,8 +48,6 @@
           Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
       '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.header")}</h1>"""),
       '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.$service"),
-      '_fieldsetDiv -> Messages("confirm-authorisation-cancelled.warning"),
-      '_fieldsetDivClass -> "panel panel-border-wide",
           '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
       )
 

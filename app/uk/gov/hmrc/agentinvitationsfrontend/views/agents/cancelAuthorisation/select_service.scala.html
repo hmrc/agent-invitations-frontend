@@ -43,9 +43,7 @@
     @uiInputRadioGroupCustom(
         agentForm("serviceType"),
         config.enabledPersonalServices,
-        '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>"""),
-    '_inputHint -> Messages("cancel-authorisation.select-service.hint"),
-    '_inputHintClass -> "form-hint",
+        '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>"""),
         '_groupDivClass -> "form-group",
         '_fieldsetAttributes -> Html("""id='serviceType'""")
     )

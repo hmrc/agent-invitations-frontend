@@ -117,8 +117,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.select-service.header"),
           htmlEscapedMessage("title.suffix.agents.de-auth")),
-        htmlEscapedMessage("cancel-authorisation.select-service.header"),
-        hasMessage("cancel-authorisation.select-service.hint")
+        htmlEscapedMessage("cancel-authorisation.select-service.header")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
@@ -614,8 +613,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Barry Block",
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is Barry Block the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -628,8 +626,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Barry Block",
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is Barry Block the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -642,8 +639,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Barry Block",
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is Barry Block the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -655,8 +651,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Barry Block",
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is Barry Block the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -669,8 +664,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "some-trust",
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is some-trust the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -683,9 +677,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "some-cgt-client",
-        cgtRef.value,
-        htmlEscapedMessage("cancel-authorisation.confirm-client.header"),
+        "Is some-cgt-client the client you want to cancel your authorisation for?",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")

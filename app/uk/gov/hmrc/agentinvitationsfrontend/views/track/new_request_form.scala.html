@@ -40,6 +40,6 @@
     <input type="hidden" name="knownFact" id="knownFact-@{index}" value="">
     <button class="button--link-style" type="submit" id="resendRequest-@{index}">
         <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
-        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}") @invitationOrRelationship.clientName.getOrElse("") @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")</span>
+        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.aria-text", invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
 }

@@ -65,7 +65,7 @@
             <dd class="app-check-your-answers__change">
                 <a href="@config.showDeleteCall(authorisationRequest.itemId)">
                     <span aria-hidden="true">@Messages("review-authorisations.table.remove")</span>
-                    <span class="govuk-visually-hidden">@Messages("review-authorisations.table.remove") @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))  @Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}")</span>
+                    <span class="govuk-visually-hidden">@Messages("review-authorisations.table.remove.aria-text", Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name")))</span>
                 </a>
             </dd>
         </div>

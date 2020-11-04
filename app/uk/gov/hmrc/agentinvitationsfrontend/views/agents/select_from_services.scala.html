@@ -49,11 +49,10 @@ action = config.submitCall,
     @uiInputRadioGroupCustom(
         agentInvitationsForm("serviceType"),
         config.availableServices,
-    '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-30">${config.selectHeaderMessage}</h1>"""),
+    '_legend -> Html(s"""<h1 class="heading-xlarge">${config.selectHeaderMessage}</h1>"""),
     '_inputHint -> Messages("select-service.p1"),
-    '_inputHintClass -> "panel panel-border-wide margin-bottom-40",
-    '_fieldsetDiv -> Messages("select-service.hint"),
-    '_fieldsetDivClass -> "form-hint  margin-bottom-10",
+        '_inputHintClass -> "hint-text",
+    '_fieldsetDivClass -> "form-hint",
     '_fieldsetAttributes -> Html("""id='serviceType'"""),
     '_groupDivClass -> "form-group"
     )
