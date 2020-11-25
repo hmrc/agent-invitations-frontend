@@ -291,7 +291,7 @@ class TrackService @Inject()(
                                }
       _ <- Future.successful{
         val invitationCounts = invitations.groupBy(_.service).map{case (a,b) => (a,b.size)}
-        logger.info(s"allResults for ${arn.value} invitations: ${invitationCounts}, relationships: ${relationships.size}")
+        logger.warn(s"allResults for ${arn.value} invitations: ${invitationCounts}, relationships: ${relationships.size}")
       }
       matched = matchAndDiscard(trackInfoInvitations ++ trackInfoRelationships)
       refinedResults = refineStatus(matched)
