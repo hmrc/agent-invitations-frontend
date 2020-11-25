@@ -289,7 +289,10 @@ class TrackService @Inject()(
                                  case _ =>
                                    Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None, true, None)
                                }
-      _ <- Future.successful(logger.info(s"allResults for ${arn.value} invitations: ${invitations.size}, relationships: ${relationships.size}"))
+      _ <- Future.successful{
+        val invitationCounts = invitations.groupBy(_.service).map{case (a,b) => (a,b.size)}
+        logger.info(s"allResults for ${arn.value} invitations: ${invitationCounts}, relationships: ${relationships.size}")
+      }
       matched = matchAndDiscard(trackInfoInvitations ++ trackInfoRelationships)
       refinedResults = refineStatus(matched)
       finalResult <- Future.traverse(refinedResults) { trackInfo =>
