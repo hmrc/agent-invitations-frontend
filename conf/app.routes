@@ -172,13 +172,9 @@ GET         /not-found                                                  uk.gov.h
 GET         /action-needed                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showActionNeeded
 GET         /respond/error/cannot-view-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotViewRequest
 GET         /respond/error/no-outstanding-requests                      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorNoOutstandingRequests
-GET         /respond/error/request-expired                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorRequestExpired
-GET         /respond/error/agent-cancelled-request                      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAgentCancelledRequest
-GET         /respond/error/already-responded-to-request                 uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest
+GET         /respond/error/authorisation-request-invalid                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid
+GET         /respond/error/authorisation-request-unsuccessful           uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful
 GET         /respond/error/cannot-find-request                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorCannotFindRequest
-GET         /respond/error/authorisation-request-expired                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired
-GET         /respond/error/authorisation-request-cancelled              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAuthorisationRequestCancelled
-GET         /respond/error/authorisation-request-already-responded      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showErrorAuthorisationRequestAlreadyResponded
 GET         /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsent
 POST        /consent                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConsent
 GET         /change-consent                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConsentChange

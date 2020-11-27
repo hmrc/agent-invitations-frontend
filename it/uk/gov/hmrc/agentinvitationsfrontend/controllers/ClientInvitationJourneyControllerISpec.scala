@@ -206,7 +206,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestAlreadyResponded().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
       }
 
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
@@ -216,7 +216,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid().url)
       }
 
       "redirect to /respond/error/agent-cancelled-request if the most recent authorisation request has status of Cancelled " +
@@ -226,7 +226,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid().url)
       }
 
       "redirect to /respond/error/authorisation-request-cancelled if the most recent authorisation request has status of Cancelled " +
@@ -236,7 +236,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestCancelled().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
       }
 
       "redirect to /respond/error/authorisation-request-expired if the most recent authorisation request has status of Expired " +
@@ -246,7 +246,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
       }
 
       "redirect to /respond/error/authorisation-request-expired if the invitation has mixed statuses, none of which are Pending" in {
@@ -255,7 +255,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -1139,7 +1139,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(AlreadyRespondedToRequest("1/1/2020"), Nil)
 
-      val result = controller.showErrorAlreadyRespondedToRequest(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestInvalid(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("already-responded.header"))
@@ -1153,7 +1153,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(AgentCancelledRequest("d/M/yyyy"), Nil)
 
-      val result = controller.showErrorAgentCancelledRequest(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestInvalid(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("agent-cancelled-request.header"))
@@ -1168,7 +1168,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(RequestExpired("d/M/yyyy"), Nil)
 
-      val result = controller.showErrorRequestExpired(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestInvalid(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("request-expired.header"))
@@ -1182,7 +1182,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(AuthorisationRequestExpired("d/M/yyyy", personal), Nil)
 
-      val result = controller.showErrorAuthorisationRequestExpired(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkIncludesText(result, "This authorisation request has already expired")
@@ -1199,7 +1199,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(AuthorisationRequestCancelled("d/M/yyyy", personal), Nil)
 
-      val result = controller.showErrorAuthorisationRequestCancelled(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkIncludesText(result, "This authorisation request has been cancelled")
@@ -1215,7 +1215,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the page as expected" in {
       journeyState.set(AuthorisationRequestAlreadyResponded("d/M/yyyy", personal), Nil)
 
-      val result = controller.showErrorAuthorisationRequestAlreadyResponded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+      val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkIncludesText(result, "This authorisation request has already been responded to")
