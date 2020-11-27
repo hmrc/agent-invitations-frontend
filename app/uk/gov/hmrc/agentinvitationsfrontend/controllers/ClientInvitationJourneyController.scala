@@ -170,32 +170,20 @@ class ClientInvitationJourneyController @Inject()(
     case NoOutstandingRequests =>
   }
 
-  val showErrorRequestExpired = actionShowStateWhenAuthorised(AsClient) {
-    case _: RequestExpired =>
-  }
-
-  val showErrorAgentCancelledRequest = actionShowStateWhenAuthorised(AsClient) {
-    case _: AgentCancelledRequest =>
-  }
-
-  val showErrorAlreadyRespondedToRequest = actionShowStateWhenAuthorised(AsClient) {
+  val showErrorAuthorisationRequestInvalid = actionShowStateWhenAuthorised(AsClient) {
+    case _: RequestExpired            =>
+    case _: AgentCancelledRequest     =>
     case _: AlreadyRespondedToRequest =>
+  }
+
+  val showErrorAuthorisationRequestUnsuccessful = actionShowStateWhenAuthorised(AsClient) {
+    case _: AuthorisationRequestExpired          =>
+    case _: AuthorisationRequestCancelled        =>
+    case _: AuthorisationRequestAlreadyResponded =>
   }
 
   val showErrorCannotFindRequest = actionShowStateWhenAuthorised(AsClient) {
     case _: CannotFindRequest =>
-  }
-
-  val showErrorAuthorisationRequestExpired = actionShowStateWhenAuthorised(AsClient) {
-    case _: AuthorisationRequestExpired =>
-  }
-
-  val showErrorAuthorisationRequestCancelled = actionShowStateWhenAuthorised(AsClient) {
-    case _: AuthorisationRequestCancelled =>
-  }
-
-  val showErrorAuthorisationRequestAlreadyResponded = actionShowStateWhenAuthorised(AsClient) {
-    case _: AuthorisationRequestAlreadyResponded =>
   }
 
   def submitConsent = action { implicit request =>
@@ -406,18 +394,13 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case NotFoundInvitation           => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case NoOutstandingRequests        => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
-    case _: RequestExpired            => routes.ClientInvitationJourneyController.showErrorRequestExpired()
-    case _: AgentCancelledRequest     => routes.ClientInvitationJourneyController.showErrorAgentCancelledRequest()
-    case _: AlreadyRespondedToRequest => routes.ClientInvitationJourneyController.showErrorAlreadyRespondedToRequest()
-    case _: CannotFindRequest         => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
-    case _: AuthorisationRequestExpired =>
-      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestExpired()
-    case _: AuthorisationRequestCancelled =>
-      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestCancelled()
-    case _: AuthorisationRequestAlreadyResponded =>
-      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestAlreadyResponded()
+    case NotFoundInvitation    => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case NoOutstandingRequests => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
+    case _: RequestExpired | _: AgentCancelledRequest | _: AlreadyRespondedToRequest =>
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid()
+    case _: CannotFindRequest => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
+    case _: AuthorisationRequestExpired | _: AuthorisationRequestCancelled | _: AuthorisationRequestAlreadyResponded =>
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful()
     case _: ActionNeeded        => routes.ClientInvitationJourneyController.showActionNeeded()
     case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
     case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
