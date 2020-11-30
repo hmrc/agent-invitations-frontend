@@ -83,13 +83,19 @@ class TrackService @Inject()(
                               rel.dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>
-                            Future successful InactiveClient(Some("personal"), "PERSONAL-INCOME-RECORD", clientId, "ni", dateTo)
+                            Future successful InactiveClient(
+                              Some("personal"),
+                              "PERSONAL-INCOME-RECORD",
+                              clientId,
+                              "ni",
+                              dateTo)
 
                           case _ => Future successful InactiveClient(None, "", "", "", None)
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
 
-  def relationships(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[TrackRelationship]]): Future[Seq[TrackRelationship]] =
+  def relationships(identifierOpt: Option[TaxIdentifier])(
+    f: TaxIdentifier => Future[Seq[TrackRelationship]]): Future[Seq[TrackRelationship]] =
     identifierOpt match {
       case Some(identifier) => f(identifier)
       case None             => Future.successful(Seq.empty)
@@ -101,19 +107,22 @@ class TrackService @Inject()(
       case None             => Future.successful(Seq.empty)
     }
 
-  def getTradingName(clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getTradingName(
+    clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
       case Some(s) => acaConnector.getTradingName(s)
       case None    => Future successful None
     }
 
-  def getCitizenName(clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getCitizenName(
+    clientIdentifier: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier match {
       case Some(s) => citizenDetailsConnector.getCitizenDetails(s).map(citizen => citizen.name)
       case None    => Future successful None
     }
 
-  def getVatName(clientIdentifier: Option[Vrn])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getVatName(
+    clientIdentifier: Option[Vrn])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     clientIdentifier
       .map { vrn =>
         acaConnector.getCustomerDetails(vrn).map { customerDetails =>
@@ -132,7 +141,9 @@ class TrackService @Inject()(
     showLastDays: Int,
     pageInfo: PageInfo,
     filterByClient: Option[String],
-    filterByStatus: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
+    filterByStatus: Option[FilterFormStatus])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[TrackResultsPage] =
     allResults(arn, isPirWhitelisted, showLastDays).map { all =>
       val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
 
@@ -155,7 +166,9 @@ class TrackService @Inject()(
     filterByStatus.fold(maybeClientFiltered)(status => maybeClientFiltered.filter(status.filterForStatus))
   }
 
-  def clientNames(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
+  def clientNames(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Set[String]] =
     allResults(arn, isPirWhitelisted, showLastDays).map(r => r.flatMap(_.clientName).toSet)
 
   private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
@@ -192,7 +205,8 @@ class TrackService @Inject()(
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
-      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
+      case a: TrackInformationSorted
+          if a.status == "Accepted" && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
         a.copy(status = s"AcceptedThenCancelledBy${a.relationshipEndedBy.get}")
       }
       case b: TrackInformationSorted => b
@@ -269,7 +283,18 @@ class TrackService @Inject()(
                                    relationshipEndedBy
                                  )
                                case _ =>
-                                 Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None, false, None)
+                                 Future successful TrackInformationSorted(
+                                   None,
+                                   "",
+                                   "",
+                                   "",
+                                   None,
+                                   "",
+                                   None,
+                                   None,
+                                   None,
+                                   false,
+                                   None)
                              }
       relationships <- getInactiveClients
       trackInfoRelationships <- Future.traverse(relationships) {
@@ -287,12 +312,24 @@ class TrackService @Inject()(
                                      true,
                                      None)
                                  case _ =>
-                                   Future successful TrackInformationSorted(None, "", "", "", None, "", None, None, None, true, None)
+                                   Future successful TrackInformationSorted(
+                                     None,
+                                     "",
+                                     "",
+                                     "",
+                                     None,
+                                     "",
+                                     None,
+                                     None,
+                                     None,
+                                     true,
+                                     None)
                                }
-      _ <- Future.successful{
-        val invitationCounts = invitations.groupBy(_.service).map{case (a,b) => (a,b.size)}
-        logger.warn(s"allResults for ${arn.value} invitations: ${invitationCounts}, relationships: ${relationships.size}")
-      }
+      _ <- Future.successful {
+            val invitationCounts = invitations.groupBy(_.service).map { case (a, b) => (a, b.size) }
+            logger.warn(
+              s"allResults for ${arn.value} invitations: $invitationCounts, relationships: ${relationships.size}")
+          }
       matched = matchAndDiscard(trackInfoInvitations ++ trackInfoRelationships)
       refinedResults = refineStatus(matched)
       finalResult <- Future.traverse(refinedResults) { trackInfo =>
