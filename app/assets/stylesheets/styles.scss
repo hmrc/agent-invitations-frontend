@@ -407,5 +407,42 @@ input[type="text"].autocomplete__input {
         width: 100%
     }
 }
+
+//track page pagination styles
+.pager-items {
+    float: right;
+    margin: 0;
+    display: flex;
+}
+.pager-items li {
+    border-right: 1px solid #ddd;
+    list-style-type: none;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.8em;
+}
+
+.pager-items li.selected-pagination-item {
+    padding: 7px 14px;
+}
+
+.pager-items li a {
+    display: inline-block;
+    padding: 7px 14px;
+}
+
+.pager-items li:first-child {
+    border-left: 1px solid #ddd;
+}
+
+.pager-items li:hover {
+    background-color: lightgrey;
+    cursor: pointer;
+}
+
+.pager-items li.selected-pagination-item:hover {
+    background-color: transparent;
+    cursor: default;
+}
     @import 'partials/accessible-autocomplete.min';
 
