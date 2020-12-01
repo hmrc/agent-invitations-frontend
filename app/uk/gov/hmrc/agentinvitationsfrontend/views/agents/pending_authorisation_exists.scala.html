@@ -41,7 +41,7 @@
 
   @if(config.authRequestsExist && !config.fromFastTrack) {
 
-   <a href="@config.reviewAuthsCall" class="button">@Messages("pending-authorisation-exists.button")</a>
+   <a href="@config.reviewAuthsCall" role="button" class="button">@Messages("pending-authorisation-exists.button")</a>
 
   }else {
       @if(!config.fromFastTrack) {
