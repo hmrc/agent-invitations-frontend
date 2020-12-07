@@ -55,9 +55,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
 
   private[connectors] def createAgentLinkUrl(arn: Arn, clientType: String): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
+    new URL(baseUrl, s"/agent-client-authorisation/agencies/references/arn/${encodePathSegment(arn.value)}/clientType/$clientType")
 
   private[connectors] def getAgentReferenceRecordUrl(uid: String): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/references/uid/$uid")
@@ -82,46 +80,31 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     new URL(baseUrl, s"/agent-client-authorisation/invitations/${invitationId.value}")
 
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def acceptAFIInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectAFIInvitationUrl(nino: Nino, invitationId: InvitationId) =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/accept")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/accept")
 
   private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/reject")
+    new URL(baseUrl, s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def cancelInvitationUrl(arn: Arn, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel")
 
   private[connectors] def setRelationshipEndedUrl(invitationId: InvitationId, endedBySource: String = "Agent") =
-    new URL(
-      s"$baseUrl/agent-client-authorisation/invitations/${invitationId.value}/relationship-ended?endedBy=$endedBySource")
+    new URL(s"$baseUrl/agent-client-authorisation/invitations/${invitationId.value}/relationship-ended?endedBy=$endedBySource")
 
   private[connectors] def checkVatRegisteredClientUrl(vrn: Vrn, registrationDate: LocalDate) =
-    new URL(
-      baseUrl,
-      s"/agent-client-authorisation/known-facts/organisations/vat/${vrn.value}/registration-date/${registrationDate.toString}")
+    new URL(baseUrl, s"/agent-client-authorisation/known-facts/organisations/vat/${vrn.value}/registration-date/${registrationDate.toString}")
 
   private[connectors] def checkCitizenRecordUrl(nino: Nino, dob: LocalDate) =
     new URL(baseUrl, s"/agent-client-authorisation/known-facts/individuals/${nino.value}/dob/${dob.toString}")
@@ -136,25 +119,19 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   private val originHeader = Seq("Origin" -> "agent-invitations-frontend")
 
-  def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[String]] =
+  def createInvitation(arn: Arn, agentInvitation: AgentInvitation)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-Invitation-POST") {
-      http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation, originHeader) map {
-        r =>
-          r.status match {
-            case CREATED => r.header("location")
-            case status: Int =>
-              logger.warn(
-                s"unexpected status from agent-client-authorisation when creating invitation, status: $status")
-              None
-          }
+      http.POST[AgentInvitation, HttpResponse](createInvitationUrl(arn).toString, agentInvitation, originHeader) map { r =>
+        r.status match {
+          case CREATED => r.header("location")
+          case status: Int =>
+            logger.warn(s"unexpected status from agent-client-authorisation when creating invitation, status: $status")
+            None
+        }
       }
     }
 
-  def createAgentLink(arn: Arn, clientType: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[String]] =
+  def createAgentLink(arn: Arn, clientType: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Agent-Create-AgentLink-POST") {
       http.POST[Boolean, HttpResponse](createAgentLinkUrl(arn, clientType).toString, false) map { r =>
         r.status match {
@@ -166,29 +143,25 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def getAgentReferenceRecord(
-    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AgentReferenceRecord]] =
+  def getAgentReferenceRecord(uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AgentReferenceRecord]] =
     monitor("ConsumedAPI-Client-Get-AgentReferenceRecordByUid-GET") {
       http.GET[HttpResponse](getAgentReferenceRecordUrl(uid).toString).map { r =>
         r.status match {
           case OK => r.json.asOpt[AgentReferenceRecord]
           case status: Int =>
-            logger.warn(
-              s"unexpected status from agent-client-authorisation when getting agency reference record, status: $status")
+            logger.warn(s"unexpected status from agent-client-authorisation when getting agency reference record, status: $status")
             None
         }
       }
     }
 
-  def getAgentReferenceRecord(
-    arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SimplifiedAgentReferenceRecord] =
+  def getAgentReferenceRecord(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SimplifiedAgentReferenceRecord] =
     monitor("ConsumedAPI-Client-Get-AgentReferenceRecordByArn-GET") {
       http.GET[HttpResponse](getAgentReferenceRecordUrl(arn).toString).map { r =>
         r.status match {
           case OK => r.json.as[SimplifiedAgentReferenceRecord]
           case status: Int =>
-            logger.warn(
-              s"unexpected status from agent-client-authorisation when getting agency reference record, status: $status")
+            logger.warn(s"unexpected status from agent-client-authorisation when getting agency reference record, status: $status")
             throw new RuntimeException("Agent reference record not found")
         }
       }
@@ -207,8 +180,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def getInvitation(
-    invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StoredInvitation]] =
+  def getInvitation(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-AgentInvitation-GET") {
       http.GET[HttpResponse](getAgentInvitationUrl(invitationId).toString).map { r =>
         r.status match {
@@ -220,9 +192,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def getAllInvitations(arn: Arn, createdOnOrAfter: LocalDate)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[StoredInvitation]] =
+  def getAllInvitations(arn: Arn, createdOnOrAfter: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
       val url = getAgencyInvitationsUrl(arn, createdOnOrAfter)
       http.GET[HttpResponse](url.toString).map { r =>
@@ -244,16 +214,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         r.status match {
           case OK => (r.json \ "_embedded" \ "invitations").as[Seq[StoredInvitation]]
           case status: Int =>
-            logger.warn(
-              s"unexpected status from agent-client-authorisation when getAllPendingInvitationsForClient, status: $status")
+            logger.warn(s"unexpected status from agent-client-authorisation when getAllPendingInvitationsForClient, status: $status")
             Seq.empty
         }
       }
     }
 
-  def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http
         .PUT[Boolean, HttpResponse](acceptITSAInvitationUrl(mtdItId, invitationId).toString, false)
@@ -264,9 +231,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http
         .PUT[Boolean, HttpResponse](rejectITSAInvitationUrl(mtdItId, invitationId).toString, false)
@@ -277,9 +242,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
     }.recover {
@@ -288,9 +251,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
     }.recover {
@@ -299,9 +260,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
     }.recover {
@@ -310,9 +269,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
     }.recover {
@@ -321,13 +278,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def acceptTrustInvitation(utr: Utr, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def acceptTrustInvitation(utr: Utr, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/accept").toString
+      val url = new URL(baseUrl, s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/accept").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -335,13 +288,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectTrustInvitation(utr: Utr, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def rejectTrustInvitation(utr: Utr, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/reject").toString
+      val url = new URL(baseUrl, s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/reject").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -349,13 +298,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def acceptCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def acceptCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/accept").toString
+      val url =
+        new URL(baseUrl, s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/accept").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -363,13 +309,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def rejectCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/reject").toString
+      val url =
+        new URL(baseUrl, s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/reject").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -377,9 +320,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def cancelInvitation(arn: Arn, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def cancelInvitation(arn: Arn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Cancel-Invitation-PUT") {
       http.PUT[String, HttpResponse](cancelInvitationUrl(arn, invitationId).toString, "").map { r =>
         r.status match {
@@ -390,8 +331,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def setRelationshipEnded(
-    invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+  def setRelationshipEnded(invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Set-Relationship-Ended-PUT") {
       http.PUT[String, HttpResponse](setRelationshipEndedUrl(invitationId).toString, "").map { r =>
         r.status match {
@@ -402,9 +342,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def checkPostcodeForClient(nino: Nino, postcode: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def checkPostcodeForClient(nino: Nino, postcode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-CheckPostcode-GET") {
       http.GET[HttpResponse](checkPostcodeUrl(nino, postcode).toString).map { r =>
         r.status match {
@@ -446,8 +384,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
     }
 
-  def getAllClientInvitationDetailsForAgent(
-    uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationDetails]] =
+  def getAllClientInvitationDetailsForAgent(uid: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InvitationDetails]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
       val url = getAllInvitationDetailsUrl(uid)
       http
@@ -473,8 +410,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     }
   }
 
-  def getCgtSubscription(
-    cgtRef: CgtRef)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[CgtSubscription]] = {
+  def getCgtSubscription(cgtRef: CgtRef)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[CgtSubscription]] = {
     val url = new URL(baseUrl, s"/agent-client-authorisation/cgt/subscriptions/${cgtRef.value}").toString
     monitor(s"ConsumedAPI-CGTSubscription-GET") {
       http
@@ -579,6 +515,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   object Reads {
 
+    implicit val detailsForEmailReads = Json.reads[DetailsForEmail]
+
     implicit val reads: Reads[StoredInvitation] = {
 
       implicit val urlReads: SimpleObjectReads[URL] = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
@@ -590,6 +528,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         (JsPath \ "clientIdType").read[String] and
         (JsPath \ "suppliedClientId").read[String] and
         (JsPath \ "suppliedClientIdType").read[String] and
+        (JsPath \ "detailsForEmail").readNullable[DetailsForEmail] and
         (JsPath \ "status").read[String] and
         (JsPath \ "created").read[DateTime] and
         (JsPath \ "lastUpdated").read[DateTime] and
@@ -598,8 +537,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         (JsPath \ "isRelationshipEnded").read[Boolean] and
         (JsPath \ "relationshipEndedBy").readNullable[String] and
         (JsPath \ "_links" \ "self").read[URL])(
-        (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) =>
-          StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)
+        (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
       )
     }
   }

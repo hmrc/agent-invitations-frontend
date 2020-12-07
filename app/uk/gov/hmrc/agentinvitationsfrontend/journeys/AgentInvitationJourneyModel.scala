@@ -56,46 +56,18 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
   case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
   case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
-  case class ConfirmPostcodeCgt(
-    cgtRef: CgtRef,
-    clientType: ClientType,
-    basket: Basket,
-    postcode: Option[String],
-    clientName: String)
-      extends State
-  case class ConfirmCountryCodeCgt(
-    cgtRef: CgtRef,
-    clientType: ClientType,
-    basket: Basket,
-    countryCode: String,
-    clientName: String)
-      extends State
+  case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, postcode: Option[String], clientName: String) extends State
+  case class ConfirmCountryCodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, countryCode: String, clientName: String) extends State
 
   case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
   case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
 
-  case class SomeAuthorisationsFailed(
-    invitationLink: String,
-    continueUrl: Option[String],
-    agencyEmail: String,
-    basket: Basket)
-      extends State
+  case class SomeAuthorisationsFailed(invitationLink: String, continueUrl: Option[String], agencyEmail: String, basket: Basket) extends State
   case class AllAuthorisationsFailed(basket: Basket) extends State
   case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
-  case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket)
-      extends State
-  case class InvitationSentPersonal(
-    invitationLink: String,
-    continueUrl: Option[String],
-    agencyEmail: String,
-    services: Set[String])
-      extends State
-  case class InvitationSentBusiness(
-    invitationLink: String,
-    continueUrl: Option[String],
-    agencyEmail: String,
-    services: Set[String])
-      extends State
+  case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
+  case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String]) extends State
+  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String]) extends State
   case class ClientNotSignedUp(service: String, basket: Basket) extends State
   case object AllAuthorisationsRemoved extends State
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
@@ -177,10 +149,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         } else goto(SelectPersonalService(services, basket))
     }
 
-    def selectedBusinessService(
-      showVatFlag: Boolean,
-      agentSuspensionEnabled: Boolean,
-      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
+    def selectedBusinessService(showVatFlag: Boolean, agentSuspensionEnabled: Boolean, getSuspensionDetails: GetSuspensionDetails)(
+      agent: AuthorisedAgent)(service: String) = Transition {
       case SelectBusinessService =>
         if (service.nonEmpty) {
           gotoIdentify(
@@ -258,29 +228,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       Transition {
         case IdentifyTrustClient(HMRCCGTPD, basket) =>
           handle(
-            cgtSubscription =>
-              ConfirmPostcodeCgt(cgtClient.cgtRef, business, basket, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription =>
-              ConfirmCountryCodeCgt(
-                cgtClient.cgtRef,
-                business,
-                basket,
-                cgtSubscription.countryCode,
-                cgtSubscription.name),
+            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, business, basket, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, business, basket, cgtSubscription.countryCode, cgtSubscription.name),
             basket
           )
 
         case IdentifyPersonalClient(HMRCCGTPD, basket) =>
           handle(
-            cgtSubscription =>
-              ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription =>
-              ConfirmCountryCodeCgt(
-                cgtClient.cgtRef,
-                personal,
-                basket,
-                cgtSubscription.countryCode,
-                cgtSubscription.name),
+            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.countryCode, cgtSubscription.name),
             basket
           )
       }
@@ -289,8 +245,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     private def removeSpaceFromPostcode(postcode: String): String =
       postcode.replace(" ", "")
 
-    def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      postcode: Postcode): Transition =
+    def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(postcode: Postcode): Transition =
       Transition {
         case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) => {
           val userPostcodeWithoutSpace = removeSpaceFromPostcode(postcode.value)
@@ -306,8 +261,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
       }
 
-    def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      countryCode: CountryCode): Transition =
+    def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(countryCode: CountryCode): Transition =
       Transition {
         case ConfirmCountryCodeCgt(cgtRef, clientType, basket, countryCodeFromDes, name) =>
           if (countryCodeFromDes.contains(countryCode.value)) {
@@ -336,9 +290,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                          getClientName(itsaClient.clientIdentifier, HMRCMTDIT).flatMap { clientName =>
                            goto(
                              ConfirmClientItsa(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 ItsaInvitation(Nino(itsaClient.clientIdentifier))),
+                               AuthorisationRequest(clientName.getOrElse(""), ItsaInvitation(Nino(itsaClient.clientIdentifier))),
                                basket))
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
@@ -360,17 +312,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       // format: on
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         for {
-          regDateMatches <- checkRegDateMatches(
-                             Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate))
+          regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
                        case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientPersonalVat(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 VatInvitation(Some(personal), Vrn(vatClient.clientIdentifier))),
+                               AuthorisationRequest(clientName.getOrElse(""), VatInvitation(Some(personal), Vrn(vatClient.clientIdentifier))),
                                basket
                              ))
                          }
@@ -382,17 +330,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
       case IdentifyBusinessClient =>
         for {
-          regDateMatches <- checkRegDateMatches(
-                             Vrn(vatClient.clientIdentifier),
-                             LocalDate.parse(vatClient.registrationDate))
+          regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
                        case Some(204) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientBusinessVat(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 VatInvitation(Some(business), Vrn(vatClient.clientIdentifier)))))
+                               AuthorisationRequest(clientName.getOrElse(""), VatInvitation(Some(business), Vrn(vatClient.clientIdentifier)))))
 
                          }
                        case Some(423) => goto(CannotCreateRequest(Set.empty))
@@ -423,13 +367,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        case Some(true) =>
                          getClientName(irvClient.clientIdentifier, HMRCPIR)
                            .map { clientName =>
-                             AuthorisationRequest(
-                               clientName.getOrElse(""),
-                               PirInvitation(Nino(irvClient.clientIdentifier)))
+                             AuthorisationRequest(clientName.getOrElse(""), PirInvitation(Nino(irvClient.clientIdentifier)))
                            }
                            .flatMap { request =>
-                             checkIfPendingOrActiveAndGoto(
-                               ReviewAuthorisationsPersonal(agent.personalServices, basket + request))(
+                             checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(agent.personalServices, basket + request))(
                                personal,
                                agent.arn,
                                request.invitation.clientId,
@@ -495,8 +436,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
       case ConfirmClientItsa(request, basket) =>
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(
-            ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
+          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
             personal,
             authorisedAgent.arn,
             request.invitation.clientId,
@@ -507,32 +447,22 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       case ConfirmClientCgt(request, basket) => {
         val (reviewAuthState, state, clientType) = request.invitation.clientType match {
           case Some(`business`) =>
-            (
-              ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request),
-              IdentifyTrustClient(HMRCCGTPD, basket),
-              business)
+            (ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request), IdentifyTrustClient(HMRCCGTPD, basket), business)
           case Some(`personal`) =>
-            (
-              ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request),
-              IdentifyPersonalClient(HMRCCGTPD, basket),
-              personal)
+            (ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request), IdentifyPersonalClient(HMRCCGTPD, basket), personal)
           case None => throw new RuntimeException("unexpected clientType in the AuthorisationRequest") //TODO
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(
-            clientType,
-            authorisedAgent.arn,
-            request.invitation.clientId,
-            HMRCCGTPD,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCCGTPD, basket)(
+            hasPendingInvitationsFor,
+            hasActiveRelationshipFor)
         } else goto(state)
       }
 
       case ConfirmClientPersonalVat(request, basket) =>
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(
-            ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
+          checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
             personal,
             authorisedAgent.arn,
             request.invitation.clientId,
@@ -543,11 +473,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       case ConfirmClientBusinessVat(request) =>
         if (confirmation.choice) {
           for {
-            hasPendingInvitations <- hasPendingInvitationsFor(
-                                      authorisedAgent.arn,
-                                      request.invitation.clientId,
-                                      HMRCMTDVAT)
-            agentLink <- getAgentLink(authorisedAgent.arn, Some(business))
+            hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, HMRCMTDVAT)
+            agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
             result <- if (hasPendingInvitations) {
                        goto(PendingInvitationExists(business, Set.empty))
                      } else {

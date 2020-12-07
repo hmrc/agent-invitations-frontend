@@ -27,10 +27,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.filters.FrontendFilters
 import scala.concurrent.Future
 
 @Singleton
-class ExtendedFrontendFilters @Inject()(
-  defaultFilters: FrontendFilters,
-  configuration: Configuration,
-  materializer: Materializer)
+class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, configuration: Configuration, materializer: Materializer)
     extends HttpFilters {
 
   override def filters: Seq[EssentialFilter] = CSRFExceptionsFilter +: defaultFilters.filters

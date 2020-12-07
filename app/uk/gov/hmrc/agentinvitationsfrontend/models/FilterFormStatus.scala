@@ -32,8 +32,7 @@ object FilterFormStatus {
       i.status == "Pending" && i.expiryDate.fold(false)(_.minusDays(5).isBefore(LocalDate.now()))
   }
   case object ActivityWithinLast5Days extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) =>
-      i.date.fold(false)(_.plusDays(5).isAfter(LocalDate.now()))
+    override val filterForStatus = (i: TrackInformationSorted) => i.date.fold(false)(_.plusDays(5).isAfter(LocalDate.now()))
   }
   case object ClientNotYetResponded extends FilterFormStatus {
     override val filterForStatus = (i: TrackInformationSorted) => i.status == "Pending"

@@ -57,10 +57,8 @@ class AuthActionsImpl @Inject()(
       identifier <- enrolment.getIdentifier("AgentReferenceNumber")
     } yield Arn(identifier.value)
 
-  def withAuthorisedAsAgent[A](body: AuthorisedAgent => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
+  def withAuthorisedAsAgent[A](
+    body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     withVerifiedPasscode { isWhitelisted =>
       authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
         .retrieve(authorisedEnrolments) { enrolments =>
@@ -76,10 +74,7 @@ class AuthActionsImpl @Inject()(
         }
     }
 
-  def withIndividualAuth[A](body: String => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
+  def withIndividualAuth[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(affinityGroup and credentials) {
         case Some(affinity) ~ Some(Credentials(providerId, _)) =>
@@ -97,10 +92,8 @@ class AuthActionsImpl @Inject()(
         handleFailure(isAgent = false)
       }
 
-  def withAuthorisedAsAnyClient[A](journeyId: Option[String])(body: AuthorisedClient => Future[Result])(
-    implicit request: Request[A],
-    hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
+  def withAuthorisedAsAnyClient[A](journeyId: Option[String])(
+    body: AuthorisedClient => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(affinityGroup and confidenceLevel and allEnrolments and nino) {
         case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
@@ -126,10 +119,8 @@ class AuthActionsImpl @Inject()(
         handleFailure(isAgent = false, journeyId)
       }
 
-  private def withConfidenceLevelUplift[A, BodyArgs](
-    currentLevel: ConfidenceLevel,
-    mayBeNino: Option[String],
-    enrols: Enrolments)(body: => Future[Result])(implicit request: Request[A]): Future[Result] = {
+  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, mayBeNino: Option[String], enrols: Enrolments)(
+    body: => Future[Result])(implicit request: Request[A]): Future[Result] = {
 
     //APB-4856: Clients with only CGT enrol dont need to go through IV
     val isCgtOnlyClient: Boolean = {
@@ -189,8 +180,7 @@ class AuthActionsImpl @Inject()(
     journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
   }
 
-  def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(
-    implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+  def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession ⇒
       toGGLogin(continueUrlWithJourneyId(journeyId))
 

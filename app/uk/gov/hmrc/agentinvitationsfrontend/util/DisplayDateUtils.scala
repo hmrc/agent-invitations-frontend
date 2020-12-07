@@ -46,8 +46,7 @@ object DisplayDateUtils {
   private val dateFormatterLeadingZero: DateTimeFormatter =
     DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.UK)
 
-  def displayDateForLang(date: Option[java.time.LocalDate], df: DateTimeFormatter = dateFormatter)(
-    implicit request: Request[_]): String =
+  def displayDateForLang(date: Option[java.time.LocalDate], df: DateTimeFormatter = dateFormatter)(implicit request: Request[_]): String =
     date.fold("")(d => {
       val lang = request.cookies
         .get("PLAY_LANG")

@@ -18,8 +18,4 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientType}
 
-case class SomeResponsesFailedPageConfig(
-  consents: Seq[ClientConsent],
-  agencyName: String,
-  acceptInvitationCall: Call,
-  clientType: ClientType)
+case class SomeResponsesFailedPageConfig(consents: Seq[ClientConsent], agencyName: String, acceptInvitationCall: Call, clientType: ClientType)

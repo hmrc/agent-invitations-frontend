@@ -60,9 +60,7 @@ class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val app
     * @return The HTTP status code of the PUT response
     *
     * */
-  def updateEntry(entry: NinoClStoreEntry, credId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+  def updateEntry(entry: NinoClStoreEntry, credId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Client-updateNinoOnAuthRecord-PUT") {
       http
         .PUT[NinoClStoreEntry, HttpResponse](updateEntryUrl(credId).toString, entry)

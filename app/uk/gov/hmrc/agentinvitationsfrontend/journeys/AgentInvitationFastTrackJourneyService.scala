@@ -51,8 +51,7 @@ class MongoDBCachedAgentInvitationFastTrackJourneyService @Inject()(_cacheReposi
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
     cache.fetch.map(_.map(ps => (ps.state, ps.breadcrumbs)))
 
-  protected def save(
-    state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
+  protected def save(state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     cache.save(PersistentState(state._1, state._2)).map(_ => state)
 
   override def clear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =

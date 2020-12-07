@@ -29,6 +29,7 @@ case class StoredInvitation(
   clientIdType: String,
   suppliedClientId: String,
   suppliedClientIdType: String,
+  detailsForEmail: Option[DetailsForEmail],
   status: String,
   created: DateTime,
   lastUpdated: DateTime,
@@ -55,6 +56,7 @@ object StoredInvitation {
     clientType: Option[String],
     service: String,
     clientId: String,
+    detailsForEmail: Option[DetailsForEmail],
     status: String,
     created: DateTime,
     lastUpdated: DateTime,
@@ -71,6 +73,7 @@ object StoredInvitation {
       clientIdTypeByService(service),
       clientId,
       clientIdTypeByService(service),
+      detailsForEmail,
       status,
       created,
       lastUpdated,
@@ -82,3 +85,5 @@ object StoredInvitation {
     )
 
 }
+
+case class DetailsForEmail(agencyEmail: String, agencyName: String, clientName: String)

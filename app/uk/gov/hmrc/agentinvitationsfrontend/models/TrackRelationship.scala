@@ -33,12 +33,7 @@ sealed trait TrackRelationship extends Product with Serializable {
   val dateTo: Option[LocalDate]
 }
 
-case class InactiveTrackRelationship(
-  arn: Arn,
-  clientType: String,
-  clientId: String,
-  service: String,
-  dateTo: Option[LocalDate])
+case class InactiveTrackRelationship(arn: Arn, clientType: String, clientId: String, service: String, dateTo: Option[LocalDate])
     extends TrackRelationship
 
 object InactiveTrackRelationship {

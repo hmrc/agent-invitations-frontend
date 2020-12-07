@@ -45,12 +45,7 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
-case class CancelAuthorisationForm(
-  service: String,
-  clientId: String,
-  clientType: String,
-  clientName: String,
-  invitationId: String)
+case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String, invitationId: String)
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -92,11 +87,9 @@ class AgentsRequestTrackingController @Inject()(
       }
     }
 
-  private def trackPageConfig(
-    page: Int,
-    agent: AuthorisedAgent,
-    client: Option[String],
-    status: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext) = {
+  private def trackPageConfig(page: Int, agent: AuthorisedAgent, client: Option[String], status: Option[FilterFormStatus])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext) = {
     val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(
@@ -145,8 +138,7 @@ class AgentsRequestTrackingController @Inject()(
                   case Some("clear")  => (None, None)
                   case e              => throw new RuntimeException(s"unexpected value found in submitFilterTrackRequests $e")
                 }
-                Future successful Redirect(
-                  routes.AgentsRequestTrackingController.showTrackRequests(1, filterAndStatus._1, filterAndStatus._2))
+                Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests(1, filterAndStatus._1, filterAndStatus._2))
               }
             )
         }
@@ -208,11 +200,7 @@ class AgentsRequestTrackingController @Inject()(
         case Some(service) => {
           val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
           Future successful Ok(
-            confirmCancelView(
-              service,
-              clientType,
-              confirmCancelForm,
-              routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+            confirmCancelView(service, clientType, confirmCancelForm, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
         }
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
       }
@@ -233,11 +221,7 @@ class AgentsRequestTrackingController @Inject()(
                 .fold(
                   formWithErrors => {
                     Future successful Ok(
-                      confirmCancelView(
-                        service,
-                        clientType,
-                        formWithErrors,
-                        routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+                      confirmCancelView(service, clientType, formWithErrors, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
                   },
                   data => {
                     if (data.value.getOrElse(true)) {
@@ -295,11 +279,7 @@ class AgentsRequestTrackingController @Inject()(
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
       Future successful Ok(
-        confirmCancelAuthView(
-          confirmCancelAuthorisationForm,
-          service,
-          clientType,
-          routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+        confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
     }
   }
 
@@ -314,11 +294,7 @@ class AgentsRequestTrackingController @Inject()(
         .fold(
           formWithErrors =>
             Future successful Ok(
-              confirmCancelAuthView(
-                formWithErrors,
-                service,
-                clientType,
-                routes.AgentsRequestTrackingController.showTrackRequests(1).url)),
+              confirmCancelAuthView(formWithErrors, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url)),
           data =>
             if (data.value.getOrElse(true)) {
               for {
@@ -359,9 +335,10 @@ class AgentsRequestTrackingController @Inject()(
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(text
-          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
-          .transform(ClientType.toEnum, ClientType.fromEnum)),
+        "clientType" -> optional(
+          text
+            .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+            .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }

@@ -109,8 +109,7 @@ trait TrackServiceStubsAndData {
           )))
 
   def givenGetInactiveIrvRelationships(inactiveIrvRelationships: IrvTrackRelationship*) =
-    when(
-      pirRelationshipConnector.getInactiveIrvRelationships(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+    when(pirRelationshipConnector.getInactiveIrvRelationships(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
       .thenReturn(
         Future.successful(
           Seq(
@@ -118,99 +117,153 @@ trait TrackServiceStubsAndData {
           )))
 
   def givenGetAllInvitations() =
-    when(
-      acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(
-        any(classOf[HeaderCarrier]),
-        any(classOf[ExecutionContext]))).thenReturn(Future.successful(Seq(
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("personal"),
-        service = HMRCMTDIT,
-        clientId = nino1.value,
-        status = "Pending",
-        created = dateTime,
-        lastUpdated = dateTime,
-        expiryDate = now.plusDays(11),
-        invitationId = "id1",
-        isRelationshipEnded = false,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id1")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("personal"),
-        service = HMRCPIR,
-        clientId = nino1.value,
-        status = "Expired",
-        created = dateTime.minusDays(20),
-        lastUpdated = dateTime.plusDays(1),
-        expiryDate = now.minusDays(9),
-        invitationId = "id2",
-        isRelationshipEnded = false,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id2")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("personal"),
-        service = HMRCPIR,
-        clientId = nino1.value,
-        status = "Cancelled",
-        created = dateTime.plusDays(2),
-        lastUpdated = dateTime.plusDays(7),
-        expiryDate = now.plusDays(13),
-        invitationId = "id3",
-        isRelationshipEnded = false,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id3")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("personal"),
-        service = HMRCMTDIT,
-        clientId = nino2.value,
-        status = "Accepted",
-        created = dateTime,
-        lastUpdated = dateTime.plusDays(8),
-        expiryDate = now.plusDays(11),
-        invitationId = "id4",
-        isRelationshipEnded = true,
-        relationshipEndedBy = Some("Agent"),
-        selfUrl = new URL("http://id4")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("personal"),
-        service = HMRCMTDIT,
-        clientId = nino2.value,
-        status = "Accepted",
-        created = dateTime.plusDays(9),
-        lastUpdated = dateTime.plusDays(9),
-        expiryDate = now.plusDays(20),
-        invitationId = "id5",
-        isRelationshipEnded = false,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id5")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("business"),
-        service = HMRCMTDVAT,
-        clientId = vrn1.value,
-        status = "Accepted",
-        created = dateTime,
-        lastUpdated = dateTime.plusDays(4),
-        expiryDate = now.plusDays(11),
-        invitationId = "id6",
-        isRelationshipEnded = true,
-        relationshipEndedBy = Some("Client"),
-        selfUrl = new URL("http://id6")
-      ),
-      StoredInvitation(
+    when(acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+      .thenReturn(Future.successful(Seq(
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("personal"),
+          service = HMRCMTDIT,
+          clientId = nino1.value,
+          detailsForEmail = None,
+          status = "Pending",
+          created = dateTime,
+          lastUpdated = dateTime,
+          expiryDate = now.plusDays(11),
+          invitationId = "id1",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id1")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("personal"),
+          service = HMRCPIR,
+          clientId = nino1.value,
+          detailsForEmail = None,
+          status = "Expired",
+          created = dateTime.minusDays(20),
+          lastUpdated = dateTime.plusDays(1),
+          expiryDate = now.minusDays(9),
+          invitationId = "id2",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id2")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("personal"),
+          service = HMRCPIR,
+          clientId = nino1.value,
+          detailsForEmail = None,
+          status = "Cancelled",
+          created = dateTime.plusDays(2),
+          lastUpdated = dateTime.plusDays(7),
+          expiryDate = now.plusDays(13),
+          invitationId = "id3",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id3")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("personal"),
+          service = HMRCMTDIT,
+          clientId = nino2.value,
+          detailsForEmail = None,
+          status = "Accepted",
+          created = dateTime,
+          lastUpdated = dateTime.plusDays(8),
+          expiryDate = now.plusDays(11),
+          invitationId = "id4",
+          isRelationshipEnded = true,
+          relationshipEndedBy = Some("Agent"),
+          selfUrl = new URL("http://id4")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("personal"),
+          service = HMRCMTDIT,
+          clientId = nino2.value,
+          detailsForEmail = None,
+          status = "Accepted",
+          created = dateTime.plusDays(9),
+          lastUpdated = dateTime.plusDays(9),
+          expiryDate = now.plusDays(20),
+          invitationId = "id5",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id5")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("business"),
+          service = HMRCMTDVAT,
+          clientId = vrn1.value,
+          detailsForEmail = None,
+          status = "Accepted",
+          created = dateTime,
+          lastUpdated = dateTime.plusDays(4),
+          expiryDate = now.plusDays(11),
+          invitationId = "id6",
+          isRelationshipEnded = true,
+          relationshipEndedBy = Some("Client"),
+          selfUrl = new URL("http://id6")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("business"),
+          service = HMRCMTDVAT,
+          clientId = vrn2.value,
+          detailsForEmail = None,
+          status = "Pending",
+          created = dateTime.plusDays(7),
+          lastUpdated = dateTime.plusDays(7),
+          expiryDate = now.plusDays(18),
+          invitationId = "id7",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id7")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("business"),
+          service = HMRCCGTPD,
+          clientId = cgtRef1.value,
+          detailsForEmail = None,
+          status = "Rejected",
+          created = dateTime.minusDays(20),
+          lastUpdated = dateTime,
+          expiryDate = now.plusDays(1),
+          invitationId = "id8",
+          isRelationshipEnded = false,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id8")
+        ),
+        StoredInvitation(
+          arn = Arn(""),
+          clientType = Some("business"),
+          service = HMRCCGTPD,
+          clientId = cgtRef1.value,
+          detailsForEmail = None,
+          status = "Accepted",
+          created = dateTime.minusDays(30),
+          lastUpdated = dateTime.minusDays(25),
+          expiryDate = now.minusDays(19),
+          invitationId = "id9",
+          isRelationshipEnded = true,
+          relationshipEndedBy = None,
+          selfUrl = new URL("http://id9")
+        )
+      )))
+
+  def givenGetAllInvitationsWithDetailsAvailable() =
+    when(acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
+      .thenReturn(Future.successful(Seq(StoredInvitation(
         arn = Arn(""),
         clientType = Some("business"),
         service = HMRCMTDVAT,
         clientId = vrn2.value,
+        detailsForEmail = Some(DetailsForEmail("aphelion@mail.com", "Aphelion Ltd", "Perihelion")),
         status = "Pending",
         created = dateTime.plusDays(7),
         lastUpdated = dateTime.plusDays(7),
@@ -219,34 +272,6 @@ trait TrackServiceStubsAndData {
         isRelationshipEnded = false,
         relationshipEndedBy = None,
         selfUrl = new URL("http://id7")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("business"),
-        service = HMRCCGTPD,
-        clientId = cgtRef1.value,
-        status = "Rejected",
-        created = dateTime.minusDays(20),
-        lastUpdated = dateTime,
-        expiryDate = now.plusDays(1),
-        invitationId = "id8",
-        isRelationshipEnded = false,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id8")
-      ),
-      StoredInvitation(
-        arn = Arn(""),
-        clientType = Some("business"),
-        service = HMRCCGTPD,
-        clientId = cgtRef1.value,
-        status = "Accepted",
-        created = dateTime.minusDays(30),
-        lastUpdated = dateTime.minusDays(25),
-        expiryDate = now.minusDays(19),
-        invitationId = "id9",
-        isRelationshipEnded = true,
-        relationshipEndedBy = None,
-        selfUrl = new URL("http://id9")
-      )
-    )))
+      ))))
+
 }

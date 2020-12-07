@@ -43,12 +43,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsCompleteItsa" in {
         val state =
           CheckDetailsCompleteItsa(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDIT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -79,12 +74,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsCompleteIrv" in {
         val state =
           CheckDetailsCompleteIrv(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCPIR,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCPIR, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCPIR, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -115,12 +105,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsCompletePersonalVat" in {
         val state =
           CheckDetailsCompletePersonalVat(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDVAT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -151,12 +136,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsCompleteBusinessVat" in {
         val state =
           CheckDetailsCompleteBusinessVat(
-            AgentFastTrackRequest(
-              Some(business),
-              HMRCMTDVAT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(business), HMRCMTDVAT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(business), HMRCMTDVAT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -335,12 +315,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsNoClientTypeVat" in {
         val state =
           CheckDetailsNoClientTypeVat(
-            AgentFastTrackRequest(
-              None,
-              HMRCMTDVAT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(None, HMRCMTDVAT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(None, HMRCMTDVAT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -369,12 +344,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "NoPostcode" in {
         val state =
           NoPostcode(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDIT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -405,12 +375,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "NoDob" in {
         val state =
           NoDob(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDIT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -441,12 +406,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "NoVatRegDate" in {
         val state =
           NoVatRegDate(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDIT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -476,12 +436,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       }
       "SelectClientTypeVat" in {
         val state = SelectClientTypeVat(
-          AgentFastTrackRequest(
-            Some(personal),
-            HMRCMTDIT,
-            "OriginalClientIdType",
-            "OriginalClientId",
-            Some("OriginalKnownFact")),
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
           Some("continue/url")
         )
@@ -513,12 +468,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "SelectClientTypeCgt" in {
         val state = SelectClientTypeCgt(
-          AgentFastTrackRequest(
-            Some(personal),
-            HMRCCGTPD,
-            "OriginalClientIdType",
-            "OriginalClientId",
-            Some("OriginalKnownFact")),
+          AgentFastTrackRequest(Some(personal), HMRCCGTPD, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
           AgentFastTrackRequest(Some(personal), HMRCCGTPD, "ClientIdType", "ClientId", Some("KnownFact")),
           Some("continue/url")
         )
@@ -550,12 +500,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "IdentifyPersonalClient" in {
         val state = IdentifyPersonalClient(
-          AgentFastTrackRequest(
-            Some(personal),
-            HMRCMTDIT,
-            "OriginalClientIdType",
-            "OriginalClientId",
-            Some("OriginalKnownFact")),
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
           Some("continue/url")
         )
@@ -585,12 +530,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       }
       "IdentifyBusinessClient" in {
         val state = IdentifyBusinessClient(
-          AgentFastTrackRequest(
-            Some(personal),
-            HMRCMTDIT,
-            "OriginalClientIdType",
-            "OriginalClientId",
-            Some("OriginalKnownFact")),
+          AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
           AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
           Some("continue/url")
         )
@@ -839,11 +779,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.obj(
           "state" -> "InvitationSentPersonal",
           "properties" -> Json
-            .obj(
-              "invitationLink" -> "invitation/link",
-              "continueUrl"    -> "continue/url",
-              "agencyEmail"    -> "abc@xyz.com",
-              "service"        -> "HMRC-MTD-IT")
+            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com", "service" -> "HMRC-MTD-IT")
         )
 
         Json.toJson(state) shouldBe json
@@ -854,11 +790,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.obj(
           "state" -> "InvitationSentBusiness",
           "properties" -> Json
-            .obj(
-              "invitationLink" -> "invitation/link",
-              "continueUrl"    -> "continue/url",
-              "agencyEmail"    -> "abc@xyz.com",
-              "service"        -> "HMRC-MTD-VAT")
+            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com", "service" -> "HMRC-MTD-VAT")
         )
 
         Json.toJson(state) shouldBe json
@@ -867,12 +799,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "KnownFactNotMatched" in {
         val state =
           KnownFactNotMatched(
-            AgentFastTrackRequest(
-              Some(personal),
-              HMRCMTDIT,
-              "OriginalClientIdType",
-              "OriginalClientId",
-              Some("OriginalKnownFact")),
+            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "OriginalClientIdType", "OriginalClientId", Some("OriginalKnownFact")),
             AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             Some("continue/url")
           )
@@ -932,9 +859,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "ClientNotSignedUp" in {
         val state =
-          ClientNotSignedUp(
-            AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
-            Some("continue/url"))
+          ClientNotSignedUp(AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")), Some("continue/url"))
         val json = Json.parse(
           """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 

@@ -30,13 +30,10 @@ trait GetClientName extends Logging {
   def citizenDetailsConnector: CitizenDetailsConnector
   def acaConnector: AgentClientAuthorisationConnector
 
-  def getClientNameByService(
-    invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getClientNameByService(invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     getClientNameByService(invitation.clientId, invitation.service)
 
-  def getClientNameByService(clientId: String, service: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[String]] =
+  def getClientNameByService(clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     service match {
       case Services.HMRCMTDIT =>
         if (clientId.isEmpty) {

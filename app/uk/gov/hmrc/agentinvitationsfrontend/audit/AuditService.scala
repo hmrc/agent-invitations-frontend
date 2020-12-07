@@ -43,10 +43,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     invitation: Invitation,
     uid: String,
     result: String,
-    failure: Option[String] = None)(
-    implicit hc: HeaderCarrier,
-    request: Request[Any],
-    ec: ExecutionContext): Future[Unit] =
+    failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       "Agent client service authorisation request created",
@@ -84,10 +81,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       )
     )
 
-  private[audit] def auditEvent(
-    event: AgentInvitationEvent,
-    transactionName: String,
-    details: Seq[(String, Any)] = Seq.empty)(
+  private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(
     implicit hc: HeaderCarrier,
     request: Request[Any],
     ec: ExecutionContext): Future[Unit] =

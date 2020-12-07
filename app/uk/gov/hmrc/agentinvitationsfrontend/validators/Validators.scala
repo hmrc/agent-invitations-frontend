@@ -46,10 +46,7 @@ object Validators {
 
   val utrPattern = "^\\d{10}$"
 
-  def validPostcode(
-    invalidFormatFailure: String,
-    emptyFailure: String,
-    invalidCharactersFailure: String): Constraint[String] =
+  def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String): Constraint[String] =
     Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
       else if (!input.matches(postcodeCharactersRegex)) Invalid(ValidationError(invalidCharactersFailure))
@@ -153,8 +150,8 @@ object Validators {
     Invalid(ValidationError(messageKey, "inputFieldClass" -> inputFieldClass))
 
   val validVatDateFormat: Constraint[String] =
-    ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(
-      vatRegistrationDate => validateDate(vatRegistrationDate))
+    ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(vatRegistrationDate =>
+      validateDate(vatRegistrationDate))
 
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))

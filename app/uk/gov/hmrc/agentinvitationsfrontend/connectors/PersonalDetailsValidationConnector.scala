@@ -29,13 +29,11 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonalDetailsValidationConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics)
-    extends HttpAPIMonitor {
+class PersonalDetailsValidationConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def getPdvResult(
-    validationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[PdvError, Nino]] =
+  def getPdvResult(validationId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[PdvError, Nino]] =
     monitor("ConsumedAPI-Client-Get-PDVResult-GET") {
       val url = s"${appConfig.personalDetailsValidationBaseUrl}/personal-details-validation/$validationId"
       http

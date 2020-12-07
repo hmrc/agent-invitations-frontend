@@ -46,11 +46,7 @@ class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite {
 
       status(result) shouldBe FORBIDDEN
       contentType(result) shouldBe Some(HTML)
-      checkIncludesMessages(
-        result,
-        "global.error.passcode.title",
-        "global.error.passcode.heading",
-        "global.error.passcode.message")
+      checkIncludesMessages(result, "global.error.passcode.title", "global.error.passcode.heading", "global.error.passcode.message")
     }
 
     "a client error (400) occurs" in {

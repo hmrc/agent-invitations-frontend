@@ -48,8 +48,7 @@ object Citizen {
 }
 
 @Singleton
-class CitizenDetailsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
-    extends HttpAPIMonitor {
+class CitizenDetailsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 

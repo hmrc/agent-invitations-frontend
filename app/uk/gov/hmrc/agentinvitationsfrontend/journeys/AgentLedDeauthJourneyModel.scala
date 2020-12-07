@@ -93,8 +93,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         }
     }
 
-    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean)(
-      agent: AuthorisedAgent)(service: String) = Transition {
+    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
+      service: String) = Transition {
       case SelectServicePersonal(enabledServices) =>
         if (enabledServices.contains(service)) {
           service match {
@@ -146,8 +146,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def submitIdentifyClientItsa(
       checkPostcodeMatches: CheckPostcodeMatches,
       getClientName: GetClientName,
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
-      itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
+      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(kfcResult: Option[Boolean]): Future[State] =
         for {
@@ -171,11 +170,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def submitIdentifyClientIrv(
-      checkDOBMatches: DOBMatches,
-      getClientName: GetClientName,
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
-      irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientIrv(checkDOBMatches: DOBMatches, getClientName: GetClientName, hasActiveRelationship: HasActiveRelationship)(
+      agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(dobMatchResult: Option[Boolean]): Future[State] =
         for {
@@ -265,11 +261,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitIdentifyClientVat(
-      vatRegDateMatches: VatRegDateMatches,
-      getClientName: GetClientName,
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
-      vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName, hasActiveRelationship: HasActiveRelationship)(
+      agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
 
       def vatRegDateMatchResult: Future[Option[Int]] =
         if (vatClient.registrationDate.nonEmpty)
@@ -328,23 +321,23 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName)(agent: AuthorisedAgent)(
-      confirmation: Confirmation) = Transition {
-      case ConfirmCancel(service, clientName, clientId) =>
-        if (confirmation.choice) {
+    def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName)(agent: AuthorisedAgent)(confirmation: Confirmation) =
+      Transition {
+        case ConfirmCancel(service, clientName, clientId) =>
+          if (confirmation.choice) {
+            deleteRelationship(service, agent.arn, clientId).flatMap {
+              case Some(true) =>
+                getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
+              case _ => goto(ResponseFailed(service, clientName, clientId))
+            }
+          } else goto(root)
+
+        case ResponseFailed(service, clientName, clientId) =>
           deleteRelationship(service, agent.arn, clientId).flatMap {
             case Some(true) =>
               getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
             case _ => goto(ResponseFailed(service, clientName, clientId))
           }
-        } else goto(root)
-
-      case ResponseFailed(service, clientName, clientId) =>
-        deleteRelationship(service, agent.arn, clientId).flatMap {
-          case Some(true) =>
-            getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
-          case _ => goto(ResponseFailed(service, clientName, clientId))
-        }
-    }
+      }
   }
 }

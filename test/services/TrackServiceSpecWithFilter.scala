@@ -296,6 +296,53 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
         clientSet = Set("Aaa Itsa Trader", "A Trust or an Estate", "John Jones", "Superior Ltd")
       )
     }
+
+    "Use the company name stored with the invitation if it's available" in {
+
+      givenGetTradingName()
+      givenGetCitizenDetails()
+      givenGetCustomerDetails()
+      givenGetCgtSubscription()
+      givenGetNinoForMtdit()
+      givenGetInactiveIrvRelationships()
+      givenGetGivenInactiveRelationships(
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+      )
+      givenGetAllInvitationsWithDetailsAvailable()
+
+      val result = await(
+        tested.bindInvitationsAndRelationships(
+          arn = Arn(""),
+          isPirWhitelisted = true,
+          showLastDays = 30,
+          pageInfo = PageInfo(1, 10),
+          filterByClient = None,
+          filterByStatus = None
+        ))
+
+      result shouldBe tested.TrackResultsPage(
+        results = Seq(
+          TrackInformationSorted(
+            clientType = Some("business"),
+            service = HMRCMTDVAT,
+            clientId = vrn2.value,
+            clientIdType = "vrn",
+            clientName = Some("Aphelion Ltd"),
+            status = "Pending",
+            date = None,
+            expiryDate = Some(now.plusDays(18)),
+            invitationId = Some("id7"),
+            isRelationshipEnded = false,
+            relationshipEndedBy = None
+          )
+        ),
+        totalResults = 1,
+        clientSet = Set("Aphelion Ltd")
+      )
+    }
+
   }
 
 }

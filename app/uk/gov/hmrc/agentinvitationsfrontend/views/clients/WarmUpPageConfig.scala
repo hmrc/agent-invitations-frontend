@@ -18,12 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
-case class WarmUpPageConfig(
-  agentName: String,
-  clientType: ClientType,
-  uid: String,
-  getConfirmTermsCall: Call,
-  getConfirmDeclineCall: Call) {
+case class WarmUpPageConfig(agentName: String, clientType: ClientType, uid: String, getConfirmTermsCall: Call, getConfirmDeclineCall: Call) {
 
   val typeOfClient = ClientType.fromEnum(clientType)
 }

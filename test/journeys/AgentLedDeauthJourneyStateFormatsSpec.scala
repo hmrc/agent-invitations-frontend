@@ -43,8 +43,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
       "SelectServicePersonal" in {
         val state = SelectServicePersonal(Set("approved", "services"))
-        val json = Json.parse(
-          """{"state":"SelectServicePersonal", "properties": {"enabledServices": ["approved", "services"]}}""")
+        val json = Json.parse("""{"state":"SelectServicePersonal", "properties": {"enabledServices": ["approved", "services"]}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -59,8 +58,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
       "SelectServiceTrust" in {
         val state = SelectServiceTrust(Set(TRUST, HMRCCGTPD))
-        val json = Json.parse(
-          """{"state":"SelectServiceTrust","properties":{"enabledServices":["HMRC-TERS-ORG","HMRC-CGT-PD"]}}""")
+        val json = Json.parse("""{"state":"SelectServiceTrust","properties":{"enabledServices":["HMRC-TERS-ORG","HMRC-CGT-PD"]}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -109,32 +107,28 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientItsa" in {
         val state = ConfirmClientItsa(Some("Cersei not KEEPing well"), Nino("AB123456A"))
-        val json = Json.parse(
-          """{"state":"ConfirmClientItsa","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A"}}""")
+        val json = Json.parse("""{"state":"ConfirmClientItsa","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientIrv" in {
         val state = ConfirmClientIrv(Some("Cersei not KEEPing well"), Nino("AB123456A"))
-        val json = Json.parse(
-          """{"state":"ConfirmClientIrv","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A"}}""")
+        val json = Json.parse("""{"state":"ConfirmClientIrv","properties": {"clientName":"Cersei not KEEPing well","nino": "AB123456A"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientPersonalVat" in {
         val state = ConfirmClientPersonalVat(Some("Cersei not KEEPing well"), Vrn("123456"))
-        val json = Json.parse(
-          s"""{"state":"ConfirmClientPersonalVat","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456"}}""")
+        val json = Json.parse(s"""{"state":"ConfirmClientPersonalVat","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
       }
       "ConfirmClientBusiness" in {
         val state = ConfirmClientBusiness(Some("Cersei not KEEPing well"), Vrn("123456"))
-        val json = Json.parse(
-          s"""{"state":"ConfirmClientBusiness","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456"}}""")
+        val json = Json.parse(s"""{"state":"ConfirmClientBusiness","properties": {"clientName":"Cersei not KEEPing well","vrn": "123456"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -142,8 +136,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientTrust" in {
         val state = ConfirmClientTrust("some-trust", Utr("1977030537"))
-        val json = Json.parse(
-          s"""{"state":"ConfirmClientTrust","properties": {"clientName":"some-trust","utr": "1977030537"}}""")
+        val json = Json.parse(s"""{"state":"ConfirmClientTrust","properties": {"clientName":"some-trust","utr": "1977030537"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -151,8 +144,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientCgt" in {
         val state = ConfirmClientCgt(cgtRef, "some-client")
-        val json = Json.parse(
-          s"""{"state":"ConfirmClientCgt","properties": {"clientName":"some-client","cgtRef": "XMCGTP123456789"}}""")
+        val json = Json.parse(s"""{"state":"ConfirmClientCgt","properties": {"clientName":"some-client","cgtRef": "XMCGTP123456789"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -214,8 +206,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
       "ResponseFailed" in {
         val state = ResponseFailed("HMRC-MTD-IT", Some("Holly Herndon"), "AB123456A")
-        val json = Json.parse(
-          """{"state":"ResponseFailed", "properties": {"service": "HMRC-MTD-IT", "clientName":"Holly Herndon","clientId": "AB123456A"}}""")
+        val json =
+          Json.parse("""{"state":"ResponseFailed", "properties": {"service": "HMRC-MTD-IT", "clientName":"Holly Herndon","clientId": "AB123456A"}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state

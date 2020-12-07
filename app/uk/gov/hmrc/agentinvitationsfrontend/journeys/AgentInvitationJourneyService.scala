@@ -34,8 +34,7 @@ trait AgentInvitationJourneyService extends PersistentJourneyService[HeaderCarri
 }
 
 @Singleton
-class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository)
-    extends AgentInvitationJourneyService {
+class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository) extends AgentInvitationJourneyService {
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
@@ -50,8 +49,7 @@ class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: Ses
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =
     cache.fetch.map(_.map(ps => (ps.state, ps.breadcrumbs)))
 
-  protected def save(
-    state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
+  protected def save(state: StateAndBreadcrumbs)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[StateAndBreadcrumbs] =
     cache.save(PersistentState(state._1, state._2)).map(_ => state)
 
   override def clear(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =

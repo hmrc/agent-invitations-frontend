@@ -77,7 +77,6 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       "VRN looks valid but the checksum digit is invalid (i.e. checksum digits are not validated)" in {
         val vrnWithBadChecksum = "101747697"
         val dataWithRegistrationDateLowercase = validData + ("clientIdentifier" -> vrnWithBadChecksum)
-        println(agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors)
         agentInvitationIdentifyClientForm.bind(dataWithRegistrationDateLowercase).errors.isEmpty shouldBe true
       }
 
@@ -161,11 +160,8 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       }
 
       "registrationDate is empty" in {
-        val dataWithEmptyRegistrationDate = Map(
-          "clientIdentifier"       -> "101747696",
-          "registrationDate.year"  -> "",
-          "registrationDate.month" -> "",
-          "registrationDate.day"   -> "")
+        val dataWithEmptyRegistrationDate =
+          Map("clientIdentifier" -> "101747696", "registrationDate.year" -> "", "registrationDate.month" -> "", "registrationDate.day" -> "")
         val registrationDateForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyRegistrationDate)
         registrationDateForm.errors shouldBe Seq(dateRequiredFormError)
       }
@@ -201,11 +197,8 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       }
 
       "VRN is empty" in {
-        val dataWithEmptyVrn = Map(
-          "clientIdentifier"       -> "",
-          "registrationDate.year"  -> "2000",
-          "registrationDate.month" -> "1",
-          "registrationDate.day"   -> "1")
+        val dataWithEmptyVrn =
+          Map("clientIdentifier" -> "", "registrationDate.year" -> "2000", "registrationDate.month" -> "1", "registrationDate.day" -> "1")
         val vrnForm = agentInvitationIdentifyClientForm.bind(dataWithEmptyVrn)
         vrnForm.errors shouldBe Seq(FormError("clientIdentifier", List("error.vrn.required")))
       }

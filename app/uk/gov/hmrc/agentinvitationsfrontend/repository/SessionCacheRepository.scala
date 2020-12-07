@@ -23,7 +23,5 @@ import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class SessionCacheRepository @Inject()(mongo: ReactiveMongoComponent)(
-  implicit ec: ExecutionContext,
-  appConfig: AppConfig)
+class SessionCacheRepository @Inject()(mongo: ReactiveMongoComponent)(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends CacheMongoRepository("sessions", appConfig.mongoSessionExpireAfterSeconds)(mongo.mongoConnector.db, ec)

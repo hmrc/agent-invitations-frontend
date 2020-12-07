@@ -22,12 +22,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
 
-case class PersonalSelectServicePageConfig(
-  basket: Basket,
-  featureFlags: FeatureFlags,
-  services: Set[String],
-  backLink: String,
-  reviewAuthsCall: Call)(implicit messages: Messages)
+case class PersonalSelectServicePageConfig(basket: Basket, featureFlags: FeatureFlags, services: Set[String], backLink: String, reviewAuthsCall: Call)(
+  implicit messages: Messages)
     extends SelectServicePageConfig {
 
   def submitCall: Call =

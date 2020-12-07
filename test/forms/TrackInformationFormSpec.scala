@@ -33,32 +33,28 @@ class TrackInformationFormSpec extends UnitSpec {
   "ConfirmInvite form" should {
     "return no error with valid input" in {
       val result =
-        testTrackInformationForm.bind(
-          Json.obj("service" -> itsaService, "clientType" -> clientTypePersonal, "expiryDate" -> expiryDate))
+        testTrackInformationForm.bind(Json.obj("service" -> itsaService, "clientType" -> clientTypePersonal, "expiryDate" -> expiryDate))
 
       result.errors.isEmpty shouldBe true
     }
 
     "return an error when service is invalid" in {
       val result =
-        testTrackInformationForm.bind(
-          Json.obj("service" -> "foo", "clientType" -> clientTypePersonal, "expiryDate" -> expiryDate))
+        testTrackInformationForm.bind(Json.obj("service" -> "foo", "clientType" -> clientTypePersonal, "expiryDate" -> expiryDate))
 
       result.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
     }
 
     "return and error when clientType is invalid" in {
       val result =
-        testTrackInformationForm.bind(
-          Json.obj("service" -> itsaService, "clientType" -> "foo", "expiryDate" -> expiryDate))
+        testTrackInformationForm.bind(Json.obj("service" -> itsaService, "clientType" -> "foo", "expiryDate" -> expiryDate))
 
       result.errors shouldBe Seq(FormError("clientType", List("Unsupported client type")))
     }
 
     "return an error when expiryDate is invalid" in {
       val result =
-        testTrackInformationForm.bind(
-          Json.obj("service" -> itsaService, "clientType" -> clientTypePersonal, "expiryDate" -> "foo"))
+        testTrackInformationForm.bind(Json.obj("service" -> itsaService, "clientType" -> clientTypePersonal, "expiryDate" -> "foo"))
 
       result.errors shouldBe Seq(FormError("expiryDate", List("Invalid date format")))
     }

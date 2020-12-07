@@ -31,22 +31,17 @@ class PasscodeVerificationException(msg: String) extends RuntimeException(msg)
 
 @ImplementedBy(classOf[FrontendPasscodeVerification])
 trait PasscodeVerification {
-  def apply[A](body: Boolean => Future[Result])(
-    implicit request: Request[A],
-    headerCarrier: HeaderCarrier,
-    ec: ExecutionContext): Future[Result]
+  def apply[A](body: Boolean => Future[Result])(implicit request: Request[A], headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Result]
 }
 
 @Singleton
-class OtacAuthConnectorImpl @Inject()(val httpClient: HttpClient)(implicit appConfig: AppConfig)
-    extends PlayOtacAuthConnector {
+class OtacAuthConnectorImpl @Inject()(val httpClient: HttpClient)(implicit appConfig: AppConfig) extends PlayOtacAuthConnector {
   override val serviceUrl: String = appConfig.authBaseUrl
   override def http: CoreGet = httpClient
 }
 
 @Singleton
-class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthConnector: OtacAuthConnectorImpl)(
-  implicit appConfig: AppConfig)
+class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthConnector: OtacAuthConnectorImpl)(implicit appConfig: AppConfig)
     extends PasscodeVerification with Logging {
 
   val tokenParam = "p"
@@ -71,10 +66,7 @@ class FrontendPasscodeVerification @Inject()(environment: Environment, otacAuthC
   def buildRedirectUrl[A](req: Request[A]): String =
     if (appConfig.runMode.env != "Prod") s"http${if (req.secure) "s" else ""}://${req.host}${req.path}" else req.path
 
-  def apply[A](body: Boolean => Future[Result])(
-    implicit request: Request[A],
-    headerCarrier: HeaderCarrier,
-    ec: ExecutionContext): Future[Result] =
+  def apply[A](body: Boolean => Future[Result])(implicit request: Request[A], headerCarrier: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     if (passcodeEnabled) {
       request.session
         .get(SessionKeys.otacToken)

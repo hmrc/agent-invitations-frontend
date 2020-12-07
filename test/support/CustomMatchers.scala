@@ -33,8 +33,7 @@ object CustomMatchers extends Matchers {
       Messages.isDefinedAt(messageKey) shouldBe true
     }
 
-  def havePageTitle(expectedTitleMessageKey: String, expectedMessageParamKeys: String*)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def havePageTitle(expectedTitleMessageKey: String, expectedMessageParamKeys: String*)(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedTitleMessageKey)
@@ -63,8 +62,7 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessages(expectedMessageKeys: String*)(expectHtmlEscaped: Boolean = true)(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         expectedMessageKeys.foreach(checkMessageIsDefined)
@@ -87,8 +85,8 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)(
-    expectHtmlEscaped: Boolean = true)(implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)(expectHtmlEscaped: Boolean = true)(
+    implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedMessageKey)
@@ -150,8 +148,7 @@ object CustomMatchers extends Matchers {
         )
       }
     }
-  def containElement(tag: String, expectedMessageKey: String)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containElement(tag: String, expectedMessageKey: String)(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedMessageKey)
@@ -167,11 +164,8 @@ object CustomMatchers extends Matchers {
         )
       }
     }
-  def containSubmitButton(
-    expectedMessageKey: String,
-    expectedElementId: String,
-    expectedTagName: String = "button",
-    expectedType: String = "submit")(implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containSubmitButton(expectedMessageKey: String, expectedElementId: String, expectedTagName: String = "button", expectedType: String = "submit")(
+    implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)
@@ -235,8 +229,7 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def repeatMessage(expectedMessageKey: String, times: Int)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] = new Matcher[Html] {
+  def repeatMessage(expectedMessageKey: String, times: Int)(implicit messagesProvider: MessagesProvider): Matcher[Html] = new Matcher[Html] {
     override def apply(html: Html): MatchResult =
       MatchResult(
         Messages(expectedMessageKey).r.findAllMatchIn(html.toString).size == times,
