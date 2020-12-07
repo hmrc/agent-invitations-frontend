@@ -18,16 +18,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.Json
 
-case class CustomerDetails(
-  organisationName: Option[String],
-  individual: Option[IndividualDetails],
-  tradingName: Option[String])
+case class CustomerDetails(organisationName: Option[String], individual: Option[IndividualDetails], tradingName: Option[String])
 
-case class IndividualDetails(
-  title: Option[String],
-  firstName: Option[String],
-  middleName: Option[String],
-  lastName: Option[String]) {
+case class IndividualDetails(title: Option[String], firstName: Option[String], middleName: Option[String], lastName: Option[String]) {
 
   def name: String =
     Seq(title, firstName, middleName, lastName).flatten.map(_.trim).filter(_.nonEmpty).mkString(" ")

@@ -59,8 +59,7 @@ object Invitation {
     override def writes(invitation: Invitation): JsValue = {
       val toJson = {
         Json.parse(s""" {
-                      |"clientType": "${invitation.clientType.getOrElse(
-                        throw new RuntimeException("missing clientType from the invitation"))}",
+                      |"clientType": "${invitation.clientType.getOrElse(throw new RuntimeException("missing clientType from the invitation"))}",
                       |"service": "${invitation.service}",
                       |"clientIdentifier": "${invitation.clientIdentifier.value}",
                       |"clientIdentifierType": "${invitation.clientIdentifierType}"

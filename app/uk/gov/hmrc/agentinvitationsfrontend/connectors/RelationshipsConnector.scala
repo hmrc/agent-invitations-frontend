@@ -35,9 +35,7 @@ import uk.gov.hmrc.http.{HttpClient, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFlags)(
-  implicit appConfig: AppConfig,
-  metrics: Metrics)
+class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFlags)(implicit appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -76,9 +74,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
       s"/agent-client-relationships/agent/${arn.value}/service" +
         s"/$service/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
 
-  def getInactiveRelationships(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[InactiveTrackRelationship]] =
+  def getInactiveRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveTrackRelationship]] =
     monitor(s"ConsumedApi-Get-InactiveRelationships-GET") {
       http
         .GET[HttpResponse](inactiveRelationshipUrl)
@@ -110,24 +106,16 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
       Future successful None
     }
 
-  def deleteRelationshipItsa(arn: Arn, nino: Nino)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationshipItsa(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-MTD-IT", arn, nino)
 
-  def deleteRelationshipVat(arn: Arn, vrn: Vrn)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationshipVat(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-MTD-VAT", arn, vrn)
 
-  def deleteRelationshipTrust(arn: Arn, utr: Utr)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationshipTrust(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-TERS-ORG", arn, utr)
 
-  def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-CGT-PD", arn, ref)
 
   private def checkRelationship(service: String, arn: Arn, identifier: TaxIdentifier)(

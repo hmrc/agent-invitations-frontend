@@ -41,8 +41,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
   object State {
     case object MissingJourneyHistory extends State
 
-    case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String)
-        extends State
+    case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String) extends State
 
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
@@ -65,28 +64,18 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class AuthorisationRequestCancelled(cancelledOn: String, clientType: ClientType) extends State with IsError
 
-    case class AuthorisationRequestAlreadyResponded(respondedOn: String, clientType: ClientType)
-        extends State with IsError
+    case class AuthorisationRequestAlreadyResponded(respondedOn: String, clientType: ClientType) extends State with IsError
 
-    case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
+    case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent]) extends State
+
+    case class SingleConsent(clientType: ClientType, uid: String, agentName: String, consent: ClientConsent, consents: Seq[ClientConsent])
         extends State
 
-    case class SingleConsent(
-      clientType: ClientType,
-      uid: String,
-      agentName: String,
-      consent: ClientConsent,
-      consents: Seq[ClientConsent])
-        extends State
+    case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent]) extends State
 
-    case class CheckAnswers(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
-        extends State
+    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent], clientType: ClientType) extends State
 
-    case class InvitationsAccepted(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
-        extends State
-
-    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent], clientType: ClientType)
-        extends State
+    case class InvitationsDeclined(agentName: String, consents: Seq[ClientConsent], clientType: ClientType) extends State
 
     case object AllResponsesFailed extends State
 
@@ -97,8 +86,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       clientType: ClientType)
         extends State
 
-    case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent])
-        extends State
+    case class ConfirmDecline(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent]) extends State
 
     case object TrustNotClaimed extends State
 
@@ -122,8 +110,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     type RejectInvitation = InvitationId => String => Future[Boolean]
     type GetSuspensionDetails = Arn => Future[SuspensionDetails]
 
-    def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(
-      getAgencyName: GetAgencyName) =
+    def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
       Transition {
         case _ =>
           for {
@@ -136,8 +123,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                          }
                        case Some(r) =>
                          val names = r.normalisedAgentNames.mkString(",")
-                         logger.warn(
-                           s"Agency name not matching for uid: $uid, record has [$names], but url provided: [$agentName]")
+                         logger.warn(s"Agency name not matching for uid: $uid, record has [$names], but url provided: [$agentName]")
                          goto(NotFoundInvitation)
                        case _ =>
                          logger.warn(s"No agent reference record found matching uid: $uid")
@@ -146,22 +132,15 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           } yield result
       }
 
-    private def getConsents(
-      pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
-      pendingInvitationDetails.map(
-        invitation =>
-          ClientConsent(
-            invitation.invitationId,
-            invitation.expiryDate,
-            determineServiceMessageKey(invitation.invitationId),
-            consent = false))
+    private def getConsents(pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
+      pendingInvitationDetails.map(invitation =>
+        ClientConsent(invitation.invitationId, invitation.expiryDate, determineServiceMessageKey(invitation.invitationId), consent = false))
 
     def submitWarmUp(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
       getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
-      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
-        getPendingInvitationIdsAndExpiryDates,
-        getSuspensionStatus)(client)
+      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(
+        client)
 
     def submitWarmUpToDecline(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
@@ -170,25 +149,21 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         getPendingInvitationIdsAndExpiryDates,
         getSuspensionStatus)(client)
 
-    private def transitionFromWarmup(
-      agentSuspensionEnabled: Boolean,
-      idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
+    private def transitionFromWarmup(agentSuspensionEnabled: Boolean, idealTargetState: (ClientType, String, String, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
         case WarmUp(clientType, uid, arn, agentName, _) => {
           client.enrolmentCoverage match {
             case NoSupportedMTDEnrolments => {
-              logger.warn(
-                s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
+              logger.warn(s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
               goto(CannotFindRequest(clientType, agentName))
             }
             case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
               getInvitationDetails(uid).flatMap { invitationDetails =>
                 if (invitationDetails.isEmpty) {
                   logger.warn(
-                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: [${tempEnrolLog(
-                      client.enrolments)}]")
+                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: [${tempEnrolLog(client.enrolments)}]")
                   if (maybeAll == SomeSupportedMTDEnrolments) goto(CannotFindRequest(clientType, agentName))
                   else goto(NoOutstandingRequests)
                 } else {
@@ -198,8 +173,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                       val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
                       val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
                       if (containsTrust && butNoTrustEnrolment) {
-                        logger.warn(
-                          "client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                        logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
                         goto(TrustNotClaimed)
                       } else {
                         consents match {
@@ -264,8 +238,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       date.toString(fmt)
     }
 
-    private def gotoState(targetState: State, fallbackState: State)(
-      enrolmentCoverage: EnrolmentCoverage): Future[State] =
+    private def gotoState(targetState: State, fallbackState: State)(enrolmentCoverage: EnrolmentCoverage): Future[State] =
       if (enrolmentCoverage == AllSupportedMTDEnrolments) goto(targetState)
       else {
         goto(fallbackState)
@@ -293,9 +266,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           if (confirmation.choice) {
             val newConsentsF =
               Future.sequence {
-                consents.map(consent =>
-                  rejectInvitation(consent.invitationId)(agentName).map(processed =>
-                    consent.copy(processed = processed)))
+                consents.map(consent => rejectInvitation(consent.invitationId)(agentName).map(processed => consent.copy(processed = processed)))
               }
             for {
               newConsents <- newConsentsF
@@ -323,10 +294,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
-    def determineChangedConsents(
-      changedConsent: ClientConsent,
-      oldConsents: Seq[ClientConsent],
-      formTerms: ConfirmedTerms): Seq[ClientConsent] = {
+    def determineChangedConsents(changedConsent: ClientConsent, oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] = {
       val newConsent = changedConsent.serviceKey match {
         case "itsa"  => changedConsent.copy(consent = formTerms.itsaConsent)
         case "afi"   => changedConsent.copy(consent = formTerms.afiConsent)
@@ -344,8 +312,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
-    private def processConsents(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
-      consents: Seq[ClientConsent])(agentName: String): Future[Seq[ClientConsent]] =
+    private def processConsents(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(consents: Seq[ClientConsent])(
+      agentName: String): Future[Seq[ClientConsent]] =
       for {
         result <- Future.traverse(consents) {
                    case chosenConsent @ ClientConsent(invitationId, _, _, consent, _) =>
@@ -359,8 +327,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                  }
       } yield result
 
-    def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(
-      client: AuthorisedClient) = Transition {
+    def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(client: AuthorisedClient) = Transition {
       case CheckAnswers(clientType, _, agentName, consents) =>
         for {
           newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)(agentName)
@@ -376,12 +343,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       if (ClientConsent.allFailed(newConsents))
         goto(AllResponsesFailed)
       else if (ClientConsent.someFailed(newConsents))
-        goto(
-          SomeResponsesFailed(
-            agentName,
-            newConsents.filter(_.processed == false),
-            newConsents.filter(_.processed == true),
-            clientType))
+        goto(SomeResponsesFailed(agentName, newConsents.filter(_.processed == false), newConsents.filter(_.processed == true), clientType))
       else if (ClientConsent.allAcceptedProcessed(newConsents))
         goto(InvitationsAccepted(agentName, consents, clientType))
       else if (ClientConsent.allDeclinedProcessed(newConsents))
@@ -390,11 +352,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
       case SomeResponsesFailed(agentName, _, successfulConsents, _) =>
-        goto(
-          InvitationsAccepted(
-            agentName,
-            successfulConsents,
-            if (client.affinityGroup == Individual) personal else business))
+        goto(InvitationsAccepted(agentName, successfulConsents, if (client.affinityGroup == Individual) personal else business))
     }
 
     def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {

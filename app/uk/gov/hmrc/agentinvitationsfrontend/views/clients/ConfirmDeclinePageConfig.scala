@@ -17,10 +17,4 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 
-case class ConfirmDeclinePageConfig(
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  serviceKeys: Seq[String],
-  submitUrl: Call,
-  backLink: Call)
+case class ConfirmDeclinePageConfig(agencyName: String, clientType: String, uid: String, serviceKeys: Seq[String], submitUrl: Call, backLink: Call)

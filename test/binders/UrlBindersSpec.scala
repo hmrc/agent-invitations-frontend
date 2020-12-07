@@ -49,8 +49,7 @@ class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
 
   "FilterFormStatus binder" should {
     "bind a filter status from a valid string" in {
-      UrlBinders.filterFormStatusBinder.bind("status", Map("status" -> List("AllStatuses"))) shouldBe Some(
-        Right(AllStatuses))
+      UrlBinders.filterFormStatusBinder.bind("status", Map("status" -> List("AllStatuses"))) shouldBe Some(Right(AllStatuses))
     }
 
     "unbind a valid status to a String" in {

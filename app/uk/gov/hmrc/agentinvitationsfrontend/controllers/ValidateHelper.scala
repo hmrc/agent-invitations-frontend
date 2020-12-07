@@ -25,17 +25,16 @@ object ValidateHelper {
     if (fieldValue.trim.isEmpty) Invalid(ValidationError(failure)) else Valid
   }
 
-  def validateField(emptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] {
-    fieldValue: String =>
-      nonEmpty(emptyFailure)(fieldValue) match {
-        case i: Invalid =>
-          i
-        case Valid =>
-          if (condition(fieldValue.trim.toUpperCase))
-            Valid
-          else
-            Invalid(ValidationError(invalidFailure))
-      }
+  def validateField(emptyFailure: String, invalidFailure: String)(condition: String => Boolean) = Constraint[String] { fieldValue: String =>
+    nonEmpty(emptyFailure)(fieldValue) match {
+      case i: Invalid =>
+        i
+      case Valid =>
+        if (condition(fieldValue.trim.toUpperCase))
+          Valid
+        else
+          Invalid(ValidationError(invalidFailure))
+    }
   }
 
   def validateVrnField(nonEmptyFailure: String, regexFailure: String) = Constraint[String] { fieldValue: String =>

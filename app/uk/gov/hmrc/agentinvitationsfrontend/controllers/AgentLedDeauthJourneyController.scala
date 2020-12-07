@@ -111,25 +111,18 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def submitPersonalService: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
-      chosenPersonalService(
-        featureFlags.showHmrcMtdIt,
-        featureFlags.showPersonalIncome,
-        featureFlags.showHmrcMtdVat,
-        featureFlags.showHmrcCgt))
+      chosenPersonalService(featureFlags.showHmrcMtdIt, featureFlags.showPersonalIncome, featureFlags.showHmrcMtdVat, featureFlags.showHmrcCgt))
   }
 
   def submitBusinessService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(
-      chosenBusinessService(featureFlags.showHmrcMtdVat))
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(chosenBusinessService(featureFlags.showHmrcMtdVat))
   }
 
   def submitTrustService: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(
-      chosenTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
+    whenAuthorisedWithForm(AsAgent)(ServiceTypeForm.form)(chosenTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt))
   }
 
-  val identifyClientRedirect: Action[AnyContent] = Action(
-    Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
+  val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 
   def showIdentifyClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: IdentifyClientPersonal =>
@@ -154,13 +147,11 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr =>
-      acaConnector.getTrustName(utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(submitIdentifyClientCgt(cgtRef =>
-      acaConnector.getCgtSubscription(cgtRef)))
+    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(submitIdentifyClientCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showPostcodeCgt: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -168,8 +159,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(confirmPostcodeCgt(cgtRef =>
-      acaConnector.getCgtSubscription(cgtRef)))
+    whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showCountryCodeCgt: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -177,8 +167,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(confirmCountryCodeCgt(cgtRef =>
-      acaConnector.getCgtSubscription(cgtRef)))
+    whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
   }
 
   def showConfirmClient: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -252,10 +241,8 @@ class AgentLedDeauthJourneyController @Inject()(
     case _                           => throw new Exception(s"Link not found for $state")
   }
 
-  override def renderState(
-    state: journeyService.model.State,
-    breadcrumbs: journeyService.Breadcrumbs,
-    formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result = state match {
+  override def renderState(state: journeyService.model.State, breadcrumbs: journeyService.Breadcrumbs, formWithErrors: Option[Form[_]])(
+    implicit request: Request[_]): Result = state match {
 
     case SelectClientType =>
       def backLinkForClientType(implicit request: Request[_]): String =
@@ -264,10 +251,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         clientTypeView(
           formWithErrors.or(ClientTypeForm.deAuthorisationForm),
-          ClientTypePageConfig(
-            backLinkForClientType,
-            routes.AgentLedDeauthJourneyController.submitClientType(),
-            featureFlags.showHmrcTrust)
+          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType(), featureFlags.showHmrcTrust)
         ))
 
     case SelectServicePersonal(enabledServices) =>
@@ -435,13 +419,7 @@ class AgentLedDeauthJourneyController @Inject()(
           isDeAuth = true))
 
     case _: ConfirmPostcodeCgt =>
-      Ok(
-        confirmPostcodeCgtView(
-          personal,
-          formWithErrors.or(PostcodeForm.form),
-          backLinkFor(breadcrumbs).url,
-          fromFastTrack = false,
-          isDeAuth = true))
+      Ok(confirmPostcodeCgtView(personal, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, fromFastTrack = false, isDeAuth = true))
 
     case ConfirmClientCgt(cgtRef, clientName) =>
       Ok(

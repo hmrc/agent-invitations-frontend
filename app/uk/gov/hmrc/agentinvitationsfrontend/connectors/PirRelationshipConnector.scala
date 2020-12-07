@@ -35,8 +35,7 @@ import uk.gov.hmrc.http.{HttpClient, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics)
-    extends HttpAPIMonitor {
+class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -44,9 +43,7 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
 
   val ISO_LOCAL_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 
-  def createRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] =
+  def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
@@ -55,9 +52,7 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
         .map(_.status)
     }
 
-  def deleteRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
       http.DELETE[HttpResponse](url.toString).map { r =>
@@ -85,13 +80,9 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
     }
 
   def getActiveIrvRelationshipUrl(arn: Arn, clientId: Nino): URL =
-    new URL(
-      baseUrl,
-      s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
+    new URL(baseUrl, s"/agent-fi-relationship/relationships/PERSONAL-INCOME-RECORD/agent/${arn.value}/client/${clientId.value}")
 
-  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[IrvTrackRelationship]] =
+  def getPirRelationshipForAgent(arn: Arn, clientId: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[IrvTrackRelationship]] =
     monitor("ConsumedApi-Get-ActiveIrvRelationships-GET") {
       http
         .GET[HttpResponse](getActiveIrvRelationshipUrl(arn, clientId).toString)
@@ -109,12 +100,8 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   private def craftUrl(location: String) = new URL(baseUrl, location)
 
   /* TEST ONLY Connector method for create relationship. This method should not be used in production code */
-  def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Int] = {
-    val url = new URL(
-      baseUrl,
-      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+  def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+    val url = new URL(baseUrl, s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
     val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
     http
       .PUT[JsObject, HttpResponse](url.toString, body)
@@ -125,9 +112,7 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] = {
-    val url = new URL(
-      baseUrl,
-      s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
+    val url = new URL(baseUrl, s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
     http.DELETE[HttpResponse](url.toString).map { r =>
       r.status match {
         case OK                => Some(true)

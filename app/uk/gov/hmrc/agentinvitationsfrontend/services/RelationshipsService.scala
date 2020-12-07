@@ -25,13 +25,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelationshipsService @Inject()(
-  relationshipsConnector: RelationshipsConnector,
-  pirRelationshipConnector: PirRelationshipConnector) {
+class RelationshipsService @Inject()(relationshipsConnector: RelationshipsConnector, pirRelationshipConnector: PirRelationshipConnector) {
 
-  def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
+  def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     service match {
       case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
       case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))

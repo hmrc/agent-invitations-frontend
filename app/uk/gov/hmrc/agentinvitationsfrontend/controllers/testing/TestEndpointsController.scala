@@ -129,13 +129,7 @@ object TestEndpointsController {
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
         AgentFastTrackRequest(clientType, service, clientIdType, clientId, knownFact)
       })({ fastTrack =>
-        Some(
-          (
-            fastTrack.clientType,
-            fastTrack.service,
-            fastTrack.clientIdentifierType,
-            fastTrack.clientIdentifier,
-            fastTrack.knownFact))
+        Some((fastTrack.clientType, fastTrack.service, fastTrack.clientIdentifierType, fastTrack.clientIdentifier, fastTrack.knownFact))
       }))
   }
 
@@ -143,9 +137,10 @@ object TestEndpointsController {
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
-        "clientType" -> optional(text
-          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
-          .transform(ClientType.toEnum, ClientType.fromEnum)),
+        "clientType" -> optional(
+          text
+            .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+            .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }

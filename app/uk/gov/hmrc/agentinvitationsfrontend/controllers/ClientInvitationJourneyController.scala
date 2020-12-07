@@ -83,8 +83,7 @@ class ClientInvitationJourneyController @Inject()(
   featureFlags: FeatureFlags,
   ec: ExecutionContext,
   val appConfig: AppConfig)
-    extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier]
-    with I18nSupport {
+    extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier] with I18nSupport {
 
   import ClientInvitationJourneyController._
   import authActions._
@@ -108,8 +107,7 @@ class ClientInvitationJourneyController @Inject()(
     journeyIdFromSession.orElse(journeyIdFromQuery)
   }
 
-  override def withValidRequest(
-    body: => Future[Result])(implicit rc: HeaderCarrier, request: Request[_], ec: ExecutionContext): Future[Result] =
+  override def withValidRequest(body: => Future[Result])(implicit rc: HeaderCarrier, request: Request[_], ec: ExecutionContext): Future[Result] =
     super.withValidRequest(body)(rc, request, ec).map(appendJourneyId)
 
   val AsClient: WithAuthorised[AuthorisedClient] = { implicit request: Request[Any] =>
@@ -128,9 +126,7 @@ class ClientInvitationJourneyController @Inject()(
       journeyId match {
         case None =>
           // redirect to itself with new journeyId generated
-          Future.successful(
-            appendJourneyId(
-              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName)))(request))
+          Future.successful(appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName)))(request))
         case _ =>
           apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
@@ -142,9 +138,7 @@ class ClientInvitationJourneyController @Inject()(
   val submitWarmUp = {
     action { implicit request =>
       whenAuthorised(AsClient)(
-        Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(
-          getAllClientInvitationDetailsForAgent,
-          getSuspensionDetails))(redirect)
+        Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))(redirect)
     }
   }
 
@@ -212,9 +206,7 @@ class ClientInvitationJourneyController @Inject()(
 
   def submitWarmUpConfirmDecline = action { implicit request =>
     whenAuthorised(AsClient)(
-      Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(
-        getAllClientInvitationDetailsForAgent,
-        getSuspensionDetails))(redirect)
+      Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))(redirect)
   }
 
   def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {
@@ -309,20 +301,18 @@ class ClientInvitationJourneyController @Inject()(
     CallOps.localFriendlyUrl(env, appConfig)(url, request.host)
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
-    Future successful Forbidden(
-      cannotConfirmIdentityView(titleKey = Some("locked-out.header"), html = Some(lockedOutView())))
+    Future successful Forbidden(cannotConfirmIdentityView(titleKey = Some("locked-out.header"), html = Some(lockedOutView())))
   }
 
-  def showCannotConfirmIdentity(journeyId: Option[String], success: Option[String]): Action[AnyContent] = Action.async {
-    implicit request =>
-      journeyId
-        .fold(
-          Future.successful(Forbidden(cannotConfirmIdentityView()))
-        )(
-          id =>
-            identityVerificationConnector
-              .getIVResult(id)
-              .map(reason => getErrorPage(reason, success)))
+  def showCannotConfirmIdentity(journeyId: Option[String], success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    journeyId
+      .fold(
+        Future.successful(Forbidden(cannotConfirmIdentityView()))
+      )(
+        id =>
+          identityVerificationConnector
+            .getIVResult(id)
+            .map(reason => getErrorPage(reason, success)))
   }
 
   /** Individual Users with low confidence level and also no NINO arrive here...
@@ -416,172 +406,149 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   /* Here we decide what to render after state transition */
-  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
-    implicit request: Request[_]): Result = state match {
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
+    state match {
 
-    case MissingJourneyHistory =>
-      Ok(sessionLostView())
+      case MissingJourneyHistory =>
+        Ok(sessionLostView())
 
-    case WarmUp(clientType, uid, _, agentName, _) =>
-      Ok(
-        warmupView(
-          WarmUpPageConfig(
-            agentName,
-            clientType,
-            uid,
-            routes.ClientInvitationJourneyController.submitWarmUp(),
-            routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline()
-          )))
+      case WarmUp(clientType, uid, _, agentName, _) =>
+        Ok(
+          warmupView(
+            WarmUpPageConfig(
+              agentName,
+              clientType,
+              uid,
+              routes.ClientInvitationJourneyController.submitWarmUp(),
+              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline()
+            )))
 
-    //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
-    case ActionNeeded(clientType) =>
-      val serviceMessageKey = fromSession
-      Ok(actionNeededView(clientType, serviceMessageKey))
+      //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
+      case ActionNeeded(clientType) =>
+        val serviceMessageKey = fromSession
+        Ok(actionNeededView(clientType, serviceMessageKey))
 
-    case NotFoundInvitation =>
-      val serviceMessageKey = fromSession
-      Ok(notFoundInvitationView(serviceMessageKey))
+      case NotFoundInvitation =>
+        val serviceMessageKey = fromSession
+        Ok(notFoundInvitationView(serviceMessageKey))
 
-    case NoOutstandingRequests =>
-      val serviceMessageKey = fromSession
-      Ok(noOutstandingRequestsView(serviceMessageKey))
+      case NoOutstandingRequests =>
+        val serviceMessageKey = fromSession
+        Ok(noOutstandingRequestsView(serviceMessageKey))
 
-    case RequestExpired(expiredOn) =>
-      val serviceMessageKey = fromSession
-      Ok(requestExpiredView(serviceMessageKey, expiredOn))
+      case RequestExpired(expiredOn) =>
+        val serviceMessageKey = fromSession
+        Ok(requestExpiredView(serviceMessageKey, expiredOn))
 
-    case AgentCancelledRequest(cancelledOn) =>
-      val serviceMessageKey = fromSession
-      Ok(agentCancelledRequestView(serviceMessageKey, cancelledOn))
+      case AgentCancelledRequest(cancelledOn) =>
+        val serviceMessageKey = fromSession
+        Ok(agentCancelledRequestView(serviceMessageKey, cancelledOn))
 
-    case AlreadyRespondedToRequest(respondedOn) =>
-      val serviceMessageKey = fromSession
-      Ok(alreadyRespondedView(serviceMessageKey, respondedOn))
+      case AlreadyRespondedToRequest(respondedOn) =>
+        val serviceMessageKey = fromSession
+        Ok(alreadyRespondedView(serviceMessageKey, respondedOn))
 
-    case CannotFindRequest(clientType, agentName) =>
-      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-      Ok(cannotFindRequestView(clientTypeStr, agentName))
+      case CannotFindRequest(clientType, agentName) =>
+        val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+        Ok(cannotFindRequestView(clientTypeStr, agentName))
 
-    case AuthorisationRequestExpired(expiredOn, clientType) =>
-      val serviceMessageKey = fromSession
-      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-      Ok(
-        authorisationRequestErrorTemplateView(
-          serviceMessageKey,
-          clientTypeStr,
-          expiredOn,
-          AuthRequestErrorCase.Expired))
+      case AuthorisationRequestExpired(expiredOn, clientType) =>
+        val serviceMessageKey = fromSession
+        val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, expiredOn, AuthRequestErrorCase.Expired))
 
-    case AuthorisationRequestCancelled(cancelledOn, clientType) =>
-      val serviceMessageKey = fromSession
-      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-      Ok(
-        authorisationRequestErrorTemplateView(
-          serviceMessageKey,
-          clientTypeStr,
-          cancelledOn,
-          AuthRequestErrorCase.Cancelled))
+      case AuthorisationRequestCancelled(cancelledOn, clientType) =>
+        val serviceMessageKey = fromSession
+        val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, cancelledOn, AuthRequestErrorCase.Cancelled))
 
-    case AuthorisationRequestAlreadyResponded(respondedOn, clientType) =>
-      val serviceMessageKey = fromSession
-      val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-      Ok(
-        authorisationRequestErrorTemplateView(
-          serviceMessageKey,
-          clientTypeStr,
-          respondedOn,
-          AuthRequestErrorCase.AlreadyResponded))
+      case AuthorisationRequestAlreadyResponded(respondedOn, clientType) =>
+        val serviceMessageKey = fromSession
+        val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
+        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, respondedOn, AuthRequestErrorCase.AlreadyResponded))
 
-    case MultiConsent(clientType, uid, agentName, consents) =>
-      val clientTypeStr = ClientType.fromEnum(clientType)
-      Ok(
-        confirmTermsMultiView(
-          formWithErrors.or(confirmTermsMultiForm),
-          ConfirmTermsPageConfig(
-            agentName,
-            clientTypeStr,
-            uid,
-            consents,
-            submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
-            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
-            backLink =
-              if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
-              else Call("GET", externalUrls.agentClientManagementUrl)
-          )
-        ))
+      case MultiConsent(clientType, uid, agentName, consents) =>
+        val clientTypeStr = ClientType.fromEnum(clientType)
+        Ok(
+          confirmTermsMultiView(
+            formWithErrors.or(confirmTermsMultiForm),
+            ConfirmTermsPageConfig(
+              agentName,
+              clientTypeStr,
+              uid,
+              consents,
+              submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
+              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+              backLink =
+                if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+                else Call("GET", externalUrls.agentClientManagementUrl)
+            )
+          ))
 
-    case SingleConsent(clientType, uid, agentName, consent, consents) =>
-      Ok(
-        confirmTermsMultiView(
-          formWithErrors.or(confirmTermsMultiForm),
-          ConfirmTermsPageConfig(
-            agentName,
-            ClientType.fromEnum(clientType),
-            uid,
-            Seq(consent),
-            submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
-            checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
-            backLink = backLinkFor(breadcrumbs)
-          ),
-          changingConsent = true
-        ))
+      case SingleConsent(clientType, uid, agentName, consent, consents) =>
+        Ok(
+          confirmTermsMultiView(
+            formWithErrors.or(confirmTermsMultiForm),
+            ConfirmTermsPageConfig(
+              agentName,
+              ClientType.fromEnum(clientType),
+              uid,
+              Seq(consent),
+              submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
+              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+              backLink = backLinkFor(breadcrumbs)
+            ),
+            changingConsent = true
+          ))
 
-    case CheckAnswers(clientType, uid, agentName, consents) =>
-      Ok(
-        checkAnswersView(
-          CheckAnswersPageConfig(
-            consents,
-            agentName,
-            ClientType.fromEnum(clientType),
-            uid,
-            submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers(),
-            changeCall = (serviceKey: String) =>
-              routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
-            backLink = backLinkFor(breadcrumbs)
-          )))
+      case CheckAnswers(clientType, uid, agentName, consents) =>
+        Ok(
+          checkAnswersView(
+            CheckAnswersPageConfig(
+              consents,
+              agentName,
+              ClientType.fromEnum(clientType),
+              uid,
+              submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers(),
+              changeCall = (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
+              backLink = backLinkFor(breadcrumbs)
+            )))
 
-    case ConfirmDecline(clientType, uid, agentName, consents) =>
-      Ok(
-        confirmDeclineView(
-          formWithErrors.or(confirmDeclineForm),
-          ConfirmDeclinePageConfig(
-            agentName,
-            ClientType.fromEnum(clientType),
-            uid,
-            consents.map(_.serviceKey).distinct,
-            submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline(),
-            backLink = backLinkFor(breadcrumbs)
-          )
-        ))
+      case ConfirmDecline(clientType, uid, agentName, consents) =>
+        Ok(
+          confirmDeclineView(
+            formWithErrors.or(confirmDeclineForm),
+            ConfirmDeclinePageConfig(
+              agentName,
+              ClientType.fromEnum(clientType),
+              uid,
+              consents.map(_.serviceKey).distinct,
+              submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline(),
+              backLink = backLinkFor(breadcrumbs)
+            )
+          ))
 
-    case InvitationsAccepted(agentName, consents, clientType) =>
-      Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
+      case InvitationsAccepted(agentName, consents, clientType) =>
+        Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
 
-    case InvitationsDeclined(agentName, consents, clientType) =>
-      Ok(
-        invitationDeclinedView(
-          InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
+      case InvitationsDeclined(agentName, consents, clientType) =>
+        Ok(invitationDeclinedView(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
 
-    case AllResponsesFailed => Ok(allResponsesFailedView())
+      case AllResponsesFailed => Ok(allResponsesFailedView())
 
-    case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
-      Ok(
-        someResponsesFailedView(
-          SomeResponsesFailedPageConfig(
-            failedConsents,
-            agentName,
-            routes.ClientInvitationJourneyController.submitSomeResponsesFailed(),
-            clientType)))
+      case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
+        Ok(someResponsesFailedView(
+          SomeResponsesFailedPageConfig(failedConsents, agentName, routes.ClientInvitationJourneyController.submitSomeResponsesFailed(), clientType)))
 
-    case TrustNotClaimed =>
-      val backLink =
-        if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
-        else Call("GET", externalUrls.agentClientManagementUrl)
-      Ok(trustNotClaimedView(backLink))
+      case TrustNotClaimed =>
+        val backLink =
+          if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
+          else Call("GET", externalUrls.agentClientManagementUrl)
+        Ok(trustNotClaimedView(backLink))
 
-    case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
-      Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
-  }
+      case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
+        Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
+    }
 
   def fromSession(implicit request: Request[_]): String =
     request.session.get("clientService").getOrElse("service_is_missing")

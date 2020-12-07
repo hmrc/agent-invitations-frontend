@@ -25,16 +25,14 @@ trait InvitationCreationFailedPageConfig {
   val hasSingleRequest: Boolean = failedRequests.map(_.invitation.service).size == 1
 }
 
-case class SomeInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])
-    extends InvitationCreationFailedPageConfig {
+case class SomeInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest]) extends InvitationCreationFailedPageConfig {
 
   override def failedRequests: Set[AuthorisationRequest] = requests.filter(_.state == AuthorisationRequest.FAILED)
 
   override def isAll: Boolean = false
 }
 
-case class AllInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest])
-    extends InvitationCreationFailedPageConfig {
+case class AllInvitationCreationFailedPageConfig(requests: Set[AuthorisationRequest]) extends InvitationCreationFailedPageConfig {
 
   override def failedRequests: Set[AuthorisationRequest] = requests.filter(_.state == AuthorisationRequest.FAILED)
 

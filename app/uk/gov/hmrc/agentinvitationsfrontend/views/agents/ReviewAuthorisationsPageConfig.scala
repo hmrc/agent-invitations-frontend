@@ -22,11 +22,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
 
-abstract class ReviewAuthorisationsPageConfig(
-  val basket: Basket,
-  val featureFlags: FeatureFlags,
-  val services: Set[String],
-  val submitCall: Call)(implicit messages: Messages) {
+abstract class ReviewAuthorisationsPageConfig(val basket: Basket, val featureFlags: FeatureFlags, val services: Set[String], val submitCall: Call)(
+  implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {

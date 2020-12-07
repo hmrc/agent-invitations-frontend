@@ -21,11 +21,8 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
-case class SelectServicePageConfigCancel(
-  featureFlags: FeatureFlags,
-  services: Set[String],
-  submitCall: Call,
-  backLink: String)(implicit messages: Messages) {
+case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: Set[String], submitCall: Call, backLink: String)(
+  implicit messages: Messages) {
 
   val enabledPersonalServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()

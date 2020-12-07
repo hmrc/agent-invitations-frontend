@@ -82,6 +82,7 @@ class TrackedInvitationSpec extends UnitSpec {
     "",
     "",
     "",
+    None,
     "",
     DateTime.now.minusDays(20),
     DateTime.now.minusDays(20),
