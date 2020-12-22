@@ -329,7 +329,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             service = HMRCMTDVAT,
             clientId = vrn2.value,
             clientIdType = "vrn",
-            clientName = Some("Aphelion Ltd"),
+            clientName = Some("Perihelion"),
             status = "Pending",
             date = None,
             expiryDate = Some(now.plusDays(18)),
@@ -339,7 +339,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           )
         ),
         totalResults = 1,
-        clientSet = Set("Aphelion Ltd")
+        clientSet = Set("Perihelion")
       )
     }
 
