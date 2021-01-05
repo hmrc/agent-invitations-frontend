@@ -1,5 +1,5 @@
 @*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,6 @@
     }
 }
 
-@displayDate = @{
-    if(config.expiryDate.getDayOfMonth < 10) config.expiryDate.toString("d MMMM yyyy", messages.lang.locale)
-    else config.expiryDate.toString("dd MMMM yyyy", messages.lang.locale)
-}
-
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
 @mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = Some(gaCalls _)) {
@@ -46,34 +41,35 @@
 
     <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>
 
-    <ol class="list list-number margin-left-0">
-        <li class="margin-bottom-30">
-            <p>@Messages("invitation-sent.l1")</p>
-            <p><span id="invitationUrl" class="word-wrap">@invitationLink</span></p>
-            <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}.${config.serviceType}"))</p>
+    <ol class="list list-number margin-left-0 margin-bottom-20">
+        @if(config.step1Instructions.isDefined){
+            <li class="margin-bottom-20">@config.step1Instructions.get</li>
+        }
+
+        <li class="margin-bottom-20">
+            <p>@Messages("invitation-sent.link-text")</p>
+            <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
-        <li>@Messages("invitation-sent.l2")</li>
-        <li>@Html(Messages("invitation-sent.l3", displayDateForLang(config.expiryDate)))</li>
-        <li>
-            @Messages(s"invitation-sent.l4.${config.clientType}.${config.serviceType}")
-            @Messages("invitation-sent.l8") <a href="@externalUrls.guidanceAuthoriseAgent">@Messages("invitation-sent.l9")</a>
+
+        <li class="margin-bottom-20">@Messages("invitation-sent.select-link")</li>
+        <li class="margin-bottom-20">
+            <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDate), config.agencyEmail)</p>
+
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">@Messages("invitation-sent.client-warning")</strong>
+            </div>
         </li>
-    </ol>
 
-  <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDateForLang(config.expiryDate))</p>
-<p>@Messages("invitation-sent.p1.start") <a href="@config.trackUrl">@Messages("invitation-sent.p1.link")</a> @Messages("invitation-sent.p1.end")</p>
-<ol class="list list-bullet margin-left-0">
-<li>@Messages("invitation-sent.l5")</li>
-<li>@Messages("invitation-sent.l6")</li>
-<li>@Messages("invitation-sent.l7")</li></ol>
+        <p>@Html(Messages("invitation-sent.client-help", externalUrls.guidanceAuthoriseAgent))</p>
 
-
-
-@if(config.hasContinueUrl) {
-    <a href="@config.continueUrl" class="button form-field-group" id="continue" role="button">@Messages("invitation-sent.continueJourney.button")</a>
-} else {
-    <h2 class="heading-medium">@Messages("invitation-sent.header.links")</h2>
-    <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.startNewAuthRequest")</a></p>
-    <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.continueToASAccount.button")</a>
-}
+        @if(config.hasContinueUrl) {
+            <a href="@config.continueUrl" class="button form-field-group" id="continue" role="button">@Messages("invitation-sent.continueJourney.button")</a>
+        } else {
+            <h2 class="heading-medium">@Messages("invitation-sent.next-steps.heading")</h2>
+            <p>@Messages("invitation-sent.next-steps.p")</p>
+            <p><a href="@config.trackUrl" id="trackAuthRequest">@Messages("invitation-sent.next-steps.link-text.track")</a></p>
+            <p><a href="@config.clientTypeUrl" id="startNewAuthRequest">@Messages("invitation-sent.next-steps.link-text.new")</a></p>
+            <a href="@config.continueUrl" class="form-field-group" id="continue">@Messages("invitation-sent.next-steps.link-text.asa")</a>
+        }
 }

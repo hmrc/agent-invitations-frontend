@@ -205,5 +205,6 @@ GET         /keep-alive                                                 uk.gov.h
 
 GET         /trust-not-claimed                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /:clientType/:uid/:agentName                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
+GET         /:clientType-taxes/manage-who-can-deal-with-HMRC-for-you/:uid/:agentName   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
 
 GET         /language/:lang                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsLanguageController.switchToLanguage(lang: String)

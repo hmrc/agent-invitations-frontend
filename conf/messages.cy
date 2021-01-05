@@ -206,6 +206,22 @@ error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient 
 
 # Invitation Sent
 invitation-sent.header=Yr hyn y mae angen i chi ei wneud nesaf
+invitation-sent.step1.personal.paye-vat=Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.
+invitation-sent.step1.personal.paye=Check with your client that they have a Government Gateway user ID for their personal tax affairs.
+invitation-sent.step1.personal.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
+invitation-sent.step1.business.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
+invitation-sent.step1.business.trust=Check with your client that they have claimed or previously registered the trust or estate.
+invitation-sent.link-text=Copy this authorisation request link and send it to your client:
+invitation-sent.select-link=Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID.
+invitation-sent.client-respond=Ask your client to respond by {0} or your authorisation request link will expire. We will email you at {1} to update you on the status of this request.
+invitation-sent.client-warning=Clients will not be able to authorise you if they do not use the Government Gateway user ID they used to sign up to the tax service you need authorisation for.
+invitation-sent.client-help=Clients who still need help can follow a <a href={0} target="_blank">step-by-step guide to authorising a tax agent (opens in a new tab)</a>
+invitation-sent.next-steps.heading=After you have sent the authorisation request link
+invitation-sent.next-steps.p=When you have completed these steps, you may want to:
+invitation-sent.next-steps.link-text.track=Track your authorisation requests
+invitation-sent.next-steps.link-text.new=Start a new authorisation request
+invitation-sent.next-steps.link-text.asa=Go to your agent services account
+
 invitation-sent.l1=Copïwch y cysylltiad hwn a’i e-bostio at eich cleient.
 invitation-sent.l1.p.personal.personal=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;">faterion treth unigol neu fasnachwr unigol</span>.
 invitation-sent.l1.p.business.HMRC-MTD-VAT=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;"> drethi busnes</span>.

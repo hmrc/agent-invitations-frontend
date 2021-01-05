@@ -1482,7 +1482,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   "GET /agents/sent-invitation" should {
     val request = FakeRequest("GET", "/agents/fast-track/sent-invitation")
-    "show the invitation sent page for a personal service" in {
+    "show the invitation sent page for a personal service without the first step - check client is signed up for the service- when the service is MTDIT" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com", HMRCMTDIT),
@@ -1506,13 +1506,63 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1")
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.email.p", "abc@xyz.com", expiryDate),
-      "You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">individual or sole trader tax affairs</span>.")
+        "invitation-sent.link-text",
+      "invitation-sent.select-link",
+      "invitation-sent.client-warning")
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", expiryDate, "abc@xyz.com"),
+      "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
+
+      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+      "Check with your client that they have a Government Gateway user ID for their personal tax affairs.",
+      "Check with your client that they have signed up to Making Tax Digital for VAT.")
+    }
+
+    "show the invitation sent page for a personal service with the first step - check client is signed up for the service- when the service is VAT" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDVAT, "vrn", "580659315", Some("2019-10-10"))
+      journeyState.set(
+        InvitationSentPersonal("invitation/sent/url", None, "abc@xyz.com", HMRCMTDVAT),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
+      val inferredDate = controller.inferredExpiryDate
+      //not sure whys its coded like this in the views
+      val expiryDate =
+        if(inferredDate.getDayOfMonth < 10) {
+          inferredDate.toString("d MMMM yyyy")
+        } else {
+          inferredDate.toString("dd MMMM yyyy")
+        }
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "invitation-sent.header",
+        "invitation-sent.step1.personal.vat",
+        "invitation-sent.link-text",
+        "invitation-sent.select-link",
+        "invitation-sent.client-warning")
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", expiryDate, "abc@xyz.com"),
+        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
+
+      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
     }
 
     "show the invitation sent page for a business service" in {
       journeyState.set(InvitationSentBusiness("invitation/sent/url", None, "abc@xyz.com"), List())
+
+      val inferredDate = controller.inferredExpiryDate
+      //not sure whys its coded like this in the views
+      val expiryDate =
+        if(inferredDate.getDayOfMonth < 10) {
+          inferredDate.toString("d MMMM yyyy")
+        } else {
+          inferredDate.toString("dd MMMM yyyy")
+        }
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
@@ -1520,8 +1570,15 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result,
         "invitation-sent.header",
-        "invitation-sent.l1")
-      checkHtmlResultWithBodyText(result,"You only need to send it to them once. They can use this link to access your authorisation requests for their <span style=\"font-weight:bold;\">business taxes</span>.")
+        "invitation-sent.step1.business.vat",
+        "invitation-sent.link-text",
+        "invitation-sent.select-link",
+        "invitation-sent.client-warning")
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", expiryDate, "abc@xyz.com"),
+        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
+
+      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
     }
   }
 
