@@ -222,39 +222,6 @@ invitation-sent.next-steps.link-text.track=Track your authorisation requests
 invitation-sent.next-steps.link-text.new=Start a new authorisation request
 invitation-sent.next-steps.link-text.asa=Go to your agent services account
 
-invitation-sent.l1=Copïwch y cysylltiad hwn a’i e-bostio at eich cleient.
-invitation-sent.l1.p.personal.personal=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;">faterion treth unigol neu fasnachwr unigol</span>.
-invitation-sent.l1.p.business.HMRC-MTD-VAT=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;"> drethi busnes</span>.
-invitation-sent.l1.p.business.HMRC-TERS-ORG=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;">ymddiriedolaethau neu ystadau</span>.
-invitation-sent.l1.p.personal.HMRC-CGT-PD=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;"> faterion treth unigol neu fasnachwr unigol</span>.
-invitation-sent.l1.p.business.HMRC-CGT-PD=Dim ond unwaith y mae angen i chi ei anfon ato. Gall ddefnyddio’r cysylltiad hwn i gael mynediad at eich ceisiadau am awdurdodiad ar gyfer ei <span style="font-weight:bold;">ymddiriedolaethau neu ystadau</span>.
-invitation-sent.l2=Gofynnwch i’ch cleient ddilyn y cysylltiad er mwyn iddo allu derbyn eich cais am awdurdodiad.
-invitation-sent.l3=<span>Gwnewch yn siŵr ei fod yn ateb erbyn <span style="font-weight:bold;">{0}</span>, neu bydd eich cysylltiad yn dod i ben.</span>
-invitation-sent.l4.personal.personal=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol.
-invitation-sent.l4.business.HMRC-MTD-VAT=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth busnes.
-invitation-sent.l4.business.HMRC-TERS-ORG=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd.
-invitation-sent.l4.personal.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei faterion treth personol.
-invitation-sent.l4.business.HMRC-CGT-PD=Rhowch wybod i’ch cleient y bydd angen y Dynodydd Defnyddiwr (ID) a chyfrinair Porth y Llywodraeth mae’n eu defnyddio ar gyfer ei ymddiriedolaeth neu ystâd.
-invitation-sent.email.p=Byddwn yn anfon e-bost at {0} os yw’ch cleient yn derbyn neu’n gwrthod eich cais, neu os nad yw’n ateb erbyn {1}.
-invitation-sent.p1.start=Gallwch
-invitation-sent.p1.link=olrhain eich ceisiadau awdurdodi diweddar
-invitation-sent.p1.end=os hoffech wneud y canlynol:
-invitation-sent.l5=gwirio statws eich cais
-invitation-sent.l6=ailanfon cysylltiad at gleient
-invitation-sent.l7=canslo ceisiadau ac awdurdodiadau
-invitation-sent.resend.track-info.header=Gallwch <a href="{0}">olrhain eich ceisiadau awdurdodi diweddar</a> os hoffech wneud y canlynol:
-invitation-sent.resend.track-info.l1=Gwirio statws eich cais
-invitation-sent.resend.track-info.l2=ailanfon cysylltiad at gleient
-invitation-sent.resend.track-info.l3=canslo ceisiadau ac awdurdodiadau
-invitation-sent.header.links=Gweithredoedd eraill
-invitation-sent.continueToASAccount.button=Ewch i hafan y cyfrif gwasanaethau asiant
-invitation-sent.continueJourney.button=Yn eich blaen
-invitation-sent.trackRequests=Olrhain eich ceisiadau diweddar am awdurdodiad
-invitation-sent.new-window=(yn agor ffenestr neu dab newydd)
-invitation-sent.startNewAuthRequest=Dechrau cais am awdurdodiad newydd
-invitation-sent.l8=Mae’n gallu darllen
-invitation-sent.l9=arweiniad ar sut i dderbyn cais am awdurdodiad gan asiant.
-
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
 check-details.p.HMRC-MTD-IT=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Incwm cleient.
