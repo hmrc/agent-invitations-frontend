@@ -32,6 +32,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
@@ -364,23 +365,25 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     "return 200 and go to resend link page" in {
       givenAgentReference(arn, "uid", personal)
       givenGetAgencyEmailAgentStub
-      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(14).toString
+      val expirationDate = LocalDate.now(DateTimeZone.UTC).plusDays(21)
       val formData =
-        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate))
+        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate.toString))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        "Resend this link to your client",
-        "Copy this link and email it to your client.",
-        "individual or sole trader tax affairs",
-        "Other actions",
-        "Track your recent authorisation requests",
-        "Go to agent services account home",
-        "Start a new authorisation request"
-      )
+      checkHtmlResultWithBodyMsgs(result,
+      "invitation-sent.link-text",
+      "invitation-sent.select-link",
+      "invitation-sent.client-warning",
+      "invitation-sent.next-steps.heading",
+      "invitation-sent.next-steps.p",
+      "invitation-sent.next-steps.link-text.track",
+      "invitation-sent.next-steps.link-text.new",
+      "invitation-sent.next-steps.link-text.asa")
+
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", displayDateForLang(expirationDate)(request), "abc@xyz.com"),
+        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
     }
 
     "return 400 BadRequest when form data contains errors in service" in {

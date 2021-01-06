@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-import org.joda.time.{DateTimeZone, Days, LocalDate}
+import org.joda.time.LocalDate
+import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
 case class ResendLinkPageConfig(
   externalUrl: String,
@@ -27,16 +30,9 @@ case class ResendLinkPageConfig(
   expiryDate: String,
   service: String,
   agencyEmail: String,
-  backLinkUrl: String) {
+  backLinkUrl: String)(implicit externalUrls: ExternalUrls, messages: Messages) {
 
   val expiryDateAsLocalDate = LocalDate.parse(expiryDate)
-
-  val daysToExpiry: String = {
-    val expirationDate: LocalDate = LocalDate.parse(expiryDate)
-    val todayDate: LocalDate = LocalDate.now(DateTimeZone.UTC)
-
-    Days.daysBetween(todayDate, expirationDate).getDays.toString
-  }
 
   def fullAgentLink: String = s"$externalUrl$agentLink"
 
@@ -45,4 +41,16 @@ case class ResendLinkPageConfig(
 
   def newRequestLink: Call =
     routes.AgentInvitationJourneyController.showClientType()
+
+  val asaUrl = externalUrls.agentServicesAccountUrl
+
+  val step1Instructions: Option[String] = if (clientType == "personal") {
+    if (service == HMRCPIR) Some(Messages("invitation-sent.step1.personal.paye"))
+    else if (service == HMRCMTDVAT) Some(Messages("invitation-sent.step1.personal.vat"))
+    else None
+  } else if (clientType == "business") {
+    if (service == HMRCMTDVAT) Some(Messages("invitation-sent.step1.business.vat"))
+    else if (service == TRUST) Some(Messages("invitation-sent.step1.business.trust"))
+    else None
+  } else None
 }

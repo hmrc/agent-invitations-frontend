@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template
@@ -29,32 +30,40 @@
 @(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
+@invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"}
+
 @mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"invitation-sent.header"), "")), completedInviteGoSurvey = Some(true)) {
 
     @back_link(config.backLinkUrl)
 
   <h1 class="heading-xlarge">@Messages("resend-link.header")</h1>
 
-    <ol class="list list-number margin-left-0">
-        <li class="margin-bottom-30"><p>@Messages("invitation-sent.l1")</p>
-            <p><span id="invitationUrl" class="word-wrap">@config.fullAgentLink</span></p>
-            <p>@Html(Messages(s"invitation-sent.l1.p.${config.clientType}.${config.service}"))</p></li>
-        <li>@Messages("invitation-sent.l2")</li>
-        <li>@Html(Messages("invitation-sent.l3", displayDateForLang(config.expiryDateAsLocalDate)))</li>
-        <li>@Messages(s"invitation-sent.l4.${config.clientType}.${config.service}")</li>
-    </ol>
+    <ol class="list list-number margin-left-0 margin-bottom-20">
+        @if(config.step1Instructions.isDefined){
+            <li class="margin-bottom-20">@config.step1Instructions.get</li>
+        }
 
-    <p>@Messages("invitation-sent.email.p", config.agencyEmail, displayDateForLang(config.expiryDateAsLocalDate))</p>
+        <li class="margin-bottom-20">
+            <p>@Messages("invitation-sent.link-text")</p>
+            <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
+        </li>
 
-    <p>@Html(Messages("invitation-sent.resend.track-info.header", config.trackLink))</p>
+        <li class="margin-bottom-20">@Messages("invitation-sent.select-link")</li>
+        <li class="margin-bottom-20">
+            <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail)</p>
 
-    <ol class="list list-bullet">
-        <li>@Messages("invitation-sent.resend.track-info.l1")</li>
-        <li>@Messages("invitation-sent.resend.track-info.l2")</li>
-        <li>@Messages("invitation-sent.resend.track-info.l3")</li>
-    </ol>
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">@Messages("invitation-sent.client-warning")</strong>
+            </div>
+        </li>
 
-    <h1 class="heading-medium">@Messages("invitation-sent.header.links")</h1>
-    <p><a href="@config.newRequestLink" id="startNewAuthRequest" >@Messages("invitation-sent.startNewAuthRequest")</a></p>
-    <a href="@externalUrls.agentServicesAccountUrl" id="returnToAsa">@Messages(s"invitation-sent.continueToASAccount.button")</a>
+        <p>@Html(Messages("invitation-sent.client-help", externalUrls.guidanceAuthoriseAgent))</p>
+
+            <h2 class="heading-medium">@Messages("invitation-sent.next-steps.heading")</h2>
+            <p>@Messages("invitation-sent.next-steps.p")</p>
+            <p><a href="@config.trackLink" id="trackAuthRequest">@Messages("invitation-sent.next-steps.link-text.track")</a></p>
+            <p><a href="@config.newRequestLink" id="startNewAuthRequest">@Messages("invitation-sent.next-steps.link-text.new")</a></p>
+            <a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.next-steps.link-text.asa")</a>
+
 }

@@ -222,39 +222,6 @@ invitation-sent.next-steps.link-text.track=Track your authorisation requests
 invitation-sent.next-steps.link-text.new=Start a new authorisation request
 invitation-sent.next-steps.link-text.asa=Go to your agent services account
 
-invitation-sent.l1=Copy this link and email it to your client.
-invitation-sent.l1.p.personal.personal=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs</span>.
-invitation-sent.l1.p.business.HMRC-MTD-VAT=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">business taxes</span>.
-invitation-sent.l1.p.business.HMRC-TERS-ORG=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
-invitation-sent.l1.p.personal.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">individual or sole trader tax affairs.</span>.
-invitation-sent.l1.p.business.HMRC-CGT-PD=You only need to send it to them once. They can use this link to access your authorisation requests for their <span style="font-weight:bold;">trusts or estates</span>.
-invitation-sent.l2=Ask your client to go to the link to accept your authorisation request.
-invitation-sent.l3=<span>Make sure they respond by <span style="font-weight:bold;">{0}</span>, or your link will expire.</span>
-invitation-sent.l4.personal.personal=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs.
-invitation-sent.l4.business.HMRC-MTD-VAT=Tell your client they will need the Government Gateway user ID and password they use for their business tax affairs.
-invitation-sent.l4.business.HMRC-TERS-ORG=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
-invitation-sent.l4.personal.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their personal tax affairs.
-invitation-sent.l4.business.HMRC-CGT-PD=Tell your client they will need the Government Gateway user ID and password they use for their trust or estate.
-invitation-sent.email.p=We will send an email to {0} if your client accepts or declines your request, or if they do not respond by {1}.
-invitation-sent.p1.start=You can
-invitation-sent.p1.link=track your recent authorisation requests
-invitation-sent.p1.end=if you want to:
-invitation-sent.l5=check the status of your request
-invitation-sent.l6=resend a link to a client
-invitation-sent.l7=cancel requests and authorisations
-invitation-sent.resend.track-info.header=You can <a href="{0}">Track your recent authorisation requests</a> if you want to:
-invitation-sent.resend.track-info.l1=Check the status of your request
-invitation-sent.resend.track-info.l2=resend a link to a client
-invitation-sent.resend.track-info.l3=cancel requests and authorisations
-invitation-sent.header.links=Other actions
-invitation-sent.continueToASAccount.button=Go to agent services account home
-invitation-sent.continueJourney.button=Continue
-invitation-sent.trackRequests=Track your recent authorisation requests
-invitation-sent.new-window=(opens a new window or tab)
-invitation-sent.startNewAuthRequest=Start a new authorisation request
-invitation-sent.l8=They can read
-invitation-sent.l9=guidance on how to accept an authorisation request from an agent.
-
 #Check Details
 check-details.heading=Check your client’s details before you continue
 check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to manage a client’s Income Tax.
