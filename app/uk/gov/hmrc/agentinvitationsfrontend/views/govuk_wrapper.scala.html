@@ -21,7 +21,7 @@
 
 @this(
     govUkTemplate: views.html.layouts.GovUkTemplate,
-    uiHead: uk.gov.hmrc.play.views.html.layouts.Head,
+    uiHeadWithTrackingConsent: uk.gov.hmrc.play.views.html.layouts.HeadWithTrackingConsent,
     uiHeaderNav: uk.gov.hmrc.play.views.html.layouts.HeaderNav,
     uiFooter: uk.gov.hmrc.play.views.html.layouts.Footer,
     uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
@@ -93,22 +93,13 @@
             window.jsConfig.logout_url = "@signOutUrl";
     </script>
     }
-@uiHead(
+@uiHeadWithTrackingConsent(
     linkElem = None,
     headScripts = Some(headScripts))
     <meta name="format-detection" content="telephone=no"/>
 }
 
-@googleTagManagerId = {@configuration.get[String]("google-tag-manager.id")}
-
 @headScripts = {
-    <script type="text/javascript">
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer', '@googleTagManagerId');
-    </script>
     <link href="@controllers.routes.Assets.at("stylesheets/styles.css")" media="screen" rel="stylesheet" type="text/css">
 }
 
@@ -134,10 +125,6 @@
 
 
 @insideHeader = {
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=@googleTagManagerId"
-                      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     @uiHeaderNav(
         navTitle = Some(Messages(bannerTitle)),
         navTitleLink = None,
