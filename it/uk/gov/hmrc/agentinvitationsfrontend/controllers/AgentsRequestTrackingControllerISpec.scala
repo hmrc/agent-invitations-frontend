@@ -32,7 +32,6 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
@@ -362,7 +361,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val request = FakeRequest("POST", "/resend-link/")
     val postResendLink = controller.submitToResendLink
 
-    "return 200 and go to resend link page" in {
+    "return 303 and redirect to show resend link page" in {
       givenAgentReference(arn, "uid", personal)
       givenGetAgencyEmailAgentStub
       val expirationDate = LocalDate.now(DateTimeZone.UTC).plusDays(21)
@@ -371,19 +370,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
-      status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result,
-      "invitation-sent.link-text",
-      "invitation-sent.select-link",
-      "invitation-sent.client-warning",
-      "invitation-sent.next-steps.heading",
-      "invitation-sent.next-steps.p",
-      "invitation-sent.next-steps.link-text.track",
-      "invitation-sent.next-steps.link-text.new",
-      "invitation-sent.next-steps.link-text.asa")
-
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", displayDateForLang(expirationDate)(request), "abc@xyz.com"),
-        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showResendLink().url)
     }
 
     "return 400 BadRequest when form data contains errors in service" in {
@@ -410,6 +398,35 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
+    }
+  }
+
+  "GET /resend-link" should {
+
+    val request = FakeRequest("GET", "/resend-link/")
+    val getResendLink = controller.showResendLink
+
+    "return 200" in {
+      val result =
+        getResendLink(authorisedAsValidAgent(request.withSession(
+          "agentLink" -> "/agent/",
+          "clientType" -> "personal",
+        "expiryDate" -> "2017-05-05",
+        "service" -> "HMRC-MTD-IT",
+        "agencyEmail" -> "abc@xyz.com"), arn.value))
+
+      checkHtmlResultWithBodyMsgs(result,
+        "invitation-sent.link-text",
+        "invitation-sent.select-link",
+        "invitation-sent.client-warning",
+        "invitation-sent.next-steps.heading",
+        "invitation-sent.next-steps.p",
+        "invitation-sent.next-steps.link-text.track",
+        "invitation-sent.next-steps.link-text.new",
+        "invitation-sent.next-steps.link-text.asa")
+
+      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", "5 May 2017", "abc@xyz.com"),
+        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
     }
   }
 
