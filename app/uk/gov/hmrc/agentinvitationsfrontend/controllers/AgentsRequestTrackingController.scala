@@ -145,6 +145,22 @@ class AgentsRequestTrackingController @Inject()(
     }
   }
 
+  def showResendLink: Action[AnyContent] =
+    Action.async { implicit request =>
+      withAuthorisedAsAgent { _ =>
+        Future successful Ok(
+          resendLinkView(ResendLinkPageConfig(
+            appConfig.agentInvitationsFrontendExternalUrl,
+            request.session.get("agentLink").getOrElse(""),
+            request.session.get("clientType").getOrElse(""),
+            request.session.get("expiryDate").getOrElse(""),
+            request.session.get("service").getOrElse(""),
+            request.session.get("agencyEmail").getOrElse(""),
+            routes.AgentsRequestTrackingController.showTrackRequests(1).url
+          )))
+      }
+    }
+
   def submitToResendLink: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       trackInformationForm
@@ -158,18 +174,16 @@ class AgentsRequestTrackingController @Inject()(
             for {
               agentLink   <- invitationsService.createAgentLink(agent.arn, data.clientType)
               agencyEmail <- acaConnector.getAgencyEmail()
-            } yield
-              Ok(
-                resendLinkView(ResendLinkPageConfig(
-                  appConfig.agentInvitationsFrontendExternalUrl,
-                  agentLink,
-                  data.clientType.map(ClientType.fromEnum).getOrElse(""),
-                  data.expiryDate,
-                  if (data.clientType.contains(personal)) "personal"
-                  else data.service,
-                  agencyEmail,
-                  routes.AgentsRequestTrackingController.showTrackRequests(1).url
-                )))
+            } yield {
+              val service = if (data.clientType.contains(personal)) "personal" else data.service
+              Redirect(routes.AgentsRequestTrackingController.showResendLink()).addingToSession(
+                "agentLink"   -> agentLink,
+                "clientType"  -> data.clientType.map(ClientType.fromEnum).getOrElse(""),
+                "expiryDate"  -> data.expiryDate,
+                "service"     -> service,
+                "agencyEmail" -> agencyEmail
+              )
+            }
           }
         )
     }

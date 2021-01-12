@@ -32,7 +32,7 @@ class AgentInvitationsLanguageController @Inject()(
 
   override def languageMap: Map[String, Lang] = appConfig.languageMap
 
-  override def fallbackURL: String = "https://www.gov.uk/fallback"
+  override def fallbackURL: String = "https://www.tax.service.gov.uk/agent-services-account/"
 
   override def switchToLanguage(language: String): Action[AnyContent] = Action { implicit request =>
     val enabled: Boolean = languageMap.get(language).exists(languageUtils.isLangAvailable)

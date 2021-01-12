@@ -206,21 +206,21 @@ error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient 
 
 # Invitation Sent
 invitation-sent.header=Yr hyn y mae angen i chi ei wneud nesaf
-invitation-sent.step1.personal.paye-vat=Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.
-invitation-sent.step1.personal.paye=Check with your client that they have a Government Gateway user ID for their personal tax affairs.
-invitation-sent.step1.personal.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
-invitation-sent.step1.business.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
-invitation-sent.step1.business.trust=Check with your client that they have claimed or previously registered the trust or estate.
-invitation-sent.link-text=Copy this authorisation request link and send it to your client:
-invitation-sent.select-link=Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID.
-invitation-sent.client-respond=Ask your client to respond by {0} or your authorisation request link will expire. We will email you at {1} to update you on the status of this request.
-invitation-sent.client-warning=Clients will not be able to authorise you if they do not use the Government Gateway user ID they used to sign up to the tax service you need authorisation for.
-invitation-sent.client-help=Clients who still need help can follow a <a href={0} target="_blank">step-by-step guide to authorising a tax agent (opens in a new tab)</a>
-invitation-sent.next-steps.heading=After you have sent the authorisation request link
-invitation-sent.next-steps.p=When you have completed these steps, you may want to:
-invitation-sent.next-steps.link-text.track=Track your authorisation requests
-invitation-sent.next-steps.link-text.new=Start a new authorisation request
-invitation-sent.next-steps.link-text.asa=Go to your agent services account
+invitation-sent.step1.personal.paye-vat=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol a’i fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+invitation-sent.step1.personal.paye=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol.
+invitation-sent.step1.personal.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+invitation-sent.step1.business.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+invitation-sent.step1.business.trust=Gwiriwch gyda’ch cleient ei fod wedi hawlio, neu wedi cofrestru’r ymddiriedolaeth neu’r ystâd o’r blaen.
+invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a’i anfon at eich cleient:
+invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
+invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu bydd eich cysylltiad sy’n gais am awdurdodiad yn dod i ben. Byddwn yn anfon e-bost atoch yn {1} i’ch diweddaru ar statws y cais hwn.
+invitation-sent.client-warning=Ni fydd cleientiaid yn gallu eich awdurdodi os na fyddant yn defnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth y gwnaethant ei ddefnyddio i gofrestru ar gyfer y gwasanaeth treth y mae angen awdurdodiad ar ei gyfer arnoch.
+invitation-sent.client-help=Gall cleientiaid sydd angen help o hyd ddilyn <a href={0} target="_blank">arweiniad cam wrth gam ynghylch sut i awdurdodi asiant treth (yn agor tab newydd)</a>
+invitation-sent.next-steps.heading=Ar ôl i chi anfon y cysylltiad sy’n gais am awdurdodiad
+invitation-sent.next-steps.p=Pan fyddwch wedi cwblhau’r camau hyn, efallai yr hoffech wneud y canlynol:
+invitation-sent.next-steps.link-text.track=Olrhain eich ceisiadau am awdurdodiad
+invitation-sent.next-steps.link-text.new=Dechrau cais am awdurdodiad newydd
+invitation-sent.next-steps.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
