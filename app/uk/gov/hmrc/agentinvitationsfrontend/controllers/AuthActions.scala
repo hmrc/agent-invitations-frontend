@@ -21,6 +21,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logging, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
@@ -41,7 +42,9 @@ class AuthActionsImpl @Inject()(
   val env: Environment,
   val config: Configuration,
   val authConnector: AuthConnector,
-  val appConfig: AppConfig)
+  val appConfig: AppConfig,
+  featureFlags: FeatureFlags,
+  pirRelationshipConnector: PirRelationshipConnector)
     extends AuthorisedFunctions with AuthRedirects with Logging {
 
   val pdvStartUrl = s"${externalUrls.pdvFrontendUrl}/start"
@@ -59,20 +62,25 @@ class AuthActionsImpl @Inject()(
 
   def withAuthorisedAsAgent[A](
     body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    withVerifiedPasscode { isWhitelisted =>
-      authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
-        .retrieve(authorisedEnrolments) { enrolments =>
-          getArn(enrolments) match {
-            case Some(arn) => body(AuthorisedAgent(arn, isWhitelisted))
-            case None =>
-              logger.warn("Arn not found for the logged in agent")
-              Future successful Forbidden
-          }
+    authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
+      .retrieve(authorisedEnrolments) { enrolments =>
+        getArn(enrolments) match {
+          case Some(arn) if featureFlags.enableIrvAllowlist =>
+            pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
+              body(AuthorisedAgent(arn, allowed))
+            }
+          case Some(arn) =>
+            withVerifiedPasscode { allowed =>
+              body(AuthorisedAgent(arn, allowed))
+            }
+          case None =>
+            logger.warn("Arn not found for the logged in agent")
+            Future successful Forbidden
         }
-        .recover {
-          handleFailure(isAgent = true)
-        }
-    }
+      }
+      .recover {
+        handleFailure(isAgent = true)
+      }
 
   def withIndividualAuth[A](body: String => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
