@@ -92,7 +92,10 @@ abstract class BaseISpec
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
       )
+      .configure(extraConfig)
       .overrides(new TestGuiceModule)
+
+  def extraConfig: Map[String, Any] = Map.empty
 
   def commonStubs(): Seq[StubMapping] = givenAuditConnector()
 

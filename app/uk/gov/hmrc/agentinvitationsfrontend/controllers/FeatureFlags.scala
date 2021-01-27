@@ -30,5 +30,6 @@ case class FeatureFlags @Inject()(appConfig: AppConfig) {
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val agentSuspensionEnabled = appConfig.featuresAgentSuspension
+  val enableIrvAllowlist = appConfig.featuresIrvAllowlist
 
 }

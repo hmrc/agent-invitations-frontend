@@ -163,4 +163,10 @@ trait AfiRelationshipStub {
       get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
         .willReturn(aResponse()
           .withStatus(404)))
+
+  def givenArnIsAllowlistedForIrv(arn: Arn) =
+    stubFor(get(s"/agent-fi-relationship/${arn.value}/irv-allowed").willReturn(noContent()))
+
+  def givenArnIsNotAllowlistedForIrv(arn: Arn) =
+    stubFor(get(s"/agent-fi-relationship/${arn.value}/irv-allowed").willReturn(notFound()))
 }
