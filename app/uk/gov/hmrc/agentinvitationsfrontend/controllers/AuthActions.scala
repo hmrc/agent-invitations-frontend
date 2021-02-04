@@ -110,7 +110,11 @@ class AuthActionsImpl @Inject()(
               withConfidenceLevelUplift(cl, maybeNino, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               }
-            case (AffinityGroup.Organisation, _) => body(AuthorisedClient(affinity, enrols))
+            case (AffinityGroup.Organisation, cl) => {
+              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, maybeNino, enrols) {
+                body(AuthorisedClient(affinity, enrols))
+              } else body(AuthorisedClient(affinity, enrols))
+            }
             case (AffinityGroup.Agent, _) => {
               Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
             }
