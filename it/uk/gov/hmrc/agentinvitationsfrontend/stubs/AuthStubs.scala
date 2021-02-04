@@ -243,6 +243,43 @@ trait AuthStubs {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
+  def authorisedAsITSAOrganisationClient[A](request: FakeRequest[A], confidenceLevel: Int = 200)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenAuthorisedFor(
+      """
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
+       """.stripMargin,
+      s"""
+         |{
+         |  "affinityGroup":"Organisation",
+         |  "confidenceLevel":$confidenceLevel,
+         |  "allEnrolments":
+         |  [
+         |     {
+         |      "key": "HMRC-MTD-IT",
+         |      "identifiers": [
+         |         {"key":"MTDITID", "value": "ABCDEF123456789"}
+         |      ]
+         |     },
+         |     {
+         |     "key": "HMRC-MTD-VAT",
+         |     "identifiers": [
+         |     { "key":"VRN", "value": "101747696"}
+         |     ]
+         |     }
+         |  ]
+         |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
+  }
+
   def authenticatedAnyClientWithAffinity[A](request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
