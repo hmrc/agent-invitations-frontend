@@ -25,6 +25,26 @@
 
 @(config: CompletePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@gtmScript = {
+    <script>
+            @for(consent <- config.consents) {
+            @if(consent.consent) {
+            window.dataLayer.push({
+                'agents_event_category' : 'invitation',
+                'agents_event_action' : 'accepted',
+                'agents_event_label' : '@consent.service'
+            });
+            } else {
+            window.dataLayer.push({
+                'agents_event_category' : 'invitation',
+                'agents_event_action' : 'declined',
+                'agents_event_label' : '@consent.service'
+            });
+            }
+            }
+    </script>
+}
+
 @gaCalls(analyticsHost: String, token: String) = {
     ga('create', '@token', '@analyticsHost');
 
@@ -37,7 +57,7 @@
     }
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), gaCalls = Some(gaCalls _), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), gaCalls = Some(gaCalls _), mainDataAttributes = Some(gaPageEvent(Messages("client-complete.header"), "")), scriptElem = Some(gtmScript)) {
 
         <div class="transaction-banner--complete">
             <h1 class="transaction-banner__heading">@Messages("client-complete.multi.header")</h1>
