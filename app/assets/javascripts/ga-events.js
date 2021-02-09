@@ -69,6 +69,7 @@ $(function() {
             $(this).click(function(e){
         		ga('send', 'event', 'disclosure-click-'+disclosureOpenClose(this), title, striptext($(this)))
                 dataLayer.push({
+                    'event': 'custom_agents_request',
                     'agents_event_category': 'accordion - ' +dataLayerOpenClose(this),
                     'agents_event_action': title,
                     'agents_event_label': striptext($(this))

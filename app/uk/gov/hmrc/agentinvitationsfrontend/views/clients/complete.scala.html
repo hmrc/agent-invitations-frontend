@@ -30,12 +30,14 @@
             @for(consent <- config.consents) {
             @if(consent.consent) {
             window.dataLayer.push({
+                'event': 'custom_agents_request',
                 'agents_event_category' : 'invitation',
                 'agents_event_action' : 'accepted',
                 'agents_event_label' : '@consent.service'
             });
             } else {
             window.dataLayer.push({
+                'event': 'custom_agents_request',
                 'agents_event_category' : 'invitation',
                 'agents_event_action' : 'declined',
                 'agents_event_label' : '@consent.service'
