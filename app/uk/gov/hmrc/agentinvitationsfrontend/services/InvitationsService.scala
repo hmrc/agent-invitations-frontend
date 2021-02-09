@@ -170,6 +170,11 @@ class InvitationsService @Inject()(
                      acaConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
                    else acaConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
 
+                 case "trustNT" =>
+                   if (response == "Accepted")
+                     acaConnector.acceptTrustInvitation(Urn(si.clientId), invitationId)
+                   else acaConnector.rejectTrustInvitation(Urn(si.clientId), invitationId)
+
                  case "cgt" =>
                    if (response == "Accepted")
                      acaConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)

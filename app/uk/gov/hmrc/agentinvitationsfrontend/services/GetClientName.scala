@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -42,7 +42,8 @@ trait GetClientName extends Logging {
         } else getItsaTradingName(Nino(clientId))
       case Services.HMRCPIR    => getCitizenName(Nino(clientId))
       case Services.HMRCMTDVAT => getVatName(Vrn(clientId))
-      case Services.TRUST      => getTrustName(Utr(clientId))
+      case Services.TRUST      => getTrustName(clientId)
+      case Services.TRUSTNT    => getTrustName(clientId)
       case Services.HMRCCGTPD  => getCgtClientName(CgtRef(clientId))
       case _                   => Future successful None
     }
@@ -68,11 +69,11 @@ trait GetClientName extends Logging {
         .orElse(customerDetails.individual.map(_.name))
     }
 
-  def getTrustName(utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    acaConnector.getTrustName(utr).map(_.response).map {
+  def getTrustName(trustTaxIdentifier: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    acaConnector.getTrustName(trustTaxIdentifier).map(_.response).map {
       case Right(trustName) => Some(trustName.name)
       case Left(invalidTrust) =>
-        logger.warn(s"error during retrieving trust name for utr: ${utr.value} , error: $invalidTrust")
+        logger.warn(s"error during retrieving trust name for utr/urn: ${trustTaxIdentifier} , error: $invalidTrust")
         None
     }
 

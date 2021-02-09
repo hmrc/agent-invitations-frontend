@@ -27,11 +27,12 @@ object Services {
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
   val HMRCMTDVAT = "HMRC-MTD-VAT"
   val TRUST = "HMRC-TERS-ORG"
+  val TRUSTNT = "HMRC-TERSNT-ORG"
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
-  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef")
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, TRUSTNT)
+  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
   val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TRUST, HMRCCGTPD)
   val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
   val allSupportedEnrolmentKeysForBusiness = Set(HMRCMTDVAT)
@@ -44,6 +45,7 @@ object Services {
       case 'C' => "vat"
       case 'D' => "trust"
       case 'E' => "cgt"
+      case 'F' => "trustNT"
       case _   => "Service is missing"
     }
 
@@ -53,6 +55,7 @@ object Services {
       case HMRCPIR    => "afi"
       case HMRCMTDVAT => "vat"
       case TRUST      => "trust"
+      case TRUSTNT    => "trustNT"
       case HMRCCGTPD  => "cgt"
     }
 
@@ -62,6 +65,7 @@ object Services {
       case "afi"   => HMRCPIR
       case "vat"   => HMRCMTDVAT
       case "trust" => TRUST
+      case "trustNT" => TRUSTNT
       case "cgt"   => HMRCCGTPD
     }
 
@@ -71,6 +75,7 @@ object Services {
       case HMRCMTDVAT => "vrn"
       case HMRCCGTPD  => "CGTPDRef"
       case TRUST      => "utr"
+      case TRUSTNT    => "urn"
       case HMRCPIR    => "ni"
     }
 }

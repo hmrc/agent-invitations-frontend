@@ -27,7 +27,7 @@ import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
@@ -47,6 +47,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-MTD-IT"   -> "Itsa",
     "HMRC-MTD-VAT"  -> "VAT",
     "HMRC-TERS-ORG" -> "Trust",
+    "HMRC-TERSNT-ORG" -> "TrustNT",
     "HMRC-CGT-PD"   -> "Cgt"
   )
 
@@ -54,6 +55,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-MTD-IT"   -> "NI",
     "HMRC-MTD-VAT"  -> "VRN",
     "HMRC-TERS-ORG" -> "SAUTR",
+    "HMRC-TERSNT-ORG" -> "URN",
     "HMRC-CGT-PD"   -> "CGTPDRef"
   )
 
@@ -61,6 +63,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     case "HMRC-MTD-IT"            => featureFlags.showHmrcMtdIt
     case "HMRC-MTD-VAT"           => featureFlags.showHmrcMtdVat
     case "HMRC-TERS-ORG"          => featureFlags.showHmrcTrust
+    case "HMRC-TERSNT-ORG"        => featureFlags.showHmrcTrust
     case "HMRC-CGT-PD"            => featureFlags.showHmrcCgt
     case "PERSONAL-INCOME-RECORD" => featureFlags.showPersonalIncome
     case _                        => false // unknown service
@@ -115,6 +118,9 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
   def deleteRelationshipTrust(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-TERS-ORG", arn, utr)
 
+  def deleteRelationshipTrustNT(arn: Arn, urn: Urn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+    deleteRelationshipForService("HMRC-TERSNT-ORG", arn, urn)
+
   def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-CGT-PD", arn, ref)
 
@@ -146,6 +152,9 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   def checkTrustRelationship(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     checkRelationship("HMRC-TERS-ORG", arn, utr)
+
+  def checkTrustNTRelationship(arn: Arn, urn: Urn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-TERSNT-ORG", arn, urn)
 
   def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     checkRelationship("HMRC-CGT-PD", arn, ref)

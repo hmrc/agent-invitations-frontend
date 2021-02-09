@@ -103,4 +103,9 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
 
+//  val desIFEnabled: Boolean = servicesConfig.getBoolean("des-if.enabled")
+
+  val featuresAcceptTrustURNIdentifier: Boolean = servicesConfig.getBoolean("features.enable-trust-urn-identifier")
+
+
 }

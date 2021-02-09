@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentmtdidentifiers.model.Utr
 
-case class TrustClient(utr: Utr)
+case class TrustClient(trustTaxIdentifier: String)
 
 object TrustClient {
   implicit val format: Format[TrustClient] = Json.format[TrustClient]
