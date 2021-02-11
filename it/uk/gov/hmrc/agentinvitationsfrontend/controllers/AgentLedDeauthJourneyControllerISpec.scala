@@ -613,7 +613,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is Barry Block the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "Barry Block",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -626,7 +626,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is Barry Block the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "Barry Block",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -639,7 +639,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is Barry Block the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "Barry Block",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -651,7 +651,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is Barry Block the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "Barry Block",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -664,7 +664,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is some-trust the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "some-trust",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
@@ -677,7 +677,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        "Is some-cgt-client the client you want to cancel your authorisation for?",
+        "Is this the client you want to cancel your authorisation for?", "some-cgt-client",
         htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")

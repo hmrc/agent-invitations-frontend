@@ -1162,7 +1162,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is Sylvia Plath the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Sylvia Plath")
 
       journeyState.get should havePattern[State](
         {
@@ -1192,7 +1193,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is GDT the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "GDT")
 
       journeyState.get should havePattern[State](
         {
@@ -1222,7 +1224,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is Nelson James Trust the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Nelson James Trust")
 
       journeyState.get should havePattern[State](
         {
@@ -1246,7 +1249,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is GDT the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "GDT")
 
       journeyState.get should havePattern[State](
         {
@@ -1271,7 +1275,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is CGT_NAME the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result, "CGT_NAME")
     }
   }
 
