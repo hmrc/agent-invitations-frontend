@@ -207,8 +207,8 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(utr => acaConnector.getTrustName(utr))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form) (
+      Transitions.identifiedTrustClient _(utr => acaConnector.getTrustName(utr.value))
     )
   }
 
@@ -352,7 +352,9 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   /* Here we decide what to render after state transition */
-  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
+    implicit request: Request[_],
+    appConfig: AppConfig): Result =
     state match {
 
       case SelectClientType(_) =>

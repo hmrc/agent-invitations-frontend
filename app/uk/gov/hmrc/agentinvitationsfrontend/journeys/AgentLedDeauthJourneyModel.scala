@@ -134,6 +134,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                 if (showTrustFlag) goto(IdentifyClientTrust)
                 else fail(new Exception(s"Service: $service feature flag is switched off"))
 
+              case TRUSTNT =>
+                if (showTrustFlag) goto(IdentifyClientTrust)
+                else fail(new Exception(s"Service: $service feature flag is switched off"))
+
               case HMRCCGTPD =>
                 if (showCgtFlag) goto(IdentifyClientCgt)
                 else fail(new Exception(s"Service: $service feature flag is switched off"))
@@ -197,15 +201,16 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
+    //          not sure if we should leave this as utr or replace it with trustTaxIdentifier?
     def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClientTrust =>
-          getTrustName(trustClient.utr).flatMap { trustResponse =>
+          getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(name, trustClient.utr))
+                goto(ConfirmClientTrust(name, trustClient.taxId))
               case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound)
             }
           }
@@ -316,8 +321,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
-        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TRUST, Some(name))
-        case ConfirmClientCgt(cgtRef, name)      => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
+//          not sure if we should leave this as utr or replace it with trustTaxIdentifier?
+        case ConfirmClientTrust(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUST, Some(name))
+        case ConfirmClientTrust(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUSTNT, Some(name))
+        case ConfirmClientCgt(cgtRef, name)               => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
       }
     }
 

@@ -73,7 +73,7 @@ trait GetClientName extends Logging {
     acaConnector.getTrustName(trustTaxIdentifier).map(_.response).map {
       case Right(trustName) => Some(trustName.name)
       case Left(invalidTrust) =>
-        logger.warn(s"error during retrieving trust name for utr/urn: ${trustTaxIdentifier} , error: $invalidTrust")
+        logger.warn(s"error during retrieving trust name for utr/urn: $trustTaxIdentifier , error: $invalidTrust")
         None
     }
 

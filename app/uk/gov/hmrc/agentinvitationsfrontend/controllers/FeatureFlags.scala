@@ -31,6 +31,6 @@ case class FeatureFlags @Inject()(appConfig: AppConfig) {
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val agentSuspensionEnabled = appConfig.featuresAgentSuspension
   val enableIrvAllowlist = appConfig.featuresIrvAllowlist
-  val acceptTrustURNIdentifier =appConfig.featuresAcceptTrustURNIdentifier
+  val acceptTrustURNIdentifier = appConfig.featuresAcceptTrustURNIdentifier
 
 }

@@ -256,6 +256,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
         case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+//here not sure if we should use ANYTRUST/TRUSTNT?
+        case AgentFastTrackRequest(Some(ClientType.business), ANYTRUST, _, _, _) =>
+          goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+
+        case AgentFastTrackRequest(Some(ClientType.business), TRUSTNT, _, _, _) =>
+          goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
 
         case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
           goto(CheckDetailsCompleteCgt(fastTrackRequest, fastTrackRequest, continueUrl))
@@ -554,12 +560,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     def showConfirmTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyTrustClient(originalFtr, ftr, continueUrl) =>
-          getTrustName(trustClient.utr).flatMap { trustResponse =>
+          getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(originalFtr, ftr.copy(clientIdentifier = trustClient.utr.value), continueUrl, name))
+                goto(ConfirmClientTrust(originalFtr, ftr.copy(clientIdentifier = trustClient.taxId.value), continueUrl, name))
               case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound(originalFtr, ftr, continueUrl))
             }
           }

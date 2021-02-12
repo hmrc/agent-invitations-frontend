@@ -21,7 +21,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{IdentifyClientTrust, _}
@@ -69,6 +69,7 @@ class AgentLedDeauthJourneyController @Inject()(
 )(
   implicit ec: ExecutionContext,
   configuration: Configuration,
+  appConfig: AppConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val cc: MessagesControllerComponents)
@@ -147,7 +148,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr.value)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>

@@ -197,15 +197,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyTrustClient(TRUST, basket) =>
-          getTrustName(trustClient.utr).flatMap { trustResponse =>
+        case IdentifyTrustClient(ANYTRUST, basket) =>
+          getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
                 goto(
-                  ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.utr)), basket)
+                  ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.taxId)), basket)
                 )
               case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound(basket))
             }
           }

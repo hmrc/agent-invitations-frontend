@@ -44,19 +44,19 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   // TODO when Service becomes a sealed trait, move these to that class
   private val serviceShortNames = Map(
-    "HMRC-MTD-IT"   -> "Itsa",
-    "HMRC-MTD-VAT"  -> "VAT",
-    "HMRC-TERS-ORG" -> "Trust",
+    "HMRC-MTD-IT"     -> "Itsa",
+    "HMRC-MTD-VAT"    -> "VAT",
+    "HMRC-TERS-ORG"   -> "Trust",
     "HMRC-TERSNT-ORG" -> "TrustNT",
-    "HMRC-CGT-PD"   -> "Cgt"
+    "HMRC-CGT-PD"     -> "Cgt"
   )
 
   private val serviceIdentifierTypes = Map(
-    "HMRC-MTD-IT"   -> "NI",
-    "HMRC-MTD-VAT"  -> "VRN",
-    "HMRC-TERS-ORG" -> "SAUTR",
+    "HMRC-MTD-IT"     -> "NI",
+    "HMRC-MTD-VAT"    -> "VRN",
+    "HMRC-TERS-ORG"   -> "SAUTR",
     "HMRC-TERSNT-ORG" -> "URN",
-    "HMRC-CGT-PD"   -> "CGTPDRef"
+    "HMRC-CGT-PD"     -> "CGTPDRef"
   )
 
   def isServiceEnabled(service: String): Boolean = service match {

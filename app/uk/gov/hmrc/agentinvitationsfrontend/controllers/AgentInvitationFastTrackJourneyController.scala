@@ -179,7 +179,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     }
 
   val submitIdentifyTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr => acaConnector.getTrustName(utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr => acaConnector.getTrustName(utr.value)))
   }
 
   val submitIdentifyCgtClient = action { implicit request =>
@@ -366,7 +366,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   /* Here we decide what to render after state transition */
-  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
+    implicit request: Request[_],
+    appConfig: AppConfig): Result =
     state match {
 
       case s: Prologue => Redirect(getCallFor(s))
@@ -711,7 +713,7 @@ object AgentInvitationFastTrackJourneyController {
   def IdentifyTrustClientForm: Form[TrustClient] = Form(
     mapping(
       "utr" -> normalizedText.verifying(validUtr())
-    )(x => TrustClient.apply(Utr(x)))(x => Some(x.utr.value))
+    )(x => TrustClient.apply(Utr(x)))(x => Some(x.taxId.value))
   )
 
   def IdentifyIrvClientForm: Form[IrvClient] = Form(

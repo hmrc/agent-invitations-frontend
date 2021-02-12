@@ -30,8 +30,9 @@ object Services {
   val TRUSTNT = "HMRC-TERSNT-ORG"
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
+  val ANYTRUST = "TRUST"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, TRUSTNT, HMRCCGTPD )
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, TRUSTNT, HMRCCGTPD)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
   val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TRUST, HMRCCGTPD)
   val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
@@ -61,12 +62,12 @@ object Services {
 
   def determineServiceFromServiceMessageKey(serviceMessageKey: String): String =
     serviceMessageKey match {
-      case "itsa"  => HMRCMTDIT
-      case "afi"   => HMRCPIR
-      case "vat"   => HMRCMTDVAT
-      case "trust" => TRUST
+      case "itsa"    => HMRCMTDIT
+      case "afi"     => HMRCPIR
+      case "vat"     => HMRCMTDVAT
+      case "trust"   => TRUST
       case "trustNT" => TRUSTNT
-      case "cgt"   => HMRCCGTPD
+      case "cgt"     => HMRCCGTPD
     }
 
   def clientIdType(service: String) =

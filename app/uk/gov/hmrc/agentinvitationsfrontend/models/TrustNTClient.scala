@@ -17,11 +17,16 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
+import uk.gov.hmrc.agentmtdidentifiers.model.{Urn, Utr}
 
-case class TrustClient(taxId: Utr)
+object TrustNTClient {
 
-object TrustClient {
-  implicit val format: Format[TrustClient] = Json.format[TrustClient]
+  def apply(taxId: String) = taxId match {
+    case taxId if Utr.isValid(String) => Utr(taxId)
+    case taxId if Urn.isValid(String) => Urn(taxId)
+    case _                            => throw new IllegalArgumentException(s"Supplied value $taxId does not match either $taxId or $taxId")
+
+  }
+//    implicit val format: Format[TrustNTClient] = Json.format[TrustClient]
 
 }

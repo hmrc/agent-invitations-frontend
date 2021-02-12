@@ -278,9 +278,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def acceptTrustInvitation(utr: Utr, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+  def acceptTrustInvitation(trustTaxIdentifier: TrustTaxIdentifier, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val url = new URL(baseUrl, s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/accept").toString
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/UTR/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/accept").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -288,9 +292,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
-  def rejectTrustInvitation(utr: Utr, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+  def rejectTrustInvitation(trustTaxIdentifier: TrustTaxIdentifier, invitationId: InvitationId)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val url = new URL(baseUrl, s"/agent-client-authorisation/clients/UTR/${utr.value}/invitations/received/${invitationId.value}/reject").toString
+      val url = new URL(
+        baseUrl,
+        s"/agent-client-authorisation/clients/UTR/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/reject").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -397,8 +405,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         }
     }
 
-  def getTrustName(utr: Utr)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[TrustResponse] = {
-    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/organisations/trust/${utr.value}").toString
+  def getTrustName(trustTaxIdentifier: String)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[TrustResponse] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/organisations/trust/$trustTaxIdentifier").toString
 
     monitor(s"ConsumedAPI-Get-Trust-KnownFacts-GET") {
       http.GET[HttpResponse](url).map { response =>
