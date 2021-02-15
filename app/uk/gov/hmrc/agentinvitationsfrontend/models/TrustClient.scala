@@ -15,13 +15,15 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
-
-case class TrustClient(taxId: Utr)
+case class TrustClient(taxId: TrustTaxIdentifier)
 
 object TrustClient {
-  implicit val format: Format[TrustClient] = Json.format[TrustClient]
 
+  def apply(taxId: String, urnEnabled: Boolean): TrustClient = taxId match {
+    case x if Utr.isValid(x)              => TrustClient(Utr(x))
+    case x if urnEnabled & Urn.isValid(x) => TrustClient(Urn(x))
+    case _                                => throw new Exception(s"$taxId is not a valid TrustTaxIdentifier")
+  }
 }

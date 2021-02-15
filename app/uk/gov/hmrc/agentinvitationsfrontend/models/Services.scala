@@ -32,12 +32,12 @@ object Services {
   val HMRCNI = "HMRC-NI"
   val ANYTRUST = "TRUST"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, TRUSTNT, HMRCCGTPD)
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, ANYTRUST, HMRCCGTPD)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
-  val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TRUST, HMRCCGTPD)
+  val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TRUST, TRUSTNT, HMRCCGTPD)
   val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
   val allSupportedEnrolmentKeysForBusiness = Set(HMRCMTDVAT)
-  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TRUST)
+  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TRUST, TRUSTNT)
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {

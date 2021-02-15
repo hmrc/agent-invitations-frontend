@@ -21,7 +21,7 @@ import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetTrustName}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -54,6 +54,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
+    case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
@@ -207,8 +208,13 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case IdentifyClientTrust =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
-              case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(name, trustClient.taxId))
+              case Right(TrustName(name)) => {
+                trustClient.taxId match {
+                  case Utr(_) => goto(ConfirmClientTrust(name, Utr(trustClient.taxId.value)))
+                  case Urn(_) => goto(ConfirmClientTrustNT(name, Urn(trustClient.taxId.value)))
+                }
+
+              }
               case Left(invalidTrust) =>
                 logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound)
@@ -322,9 +328,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
 //          not sure if we should leave this as utr or replace it with trustTaxIdentifier?
-        case ConfirmClientTrust(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUST, Some(name))
-        case ConfirmClientTrust(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUSTNT, Some(name))
-        case ConfirmClientCgt(cgtRef, name)               => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
+        case ConfirmClientTrust(name, trustTaxIdentifier)   => gotoFinalState(trustTaxIdentifier.value, TRUST, Some(name))
+        case ConfirmClientTrustNT(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUSTNT, Some(name))
+        case ConfirmClientCgt(cgtRef, name)                 => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
       }
     }
 

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 sealed trait Invitation {
@@ -113,6 +113,17 @@ case class TrustInvitation(
 
 object TrustInvitation {
   implicit val format: Format[TrustInvitation] = Json.format[TrustInvitation]
+}
+
+case class TrustNTInvitation(
+  clientIdentifier: Urn,
+  clientType: Option[ClientType] = Some(ClientType.business),
+  service: String = Services.TRUSTNT,
+  clientIdentifierType: String = "urn")
+    extends Invitation
+
+object TrustNTInvitation {
+  implicit val format: Format[TrustNTInvitation] = Json.format[TrustNTInvitation]
 }
 
 case class CgtInvitation(

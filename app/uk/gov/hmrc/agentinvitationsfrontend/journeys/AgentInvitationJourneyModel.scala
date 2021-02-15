@@ -21,7 +21,7 @@ import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -86,7 +86,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       (Arn, Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
-    type GetTrustName = Utr => Future[TrustResponse]
+    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
 
@@ -181,7 +181,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
           } else if (services.contains(service)) {
             val flag = service match {
-              case TRUST     => showTrustsFlag
+              case ANYTRUST  => showTrustsFlag
               case HMRCCGTPD => showCgtFlag
             }
             gotoIdentify(
@@ -200,10 +200,19 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         case IdentifyTrustClient(ANYTRUST, basket) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
-              case Right(TrustName(name)) =>
-                goto(
-                  ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(trustClient.taxId)), basket)
-                )
+              case Right(TrustName(name)) => {
+                trustClient.taxId match {
+                  case Utr(_) =>
+                    goto(
+                      ConfirmClientTrust(AuthorisationRequest(name, TrustInvitation(Utr(trustClient.taxId.value))), basket)
+                    )
+                  case Urn(_) =>
+                    goto(
+                      ConfirmClientTrust(AuthorisationRequest(name, TrustNTInvitation(Urn(trustClient.taxId.value))), basket)
+                    )
+                }
+
+              }
               case Left(invalidTrust) =>
                 logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound(basket))
@@ -504,24 +513,24 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               business,
               authorisedAgent.arn,
               request.invitation.clientId,
-              TRUST,
+              request.invitation.service,
               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
-              hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
+              hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(business))
               result <- if (hasPendingInvitations) {
                          goto(PendingInvitationExists(business, Set.empty))
                        } else {
-                         hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, TRUST)
+                         hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
                            .flatMap {
-                             case true => goto(ActiveAuthorisationExists(business, TRUST, Set.empty))
+                             case true => goto(ActiveAuthorisationExists(business, request.invitation.service, Set.empty))
                              case false =>
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
-                                     InvitationSentBusiness(agentLink, None, agencyEmail, Set(TRUST)),
+                                     InvitationSentBusiness(agentLink, None, agencyEmail, Set(request.invitation.service)),
                                      (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
                                      createMultipleInvitations,
@@ -530,7 +539,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            }
                        }
             } yield result
-        } else goto(IdentifyTrustClient(TRUST, basket))
+        } else goto(IdentifyTrustClient(ANYTRUST, basket))
     }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {

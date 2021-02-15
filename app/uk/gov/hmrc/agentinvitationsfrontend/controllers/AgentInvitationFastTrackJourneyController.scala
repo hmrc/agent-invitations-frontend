@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -98,6 +98,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -179,7 +180,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     }
 
   val submitIdentifyTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr => acaConnector.getTrustName(utr.value)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(Transitions.showConfirmTrustClient(taxId =>
+      acaConnector.getTrustName(taxId.value)))
   }
 
   val submitIdentifyCgtClient = action { implicit request =>
@@ -366,9 +368,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   /* Here we decide what to render after state transition */
-  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
-    implicit request: Request[_],
-    appConfig: AppConfig): Result =
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
     state match {
 
       case s: Prologue => Redirect(getCallFor(s))
@@ -513,7 +513,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case IdentifyTrustClient(_, _, _) =>
         Ok(
           identifyClientTrustView(
-            formWithErrors.or(IdentifyTrustClientForm),
+            formWithErrors.or(TrustClientForm.form(urnEnabled)),
             routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
             backLinkFor(breadcrumbs).url
           )
@@ -710,11 +710,11 @@ object AgentInvitationFastTrackJourneyController {
     )(VatClient.apply)(VatClient.unapply)
   )
 
-  def IdentifyTrustClientForm: Form[TrustClient] = Form(
-    mapping(
-      "utr" -> normalizedText.verifying(validUtr())
-    )(x => TrustClient.apply(Utr(x)))(x => Some(x.taxId.value))
-  )
+//  def IdentifyTrustClientForm: Form[TrustClient] = Form(
+//    mapping(
+//      "utr" -> normalizedText.verifying(validUtr())
+//    )(x => TrustClientTaxable.apply(Utr(x)))(x => Some(x.taxId.value))
+//  )
 
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(

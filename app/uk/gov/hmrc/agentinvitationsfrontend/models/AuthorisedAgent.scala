@@ -23,5 +23,5 @@ case class AuthorisedAgent(arn: Arn, isWhitelisted: Boolean) {
   val personalServices: Set[String] =
     if (isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD) else Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
 
-  val trustServices: Set[String] = Set(TRUST, HMRCCGTPD, TRUSTNT)
+  val trustServices: Set[String] = Set(ANYTRUST, HMRCCGTPD)
 }

@@ -96,6 +96,7 @@ class AgentInvitationJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -207,8 +208,8 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form) (
-      Transitions.identifiedTrustClient _(utr => acaConnector.getTrustName(utr.value))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(
+      Transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value))
     )
   }
 
@@ -352,9 +353,7 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   /* Here we decide what to render after state transition */
-  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(
-    implicit request: Request[_],
-    appConfig: AppConfig): Result =
+  override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
     state match {
 
       case SelectClientType(_) =>
@@ -407,12 +406,14 @@ class AgentInvitationJourneyController @Inject()(
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, business)), config))
         }
 
-      case IdentifyTrustClient(Services.TRUST, _) =>
+      case IdentifyTrustClient(Services.ANYTRUST, _) =>
         Ok(
           identifyClientTrustView(
-            formWithErrors.or(TrustClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
-            backLinkFor(breadcrumbs).url
+            trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
+            submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
+            backLinkUrl = backLinkFor(breadcrumbs).url,
+            isDeAuthJourney = false,
+            showUrnEnabledContent = urnEnabled
           )
         )
 

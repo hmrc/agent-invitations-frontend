@@ -211,7 +211,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
 
-    type GetTrustName = Utr => Future[TrustResponse]
+    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {

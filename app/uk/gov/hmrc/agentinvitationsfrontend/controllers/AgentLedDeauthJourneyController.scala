@@ -84,6 +84,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -148,7 +149,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr.value)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr.value)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
@@ -339,7 +340,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientTrust =>
       Ok(
         identifyClientTrustView(
-          formWithErrors.or(TrustClientForm.form),
+          formWithErrors.or(TrustClientForm.form(urnEnabled)),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
@@ -407,6 +408,17 @@ class AgentLedDeauthJourneyController @Inject()(
           backLinkFor(breadcrumbs).url,
           "utr",
           utr.value
+        ))
+
+    case ConfirmClientTrustNT(trustName, urn) =>
+      Ok(
+        confirmClientView(
+          trustName,
+          formWithErrors.or(confirmCancelForm),
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url,
+          "urn",
+          urn.value
         ))
 
     case _: ConfirmCountryCodeCgt =>
