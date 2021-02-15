@@ -199,7 +199,8 @@ button.back=Yn ôl
 finish.button=Gorffen ac allgofnodi
 
 # Confirm Client
-confirm-client.header=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
+confirm-client.title=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
+confirm-client.header=Ai {0} yw’r cleient rydych am awdurdodiad ganddo?
 confirm-client.yes=Iawn
 confirm-client.no=Na – mae angen i mi ddechrau eto
 error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
@@ -281,7 +282,8 @@ cancel-authorisation.select-service.trust=Cynnal ymddiriedolaeth neu ystâd
 cancel-authorisation.select-service.cgt=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
 cancel-authorisation.select-service.hint=Dewiswch opsiwn.
 
-cancel-authorisation.confirm-client.header=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
+cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
+cancel-authorisation.confirm-client.header=Ai {0} yw’r cleient rydych am ganslo’ch awdurdodiad ar ei gyfer?
 cancel-authorisation.confirm-client.yes=Iawn – hwn yw’r cleient
 cancel-authorisation.confirm-client.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad

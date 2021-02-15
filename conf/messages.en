@@ -199,7 +199,8 @@ button.back=Back
 finish.button=Finish and sign out
 
 # Confirm Client
-confirm-client.header=Is this the client you want authorisation from?
+confirm-client.title=Is this the client you want authorisation from?
+confirm-client.header=Is {0} the client you want authorisation from?
 confirm-client.yes=Yes
 confirm-client.no=No - I need to start over again
 error.confirm-client.required=Select yes if you want to ask this client for authorisation
@@ -281,7 +282,8 @@ cancel-authorisation.select-service.trust=Maintain a trust or an estate
 cancel-authorisation.select-service.cgt=Manage their Capital Gains tax details for UK property
 cancel-authorisation.select-service.hint=Select an option.
 
-cancel-authorisation.confirm-client.header=Is this the client you want to cancel your authorisation for?
+cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
+cancel-authorisation.confirm-client.header=Is {0} the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Yes - this is the client
 cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
