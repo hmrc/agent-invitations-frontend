@@ -35,6 +35,14 @@ $(function() {
         	}
         }
 
+    function dataLayerOpenClose(_this){
+        if($(_this).closest('details').attr('open')){
+            return 'hide'
+        } else {
+            return 'expand'
+        }
+    }
+
         // only take the first part of titles
         var title = (function() {
             var s = $('title').text();
@@ -60,6 +68,12 @@ $(function() {
         $('details summary .summary:not('+exclude+')').each(function(){
             $(this).click(function(e){
         		ga('send', 'event', 'disclosure-click-'+disclosureOpenClose(this), title, striptext($(this)))
+                dataLayer.push({
+                    'event': 'custom_agents_request',
+                    'agents_event_category': 'accordion - ' +dataLayerOpenClose(this),
+                    'agents_event_action': title,
+                    'agents_event_label': striptext($(this))
+                });
         	});
         })
 

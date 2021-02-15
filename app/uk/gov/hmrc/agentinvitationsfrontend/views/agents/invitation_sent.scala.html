@@ -19,10 +19,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationSentPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
 @this(
     mainTemplate: main_template
 )
+
 
 @(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
@@ -33,10 +33,22 @@
         ga('send', 'event', 'invitation', 'sent', '@service');
     }
 }
+@gtmScript = {
+    <script>
+           @for(service <- config.services){
+               window.dataLayer.push({
+                   'event': 'custom_agents_request',
+                   'agents_event_category' : 'invitation',
+                  'agents_event_action' : 'sent',
+                  'agents_event_label' : '@service'
+               });
+           }
+    </script>
+}
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = Some(gaCalls _)) {
+@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = Some(gaCalls _), scriptElem = Some(gtmScript)) {
 
 
     <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>

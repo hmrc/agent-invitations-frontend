@@ -26,7 +26,18 @@
 
 @(service: String, clientId: String, clientName: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages("authorisation-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
+@gtmScript = {
+ <script>
+  window.dataLayer.push({
+   'event': 'custom_agents_request',
+   'agents_event_category' : 'invitation',
+   'agents_event_action' : 'cancelled',
+   'agents_event_label' : '@service'
+  });
+ </script>
+}
+
+@mainTemplate(title = Messages("generic.title", Messages("authorisation-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service)), scriptElem = Some(gtmScript)) {
 
  <div class="transaction-banner--complete">
   <h1 class="transaction-banner__heading">@Messages("authorisation-cancelled.header")</h1>

@@ -1108,7 +1108,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes", "confirm-client.no")
-      checkIncludesText(result, "Is trustName the client you want authorisation from?")
+      checkIncludesText(result,"Is this the client you want authorisation from?", "Is trustName the client you want authorisation from?")
     }
   }
 
@@ -1152,7 +1152,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "confirm-client.yes", "confirm-client.no")
-      checkIncludesText(result, "Is some-cgt-name the client you want authorisation from?")
+      checkIncludesText(result, "Is this the client you want authorisation from?", "Is some-cgt-name the client you want authorisation from?")
     }
   }
 
