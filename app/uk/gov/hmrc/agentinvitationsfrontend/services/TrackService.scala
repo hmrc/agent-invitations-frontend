@@ -124,7 +124,8 @@ class TrackService @Inject()(
       refinedResults = refineStatus(matched)
       (nameOk, nameEmpty) = refinedResults.partition(_.clientName.isDefined)
       nameRetrieved <- Future.traverse(nameEmpty) { trackInfo =>
-                        logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}, getting it from DES")
+                        logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
+                          s" status: ${trackInfo.status} date: ${trackInfo.date} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
                         getClientNameByService(trackInfo.clientId, trackInfo.service).map(name => trackInfo.copy(clientName = name))
                       }
       finalResults = nameOk ++ nameRetrieved
@@ -188,7 +189,10 @@ class TrackService @Inject()(
           case Some(invalid) => {
             Some(a.copy(date = invalid.date))
           }
-          case None => Some(a)
+          case None => {
+            logger.warn(s"did not find a matching invalid relationship (date:${a.date} service: ${a.service} client ${a.clientId}")
+            Some(a)
+          }
         }
       }
       case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
@@ -201,7 +205,10 @@ class TrackService @Inject()(
                 b.service == a.service &&
                 isOnOrBefore(b.date, a.date)) match {
           case Some(i) => None
-          case None    => Some(a)
+          case None => {
+            logger.warn(s"did not find an invitation for invalid relationship (date:${a.date} service: ${a.service} client: ${a.clientId})")
+            Some(a)
+          }
 
         }
       case a: TrackInformationSorted => Some(a)
