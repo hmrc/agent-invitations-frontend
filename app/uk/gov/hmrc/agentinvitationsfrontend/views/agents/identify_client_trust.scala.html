@@ -51,17 +51,17 @@
             </h1>
             <p class="form-hint margin-bottom-20" id="utr-info">@Html(Messages("identify-trust-client.p1"))</p>
             <p class="form-hint" id="utr-hint">@Html(Messages("identify-trust-client.p2"))</p>
-            @trustClientForm.error("utr").map{ formError =>
+            @trustClientForm.error("taxId").map{ formError =>
                 <span class="error-notification" data-journey="search-page:error:utr" id="utr-error">
                     <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
             }
             <input
             class="form-control"
-            name="utr"
-            id="utr"
+            name="taxId"
+            id="taxId"
             type="text"
             spellcheck="false"
-            @trustClientForm.data.get("utr").map { v => value="@v"}
+            @trustClientForm.data.get("taxId").map { v => value="@v"}
             aria-describedby="utr-info utr-hint @if(trustClientForm.hasErrors){utr-error}"
             >
         </div>

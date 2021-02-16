@@ -166,7 +166,7 @@ object Validators {
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
   def validUrn(): Constraint[String] =
-    patternConstraint(urnPattern, "error.urn.required", "enter-utr.invalid-format")
+    patternConstraint(urnPattern, "error.urn.required", "enter-urn.invalid-format")
 
   def validTaxId(): Constraint[String] =
     patternConstraint(taxIdPattern, "error.taxID.required", "enter-taxID.invalid-format")

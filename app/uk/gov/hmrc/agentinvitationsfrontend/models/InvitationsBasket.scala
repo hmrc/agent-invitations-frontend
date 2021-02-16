@@ -32,7 +32,7 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
   def availableServices(implicit messages: Messages): Seq[(String, String)]
 
   protected def showServiceTrust: Boolean =
-    featureFlags.showHmrcTrust && serviceAvailableForSelection(TRUST)
+    featureFlags.showHmrcTrust && serviceAvailableForSelection(ANYTRUST)
 
   protected def showServiceCgt: Boolean =
     featureFlags.showHmrcCgt && serviceAvailableForSelection(HMRCCGTPD)
@@ -60,7 +60,7 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceTrust)
-      seq.append(TRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
+      seq.append(ANYTRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
 
     if (showServiceCgt)
       seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.business"))
