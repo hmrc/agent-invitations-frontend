@@ -178,7 +178,7 @@ class TrackService @Inject()(
 
   private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
     invitationsAndInvalids.flatMap {
-      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded => {
+      case a: TrackInformationSorted if a.status == "Accepted" => {
         invitationsAndInvalids
           .find(
             b =>
@@ -187,24 +187,24 @@ class TrackService @Inject()(
                 b.service == a.service &&
                 isOnOrAfter(b.date, a.date)) match {
           case Some(invalid) => {
-            Some(a.copy(date = invalid.date))
+            val endedBy = a.relationshipEndedBy.orElse(Some("Client")) //was the agent de-authed by client going with another agent?
+            Some(a.copy(date = invalid.date, isRelationshipEnded = true, relationshipEndedBy = endedBy))
           }
           case None => {
-            logger.warn(s"did not find a matching invalid relationship (date:${a.date} service: ${a.service} client ${a.clientId}")
             Some(a)
           }
         }
       }
+
       case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
         invitationsAndInvalids
           .find(
             b =>
               b.status == "Accepted" &&
-                b.isRelationshipEnded &&
                 b.clientId == a.clientId &&
                 b.service == a.service &&
                 isOnOrBefore(b.date, a.date)) match {
-          case Some(i) => None
+          case Some(_) => None
           case None => {
             logger.warn(s"did not find an invitation for invalid relationship (date:${a.date} service: ${a.service} client: ${a.clientId})")
             Some(a)
