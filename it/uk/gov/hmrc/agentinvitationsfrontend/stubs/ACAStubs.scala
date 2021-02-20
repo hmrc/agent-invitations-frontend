@@ -951,6 +951,39 @@ trait ACAStubs {
             ).mkString("[", ",", "]")))))
   }
 
+  def givenASingleAcceptedInvitation(
+                                    arn: Arn,
+                                    clientId: String,
+                                    service: String,
+                                    clientIdType: String,
+                                    lastUpdated: LocalDate
+                                    ) = {
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
+        .willReturn(
+          aResponse()
+        .withStatus(200)
+        .withBody(halEnvelope(
+          Seq(
+            invitationTemporal(lastUpdated, "Accepted", service, clientIdType, "Julius", clientId, "foo1", "2021-03-13", false, None)
+          ).mkString("[", ",", "]")))))
+
+  }
+
+  def givenNoAcceptedInvitationFound(
+                                      arn: Arn,
+                                      clientId: String,
+                                      service: String
+                                    ) = {
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            ))
+
+  }
+
   def givenASingleInvitationWithRelationshipStillActive(
                                                    clientId: String,
                                                    service: String,
