@@ -82,8 +82,10 @@ class ErrorHandler @Inject()(
 
   override def appName: String = appConfig.appName
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html = {
+    logger.error(s"$message")
     errorTemplate(pageTitle, heading, message)
+  }
 
 }
 
