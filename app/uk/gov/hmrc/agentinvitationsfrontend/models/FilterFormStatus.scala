@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
+import org.joda.time.DateTime
 
 trait FilterFormStatus {
   val filterForStatus: TrackInformationSorted => Boolean
@@ -29,10 +29,10 @@ object FilterFormStatus {
   }
   case object ExpireInNext5Days extends FilterFormStatus {
     override val filterForStatus = (i: TrackInformationSorted) =>
-      i.status == "Pending" && i.expiryDate.fold(false)(_.minusDays(5).isBefore(LocalDate.now()))
+      i.status == "Pending" && i.expiryDate.fold(false)(_.minusDays(5).isBefore(DateTime.now()))
   }
   case object ActivityWithinLast5Days extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.date.fold(false)(_.plusDays(5).isAfter(LocalDate.now()))
+    override val filterForStatus = (i: TrackInformationSorted) => i.dateTime.fold(false)(_.plusDays(5).isAfter(DateTime.now()))
   }
   case object ClientNotYetResponded extends FilterFormStatus {
     override val filterForStatus = (i: TrackInformationSorted) => i.status == "Pending"

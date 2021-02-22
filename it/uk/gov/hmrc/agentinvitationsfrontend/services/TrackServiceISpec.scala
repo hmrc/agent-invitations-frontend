@@ -93,7 +93,7 @@ class TrackServiceISpec extends BaseISpec {
         clientIdType = "vrn",
         clientName = Some("Dave"),
         status = "AcceptedThenCancelledByAgent",
-        date = Some(LocalDate.now().minusDays(4)),
+        dateTime = Some(LocalDate.now().minusDays(4)),
         expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = true, relationshipEndedBy = Some("Agent")
       ))
     }
@@ -115,7 +115,7 @@ class TrackServiceISpec extends BaseISpec {
         clientIdType = "vrn",
         clientName = Some("Dave"),
         status = "Accepted",
-        date = Some(LocalDate.now().minusDays(4)),
+        dateTime = Some(LocalDate.now().minusDays(4)),
         expiryDate = None,
         invitationId = Some("foo2"),
         isRelationshipEnded = false,
@@ -128,7 +128,7 @@ class TrackServiceISpec extends BaseISpec {
         clientIdType = "vrn",
         clientName = Some("Dave"),
         status = "AcceptedThenCancelledByAgent",
-        date = Some(LocalDate.now().minusDays(5)),
+        dateTime = Some(LocalDate.now().minusDays(5)),
         expiryDate = None,
           invitationId = Some("foo1"),
           isRelationshipEnded = true,
@@ -155,7 +155,7 @@ class TrackServiceISpec extends BaseISpec {
           clientIdType = "vrn",
           clientName = Some("Dave"),
           status = "AcceptedThenCancelledByClient",
-          date = Some(LocalDate.now().minusDays(3)),
+          dateTime = Some(LocalDate.now().minusDays(3)),
           expiryDate = None,
           invitationId = Some("foo1"),
           isRelationshipEnded = true,

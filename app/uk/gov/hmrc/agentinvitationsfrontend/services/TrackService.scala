@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTimeZone, LocalDate}
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
@@ -105,14 +105,25 @@ class TrackService @Inject()(
         case TrackedInvitation(ct, srv, cId, cidt, an, st, _, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
           TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb)
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb) =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(LocalDate.parse(lu.toLocalDate.toString)), None, Some(iid), ire, reb)
+          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb)
         case _ => TrackInformationSorted(None, "", "", "", None, "", None, None, None, false, None)
       })
 
     val futureRelationships = getInactiveClients
       .map(_.map {
         case InactiveClient(clientType, service, clientId, clientIdType, dateTo) =>
-          TrackInformationSorted(clientType, service, clientId, clientIdType, None, "InvalidRelationship", dateTo, None, None, true, None)
+          TrackInformationSorted(
+            clientType,
+            service,
+            clientId,
+            clientIdType,
+            None,
+            "InvalidRelationship",
+            dateTo.map(_.toDateTimeAtStartOfDay),
+            None,
+            None,
+            true,
+            None)
         case _ =>
           TrackInformationSorted(None, "", "", "", None, "", None, None, None, true, None)
       })
@@ -125,7 +136,7 @@ class TrackService @Inject()(
       (nameOk, nameEmpty) = refinedResults.partition(_.clientName.isDefined)
       nameRetrieved <- Future.traverse(nameEmpty) { trackInfo =>
                         logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
-                          s" status: ${trackInfo.status} date: ${trackInfo.date} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
+                          s" status: ${trackInfo.status} date: ${trackInfo.dateTime} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
                         getClientNameByService(trackInfo.clientId, trackInfo.service).map(name => trackInfo.copy(clientName = name))
                       }
       finalResults = nameOk ++ nameRetrieved
@@ -178,6 +189,31 @@ class TrackService @Inject()(
 
   private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
     invitationsAndInvalids.flatMap {
+      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded => {
+        invitationsAndInvalids
+          .find(
+            b =>
+              b.status == "InvalidRelationship" &&
+                b.clientId == a.clientId &&
+                b.service == a.service &&
+                isOnOrAfter(b.dateTime, a.dateTime)) match {
+          case Some(invalid) => {
+            Some(a.copy(dateTime = invalid.dateTime))
+          }
+          case None => {
+            logger.warn(s"did not find a matching invalid relationship (date:${a.dateTime} service: ${a.service} client ${a.clientId}")
+            Some(a)
+          }
+        }
+      }
+
+      /**
+        * ***This case should be REMOVED once APB-5115 has been in production for 30 days.
+        *
+        * This case handles agent led de-auth -- we were not updating the invitation with setRelationshipEnded and therefore
+        * invitations that were no longer active would not get caught by the case above. There may be more than 1 authorisation
+        * for the same client on a day so we want to update only if it's not the most recent.
+        * */
       case a: TrackInformationSorted if a.status == "Accepted" => {
         invitationsAndInvalids
           .find(
@@ -185,10 +221,29 @@ class TrackService @Inject()(
               b.status == "InvalidRelationship" &&
                 b.clientId == a.clientId &&
                 b.service == a.service &&
-                isOnOrAfter(b.date, a.date)) match {
+                isOnOrAfter(b.dateTime, a.dateTime)) match {
           case Some(invalid) => {
-            val endedBy = a.relationshipEndedBy.orElse(Some("Client")) //was the agent de-authed by client going with another agent?
-            Some(a.copy(date = invalid.date, isRelationshipEnded = true, relationshipEndedBy = endedBy))
+            invitationsAndInvalids
+              .filter(
+                x =>
+                  x.status == "Accepted" &&
+                    x.clientId == invalid.clientId &&
+                    x.service == invalid.service &&
+                    !x.isRelationshipEnded &&
+                    isOnOrAfter(x.dateTime, invalid.dateTime))
+              .sorted(TrackInformationSorted.orderingByDate) match {
+              case Nil => None // for completeness
+              case hd :: Nil => { // only 1 invitation so it must be inactive
+                Some(a.copy(dateTime = invalid.dateTime, isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
+              }
+              case hd :: tl => { // more than 1
+                if (isEqual(hd.dateTime, a.dateTime)) Some(a) //the most recent so it must be active
+                else {
+                  Some(a.copy(dateTime = invalid.dateTime, isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
+                }
+              }
+            }
+
           }
           case None => {
             Some(a)
@@ -203,10 +258,10 @@ class TrackService @Inject()(
               b.status == "Accepted" &&
                 b.clientId == a.clientId &&
                 b.service == a.service &&
-                isOnOrBefore(b.date, a.date)) match {
+                isOnOrBefore(b.dateTime, a.dateTime)) match {
           case Some(_) => None
           case None => {
-            logger.warn(s"did not find an invitation for invalid relationship (date:${a.date} service: ${a.service} client: ${a.clientId})")
+            logger.warn(s"did not find an invitation for invalid relationship (date:${a.dateTime} service: ${a.service} client: ${a.clientId})")
             Some(a)
           }
 
@@ -214,11 +269,14 @@ class TrackService @Inject()(
       case a: TrackInformationSorted => Some(a)
     }
 
-  private def isOnOrAfter(a: Option[LocalDate], that: Option[LocalDate]) =
+  private def isOnOrAfter(a: Option[DateTime], that: Option[DateTime]) =
     a.flatMap(x => that.map(y => !x.isBefore(y))).getOrElse(false)
 
-  private def isOnOrBefore(a: Option[LocalDate], that: Option[LocalDate]) =
+  private def isOnOrBefore(a: Option[DateTime], that: Option[DateTime]) =
     a.flatMap(x => that.map(y => !x.isAfter(y))).getOrElse(false)
+
+  private def isEqual(a: Option[DateTime], that: Option[DateTime]) =
+    a.flatMap(x => that.map(y => x.isEqual(y))).getOrElse(false)
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
