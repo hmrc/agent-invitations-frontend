@@ -231,6 +231,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientPersonalVat => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientBusiness    => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientTrust       => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientTrustNT     => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientCgt         => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()

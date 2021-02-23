@@ -416,7 +416,6 @@ class AgentInvitationJourneyController @Inject()(
             showUrnEnabledContent = urnEnabled
           )
         )
-
       case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
         Ok(
           identifyClientCgtView(

@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, TrustTaxIdentifier, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -335,13 +335,13 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     "at state IdentifyClientTrust" should {
       val trustClient = TrustClient(utr)
       "transition to ConfirmClientTrust when a trust is found for a given utr" in {
-        def getTrustName(utr: Utr): Future[TrustResponse] = Future(trustResponse)
+        def getTrustName(trustTaxIdentifier: TrustTaxIdentifier): Future[TrustResponse] = Future(trustResponse)
 
         given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustName)(authorisedAgent)(trustClient) should thenGo(
           ConfirmClientTrust("some-trust", utr))
       }
       "transition to TrustNotFound when a trust is not found for a given utr" in {
-        def getTrustName(utr: Utr): Future[TrustResponse] = Future(TrustNotFoundResponse)
+        def getTrustName(trustTaxIdentifier: TrustTaxIdentifier): Future[TrustResponse] = Future(TrustNotFoundResponse)
         given(IdentifyClientTrust) when submitIdentifyClientTrust(getTrustName)(authorisedAgent)(trustClient) should thenGo(TrustNotFound)
       }
     }

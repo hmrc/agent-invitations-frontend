@@ -44,8 +44,10 @@ trait TestDataCommonSupport {
   val hash = "12345678"
 
   val validUtr = Utr("4937455253")
+  val validUrn = Urn("XXTRUST10000100")
   val invitationIdTrust = InvitationId("DF99K6PXSBHTF")
   val serviceTrust = "HMRC-TERS-ORG"
+  val serviceTrustNT = "HMRC-TERSNT-ORG"
   val identifierTrust = "UTR"
 
   val serviceCgt = "HMRC-CGT-PD"

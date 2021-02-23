@@ -18,12 +18,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+
 
 @this(
     mainTemplate: main_template
 )
 
-@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call, showUrnEnabledContent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@label       = @{if(showUrnEnabledContent) "urn-enabled-agents.label" else "urn-disabled-agents.label"}
 
 @mainTemplate(title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages(s""), ""))) {
 
@@ -31,7 +34,7 @@
 
   <h1 class="heading-xlarge margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
 
-  <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
+  <p>@Messages(s"active-authorisation-exists.p1.$service.false${showUrnEnabledContent}")</p>
 
   <p>@Messages("active-authorisation-exists.p2")</p>
 

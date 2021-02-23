@@ -30,7 +30,7 @@ object Services {
   val TRUSTNT = "HMRC-TERSNT-ORG"
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
-  val ANYTRUST = "TRUST"
+  val ANYTRUST = "TRUST, TRUSTNT"
 
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, ANYTRUST, HMRCCGTPD)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")

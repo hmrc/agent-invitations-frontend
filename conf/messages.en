@@ -23,6 +23,7 @@ identify-client.header=Enter your client’s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
+identify-client.urn.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
 # Nino
@@ -54,6 +55,12 @@ utr.hint.expandable.p2=If they have a company UTR, you can usually find this in 
 utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on the letter HMRC sent them when they registered for Self Assessment.
 error.utr.required=Enter your client’s UTR
 enter-utr.invalid-format=Enter a valid UTR, like 3957820631
+
+#URN
+error.urn.required=Enter your client’s URN
+enter-urn.invalid-format=Enter a valid URN, like XXTRUST80000001
+urn-enabled-agents.label=Unique Reference Number (URN)
+urn-enabled-agents.header=What is the Unique Reference Number of the trust or estate?
 
 error.cgt.required=Enter the client’s Capital Gains Tax account reference
 enter-cgt.invalid-format=Enter the client’s Capital Gains Tax account reference in the correct format
@@ -166,9 +173,11 @@ agent-suspended.fastrack.p4=If you did not receive our letter, or think we have 
 
 ## Identify Trust Client
 identify-trust-client.title=What is the Unique Taxpayer Reference of the trust or estate?
-identify-trust-client.header=What is the Unique Taxpayer Reference of the trust or estate?
+identify-trust-client.header.false=What is the Unique Taxpayer Reference of the trust or estate?
+identify-trust-client.header.true=What is the Unique Taxpayer Reference/URN of the trust or estate?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p2.false=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust-client.p2.true=A Unique Taxpayer Reference is 10 numbers, for example 1234567890.A URN has 15Characters, for example It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 
 ## Identify CGT Client
 identify-cgt-client.header=What is your client’s Capital Gains Tax on UK property account number?
@@ -568,6 +577,8 @@ confirm-terms-multi.trust.list.item1=report changes relating to trustees, settlo
 confirm-terms-multi.trust.list.item2=report changes relating to the estate’s personal representative, such as name and address, and declare the estate is up to date
 confirm-terms-multi.trust.label=I consent to HMRC allowing {0} to maintain a trust or an estate.
 
+#URN (placeholder for urn content)
+
 confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.business.heading=Manage a trust’s Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.personal.p1=If you consent to HMRC allowing {0} to manage your Capital Gains Tax on UK property account, this means {0} can:
@@ -949,7 +960,8 @@ active-authorisation-exists.header=You are already authorised
 active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to manage their Income Tax.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
 active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to manage their VAT.
-active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust or an estate.
+active-authorisation-exists.p1.HMRC-TERS-ORG.false=This client has already authorised you to maintain a trust or an estate.
+active-authorisation-exists.p1.HMRC-TERSNT-ORG.true=This client has already authorised you to maintain a trust or an estate.
 active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised you to manage their Capital Gains Tax on UK property account.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests

@@ -32,7 +32,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   import journeyState.model._
 
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD)
+  private val availableTrustServices = Set(ANYTRUST, HMRCCGTPD)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   before {
@@ -206,7 +206,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "show the correct service page content for trust clients" in {
-      journeyState.set(SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket)))
+      journeyState.set(SelectTrustService(Set(ANYTRUST), emptyBasket), List(SelectClientType(emptyBasket)))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -216,7 +216,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("select-service.yes"),
         htmlEscapedMessage("select-service.no")
       )
-      journeyState.get shouldBe Some((SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket))))
+      journeyState.get shouldBe Some((SelectTrustService(Set(ANYTRUST), emptyBasket), List(SelectClientType(emptyBasket))))
     }
 
     "go back to the select service page" in {
@@ -323,9 +323,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
 
-      journeyState.get should have[State](IdentifyTrustClient(TRUST, emptyBasket),
+      journeyState.get should have[State](IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -438,7 +438,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for TRUST service" in {
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -448,13 +448,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-trust-client.header",
+        "identify-trust-client.header.true",
         "identify-trust-client.p1",
         "continue.button"
       )
 
       journeyState.get should have[State](
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -751,13 +751,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 
@@ -769,7 +769,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyTrustClient(ANYTRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -793,13 +793,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 
@@ -808,7 +808,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
-        List(IdentifyTrustClient(TRUST, emptyBasket),
+        List(IdentifyTrustClient(ANYTRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -819,13 +819,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, invalidTrustJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyTrustClient(ANYTRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 
@@ -835,7 +835,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyTrustClient(ANYTRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1850,7 +1850,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         status(result) shouldBe 200
 
-        val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD" else s"active-authorisation-exists.p1.$service"
+        val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD" else s"active-authorisation-exists.p1.$service.false"
 
         checkHtmlResultWithBodyMsgs(
           result,

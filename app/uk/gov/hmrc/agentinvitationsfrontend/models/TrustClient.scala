@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 
 case class TrustClient(taxId: TrustTaxIdentifier)
 
 object TrustClient {
 
   def apply(taxId: String, urnEnabled: Boolean): TrustClient = taxId match {
-    case x if Utr.isValid(x)              => TrustClient(Utr(x))
-    case x if urnEnabled & Urn.isValid(x) => TrustClient(Urn(x))
-    case _                                => throw new Exception(s"$taxId is not a valid TrustTaxIdentifier")
+    case x if x.matches(utrPattern)              => TrustClient(Utr(x))
+    case x if urnEnabled & x.matches(urnPattern) => TrustClient(Urn(x))
   }
 }
