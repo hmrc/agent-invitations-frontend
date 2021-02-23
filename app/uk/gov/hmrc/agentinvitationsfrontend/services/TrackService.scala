@@ -215,41 +215,29 @@ class TrackService @Inject()(
         * for the same client on a day so we want to update only if it's not the most recent.
         * */
       case a: TrackInformationSorted if a.status == "Accepted" => {
-        invitationsAndInvalids
-          .find(
-            b =>
-              b.status == "InvalidRelationship" &&
-                b.clientId == a.clientId &&
-                b.service == a.service &&
-                isOnOrAfter(b.dateTime, a.dateTime)) match {
-          case Some(invalid) => {
-            invitationsAndInvalids
-              .filter(
-                x =>
-                  x.status == "Accepted" &&
-                    x.clientId == invalid.clientId &&
-                    x.service == invalid.service &&
-                    !x.isRelationshipEnded &&
-                    isOnOrAfter(x.dateTime, invalid.dateTime))
-              .sorted(TrackInformationSorted.orderingByDate) match {
-              case Nil => None // for completeness
-              case hd :: Nil => { // only 1 invitation so it must be inactive
-                Some(a.copy(dateTime = invalid.dateTime, isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
-              }
-              case hd :: tl => { // more than 1
-                if (isEqual(hd.dateTime, a.dateTime)) Some(a) //the most recent so it must be active
-                else {
-                  Some(a.copy(dateTime = invalid.dateTime, isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
-                }
-              }
-            }
 
-          }
-          case None => {
-            Some(a)
-          }
-        }
+        maybeUpdateStatus(a, invitationsAndInvalids)
+
       }
+//        invitationsAndInvalids
+//          .find(
+//            b =>
+//              b.status == "InvalidRelationship" &&
+//                b.clientId == a.clientId &&
+//                b.service == a.service &&
+//                isOnOrAfter(b.dateTime, a.dateTime)) match {
+//          case Some(invalid) => {
+//
+//            // this may be an inactive auth request but it may not be (in the case of re-authorisation on the same day as de-auth)
+//            if (mostRecentFor(a, invitationsAndInvalids).contains(a)) Some(a)
+//            else Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
+//
+//          }
+//          case None => {
+//            Some(a)
+//          }
+//        }
+//      }
 
       case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
         invitationsAndInvalids
@@ -270,13 +258,13 @@ class TrackService @Inject()(
     }
 
   private def isOnOrAfter(a: Option[DateTime], that: Option[DateTime]) =
-    a.flatMap(x => that.map(y => !x.isBefore(y))).getOrElse(false)
+    a.flatMap(x => that.map(y => !x.toLocalDate.isBefore(y.toLocalDate))).getOrElse(false)
 
   private def isOnOrBefore(a: Option[DateTime], that: Option[DateTime]) =
-    a.flatMap(x => that.map(y => !x.isAfter(y))).getOrElse(false)
+    a.flatMap(x => that.map(y => !x.toLocalDate.isAfter(y.toLocalDate))).getOrElse(false)
 
-  private def isEqual(a: Option[DateTime], that: Option[DateTime]) =
-    a.flatMap(x => that.map(y => x.isEqual(y))).getOrElse(false)
+//  private def isEqual(a: Option[DateTime], that: Option[DateTime]) =
+//    a.flatMap(x => that.map(y => x.isEqual(y))).getOrElse(false)
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
@@ -285,6 +273,39 @@ class TrackService @Inject()(
       }
       case b: TrackInformationSorted => b
     }
+
+  def maybeUpdateStatus(a: TrackInformationSorted, sorteds: Seq[TrackInformationSorted]) = {
+    val (accepted, invalid) = sorteds.toList
+      .filter(
+        x =>
+          x.status == "Accepted" || a.status == "InvalidRelationship" &&
+            x.clientId == a.clientId &&
+            x.service == a.service &&
+            isOnOrAfter(x.dateTime, a.dateTime))
+      .sorted(TrackInformationSorted.orderingByDate)
+      .partition(_.status == "Accepted")
+    if (invalid.isEmpty) {
+      println(s">>>>>>>>>INVALID EMPTY")
+      None
+    } // there is no invalid for this client so it must still be active
+    else if (accepted.size > invalid.size) accepted.head match {
+      case x if x == a => None // this is most recent and there is no invalid pair so it is assumed to still be valid
+      case x if !x.isRelationshipEnded =>
+        Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent"), dateTime = invalid.last.dateTime))
+      case _ => None
+    } else Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent"), dateTime = invalid.last.dateTime))
+  }
+
+  def mostRecentFor(a: TrackInformationSorted, seq: Seq[TrackInformationSorted]): Option[TrackInformationSorted] =
+    seq
+      .sorted(TrackInformationSorted.orderingByDate)
+      .find(
+        x =>
+          x.status == "Accepted" &&
+            x.clientId == a.clientId &&
+            x.service == a.service &&
+            !x.isRelationshipEnded &&
+            isOnOrAfter(x.dateTime, a.dateTime))
 
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 }

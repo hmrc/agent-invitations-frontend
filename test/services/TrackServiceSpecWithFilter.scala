@@ -16,6 +16,7 @@
 
 package services
 
+import org.joda.time.DateTime
 import support.TrackServiceStubsAndData
 import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, InactiveTrackRelationship, PageInfo, TrackInformationSorted}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -37,9 +38,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -188,9 +189,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -247,9 +248,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -306,9 +307,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitationsWithDetailsAvailable()
 
@@ -344,5 +345,132 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
     }
 
   }
+
+  "isTheMostRecent" should {
+    "determine if the record is the most recent" in {
+
+      val now = DateTime.now()
+
+      val t0 =
+        TrackInformationSorted(
+          clientType = Some("business"),
+          service = HMRCMTDVAT,
+          clientId = vrn1.value,
+          clientIdType = "vrn",
+          clientName = Some("Superior Ltd"),
+          status = "Accepted",
+          dateTime = Some(now.minusMinutes(40)),
+          expiryDate = None,
+          invitationId = Some("id1"),
+          isRelationshipEnded = false,
+          relationshipEndedBy = None
+        )
+      val t1 = TrackInformationSorted(
+        clientType = Some("business"),
+        service = HMRCMTDVAT,
+        clientId = vrn1.value,
+        clientIdType = "vrn",
+        clientName = Some("Superior Ltd"),
+        status = "Accepted",
+        dateTime = Some(now.minusMinutes(30)),
+        expiryDate = None,
+        invitationId = Some("id2"),
+        isRelationshipEnded = false,
+        relationshipEndedBy = None
+      )
+      val t2 =
+        TrackInformationSorted(
+          clientType = Some("business"),
+          service = HMRCMTDVAT,
+          clientId = vrn1.value,
+          clientIdType = "vrn",
+          clientName = Some("Superior Ltd"),
+          status = "Accepted",
+          dateTime = Some(now.minusMinutes(20)),
+          expiryDate = None,
+          invitationId = Some("id3"),
+          isRelationshipEnded = false,
+          relationshipEndedBy = None
+        )
+      //different client no match
+      val t3 = TrackInformationSorted(
+        clientType = Some("business"),
+        service = HMRCMTDVAT,
+        clientId = vrn2.value,
+        clientIdType = "vrn",
+        clientName = Some("Superior Ltd"),
+        status = "Accepted",
+        dateTime = Some(now.minusMinutes(1)),
+        expiryDate = None,
+        invitationId = Some("id4"),
+        isRelationshipEnded = false,
+        relationshipEndedBy = None
+      )
+      val t4 = TrackInformationSorted(
+        clientType = Some("business"),
+        service = HMRCMTDVAT,
+        clientId = vrn1.value,
+        clientIdType = "vrn",
+        clientName = Some("Superior Ltd"),
+        status = "Accepted",
+        dateTime = Some(now.minusMinutes(3)),
+        expiryDate = None,
+        invitationId = Some("id5"),
+        isRelationshipEnded = false,
+        relationshipEndedBy = None
+      )
+
+      val t5 = TrackInformationSorted(
+        clientType = Some("business"),
+        service = HMRCMTDVAT,
+        clientId = vrn1.value,
+        clientIdType = "vrn",
+        clientName = Some("Superior Ltd"),
+        status = "Accepted",
+        dateTime = Some(now.minusDays(1)),
+        expiryDate = None,
+        invitationId = Some("id6"),
+        isRelationshipEnded = false,
+        relationshipEndedBy = None
+      )
+
+      val seq = Seq(t0, t1, t2, t3, t4, t5)
+
+      tested.mostRecentFor(t5, seq) shouldBe Some(t4)
+
+    }
+  }
+
+  "maybeUpdateStatus" should {
+    val now = DateTime.now()
+
+    "not update the status if there is no inactive relationship" in {
+      val t0 = makeWithStatus("Accepted", now, Some("foo1"))
+      tested.maybeUpdateStatus(t0, Seq(t0)) shouldBe None
+    }
+    "update the status if there an inactive relationship to pair it with" in {
+      val t0 = makeWithStatus("Accepted", now.minusDays(14), Some("foo1"))
+      val t1 = makeWithStatus("InvalidRelationship", now.minusDays(2).withTimeAtStartOfDay(), None)
+      println(Seq(t0, t1))
+
+      val result = await(tested.maybeUpdateStatus(t0, Seq(t0, t1)))
+      result shouldBe Some(t0.copy(status = "Accepted", dateTime = Some(now.withTimeAtStartOfDay()), invitationId = Some("foo1")))
+    }
+  }
+
+  def makeWithStatus(status: String, dateTime: DateTime, invitationId: Option[String]): TrackInformationSorted =
+    TrackInformationSorted(
+      clientType = Some("business"),
+      service = HMRCMTDVAT,
+      clientId = vrn1.value,
+      clientIdType = "vrn",
+      clientName = Some("Superior Ltd"),
+      status = status,
+      dateTime = Some(dateTime),
+      expiryDate = Some(DateTime.now.plusDays(21).withTimeAtStartOfDay()),
+      invitationId = invitationId,
+      isRelationshipEnded = false,
+      relationshipEndedBy = None
+    )
 
 }

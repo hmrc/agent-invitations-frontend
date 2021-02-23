@@ -99,10 +99,7 @@ class InvitationsServiceSpec extends UnitSpec {
               storedInvitation(3)
             )
           )
-        when(
-          acaConnector.setRelationshipEnded(any(classOf[InvitationId]))(
-            any(classOf[HeaderCarrier]),
-            any(classOf[ExecutionContext])))
+        when(acaConnector.setRelationshipEnded(any(classOf[InvitationId]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
             Future successful Some(true)
           )

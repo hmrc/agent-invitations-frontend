@@ -90,8 +90,8 @@ class FilterFormStatusSpec extends UnitSpec {
       "clientIdType",
       None,
       status,
-      date,
-      expiryDate,
+      date.map(_.toDateTimeAtStartOfDay),
+      expiryDate.map(_.toDateTimeAtStartOfDay),
       None,
       isRelationshipEnded,
       relationshipEndedBy
