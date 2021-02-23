@@ -68,7 +68,7 @@ class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite with LogCapt
     }
 
     """standardErrorTemplate shows up with logger.error("some error")""" in {
-      withCaptureOfLoggingFrom(Logger("ErrorHandler")) { logEvents =>
+      withCaptureOfLoggingFrom(Logger) { logEvents =>
         handler.standardErrorTemplate("", "", "some error")(FakeRequest())
         logEvents.count(_.getMessage.contains(s"some error")) shouldBe 1
       }
