@@ -478,7 +478,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
     }
     "redirect to /not-found for trust if trust details are not found for given urn" in {
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
@@ -494,7 +494,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
     }
   }
 
