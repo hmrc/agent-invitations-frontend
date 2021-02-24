@@ -15,11 +15,12 @@
  */
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger.logger
 import play.api.http.HeaderNames
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
-import play.api.{Configuration, Environment, Logging}
+import play.api.{Configuration, Environment}
 import play.twirl.api.Html
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
@@ -45,10 +46,12 @@ class ErrorHandler @Inject()(
   externalUrls: ExternalUrls,
   appConfig: AppConfig,
   val messagesApi: MessagesApi)
-    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames with Logging {
+    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)
+
+    logger.error(s"onClientError $message")
 
     val response = statusCode match {
       case 400 if message.equals(ErrorConstants.InvitationIdNotFound) =>
@@ -66,7 +69,7 @@ class ErrorHandler @Inject()(
     val response = exception match {
 
       case ex: OtacFailureThrowable =>
-        logger.warn(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
+        logger.error(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(
           errorTemplate(
             Messages("global.error.passcode.title"),
@@ -74,7 +77,7 @@ class ErrorHandler @Inject()(
             Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
 
       case ex =>
-        logger.warn(s"There has been a failure", ex)
+        logger.error(s"There has been a failure", ex)
         InternalServerError(errorTemplate5xx()).withHeaders(CACHE_CONTROL -> "no-cache")
     }
     Future.successful(response)
@@ -82,8 +85,10 @@ class ErrorHandler @Inject()(
 
   override def appName: String = appConfig.appName
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html = {
+    logger.error(s"$message")
     errorTemplate(pageTitle, heading, message)
+  }
 
 }
 
