@@ -320,7 +320,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
 
       redirectLocation(result) shouldBe Some(
-        s"/gg/sign-in?continue=$continueUrlEncoded&origin=agent-invitations-frontend")
+        s"/bas-gateway/sign-in?continue_url=$continueUrlEncoded&origin=agent-invitations-frontend")
     }
   }
 
