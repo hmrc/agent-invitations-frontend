@@ -30,7 +30,7 @@
 
 @(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"not-matched.header"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
   <h1 id="notMatchedHeader" class="heading-xlarge margin-bottom-30">@Messages(s"not-matched.header")</h1>
 

@@ -24,7 +24,7 @@
 
 @(serviceMessageKey: String, cancelledOn: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("agent-cancelled-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("agent-cancelled-request.header"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("agent-cancelled-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("agent-cancelled-request.header")</h1>
 

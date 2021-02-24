@@ -30,7 +30,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), serviceId))) {
+@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @back_link_referer(request)
 

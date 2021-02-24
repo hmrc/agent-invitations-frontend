@@ -25,7 +25,7 @@
 
 @(submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cancel-authorisation.response-failed.header"), ""))) {
+@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
 <h1 id="responseFailedHeader" class="heading-xlarge margin-top-20">@Messages("cancel-authorisation.response-failed.header")</h1>
 
