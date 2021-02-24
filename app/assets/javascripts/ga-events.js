@@ -1,5 +1,5 @@
 $(function() {
-    //if(window.location.hostname !== 'localhost'){
+    if(window.location.hostname !== 'localhost'){
 
     // dont track any elements with data-ga-event="false"
     var exclude = '[data-ga-event="false"]';
@@ -43,7 +43,5 @@ $(function() {
             });
         });
     });
-
-
-    //}
+    }
 });
