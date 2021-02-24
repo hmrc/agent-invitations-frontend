@@ -187,81 +187,49 @@ class TrackService @Inject()(
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
 
-  private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
-    invitationsAndInvalids.flatMap {
-      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded => {
-        invitationsAndInvalids
-          .find(
-            b =>
-              b.status == "InvalidRelationship" &&
-                b.clientId == a.clientId &&
-                b.service == a.service &&
-                isOnOrAfter(b.dateTime, a.dateTime)) match {
-          case Some(invalid) => {
-            Some(a.copy(dateTime = invalid.dateTime))
-          }
-          case None => {
-            logger.warn(s"did not find a matching invalid relationship (date:${a.dateTime} service: ${a.service} client ${a.clientId}")
-            Some(a)
-          }
+  private def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
+
+    def transform(a: Seq[TrackInformationSorted]) = {
+
+      val accepted = a.filter(_.status == "Accepted")
+      val invalid = a.filter(_.status == "InvalidRelationship")
+
+      def matchD(remain: List[TrackInformationSorted], acc: List[Option[TrackInformationSorted]]): List[Option[TrackInformationSorted]] =
+        remain match {
+          case Nil => acc
+          case hd :: tl =>
+            hd.status match {
+              case "Pending" | "Rejected" | "Expired" | "Cancelled" => matchD(tl, Some(hd) :: acc)
+              case "Accepted" | "InvalidRelationship" => {
+
+                accepted.map(Some(_)).zipAll(invalid.map(Some(_)), None, None).find(_._1.contains(hd)) match {
+                  case Some((Some(accepted), Some(invalid))) =>
+                    matchD(
+                      tl,
+                      Some(
+                        accepted.copy(
+                          dateTime = invalid.dateTime,
+                          isRelationshipEnded = true,
+                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent")))) :: acc
+                    )
+                  case Some((Some(_), None)) => matchD(tl, None :: acc)
+                  case None                  => matchD(tl, None :: acc)
+                  case e                     => throw new Exception(s"possibly more Accepted than Invalid--should not happen. Error: $e")
+                }
+              }
+            }
         }
-      }
-
-      /**
-        * ***This case should be REMOVED once APB-5115 has been in production for 30 days.
-        *
-        * This case handles agent led de-auth -- we were not updating the invitation with setRelationshipEnded and therefore
-        * invitations that were no longer active would not get caught by the case above. There may be more than 1 authorisation
-        * for the same client on a day so we want to update only if it's not the most recent.
-        * */
-      case a: TrackInformationSorted if a.status == "Accepted" => {
-
-        maybeUpdateStatus(a, invitationsAndInvalids)
-
-      }
-//        invitationsAndInvalids
-//          .find(
-//            b =>
-//              b.status == "InvalidRelationship" &&
-//                b.clientId == a.clientId &&
-//                b.service == a.service &&
-//                isOnOrAfter(b.dateTime, a.dateTime)) match {
-//          case Some(invalid) => {
-//
-//            // this may be an inactive auth request but it may not be (in the case of re-authorisation on the same day as de-auth)
-//            if (mostRecentFor(a, invitationsAndInvalids).contains(a)) Some(a)
-//            else Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent")))
-//
-//          }
-//          case None => {
-//            Some(a)
-//          }
-//        }
-//      }
-
-      case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
-        invitationsAndInvalids
-          .find(
-            b =>
-              b.status == "Accepted" &&
-                b.clientId == a.clientId &&
-                b.service == a.service &&
-                isOnOrBefore(b.dateTime, a.dateTime)) match {
-          case Some(_) => None
-          case None => {
-            logger.warn(s"did not find an invitation for invalid relationship (date:${a.dateTime} service: ${a.service} client: ${a.clientId})")
-            Some(a)
-          }
-
-        }
-      case a: TrackInformationSorted => Some(a)
+      matchD(a.toList, List.empty)
     }
+
+    a.groupBy(_.clientId).mapValues(x => transform(x).flatten).values.flatten.toSeq
+  }
 
   private def isOnOrAfter(a: Option[DateTime], that: Option[DateTime]) =
     a.flatMap(x => that.map(y => !x.toLocalDate.isBefore(y.toLocalDate))).getOrElse(false)
 
-  private def isOnOrBefore(a: Option[DateTime], that: Option[DateTime]) =
-    a.flatMap(x => that.map(y => !x.toLocalDate.isAfter(y.toLocalDate))).getOrElse(false)
+//  private def isOnOrBefore(a: Option[DateTime], that: Option[DateTime]) =
+//    a.flatMap(x => that.map(y => !x.toLocalDate.isAfter(y.toLocalDate))).getOrElse(false)
 
 //  private def isEqual(a: Option[DateTime], that: Option[DateTime]) =
 //    a.flatMap(x => that.map(y => x.isEqual(y))).getOrElse(false)
