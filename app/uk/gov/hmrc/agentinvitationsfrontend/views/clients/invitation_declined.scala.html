@@ -26,7 +26,7 @@
 @(config: InvitationDeclinedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = Some(gaPageEvent(Messages("invitation-declined.header"), config.serviceKeys.headOption.getOrElse("")))) {
+    bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = None) {
 
       <div class="transaction-banner--complete">
           <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>

@@ -28,7 +28,7 @@
 @(service: String, clientName: String, agencyName: String, agentServicesAccountUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
-@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"confirm-cancel.header"), service))) {
+@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
      <div class="transaction-banner--complete">
       <h1 class="transaction-banner__heading">@Messages("cancel-authorisation.cancelled.header")</h1>

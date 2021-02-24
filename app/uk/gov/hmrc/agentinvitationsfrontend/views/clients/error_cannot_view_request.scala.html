@@ -25,7 +25,7 @@
 
 @(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("error.cannot_view_request.header"), "afi"))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("error.cannot-view-request.header")</h1>
 

@@ -26,7 +26,7 @@
 
 @(serviceMessageKey: String, clientType: String, eventDate: String, errorCase: AuthRequestErrorCase)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase")), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase")), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase")), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase"))</h1>
 

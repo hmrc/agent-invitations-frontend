@@ -41,7 +41,7 @@
     else 4
 }
 
-@mainTemplate(title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"check-details.heading"), config.serviceMessageKey))) {
+@mainTemplate(title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @config.backLinkUrl.map(url => back_link(url))
 
