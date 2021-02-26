@@ -139,11 +139,11 @@
 }
 
 @bodyEnd = {
-@uiFooter(analyticsToken = Some(configuration.get[String]("google-analytics.token")),
-    analyticsHost = configuration.get[String]("google-analytics.host"),
+@uiFooter(analyticsToken = None,
+    analyticsHost = "n/a",
     ssoUrl = None,
     scriptElem = Some(scriptElement),
-    gaCalls = gaCalls,
+    gaCalls = None,
     analyticsAdditionalJs = Some(gaJS))
 }
 
