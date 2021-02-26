@@ -190,7 +190,7 @@ class TrackService @Inject()(
   /*This method will match an Accepted with an Invalid. It is based on the premise that for a given client,
   if there are n Accepted then there must be either n or n-1 Invalids. Revisit once we can depend on the
   isRelationshipEnded flag (see comment in APB-5115).
-  * */
+   * */
   private def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
 
     def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
