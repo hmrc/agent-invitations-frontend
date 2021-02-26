@@ -30,7 +30,7 @@
 
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("some-responses-failed.header"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("some-responses-failed.header")</h1>
 

@@ -29,7 +29,7 @@
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("check-answers.heading"), ""))) {
+    bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     @back_link(pageConfig.backLink.url)
 

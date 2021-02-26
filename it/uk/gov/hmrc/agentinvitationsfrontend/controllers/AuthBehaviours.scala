@@ -36,7 +36,7 @@ trait AuthBehaviours extends AuthStubs {
       givenUnauthorisedWith("MissingBearerToken")
       val result = await(action(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/gg/sign-in?continue=%2Ftrack%2F&origin=agent-invitations-frontend")
+      redirectLocation(result) shouldBe Some("/bas-gateway/sign-in?continue_url=%2Ftrack%2F&origin=agent-invitations-frontend")
       verifyAuthoriseAttempt()
     }
   }

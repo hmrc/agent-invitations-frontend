@@ -31,7 +31,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-trust-client.title"), "trust"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @back_link(backLinkUrl)
 

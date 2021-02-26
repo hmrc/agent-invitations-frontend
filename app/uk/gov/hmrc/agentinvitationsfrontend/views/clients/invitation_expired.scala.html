@@ -24,7 +24,7 @@
 
 @(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-expired.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("invitation-expired.heading"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-expired.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
 
  <h1 class="heading-xlarge">@Messages("invitation-expired.heading")</h1>
 

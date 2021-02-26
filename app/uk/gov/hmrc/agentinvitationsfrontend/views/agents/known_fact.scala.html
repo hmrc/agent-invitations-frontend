@@ -37,7 +37,7 @@
 
 @flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
 
-@mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"known-fact.${config.service}.heading"), config.serviceMessageKey))) {
+@mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
  @back_link(s"${config.backLinkUrl}")
 
