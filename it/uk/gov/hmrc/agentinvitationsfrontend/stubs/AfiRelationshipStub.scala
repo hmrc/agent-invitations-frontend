@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.joda.time.DateTime
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
@@ -154,6 +155,25 @@ trait AfiRelationshipStub {
                  |},
                  |{  "arn":"${arn.value}",
                  |   "endDate":"2018-09-24T15:21:51.040",
+                 |   "clientId":"GZ753451B"
+                 |}]""".stripMargin
+            )))
+
+  def given2InactiveAfiRelationships(endDate1: DateTime, endDate2: DateTime) =
+    stubFor(
+      get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[{
+                 |   "arn":"TARN0000001",
+                 |   "endDate":"${endDate1.toString}",
+                 |   "clientId":"AB123456A"
+                 |},
+                 |{  "arn":"TARN0000001",
+                 |   "endDate":"${endDate2.toString}",
                  |   "clientId":"GZ753451B"
                  |}]""".stripMargin
             )))

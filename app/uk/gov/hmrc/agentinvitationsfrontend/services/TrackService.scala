@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
@@ -187,52 +187,59 @@ class TrackService @Inject()(
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
 
+  /*This method will match an Accepted with an Invalid. It is based on the premise that for a given client,
+  if there are n Accepted then there must be either n or n-1 Invalids. Revisit once we can depend on the
+  isRelationshipEnded flag (see comment in APB-5115).
+  * */
   private def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
 
-    def transform(a: Seq[TrackInformationSorted]) = {
+    def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
 
-      val accepted = a.filter(_.status == "Accepted")
-      val invalid = a.filter(_.status == "InvalidRelationship")
+      val accepted = a.filter(_.status == "Accepted").sorted(TrackInformationSorted.orderingByDate).reverse
+      val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
 
-      def matchD(remain: List[TrackInformationSorted], acc: List[Option[TrackInformationSorted]]): List[Option[TrackInformationSorted]] =
+      def _match(remain: List[TrackInformationSorted], acc: List[Option[TrackInformationSorted]]): List[Option[TrackInformationSorted]] =
         remain match {
           case Nil => acc
           case hd :: tl =>
             hd.status match {
-              case "Pending" | "Rejected" | "Expired" | "Cancelled" => matchD(tl, Some(hd) :: acc)
+              case "Pending" | "Rejected" | "Expired" | "Cancelled" => _match(tl, Some(hd) :: acc)
               case "Accepted" | "InvalidRelationship" => {
-
-                accepted.map(Some(_)).zipAll(invalid.map(Some(_)), None, None).find(_._1.contains(hd)) match {
+                accepted
+                  .filter(_.service == hd.service)
+                  .map(Some(_))
+                  .zipAll(
+                    invalid
+                      .filter(_.service == hd.service)
+                      .map(Some(_)),
+                    None,
+                    None)
+                  .find(_._1.contains(hd)) match {
                   case Some((Some(accepted), Some(invalid))) =>
-                    matchD(
+                    _match(
                       tl,
                       Some(
                         accepted.copy(
                           dateTime = invalid.dateTime,
                           isRelationshipEnded = true,
-                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent")))) :: acc
+                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent")))) :: acc //assumed agent led de-auth-- setRelationshipEnded was not in place until APB-5115), should change to Client after 30 days (allow for change to take effect)
                     )
-                  case Some((Some(_), None)) => matchD(tl, None :: acc)
-                  case None                  => matchD(tl, None :: acc)
-                  case e                     => throw new Exception(s"possibly more Accepted than Invalid--should not happen. Error: $e")
+                  case Some((Some(active), None)) => _match(tl, Some(active) :: acc) //unmatched so must still be active
+                  case None                       => _match(tl, None :: acc) //invalid found
+                  case e => {
+                    logger.error(
+                      s"unexpected match result on the track page: $e accepted " +
+                        s"size: ${accepted.size} invalid size: ${invalid.size}")
+                    _match(tl, None :: acc)
+                  }
                 }
               }
             }
         }
-      matchD(a.toList, List.empty)
+      _match(a.toList, List.empty)
     }
-
-    a.groupBy(_.clientId).mapValues(x => transform(x).flatten).values.flatten.toSeq
+    a.groupBy(_.clientId).mapValues(matchAcceptedWithInvalids(_).flatten).values.flatten.toSeq
   }
-
-  private def isOnOrAfter(a: Option[DateTime], that: Option[DateTime]) =
-    a.flatMap(x => that.map(y => !x.toLocalDate.isBefore(y.toLocalDate))).getOrElse(false)
-
-//  private def isOnOrBefore(a: Option[DateTime], that: Option[DateTime]) =
-//    a.flatMap(x => that.map(y => !x.toLocalDate.isAfter(y.toLocalDate))).getOrElse(false)
-
-//  private def isEqual(a: Option[DateTime], that: Option[DateTime]) =
-//    a.flatMap(x => that.map(y => x.isEqual(y))).getOrElse(false)
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
@@ -241,39 +248,6 @@ class TrackService @Inject()(
       }
       case b: TrackInformationSorted => b
     }
-
-  def maybeUpdateStatus(a: TrackInformationSorted, sorteds: Seq[TrackInformationSorted]) = {
-    val (accepted, invalid) = sorteds.toList
-      .filter(
-        x =>
-          x.status == "Accepted" || a.status == "InvalidRelationship" &&
-            x.clientId == a.clientId &&
-            x.service == a.service &&
-            isOnOrAfter(x.dateTime, a.dateTime))
-      .sorted(TrackInformationSorted.orderingByDate)
-      .partition(_.status == "Accepted")
-    if (invalid.isEmpty) {
-      println(s">>>>>>>>>INVALID EMPTY")
-      None
-    } // there is no invalid for this client so it must still be active
-    else if (accepted.size > invalid.size) accepted.head match {
-      case x if x == a => None // this is most recent and there is no invalid pair so it is assumed to still be valid
-      case x if !x.isRelationshipEnded =>
-        Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent"), dateTime = invalid.last.dateTime))
-      case _ => None
-    } else Some(a.copy(isRelationshipEnded = true, relationshipEndedBy = Some("Agent"), dateTime = invalid.last.dateTime))
-  }
-
-  def mostRecentFor(a: TrackInformationSorted, seq: Seq[TrackInformationSorted]): Option[TrackInformationSorted] =
-    seq
-      .sorted(TrackInformationSorted.orderingByDate)
-      .find(
-        x =>
-          x.status == "Accepted" &&
-            x.clientId == a.clientId &&
-            x.service == a.service &&
-            !x.isRelationshipEnded &&
-            isOnOrAfter(x.dateTime, a.dateTime))
 
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 }

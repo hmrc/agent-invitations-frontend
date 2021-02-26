@@ -112,7 +112,7 @@ trait ACRStubs {
                  |   "dateFrom":"${now.minusDays(22).toString}",
                  |   "clientId":"XMCGTP123456789",
                  |   "service":"HMRC-CGT-PD"
-                 |}
+                 |   }
                  |]""".stripMargin
             )
         )

@@ -34,7 +34,7 @@
     <input type="hidden" name="clientType" id="clientType-@{index}" value="@{
         invitationOrRelationship.clientType}">
     <input type="hidden" name="expiryDate" id="expiryDate-@{index}" value="@{
-        invitationOrRelationship.expiryDate}">
+        invitationOrRelationship.expiryDate.map(_.toLocalDate)}">
     <div><button class="button--link-style" type="submit" id="resendLinkRequest-@{
         index}">
     <span aria-hidden="true">
