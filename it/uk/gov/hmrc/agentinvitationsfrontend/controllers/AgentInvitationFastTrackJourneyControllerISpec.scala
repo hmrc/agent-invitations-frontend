@@ -7,7 +7,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{ANYTRUST, HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
@@ -197,7 +197,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
     }
 
-    "redirect to check details when service is Trust" in {
+    "redirect to check details when service is Trust with utr" in {
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
@@ -206,15 +206,32 @@ class AgentInvitationFastTrackJourneyControllerISpec
           request.withFormUrlEncodedBody(
             "clientType"           -> "business",
             "service"              -> "HMRC-TERS-ORG",
-            "clientIdentifierType" -> "utr",
+            "clientIdentifierType" -> "taxId",
             "clientIdentifier"     -> validUtr.value),
           arn.value
         ))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
     }
 
-    "redirect to agent suspended when service is Trust and agent has been suspended for this service" in {
+    "redirect to check details when service is Trust with urn" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-TERSNT-ORG",
+            "clientIdentifierType" -> "taxId",
+            "clientIdentifier"     -> validUrn.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
+    }
+
+    "redirect to agent suspended when service is Trust and agent has been suspended for this service using utr" in {
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("TRS"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
@@ -223,12 +240,29 @@ class AgentInvitationFastTrackJourneyControllerISpec
           request.withFormUrlEncodedBody(
             "clientType"           -> "business",
             "service"              -> "HMRC-TERS-ORG",
-            "clientIdentifierType" -> "utr",
+            "clientIdentifierType" -> "taxId",
             "clientIdentifier"     -> validUtr.value),
           arn.value
         ))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
+    }
+
+    "redirect to agent suspended when service is Trust and agent has been suspended for this service using urn" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("TRS"))))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-TERSNT-ORG",
+            "clientIdentifierType" -> "taxId",
+            "clientIdentifier"     -> validUrn.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
     }
 
     "redirect to check details when service is CGT" in {
@@ -815,7 +849,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "show the client-details page for trust" in {
-      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      val ftr = AgentFastTrackRequest(Some(business), ANYTRUST, "taxId", validUtr.value, None)
       journeyState.set(
         IdentifyTrustClient(ftr, ftr, None),
         List()
@@ -824,7 +858,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "identify-trust-client.header", "identify-trust-client.p1")
+      checkHtmlResultWithBodyMsgs(result, "identify-trust-client.header.false", "identify-trust-client.p1")
       checkHtmlResultWithBodyText(result, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890")
     }
 
@@ -992,7 +1026,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/client-identify-trust" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to /agents/confirm-trust-client" in new TrustHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(business), TRUST, "utr", validUtr.value, None)
+      val ftr = AgentFastTrackRequest(Some(business), ANYTRUST, "taxId", validUtr.value, None)
       journeyState.set(
         IdentifyTrustClient(ftr, ftr, None),
         List(
@@ -1003,7 +1037,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 

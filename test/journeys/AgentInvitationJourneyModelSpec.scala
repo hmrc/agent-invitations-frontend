@@ -48,7 +48,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
   val authorisedAgentNotWhitelisted = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD)
+  private val availableTrustServices = Set(ANYTRUST, HMRCCGTPD)
   private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
 
   def makeBasket(services: Set[String]) = services.map {
@@ -309,8 +309,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
-          thenGo(IdentifyTrustClient(TRUST, emptyBasket))
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(ANYTRUST) should
+          thenGo(IdentifyTrustClient(ANYTRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
@@ -339,7 +339,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
-          thenGo(AgentSuspended(TRUST, emptyBasket))
+          thenGo(AgentSuspended(ANYTRUST, emptyBasket))
       }
     }
 
@@ -941,10 +941,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
             hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
-          thenGo(IdentifyTrustClient(TRUST, emptyBasket))
+          thenGo(IdentifyTrustClient(ANYTRUST, emptyBasket))
       }
 
-      "transition to InvitationSentBusiness" in {
+      "transition to InvitationSentBusiness with taxable trust" in {
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
