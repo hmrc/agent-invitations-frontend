@@ -16,16 +16,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import java.util.UUID
-
-import org.joda.time.{DateTimeZone, LocalDate}
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import org.jsoup.Jsoup
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.ClientNotYetResponded
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
@@ -33,49 +32,51 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 
+import java.util.UUID
+
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
 
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
+
+   val fmt: DateTimeFormatter  = DateTimeFormat.forPattern("d MMMM yyyy")
+  private def displayDate(dt: LocalDate): String =
+    dt.toString(fmt)
+
+  def nowMinus(d: Int) = DateTime.now().minusDays(d)
 
   "GET /track/" should {
 
     val request = FakeRequest("GET", "/track/")
     val showTrackRequestsPageOne = controller.showTrackRequests(1, None, None)
     val showTrackRequestsPageTwo = controller.showTrackRequests(2, None, None)
-    val showTrackRequestsPageThree = controller.showTrackRequests(3, None, None)
 
-    "render a page with filter form listing non-empty invitations with client's names resolved" in {
-      givenGetInvitations(arn) // 18 invitations
-      givenInactiveRelationships(arn)
-      givenInactiveAfiRelationship(arn)  // 2 relationships
-      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+    "render a page with filter form listing non-empty invitations with client's names" in {
+
+      givenGetInvitationsTrack() // 12 invitations
+      givenInactiveRelationships() // 4 relationships
+      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
-      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
-      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-      givenClientDetails(Vrn("101747696"))
-      givenClientDetails(Vrn("101747641"))
-
-      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
       val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(resultPageOne) shouldBe 200
       checkHtmlResultWithBodyText(
         resultPageOne,
-        "Accepted by client",
+        "Aaa Itsa Trader",
+        "D Trust",
+        "Excel Ltd",
+        "Property Dev",
+        "Accepted by client. They later cancelled their authorisation",
+        "You cancelled your authorisation",
         "Client has not yet responded",
-        "Declined by client",
-        "FooBar Ltd.",
-        "John Smith",
-        "GDT",
-        "11 September 2018",
-        "01 January 2099",
+        s"${displayDate(LocalDate.now().minusDays(10))}",
+        s"${displayDate(LocalDate.now().minusDays(1))}",
+        s"${displayDate(LocalDate.now().minusDays(3))}",
+        s"${displayDate(LocalDate.now().minusDays(5))}",
+        s"${displayDate(LocalDate.now())}",
         "Resend request to client",
         "Cancel this request",
-        "Start new request",
+        "Start a new request",
         "Cancel your authorisation",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
@@ -98,84 +99,22 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
 
-      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Income Tax")
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
+       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Income Tax")
 
-      val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
+     val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
       status(resultPageTwo) shouldBe 200
 
       checkHtmlResultWithBodyText(
         resultPageTwo,
-        "Request expired as client did not respond in time",
+        "Accepted",
         "You cancelled this request"
         )
 
       val parseHtmlPageTwo = Jsoup.parse(contentAsString(resultPageTwo))
 
-      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("cancelled this request")
-      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("fastTrackInvitationCreate")
-
-      val resultPageThree = showTrackRequestsPageThree(authorisedAsValidAgent(request, arn.value))
-      status(resultPageThree) shouldBe 200
-
-      checkHtmlResultWithBodyText(
-        resultPageThree,
-        "21 September 2015",
-        cgtSubscription().name
-        )
-
-      checkHtmlResultWithBodyMsgs(
-        resultPageThree,
-        "recent-invitations.invitation.service.HMRC-CGT-PD",
-        "recent-invitations.invitation.service.HMRC-TERS-ORG")
-    }
-
-    "render a page listing non-empty invitations without client's names" in {
-      givenGetInvitations(arn)
-      givenInactiveRelationships(arn)
-      givenInactiveAfiRelationship(arn)
-      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
-      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenTradingNameNotFound(Nino("AB123456A"))
-      givenCitizenDetailsReturns404For("AB123456B")
-      givenClientDetailsNotFound(Vrn("101747696"))
-      givenClientDetails(Vrn("101747641"))
-      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
-      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-
-      val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
-      status(result) shouldBe 200
-
-      checkHtmlResultWithBodyText(
-        result,
-        "Accepted by client",
-        "Client has not yet responded",
-        "Declined by client",
-        "11 September 2018",
-        "01 January 2099",
-        htmlEscapedMessage("recent-invitations.description", 30)
-      )
-
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "recent-invitations.header",
-        "recent-invitations.table-row-header.clientName",
-        "recent-invitations.table-row-header.service",
-        "recent-invitations.table-row-header.status",
-        "recent-invitations.invitation.service.HMRC-MTD-IT",
-        "recent-invitations.invitation.service.HMRC-MTD-VAT",
-        "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
-      )
-
-      val result2 = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
-      status(result2) shouldBe 200
-
-      checkHtmlResultWithBodyText(
-        result2,
-        "Request expired as client did not respond in time",
-        "You cancelled this request")
+      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Bbb Itsa Trader")
+      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Manage their Income Tax")
 
     }
 
@@ -195,66 +134,42 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "accept valid request with filter by client query param" in {
 
-      val request = FakeRequest("GET", "/track?page=1&client=FooBar+Ltd.")
-      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("FooBar Ltd."), None)
+      val request = FakeRequest("GET", "/track?page=1&client=Ddd+Itsa+Trader")
+      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("Ddd Itsa Trader"), None)
 
-        givenGetInvitations(arn) // 18 invitations
-        givenInactiveRelationships(arn)
-        givenInactiveAfiRelationship(arn) // 2 relationships
-        givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
-        givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-        givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
-        givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-        givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
-        givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-        givenClientDetails(Vrn("101747696"))
-        givenClientDetails(Vrn("101747641"))
+      givenGetInvitationsTrack() // 12 invitations
+      givenInactiveRelationships() // 4 relationships
+      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
+      givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
 
-        givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-        givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
         val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
         status(resultPageOne) shouldBe 200
 
       val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
 
-      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-2").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-3").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-4").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-5").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-6").toString should include("FooBar Ltd.")
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
+      parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("Ddd Itsa Trader")
+      parseHtml.getElementsByAttributeValue("id", "row-2").toString should include("Ddd Itsa Trader")
     }
 
     "accept valid request with filter by client and status query params" in {
 
-      val request = FakeRequest("GET", "/track?page=1&client=FooBar+Ltd.&status=ClientNotYetResponded")
-      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("FooBar Ltd."), Some(ClientNotYetResponded))
+      val request = FakeRequest("GET", "/track?page=1&client=Ddd+Itsa+Trader&status=Accepted")
+      val showTrackRequestsPageOne = controller.showTrackRequests(1, Some("Ddd Itsa Trader"), Some(AcceptedByClient))
 
-      givenGetInvitations(arn) // 18 invitations
-      givenInactiveRelationships(arn)
-      givenInactiveAfiRelationship(arn) // 2 relationships
-      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenGetInvitationsTrack() // 12 invitations
+      givenInactiveRelationships() // 4 relationships
+      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
-      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
-      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-      givenClientDetails(Vrn("101747696"))
-      givenClientDetails(Vrn("101747641"))
 
-      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
       val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(resultPageOne) shouldBe 200
 
       val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
 
-      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("FooBar Ltd.")
-      parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("FooBar Ltd.")
-
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
     }
 
     behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
@@ -267,29 +182,18 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val request = FakeRequest("POST", "/track")
       val postTrack = controller.submitFilterTrackRequests
 
-      givenGetInvitations(arn) // 18 invitations
-      givenInactiveRelationships(arn)
-      givenInactiveAfiRelationship(arn) // 2 relationships
-      givenNinoForMtdItId(MtdItId("JKKL80894713304"), Nino("AB123456A"))
+      givenGetInvitationsTrack() // 12 invitations
+      givenInactiveRelationships() // 4 relationships
+      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenTradingName(Nino("AB123456A"), "FooBar Ltd.")
-      givenCitizenDetailsAreKnownFor("AB123456B", "John", "Smith")
-      givenCitizenDetailsAreKnownFor("GZ753451B", "Cosmo", "Kramer")
-      givenCitizenDetailsAreKnownFor("AB123456A", "Rodney", "Jones")
-      givenClientDetails(Vrn("101747696"))
-      givenClientDetails(Vrn("101747641"))
 
-      givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-      givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
-
-      val formData = FilterTrackRequestsForm.form(Set("")).fill(FilterTrackRequests(Some("FooBar Ltd."),Some(ClientNotYetResponded)))
+      val formData = FilterTrackRequestsForm.form(Set("")).fill(FilterTrackRequests(Some("Ddd Itsa Trader"),Some(AcceptedByClient)))
       val formDataWithButton = (formData.data + ("filter" -> "filter")).toSeq
       val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showTrackRequests(1, Some("FooBar Ltd."), Some(ClientNotYetResponded)).url)
-
+      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showTrackRequests(1, Some("Ddd Itsa Trader"), Some(AcceptedByClient)).url)
     }
 
     "have a clear button to clear the filter" in {

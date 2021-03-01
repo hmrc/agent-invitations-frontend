@@ -76,6 +76,12 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Pending&clientId=$clientId&service=$service"
     )
 
+  private[connectors] def getAcceptedInvitationsForClientUrl(arn: Arn, clientId: String, service: String): URL =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"
+    )
+
   private[connectors] def getAgentInvitationUrl(invitationId: InvitationId): URL =
     new URL(baseUrl, s"/agent-client-authorisation/invitations/${invitationId.value}")
 
@@ -215,6 +221,21 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
           case OK => (r.json \ "_embedded" \ "invitations").as[Seq[StoredInvitation]]
           case status: Int =>
             logger.warn(s"unexpected status from agent-client-authorisation when getAllPendingInvitationsForClient, status: $status")
+            Seq.empty
+        }
+      }
+    }
+
+  def getAcceptedInvitationsForClient(arn: Arn, clientId: String, service: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Seq[StoredInvitation]] =
+    monitor(s"ConsumedAPI-Get-MostRecentAcceptedInvitation-GET") {
+      val url = getAcceptedInvitationsForClientUrl(arn, clientId, service)
+      http.GET[HttpResponse](url.toString).map { r =>
+        r.status match {
+          case OK => (r.json \ "_embedded" \ "invitations").as[Seq[StoredInvitation]]
+          case status: Int =>
+            logger.warn(s"unexpected status from agent-client-authorisation when getAcceptedInvitationsForClient, status: $status")
             Seq.empty
         }
       }

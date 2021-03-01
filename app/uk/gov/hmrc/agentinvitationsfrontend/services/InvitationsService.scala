@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
 import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -207,4 +207,27 @@ class InvitationsService @Inject()(
                                 .getAllPendingInvitationsForClient(arn, clientId, service)
                                 .map(s => s.nonEmpty)
     } yield hasPendingInvitations
+
+  def getActiveInvitationFor(arn: Arn, clientId: String, service: String)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Option[InvitationId]] = {
+    implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isAfter _)
+    acaConnector
+      .getAcceptedInvitationsForClient(arn, clientId, service)
+      .map(
+        s =>
+          s.sortBy(_.lastUpdated)
+            .map(_.invitationId)
+            .map(InvitationId(_))
+            .headOption)
+  }
+
+  def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+    getActiveInvitationFor(arn, clientId, service).flatMap {
+      case Some(id) => acaConnector.setRelationshipEnded(id)
+      case None => {
+        logger.warn(s"no invitation found to set relationship ended")
+        Future successful None
+      }
+    }
 }

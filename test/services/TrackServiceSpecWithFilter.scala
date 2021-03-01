@@ -31,15 +31,12 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       "then discard the invalid relationship" in {
 
       givenGetTradingName()
-      givenGetCitizenDetails()
-      givenGetCustomerDetails()
-      givenGetCgtSubscription()
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -61,7 +58,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
             status = "Pending",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,
@@ -74,7 +71,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
             status = "Pending",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.plusDays(11)),
             invitationId = Some("id1"),
             isRelationshipEnded = false,
@@ -87,7 +84,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
             status = "Accepted",
-            date = Some(now.minusDays(1)),
+            dateTime = Some(now.minusDays(1)),
             expiryDate = None,
             invitationId = Some("id5"),
             isRelationshipEnded = false,
@@ -100,7 +97,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
             status = "AcceptedThenCancelledByAgent",
-            date = Some(now.minusDays(2)),
+            dateTime = Some(now.minusDays(2)),
             expiryDate = None,
             invitationId = Some("id4"),
             isRelationshipEnded = true,
@@ -113,7 +110,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("John Jones"),
             status = "Cancelled",
-            date = Some(now.minusDays(3)),
+            dateTime = Some(now.minusDays(3)),
             expiryDate = None,
             invitationId = Some("id3"),
             isRelationshipEnded = false,
@@ -126,7 +123,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
             status = "AcceptedThenCancelledByClient",
-            date = Some(now.minusDays(6)),
+            dateTime = Some(now.minusDays(6)),
             expiryDate = None,
             invitationId = Some("id6"),
             isRelationshipEnded = true,
@@ -139,7 +136,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("John Jones"),
             status = "Expired",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.minusDays(9)),
             invitationId = Some("id2"),
             isRelationshipEnded = false,
@@ -152,7 +149,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "CGTPDRef",
             clientName = Some("A Trust or an Estate"),
             status = "Rejected",
-            date = Some(now.minusDays(10)),
+            dateTime = Some(now.minusDays(10)),
             expiryDate = None,
             invitationId = Some("id8"),
             isRelationshipEnded = false,
@@ -165,7 +162,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "CGTPDRef",
             clientName = Some("A Trust or an Estate"),
             status = "Accepted",
-            date = Some(now.minusDays(35)),
+            dateTime = Some(now.minusDays(35)),
             expiryDate = None,
             invitationId = Some("id9"),
             isRelationshipEnded = true,
@@ -188,9 +185,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -212,7 +209,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("John Jones"),
             status = "Cancelled",
-            date = Some(now.minusDays(3)),
+            dateTime = Some(now.minusDays(3)),
             expiryDate = None,
             invitationId = Some("id3"),
             isRelationshipEnded = false,
@@ -225,7 +222,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("John Jones"),
             status = "Expired",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.minusDays(9)),
             invitationId = Some("id2"),
             isRelationshipEnded = false,
@@ -247,9 +244,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -272,7 +269,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
             status = "Pending",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,
@@ -285,7 +282,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
             status = "Pending",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.plusDays(11)),
             invitationId = Some("id1"),
             isRelationshipEnded = false,
@@ -306,9 +303,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2))),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6))),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35))) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitationsWithDetailsAvailable()
 
@@ -331,7 +328,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             clientIdType = "vrn",
             clientName = Some("Perihelion"),
             status = "Pending",
-            date = None,
+            dateTime = None,
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,

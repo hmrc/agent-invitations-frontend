@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation, SuspensionDetails}
@@ -935,6 +935,138 @@ trait ACAStubs {
               invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01", false, None)
             ).mkString("[", ",", "]")))))
 
+  def givenGetInvitationsTrack() = {
+    def nowMinus(d: Int) = DateTime.now().minusDays(d).withTimeAtStartOfDay()
+    val expiryDate = nowMinus(10).toLocalDate.toString
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment("TARN0000001")}/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-IT", "ni", "Aaa Itsa Trader","AB127456A", "foo1", expiryDate, false, None),
+              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-VAT", "vrn", "Superior Ltd","101747696", "foo2", expiryDate, false, None),
+              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-IT", "ni", "Bbb Itsa Trader","AB129456B", "foo3", expiryDate, false, None),
+              invitationTemporal(nowMinus(25), "Accepted", "HMRC-MTD-IT", "ni", "Ccc Itsa Trader","AB123256B", "foo4", expiryDate, false, None),
+              invitationTemporal(nowMinus(5), "Accepted", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo5",expiryDate, true, Some("Agent")),
+              invitationTemporal(nowMinus(12), "Accepted", "HMRC-MTD-VAT", "vrn","Excel Ltd", "101747641", "foo6", expiryDate, true, Some("Client")),
+              invitationTemporal(nowMinus(25), "Accepted", "HMRC-TERS-ORG", "utr", "D Trust","4937455253", "foo7", expiryDate, true, Some("Agent")),
+              invitationTemporal(nowMinus(22), "Accepted", "HMRC-CGT-PD", "cgtRef", "Property Dev","XMCGTP123456789", "foo8", expiryDate, true, Some("Client")),
+              invitationTemporal(nowMinus(30), "Cancelled", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo9", expiryDate, false, None),
+              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo10",expiryDate, false, None),
+              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-VAT", "vrn","Excel Ltd", "101747641", "foo11", expiryDate, false, None),
+              invitationTemporal(nowMinus(2), "Accepted", "HMRC-TERS-ORG", "utr", "D Trust","4937455253", "foo12", expiryDate, false, None),
+              invitationTemporal(nowMinus(25), "Accepted", "PERSONAL-INCOME-RECORD", "ni", "John Jones","AB123456A", "foo13", expiryDate, true, Some("HMRC")),
+              invitationTemporal(nowMinus(25), "Accepted", "PERSONAL-INCOME-RECORD", "ni", "Sally Ship","GZ753451B", "foo14", expiryDate, true, Some("HMRC")),
+            ).mkString("[", ",", "]")))))
+  }
+
+
+  def givenASingleInvitationWithRelationshipEnded(
+                                                   clientId: String,
+                                                   service: String,
+                                                   clientIdType: String,
+                                                   lastUpdated: DateTime) = {
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(lastUpdated, "Accepted", service, clientIdType, "Dave", clientId, "foo1", "2021-03-13", true, Some("Agent"))
+            ).mkString("[", ",", "]")))))
+  }
+
+  def givenASingleAcceptedInvitation(
+                                    arn: Arn,
+                                    clientId: String,
+                                    service: String,
+                                    clientIdType: String,
+                                    lastUpdated: DateTime
+                                    ) = {
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
+        .willReturn(
+          aResponse()
+        .withStatus(200)
+        .withBody(halEnvelope(
+          Seq(
+            invitationTemporal(lastUpdated, "Accepted", service, clientIdType, "Julius", clientId, "foo1", "2021-03-13", false, None)
+          ).mkString("[", ",", "]")))))
+
+  }
+
+  def givenNoAcceptedInvitationFound(
+                                      arn: Arn,
+                                      clientId: String,
+                                      service: String
+                                    ) = {
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            ))
+
+  }
+
+  def givenASingleInvitationWithRelationshipStillActive(
+                                                   clientId: String,
+                                                   service: String,
+                                                   clientIdType: String,
+                                                   lastUpdated: DateTime) = {
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(lastUpdated, "Accepted", service, clientIdType, "Dave", clientId, "foo1", lastUpdated.toLocalDate.plusDays(5).toString, false, None)
+            ).mkString("[", ",", "]")))))
+  }
+
+  def givenTwoInvitationsExistForSameClientWithOneDeAuthorised(
+                                                   clientId: String,
+                                                   service: String,
+                                                   clientIdType: String,
+                                                   accepted1: DateTime,
+                                                   accepted2: DateTime) = {
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(accepted1, "Accepted", service, clientIdType, "Dave", clientId, "foo1", "2021-03-13", true, Some("Agent")),
+              invitationTemporal(accepted2, "Accepted", service, clientIdType, "Dave", clientId, "foo2", "2021-03-17", false, None)
+            ).mkString("[", ",", "]")))))
+  }
+
+  def givenGetInvitations() = {
+    def nowMinus(d: Int) = DateTime.now().minusDays(d).withTimeAtStartOfDay()
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(nowMinus(29), "Pending", "HMRC-MTD-IT", "ni", "Dave","AB127456A", "foo1", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(22), "Pending", "HMRC-MTD-VAT", "vrn", "Doug","101747696", "foo2", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(3), "Pending", "HMRC-MTD-IT", "ni", "Darian","AB129456B", "foo3", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(25), "Accepted", "HMRC-MTD-IT", "ni", "Darian","AB123256B", "foo4", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-IT", "ni", "Don","AB123456A", "foo5","2017-12-18", true, Some("Agent")),
+              invitationTemporal(nowMinus(12), "Accepted", "HMRC-MTD-VAT", "vrn","Diane", "101747641", "foo6", "2017-12-18", true, Some("Client")),
+              invitationTemporal(nowMinus(25), "Accepted", "HMRC-TERS-ORG", "utr", "Doreen","4937455253", "foo7", "2017-12-18", true, Some("Agent")),
+              invitationTemporal(nowMinus(22), "Accepted", "HMRC-CGT-PD", "cgtRef", "Duck","XMCGTP123456789", "foo2", "2017-12-18", true, Some("Client")),
+              invitationTemporal(nowMinus(30), "Cancelled", "HMRC-MTD-IT", "ni", "Dean","AB123456A", "foo9", "2017-12-18", false, None),
+            ).mkString("[", ",", "]")))))
+  }
+
   def givenGetAllPendingInvitationsReturnsSome(arn: Arn, clientId: String, service: String) = {
     val body = halEnvelope(Seq(service match {
       case  "HMRC-MTD-IT" => invitation(arn, "Pending", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)
@@ -987,10 +1119,15 @@ trait ACAStubs {
                               |  "clientId" : "$clientId",
                               |  "clientIdType" : "$clientIdType",
                               |  "suppliedClientId" : "$clientId",
+                              |   "detailsForEmail" : {
+                              |   "agencyEmail": "agent@email.com",
+                              |   "agencyName" : "someAgent",
+                              |   "clientName" : "The Client name"
+                              |   },
                               |  "suppliedClientIdType" : "$clientIdType",
                               |  "status" : "$status",
                               |  "created" : "2017-10-31T23:22:50.971Z",
-                              |  "lastUpdated" : "2018-09-11T21:02:00.000Z",
+                              |  "lastUpdated" : "2018-09-11T00:00:00.000Z",
                               |  "expiryDate" : "$expiryDate",
                               |  "invitationId": "$invitationId",
                               |  "isRelationshipEnded": $isRelationshipEnded,
@@ -1001,6 +1138,44 @@ trait ACAStubs {
                               |		  }
                               |  }
                               |}""".stripMargin
+
+  val invitationTemporal = (
+                     lastUpdated: DateTime,
+                     status: String,
+                     service: String,
+                     clientIdType: String,
+                     clientName: String,
+                     clientId: String,
+                     invitationId: String,
+                     expiryDate: String,
+                     isRelationshipEnded: Boolean,
+                     relationshipEndedBy: Option[String]) => s"""
+                                                                |{
+                                                                |  "arn" : "TARN0000001",
+                                                                |  "clientType" : "personal",
+                                                                |  "service" : "$service",
+                                                                |  "clientId" : "$clientId",
+                                                                |  "clientIdType" : "$clientIdType",
+                                                                |  "suppliedClientId" : "$clientId",
+                                                                |  "detailsForEmail" : {
+                                                                |   "agencyEmail": "agent@email.com",
+                                                                |   "agencyName" : "someAgent",
+                                                                |   "clientName" : "$clientName"
+                                                                |   },
+                                                                |  "suppliedClientIdType" : "$clientIdType",
+                                                                |  "status" : "$status",
+                                                                |  "created" : "2017-10-31T23:22:50.971Z",
+                                                                |  "lastUpdated" : "${lastUpdated.toString}",
+                                                                |  "expiryDate" : "$expiryDate",
+                                                                |  "invitationId": "$invitationId",
+                                                                |  "isRelationshipEnded": $isRelationshipEnded,
+                                                                |  ${relationshipEndedBy.map(v => s""" "relationshipEndedBy" : "$v", """).getOrElse("")}
+                                                                |  "_links": {
+                                                                |    	"self" : {
+                                                                |			  "href" : "$wireMockBaseUrlAsString/agent-client-authorisation/agencies/TARN0000001/invitations/sent/$invitationId"
+                                                                |		  }
+                                                                |  }
+                                                                |}""".stripMargin
 
   def halEnvelope(embedded: String): String =
     s"""{"_links": {

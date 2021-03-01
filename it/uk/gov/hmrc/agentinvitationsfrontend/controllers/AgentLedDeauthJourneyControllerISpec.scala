@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
@@ -9,8 +9,10 @@ import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -776,6 +778,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenCancelledAuthorisationItsa(arn, Nino(nino), 204)
       givenGetAgencyNameClientStub(arn)
+      givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now())
+      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
         controller.submitConfirmCancel(
@@ -796,6 +800,51 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenCancelledAuthorisationTrust(arn,validUtr, 204)
       givenGetAgencyNameClientStub(arn)
+      givenASingleAcceptedInvitation(arn, validUtr.value, TRUST, "UTR", DateTime.now())
+      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+
+    "redirect to the authorisation cancelled page when no Accepted invitation found" in {
+      journeyState.set(ConfirmCancel(TRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenCancelledAuthorisationTrust(arn,validUtr, 204)
+      givenGetAgencyNameClientStub(arn)
+      givenNoAcceptedInvitationFound(arn, validUtr.value, TRUST)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+
+    "redirect to the authorisation cancelled page when update invitation setRelationshipEnded flag fails" in {
+      journeyState.set(ConfirmCancel(TRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenCancelledAuthorisationTrust(arn,validUtr, 204)
+      givenGetAgencyNameClientStub(arn)
+      givenASingleAcceptedInvitation(arn, validUtr.value, TRUST, "UTR", DateTime.now())
+      givenSetRelationshipEndedReturns(InvitationId("foo1"), 500)
 
       val result =
         controller.submitConfirmCancel(

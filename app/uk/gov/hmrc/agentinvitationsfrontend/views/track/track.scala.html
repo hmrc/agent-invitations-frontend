@@ -15,6 +15,7 @@
  *@
 
 @import org.joda.time.LocalDate
+@import org.joda.time.DateTime
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
@@ -33,6 +34,7 @@
     newRequestForm: new_request_form,
         uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
 )
+
 
 @(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, now: LocalDate)
 
@@ -194,15 +196,15 @@
     @if(invitation.status == "Expired") {
         @displayDate(invitation.expiryDate)
     } else {
-        @displayDate(invitation.date)
+        @displayDate(invitation.dateTime)
     }
 }
 }
 
-@displayDate(date: Option[LocalDate]) = {
+@displayDate(date: Option[DateTime]) = {
 @{
     date match {
-        case Some(d) => displayDateForLangWithLeadingZero(d)
+        case Some(d) => displayDateForLangWithLeadingZero(d.toLocalDate)
         case None => ""
     }
 }
