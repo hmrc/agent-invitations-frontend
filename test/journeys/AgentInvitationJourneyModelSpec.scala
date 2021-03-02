@@ -65,6 +65,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val vrn = "123456"
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
+  val TRUSTNT = "HMRC-TERSNT-ORG"
+  val TRUST = "HMRC-TERS-ORG"
+
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -338,7 +341,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def suspendedForTrust() = SuspensionDetails(suspensionStatus = true, Some(Set("TRS")))
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
+          selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(ANYTRUST) should
           thenGo(AgentSuspended(ANYTRUST, emptyBasket))
       }
     }

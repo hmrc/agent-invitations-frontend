@@ -383,7 +383,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
                 ClientConsent(invitationIdVat, expiryDate, "vat", consent = true),
                 ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true),
-                ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = false),
+                ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = true),
                 ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = true)
               )
             )

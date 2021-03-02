@@ -46,7 +46,7 @@ object Validators {
 
   val utrPattern = "^\\d{10}$"
 
-  val urnPattern = "^([A-Z0-9]{1,15})$"
+  val urnPattern = "^((?i)[a-z]{2}trust[0-9]{8})$"
 
   val taxIdPattern = "^([A-Z0-9]{1,15})$"
 
