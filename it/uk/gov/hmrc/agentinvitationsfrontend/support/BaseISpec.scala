@@ -29,7 +29,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport with IVStubs with PDVStubs {
+    with TestDataCommonSupport with MongoSupport with IVStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -39,7 +39,6 @@ abstract class BaseISpec
   val businessTaxAccountUrl = "https://business-tax-account-url"
   val personalTaxAccountUrl = "https://personal-tax-account-url/pta"
   val taxAccountRelativeUrl = "/account"
-  val pdvBaseUrl = "/pdv-base-url"
 
   val problemHeader = "There is a problem - Ask a client to authorise you - GOV.UK"
 
