@@ -197,7 +197,6 @@ GET         /from-iv-signed-out                                         uk.gov.h
 GET         /timed-out                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.timedOut
 GET         /sign-out                                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOut
 GET         /locked-out                                                 uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.lockedOut
-GET         /pdv-complete                                               uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.pdvComplete(targetUrl: Option[String] ?= None, validationId: Option[String] ?= None)
 GET         /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSuspendedAgent
 POST        /cannot-appoint                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSuspendedAgent
 GET         /sign-out-redirect                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOutAndRedirect

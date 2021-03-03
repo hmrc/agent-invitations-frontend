@@ -47,8 +47,6 @@ class AuthActionsImpl @Inject()(
   pirRelationshipConnector: PirRelationshipConnector)
     extends AuthorisedFunctions with AuthRedirects with Logging {
 
-  val pdvStartUrl = s"${externalUrls.pdvFrontendUrl}/start"
-
   val isDevEnv: Boolean =
     if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.contains("Dev")
 
@@ -107,11 +105,11 @@ class AuthActionsImpl @Inject()(
         case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
           (affinity, confidence) match {
             case (AffinityGroup.Individual, cl) =>
-              withConfidenceLevelUplift(cl, maybeNino, enrols) {
+              withConfidenceLevelUplift(cl, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               }
             case (AffinityGroup.Organisation, cl) => {
-              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, maybeNino, enrols) {
+              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               } else body(AuthorisedClient(affinity, enrols))
             }
@@ -131,8 +129,8 @@ class AuthActionsImpl @Inject()(
         handleFailure(isAgent = false, journeyId)
       }
 
-  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, mayBeNino: Option[String], enrols: Enrolments)(
-    body: => Future[Result])(implicit request: Request[A]): Future[Result] = {
+  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, enrols: Enrolments)(body: => Future[Result])(
+    implicit request: Request[A]): Future[Result] = {
 
     //APB-4856: Clients with only CGT enrol dont need to go through IV
     val isCgtOnlyClient: Boolean = {
@@ -142,10 +140,8 @@ class AuthActionsImpl @Inject()(
 
     if (currentLevel >= requiredCL || isCgtOnlyClient) {
       body
-    } else if (request.method == "GET" && mayBeNino.isDefined) {
-      redirectToIdentityVerification()
     } else if (request.method == "GET") {
-      redirectToPersonalDetailsValidation()
+      redirectToIdentityVerification()
     } else {
       Future.successful(Redirect(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url))
     }
@@ -168,23 +164,6 @@ class AuthActionsImpl @Inject()(
       "failureURL"      -> Some(failureUrl)
     )
     Future.successful(Redirect(ivUpliftUrl))
-  }
-
-  private def redirectToPersonalDetailsValidation[A]()(implicit request: Request[A]): Future[Result] = {
-
-    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, appConfig) _
-
-    val targetUrl = toLocalFriendlyUrl(request.uri, request.host)
-    val completeUrlBase = toLocalFriendlyUrl(routes.ClientInvitationJourneyController.pdvComplete().url, request.host)
-
-    // completion URL needs to include the target (where user is trying to go)
-    val pdvCompleteUrl =
-      CallOps.addParamsToUrl(completeUrlBase, "targetUrl" -> Some(targetUrl))
-
-    val personalDetailsValidationUrl =
-      CallOps.addParamsToUrl(pdvStartUrl, "completionUrl" -> Some(pdvCompleteUrl))
-
-    Future successful Redirect(personalDetailsValidationUrl)
   }
 
   private def continueUrlWithJourneyId(journeyId: Option[String])(implicit request: Request[_]): String = {
