@@ -1247,7 +1247,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/cannot-view-request" should {
     "display the error cannot view request page when current state is WarmUp" in {
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyAgent(FakeRequest()))
 
       status(result) shouldBe 403
 
@@ -1259,7 +1259,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the not authorised as client view if the current state is not WarmUp" in {
       journeyState.set(TrustNotClaimed, Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyAgent(FakeRequest()))
 
       status(result) shouldBe 403
 

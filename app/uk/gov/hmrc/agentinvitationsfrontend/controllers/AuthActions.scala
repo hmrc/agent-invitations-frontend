@@ -58,6 +58,18 @@ class AuthActionsImpl @Inject()(
       identifier <- enrolment.getIdentifier("AgentReferenceNumber")
     } yield Arn(identifier.value)
 
+  def withAuthorisedAsAnyAgent[A](body: => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway))
+      .retrieve(affinityGroup) {
+        case Some(AffinityGroup.Agent) => body
+        case _ =>
+          logger.warn(s"problem retrieving affinity group $affinityGroup")
+          Future successful Forbidden
+      }
+      .recover {
+        handleFailure(isAgent = true)
+      }
+
   def withAuthorisedAsAgent[A](
     body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
