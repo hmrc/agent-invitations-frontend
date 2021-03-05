@@ -171,9 +171,15 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                     case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
                     case consents =>
                       val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
+                      //not sure about the application here of TRUSTNT?
+                      val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUSTNT))
                       val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+                      val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == TRUSTNT)
                       if (containsTrust && butNoTrustEnrolment) {
                         logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                        goto(TrustNotClaimed)
+                      } else if (containsTrustNT && butNoTrustNtEnrolment) {
+                        logger.warn("client doesn't have the expected HMRC-TERSNT-ORG enrolment to accept/reject an invitation")
                         goto(TrustNotClaimed)
                       } else {
                         consents match {

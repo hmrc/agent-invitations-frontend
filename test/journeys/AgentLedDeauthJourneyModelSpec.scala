@@ -85,7 +85,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to SelectServiceTrust with only whitelisted services" in {
-        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(SelectServiceTrust(Set(ANYTRUST, HMRCCGTPD)))
       }
     }
     "at state SelectServicePersonal" should {
@@ -193,13 +193,13 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
     "at state SelectServiceTrust" should {
       "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(TRUST) should thenGo(
-          IdentifyClientTrust)
+        given(SelectServiceTrust(Set(ANYTRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(
+          ANYTRUST) should thenGo(IdentifyClientTrust)
       }
 
       "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(HMRCCGTPD) should thenGo(
-          IdentifyClientCgt)
+        given(SelectServiceTrust(Set(ANYTRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(
+          HMRCCGTPD) should thenGo(IdentifyClientCgt)
       }
 
       "throw an exception when YES is selected but the show trust flag is switched off" in {

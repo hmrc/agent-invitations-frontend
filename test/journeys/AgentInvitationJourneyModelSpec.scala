@@ -68,7 +68,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val TRUSTNT = "HMRC-TERSNT-ORG"
   val TRUST = "HMRC-TERS-ORG"
 
-
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
   def cgtAddressDetails(countryCode: String = "GB") =
@@ -312,7 +311,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(ANYTRUST) should
+          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
           thenGo(IdentifyTrustClient(ANYTRUST, emptyBasket))
       }
 

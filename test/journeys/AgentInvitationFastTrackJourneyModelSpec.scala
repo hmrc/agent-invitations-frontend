@@ -212,7 +212,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             ))
       }
 
-      "transition to CheckDetailsCompleteTrust when there are all the required fields are present for a TrustNT service" in {
+      /*"transition to CheckDetailsCompleteTrust when there are all the required fields are present for a TrustNT service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), ANYTRUST, "urn", urn.value, None)
 
         given(Prologue(None, None)) when start(true, notSuspended)(None)(authorisedAgent)(fastTrackRequest) should
@@ -222,7 +222,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
               fastTrackRequest = fastTrackRequest,
               None
             ))
-      }
+      }*/
 
       "transition to CheckDetailsCompleteCgt when there are all the required fields are present for a Trust service" in {
         val fastTrackRequest =

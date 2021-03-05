@@ -21,8 +21,8 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
-import org.xbill.DNS.Options
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{ANYTRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, MtdItId, Vrn}
@@ -50,7 +50,8 @@ trait TrackServiceStubsAndData {
   val HMRCMTDVAT = "HMRC-MTD-VAT"
   val TRUST = "HMRC-TERS-ORG"
   val TRUSTNT = "HMRC-TERSNT-ORG"
-  val ANYTRUST = Options.set("TRUST","TRUSTNT")
+//  val ANYTRUST = Options.set("TRUST", "TRUSTNT")
+  val trustServices: Set[String] = Set(ANYTRUST, HMRCCGTPD)
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
 

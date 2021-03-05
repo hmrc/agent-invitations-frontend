@@ -51,8 +51,8 @@ case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: S
   val enabledTrustServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()
 
-    if (featureFlags.showHmrcTrust && services.contains(TRUST))
-      map.update(TRUST, Messages("cancel-authorisation.select-service.trust"))
+    if (featureFlags.showHmrcTrust && services.contains(ANYTRUST))
+      map.update(ANYTRUST, Messages("cancel-authorisation.select-service.trust"))
 
     if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
       map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
