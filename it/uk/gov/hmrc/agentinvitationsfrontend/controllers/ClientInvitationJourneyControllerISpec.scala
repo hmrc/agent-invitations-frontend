@@ -297,6 +297,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       )
     }
 
+    "redirect to /respond/error/cannot-view-request when an agent tries to respond to a clients invitation 2" in {
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
+
+      val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(
+        "/invitations/respond/error/cannot-view-request"
+      )
+    }
+
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenUnauthorisedWith("UnsupportedAffinityGroup")
@@ -1247,7 +1260,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/cannot-view-request" should {
     "display the error cannot view request page when current state is WarmUp" in {
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyValidAgent(FakeRequest(), arn.value))
 
       status(result) shouldBe 403
 
@@ -1259,7 +1272,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the not authorised as client view if the current state is not WarmUp" in {
       journeyState.set(TrustNotClaimed, Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyValidAgent(FakeRequest(), arn.value))
 
       status(result) shouldBe 403
 

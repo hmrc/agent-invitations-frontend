@@ -247,7 +247,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   val showErrorCannotViewRequest: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAnyAgent { _ =>
       journeyService.currentState.flatMap {
         case Some(stateAndBreadCrumbs) =>
           stateAndBreadCrumbs._1 match {

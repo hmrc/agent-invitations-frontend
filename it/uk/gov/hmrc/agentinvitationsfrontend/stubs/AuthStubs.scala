@@ -13,6 +13,9 @@ trait AuthStubs {
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] =
     authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
 
+  def authorisedAsAnyValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] =
+    authenticatedAnyAgent(request)
+
   def authorisedAsValidClientITSA[A](request: FakeRequest[A], mtditid: String) =
     authenticatedClient(request, "Individual", Enrolment("HMRC-MTD-IT", "MTDITID", mtditid))
 
@@ -349,6 +352,31 @@ trait AuthStubs {
          |"authorisedEnrolments": [
          |  { "key":"${enrolment.serviceName}", "identifiers": [
          |    {"key":"${enrolment.identifierName}", "value": "${enrolment.identifierValue}"}
+         |  ]}
+         |]}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
+  }
+
+  def authenticatedAnyAgent[A](request: FakeRequest[A])(
+    implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenAuthorisedFor(
+      s"""
+         |{
+         |  "authorise": [
+         |    { "authProviders": ["GovernmentGateway"] }
+         |  ],
+         |  "retrieve":["authorisedEnrolments"]
+         |}
+           """.stripMargin,
+      s"""
+         |{
+         |"authorisedEnrolments": [
+         |  { "key":"HMRC-AS-AGENT", "identifiers": [
+         |    {"key":"AgentReferenceNumber", "value": "TARN0000001"}
          |  ]}
          |]}
           """.stripMargin

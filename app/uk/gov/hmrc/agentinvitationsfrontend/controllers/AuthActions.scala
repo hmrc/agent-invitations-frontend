@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -58,9 +59,18 @@ class AuthActionsImpl @Inject()(
       identifier <- enrolment.getIdentifier("AgentReferenceNumber")
     } yield Arn(identifier.value)
 
+  def withAuthorisedAsAnyAgent[A](
+    body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    authorizedAsAgent(body, AuthProviders(GovernmentGateway))
+
   def withAuthorisedAsAgent[A](
     body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
+    authorizedAsAgent(body, Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
+
+  private def authorizedAsAgent[A](
+    body: AuthorisedAgent => Future[Result],
+    auth: Predicate)(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    authorised(auth)
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
           case Some(arn) if featureFlags.enableIrvAllowlist =>
