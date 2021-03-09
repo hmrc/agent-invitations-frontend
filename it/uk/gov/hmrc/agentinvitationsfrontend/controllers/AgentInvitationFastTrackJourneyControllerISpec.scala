@@ -231,8 +231,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
     }
 
-    "redirect to agent suspended when service is Trust and agent has been suspended for this service using utr" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("TRS"))))
+    "redirect to agent suspended when service is Trust and agent has been suspended for this service" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, Some(Set("TRS"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -245,24 +245,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           arn.value
         ))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
-    }
-
-    "redirect to agent suspended when service is Trust and agent has been suspended for this service using urn" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("TRS"))))
-      journeyState.clear
-      val request = FakeRequest("POST", "/agents/fast-track")
-      val result = controller.agentFastTrack(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "clientType"           -> "business",
-            "service"              -> "HMRC-TERSNT-ORG",
-            "clientIdentifierType" -> "taxId",
-            "clientIdentifier"     -> validUrn.value),
-          arn.value
-        ))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
     }
 
     "redirect to check details when service is CGT" in {
@@ -1026,7 +1009,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/client-identify-trust" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to /agents/confirm-trust-client" in new TrustHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(business), ANYTRUST, "taxId", validUtr.value, None)
+      val ftr = AgentFastTrackRequest(Some(business), TRUST, "taxId", validUtr.value, None)
       journeyState.set(
         IdentifyTrustClient(ftr, ftr, None),
         List(

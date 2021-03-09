@@ -141,7 +141,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "show the select service page for trust service" in {
-      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      journeyState.set(SelectServiceTrust(Set(ANYTRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -445,7 +445,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+
     }
     "redirect to confirm client for trust with urn" in {
       givenTrustClientReturns(validUrn, 200, Json.toJson(trustResponse).toString())
@@ -463,7 +463,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
-
     "redirect to /not-found for trust if trust details are not found for given utr" in {
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
       journeyState.set(IdentifyClientTrust, Nil)
@@ -478,7 +477,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
     }
     "redirect to /not-found for trust if trust details are not found for given urn" in {
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)

@@ -217,7 +217,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("select-service.no")
       )
       journeyState.get shouldBe Some((SelectTrustService(Set(ANYTRUST), emptyBasket), List(SelectClientType(emptyBasket))))
-
     }
 
     "go back to the select service page" in {
@@ -761,7 +760,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
@@ -1839,7 +1837,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   "GET /already-authorisation-present" should {
     val request = FakeRequest("GET", "/agents/already-authorisation-present")
-
+//not sure how to fix this one?
     "display the already authorisation present page" in {
 
       supportedServices.foreach { service =>
