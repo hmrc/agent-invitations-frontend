@@ -48,7 +48,7 @@ case class InvitationSentPageConfig(
     else None
   } else if (clientType == "business") {
     if (services(HMRCMTDVAT)) Some(Messages("invitation-sent.step1.business.vat"))
-    else if (services(TRUST)) Some(Messages("invitation-sent.step1.business.trust"))
+    else if (services(TAXABLETRUST)) Some(Messages("invitation-sent.step1.business.trust"))
     else None
   } else None
 }

@@ -32,7 +32,7 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
   def availableServices(implicit messages: Messages): Seq[(String, String)]
 
   protected def showServiceTrust: Boolean =
-    featureFlags.showHmrcTrust && serviceAvailableForSelection(ANYTRUST)
+    featureFlags.showHmrcTrust && serviceAvailableForSelection(TRUST)
 
   protected def showServiceCgt: Boolean =
     featureFlags.showHmrcCgt && serviceAvailableForSelection(HMRCCGTPD)
@@ -47,7 +47,10 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
     featureFlags.showHmrcMtdIt && serviceAvailableForSelection(HMRCMTDIT)
 
   protected def serviceAvailableForSelection(service: String): Boolean =
-    services.contains(service) && !basket.exists(_.invitation.service == service)
+    if (service == TRUST) {
+      services.contains(service) && (!basket.exists(_.invitation.service == TAXABLETRUST) && !basket.exists(_.invitation.service == NONTAXABLETRUST))
+    } else
+      services.contains(service) && !basket.exists(_.invitation.service == service)
 }
 
 class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
@@ -59,8 +62,9 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
 
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
-    if (showServiceTrust)
-      seq.append(ANYTRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
+    if (showServiceTrust) {
+      seq.append(TRUST -> Messages("select-service.TRUST.business"))
+    }
 
     if (showServiceCgt)
       seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.business"))

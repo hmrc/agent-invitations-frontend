@@ -35,13 +35,15 @@ case class CheckDetailsPageConfig(
       case "PERSONAL-INCOME-RECORD" => "afi"
       case "HMRC-MTD-VAT"           => "vat"
       case "HMRC-TERS-ORG"          => "trust"
+      case "HMRC-TERSNT-ORG"        => "trust"
       case "HMRC-CGT-PD"            => "cgt"
     }
   }
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
-  val needKnownFact: Boolean = fastTrackRequest.service != Services.TRUST && fastTrackRequest.knownFact
+  val needKnownFact
+    : Boolean = fastTrackRequest.service != Services.TAXABLETRUST && fastTrackRequest.service != Services.NONTAXABLETRUST && fastTrackRequest.knownFact
     .getOrElse("")
     .isEmpty
 

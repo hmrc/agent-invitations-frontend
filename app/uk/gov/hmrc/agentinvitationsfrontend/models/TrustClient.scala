@@ -15,8 +15,8 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 
 case class TrustClient(taxId: TrustTaxIdentifier)
 

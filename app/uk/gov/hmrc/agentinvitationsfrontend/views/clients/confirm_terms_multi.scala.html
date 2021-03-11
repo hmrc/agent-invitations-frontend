@@ -91,6 +91,14 @@
     </ul>
 }
 
+@trustNTTerms = {
+<span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</span>
+<ul class="list list-bullet">
+    <li>@Messages("confirm-terms-multi.trust.list.item1")</li>
+    <li>@Messages("confirm-terms-multi.trust.list.item2")</li>
+</ul>
+}
+
 @cgtTerms = {
 
     @if(pageConfig.clientType == "personal") {
@@ -138,6 +146,7 @@
         case "afi" => pirTerms
         case "vat" => vatTerms
         case "trust" => trustTerms
+        case "trustNT" => trustNTTerms
         case "cgt" => cgtTerms
     }}
     <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>

@@ -282,9 +282,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      val identifier = trustTaxIdentifier match {
+        case Utr(_) => "UTR"
+        case Urn(_) => "URN"
+      }
       val url = new URL(
         baseUrl,
-        s"/agent-client-authorisation/clients/UTR/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/accept").toString
+        s"/agent-client-authorisation/clients/$identifier/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/accept").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>

@@ -29,24 +29,24 @@ class RelationshipsService @Inject()(relationshipsConnector: RelationshipsConnec
 
   def hasActiveRelationshipFor(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     service match {
-      case HMRCMTDIT  => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
-      case HMRCMTDVAT => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
-      case HMRCPIR    => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
-      case TRUST      => relationshipsConnector.checkTrustRelationship(arn, Utr(clientId))
-      case TRUSTNT    => relationshipsConnector.checkTrustNTRelationship(arn, Urn(clientId))
-      case HMRCCGTPD  => relationshipsConnector.checkCgtRelationship(arn, CgtRef(clientId))
+      case HMRCMTDIT       => relationshipsConnector.checkItsaRelationship(arn, Nino(clientId))
+      case HMRCMTDVAT      => relationshipsConnector.checkVatRelationship(arn, Vrn(clientId))
+      case HMRCPIR         => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
+      case TAXABLETRUST    => relationshipsConnector.checkTrustRelationship(arn, Utr(clientId))
+      case NONTAXABLETRUST => relationshipsConnector.checkTrustNTRelationship(arn, Urn(clientId))
+      case HMRCCGTPD       => relationshipsConnector.checkCgtRelationship(arn, CgtRef(clientId))
     }
 
   def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     service match {
-      case HMRCMTDIT  => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
-      case HMRCPIR    => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case HMRCMTDVAT => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
-      case TRUST      => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
-      case TRUSTNT    => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
-      case HMRCCGTPD  => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
-      case e          => throw new Error(s"Unsupported service for deleting relationship: $e")
+      case HMRCMTDIT       => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
+      case HMRCPIR         => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
+      case HMRCMTDVAT      => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
+      case TAXABLETRUST    => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
+      case NONTAXABLETRUST => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
+      case HMRCCGTPD       => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
+      case e               => throw new Error(s"Unsupported service for deleting relationship: $e")
     }
 }

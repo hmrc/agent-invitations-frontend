@@ -51,6 +51,9 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
   val utr = Utr("1977030537")
+  val urn = Urn("XXTRUST10010010")
+  val TRUSTNT = "HMRC-TERSNT-ORG"
+  val TRUST = "HMRC-TERS-ORG"
   val cgtRef = CgtRef("XMCGTP123456789")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
@@ -208,6 +211,18 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
               None
             ))
       }
+
+      /*"transition to CheckDetailsCompleteTrust when there are all the required fields are present for a TrustNT service" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), ANYTRUST, "urn", urn.value, None)
+
+        given(Prologue(None, None)) when start(true, notSuspended)(None)(authorisedAgent)(fastTrackRequest) should
+          thenGo(
+            CheckDetailsCompleteTrust(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
+      }*/
 
       "transition to CheckDetailsCompleteCgt when there are all the required fields are present for a Trust service" in {
         val fastTrackRequest =

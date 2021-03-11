@@ -172,7 +172,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
       Transition {
-        case SelectTrustService(services, basket) =>
+        case SelectTrustService(services, basket) => {
+          println(s"services $services basket is $basket service: $service")
           if (service.isEmpty) { // user selected "no" to final service
             if (basket.nonEmpty)
               goto(ReviewAuthorisationsTrust(services, basket))
@@ -181,7 +182,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
           } else if (services.contains(service)) {
             val flag = service match {
-              case ANYTRUST  => showTrustsFlag
+              case TRUST     => showTrustsFlag
               case HMRCCGTPD => showCgtFlag
             }
             gotoIdentify(
@@ -193,11 +194,12 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               IdentifyTrustClient(service, basket),
               AgentSuspended(service, basket))
           } else goto(SelectTrustService(services, basket))
+        }
       }
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyTrustClient(ANYTRUST, basket) =>
+        case IdentifyTrustClient(TRUST, basket) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) => {
@@ -539,7 +541,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            }
                        }
             } yield result
-        } else goto(IdentifyTrustClient(ANYTRUST, basket))
+        } else goto(IdentifyTrustClient(TRUST, basket))
     }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
@@ -558,6 +560,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     Transition {
       case ReviewAuthorisationsTrust(_, basket) =>
         if (confirmation.choice) {
+          println(s"basket on review authorisation is $basket")
           goto(SelectTrustService(agent.trustServices, basket))
         } else {
           for {

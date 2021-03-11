@@ -84,7 +84,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -149,7 +149,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr.value)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(submitIdentifyClientTrust(taxId => acaConnector.getTrustName(taxId.value)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
@@ -178,6 +178,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusiness    =>
     case _: ConfirmClientTrust       =>
+    case _: ConfirmClientTrustNT     =>
     case _: ConfirmClientCgt         =>
   }
 
@@ -231,6 +232,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientPersonalVat => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientBusiness    => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientTrust       => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientTrustNT     => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientCgt         => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
@@ -343,7 +345,8 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(TrustClientForm.form(urnEnabled)),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url,
-          isDeAuthJourney = true
+          isDeAuthJourney = true,
+          showUrnEnabledContent = urnEnabled
         ))
 
     case IdentifyClientCgt =>

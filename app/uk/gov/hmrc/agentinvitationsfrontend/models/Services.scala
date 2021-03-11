@@ -26,18 +26,19 @@ object Services {
   val HMRCMTDIT = "HMRC-MTD-IT"
   val HMRCPIR = "PERSONAL-INCOME-RECORD"
   val HMRCMTDVAT = "HMRC-MTD-VAT"
-  val TRUST = "HMRC-TERS-ORG"
-  val TRUSTNT = "HMRC-TERSNT-ORG"
+  val TAXABLETRUST = "HMRC-TERS-ORG"
+  val NONTAXABLETRUST = "HMRC-TERSNT-ORG"
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
-  val ANYTRUST = "TRUST"
+  val TRUST = "TRUST"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, ANYTRUST, HMRCCGTPD)
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
+  val fastTrackSupportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
-  val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TRUST, TRUSTNT, HMRCCGTPD)
+  val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
   val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
   val allSupportedEnrolmentKeysForBusiness = Set(HMRCMTDVAT)
-  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TRUST, TRUSTNT)
+  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TAXABLETRUST, NONTAXABLETRUST)
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {
@@ -52,12 +53,12 @@ object Services {
 
   def determineServiceMessageKeyFromService(service: String): String =
     service match {
-      case HMRCMTDIT  => "itsa"
-      case HMRCPIR    => "afi"
-      case HMRCMTDVAT => "vat"
-      case TRUST      => "trust"
-      case TRUSTNT    => "trustNT"
-      case HMRCCGTPD  => "cgt"
+      case HMRCMTDIT       => "itsa"
+      case HMRCPIR         => "afi"
+      case HMRCMTDVAT      => "vat"
+      case TAXABLETRUST    => "trust"
+      case NONTAXABLETRUST => "trustNT"
+      case HMRCCGTPD       => "cgt"
     }
 
   def determineServiceFromServiceMessageKey(serviceMessageKey: String): String =
@@ -65,18 +66,18 @@ object Services {
       case "itsa"    => HMRCMTDIT
       case "afi"     => HMRCPIR
       case "vat"     => HMRCMTDVAT
-      case "trust"   => TRUST
-      case "trustNT" => TRUSTNT
+      case "trust"   => TAXABLETRUST
+      case "trustNT" => NONTAXABLETRUST
       case "cgt"     => HMRCCGTPD
     }
 
   def clientIdType(service: String) =
     service match {
-      case HMRCMTDIT  => "ni"
-      case HMRCMTDVAT => "vrn"
-      case HMRCCGTPD  => "CGTPDRef"
-      case TRUST      => "utr"
-      case TRUSTNT    => "urn"
-      case HMRCPIR    => "ni"
+      case HMRCMTDIT       => "ni"
+      case HMRCMTDVAT      => "vrn"
+      case HMRCCGTPD       => "CGTPDRef"
+      case TAXABLETRUST    => "utr"
+      case NONTAXABLETRUST => "urn"
+      case HMRCPIR         => "ni"
     }
 }

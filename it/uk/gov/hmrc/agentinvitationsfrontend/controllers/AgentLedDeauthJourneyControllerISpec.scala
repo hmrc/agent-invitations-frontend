@@ -11,6 +11,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -196,7 +197,19 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService().url
+    }
+
+    "redirect to identify trust client when trustNT is selected" in {
+      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
+
+      val result =
+        controller.submitTrustService(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERSNT-ORG"), arn.value))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService().url
     }
 
     "redirect to identify cgt client when cgt is selected" in {
@@ -273,7 +286,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-trust-client.header",
+        "identify-trust-client.header.false",
        "identify-trust-client.p1")
     }
 
@@ -428,13 +441,28 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         controller.submitIdentifyTrustClient(
           authorisedAsValidAgent(
             request.withFormUrlEncodedBody(
-              "utr"       -> s"${validUtr.value}"), arn.value))
+              "taxId"       -> s"${validUtr.value}"), arn.value))
+
+      status(result) shouldBe 303
+
+
+    }
+    "redirect to confirm client for trust with urn" in {
+      givenTrustClientReturns(validUrn, 200, Json.toJson(trustResponse).toString())
+      journeyState.set(IdentifyClientTrust, Nil)
+
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
+
+      val result =
+        controller.submitIdentifyTrustClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "taxId"       -> s"${validUrn.value}"), arn.value))
 
       status(result) shouldBe 303
 
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
-
     "redirect to /not-found for trust if trust details are not found for given utr" in {
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
       journeyState.set(IdentifyClientTrust, Nil)
@@ -445,7 +473,23 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         controller.submitIdentifyTrustClient(
           authorisedAsValidAgent(
             request.withFormUrlEncodedBody(
-              "utr"       -> s"${validUtr.value}"), arn.value))
+              "taxId"       -> s"${validUtr.value}"), arn.value))
+
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
+    }
+    "redirect to /not-found for trust if trust details are not found for given urn" in {
+      givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
+      journeyState.set(IdentifyClientTrust, Nil)
+
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
+
+      val result =
+        controller.submitIdentifyTrustClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "taxId"       -> s"${validUrn.value}"), arn.value))
 
       status(result) shouldBe 303
 
@@ -791,7 +835,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to the authorisation cancelled page for trusts" in {
-      journeyState.set(ConfirmCancel(TRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
+      journeyState.set(ConfirmCancel(TAXABLETRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenCancelledAuthorisationTrust(arn,validUtr, 204)

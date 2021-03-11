@@ -20,7 +20,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TAXABLETRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -98,14 +98,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "SelectTrustService" in {
-        Json.toJson(SelectTrustService(Set(TRUST, HMRCCGTPD), Set.empty)) shouldBe Json
+        Json.toJson(SelectTrustService(Set(TAXABLETRUST, HMRCCGTPD), Set.empty)) shouldBe Json
           .obj(
             "state" -> "SelectTrustService",
             "properties" -> Json
               .obj("services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"), "basket" -> JsArray()))
         Json
           .parse("""{"state":"SelectTrustService", "properties": {"basket": [], "services": ["HMRC-TERS-ORG", "HMRC-CGT-PD"]}}""")
-          .as[State] shouldBe SelectTrustService(Set(TRUST, HMRCCGTPD), Set.empty)
+          .as[State] shouldBe SelectTrustService(Set(TAXABLETRUST, HMRCCGTPD), Set.empty)
       }
 
       "IdentifyPersonalClient" in {
@@ -126,14 +126,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "IdentifyTrustClient" in {
-        Json.toJson(IdentifyTrustClient(TRUST, Set.empty)) shouldBe Json
+        Json.toJson(IdentifyTrustClient(TAXABLETRUST, Set.empty)) shouldBe Json
           .obj(
             "state"      -> "IdentifyTrustClient",
             "properties" -> Json.obj("service" -> "HMRC-TERS-ORG", "basket" -> JsArray())
           )
         Json
           .parse("""{"state":"IdentifyTrustClient", "properties": {"basket": [], "service": "HMRC-TERS-ORG"}}""")
-          .as[State] shouldBe IdentifyTrustClient(TRUST, Set.empty)
+          .as[State] shouldBe IdentifyTrustClient(TAXABLETRUST, Set.empty)
       }
 
       "ConfirmClientItsa" in {
@@ -217,14 +217,14 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ReviewAuthorisationsTrust" in {
-        Json.toJson(ReviewAuthorisationsTrust(Set(TRUST, HMRCCGTPD), Set.empty)) shouldBe Json.obj(
+        Json.toJson(ReviewAuthorisationsTrust(Set(TAXABLETRUST, HMRCCGTPD), Set.empty)) shouldBe Json.obj(
           "state" -> "ReviewAuthorisationsTrust",
           "properties" -> Json
             .obj("basket" -> JsArray(), "services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"))
         )
         Json
           .parse("""{"state":"ReviewAuthorisationsTrust", "properties": {"basket": [], "services": ["HMRC-TERS-ORG", "HMRC-CGT-PD"]}}""")
-          .as[State] shouldBe ReviewAuthorisationsTrust(Set(TRUST, HMRCCGTPD), Set.empty)
+          .as[State] shouldBe ReviewAuthorisationsTrust(Set(TAXABLETRUST, HMRCCGTPD), Set.empty)
       }
 
       "InvitationSentPersonal" in {

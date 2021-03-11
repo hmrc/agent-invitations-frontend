@@ -46,9 +46,9 @@ object Validators {
 
   val utrPattern = "^\\d{10}$"
 
-  val urnPattern = "^([A-Z0-9]{1,15})$"
+  val urnPattern = "^((?i)[a-z]{2}trust[0-9]{8})$"
 
-  val taxIdPattern = "^([A-Z0-9]{1,15})$"
+  //val taxIdPattern = "^([A-Z0-9]{1,15})$"
 
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String): Constraint[String] =
     Constraint[String] { input: String =>
@@ -160,19 +160,30 @@ object Validators {
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
 
-  def validTrustTaxId(urnEnabled: Boolean) = if (urnEnabled) validUrn() else validUtr()
+  def validTrustTaxId(urnEnabled: Boolean) = if (urnEnabled) validTrustTaxIdentifier() else validUtr()
 
   def validUtr(): Constraint[String] =
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
 
-  def validUrn(): Constraint[String] =
-    patternConstraint(urnPattern, "error.urn.required", "enter-urn.invalid-format")
+  def validTrustTaxIdentifier(): Constraint[String] =
+    validateTrustTaxIdentifier("error.urn.required", "enter-urn.invalid-format")
 
-  def validTaxId(): Constraint[String] =
-    patternConstraint(taxIdPattern, "error.taxID.required", "enter-taxID.invalid-format")
+//  def validTaxId(): Constraint[String] =
+//    patternConstraint(taxIdPattern, "error.taxID.required", "enter-taxID.invalid-format")
 
   def validCgtRef(): Constraint[String] =
     patternConstraint(CgtRef.cgtRegex, s"error.cgt.required", s"enter-cgt.invalid-format")
+
+  private def validateTrustTaxIdentifier(nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
+    Constraint[String] { fieldValue: String =>
+      val formattedField = fieldValue.replace(" ", "").trim
+      Constraints.nonEmpty.apply(formattedField) match {
+        case _: Invalid                              => Invalid(ValidationError(nonEmptyFailure))
+        case _ if formattedField.matches(utrPattern) => Valid
+        case _ if formattedField.matches(urnPattern) => Valid
+        case _                                       => Invalid(invalidFailure)
+      }
+    }
 
   private def patternConstraint(pattern: String, nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>
@@ -192,6 +203,7 @@ object Validators {
         else Invalid(ValidationError("INVALID_NINO"))
       case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) && Vrn.isValid(clientId) => Valid
       case clientId if clientId.nonEmpty && clientId.matches(utrPattern)                        => Valid
+      case clientId if clientId.nonEmpty && clientId.matches(urnPattern)                        => Valid
       case clientId if clientId.nonEmpty && CgtRef.isValid(clientId)                            => Valid
       case _ =>
         Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))

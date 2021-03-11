@@ -32,6 +32,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientPersonalVatFormats: OFormat[ConfirmClientPersonalVat] = Json.format
   val ConfirmClientBusinessFormats: OFormat[ConfirmClientBusiness] = Json.format
   val ConfirmClientTrustFormats: OFormat[ConfirmClientTrust] = Json.format
+  val ConfirmClientTrustNTFormats: OFormat[ConfirmClientTrustNT] = Json.format
   val ConfirmClientCgtFormats: OFormat[ConfirmClientCgt] = Json.format
   val NotSignedUpFormats: OFormat[NotSignedUp] = Json.format
   val ConfirmCancelFormats: OFormat[ConfirmCancel] = Json.format
@@ -51,6 +52,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientPersonalVat => ConfirmClientPersonalVatFormats.writes(s)
     case s: ConfirmClientBusiness    => ConfirmClientBusinessFormats.writes(s)
     case s: ConfirmClientTrust       => ConfirmClientTrustFormats.writes(s)
+    case s: ConfirmClientTrustNT     => ConfirmClientTrustNTFormats.writes(s)
     case s: CgtRefNotFound           => CgtRefNotFoundFormats.writes(s)
     case s: ConfirmClientCgt         => ConfirmClientCgtFormats.writes(s)
     case s: NotSignedUp              => NotSignedUpFormats.writes(s)
@@ -77,6 +79,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientPersonalVat" => ConfirmClientPersonalVatFormats.reads(properties)
     case "ConfirmClientBusiness"    => ConfirmClientBusinessFormats.reads(properties)
     case "ConfirmClientTrust"       => ConfirmClientTrustFormats.reads(properties)
+    case "ConfirmClientTrustNT"     => ConfirmClientTrustNTFormats.reads(properties)
     case "ConfirmClientCgt"         => ConfirmClientCgtFormats.reads(properties)
     case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
     case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)

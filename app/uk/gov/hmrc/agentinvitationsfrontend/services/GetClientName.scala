@@ -40,12 +40,12 @@ trait GetClientName extends Logging {
           logger.warn(s"no client Id as Nino available so not calling getTradingName")
           Future successful None
         } else getItsaTradingName(Nino(clientId))
-      case Services.HMRCPIR    => getCitizenName(Nino(clientId))
-      case Services.HMRCMTDVAT => getVatName(Vrn(clientId))
-      case Services.TRUST      => getTrustName(clientId)
-      case Services.TRUSTNT    => getTrustName(clientId)
-      case Services.HMRCCGTPD  => getCgtClientName(CgtRef(clientId))
-      case _                   => Future successful None
+      case Services.HMRCPIR         => getCitizenName(Nino(clientId))
+      case Services.HMRCMTDVAT      => getVatName(Vrn(clientId))
+      case Services.TAXABLETRUST    => getTrustName(clientId)
+      case Services.NONTAXABLETRUST => getTrustName(clientId)
+      case Services.HMRCCGTPD       => getCgtClientName(CgtRef(clientId))
+      case _                        => Future successful None
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

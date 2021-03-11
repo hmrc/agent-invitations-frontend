@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoade
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.ConfirmClientTrustNT
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -96,7 +97,7 @@ class AgentInvitationJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -224,6 +225,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
+    case _: ConfirmClientTrustNT     =>
     case _: ConfirmClientCgt         =>
   }
 
@@ -406,7 +408,7 @@ class AgentInvitationJourneyController @Inject()(
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, business)), config))
         }
 
-      case IdentifyTrustClient(Services.ANYTRUST, _) =>
+      case IdentifyTrustClient(Services.TRUST, _) =>
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
@@ -416,7 +418,6 @@ class AgentInvitationJourneyController @Inject()(
             showUrnEnabledContent = urnEnabled
           )
         )
-
       case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
         Ok(
           identifyClientCgtView(

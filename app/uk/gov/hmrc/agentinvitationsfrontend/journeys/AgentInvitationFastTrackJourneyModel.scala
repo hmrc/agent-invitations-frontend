@@ -22,6 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -254,13 +255,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
           goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
 
-        case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
+        case AgentFastTrackRequest(Some(ClientType.business), TAXABLETRUST, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
 //here not sure if we should use ANYTRUST/TRUSTNT?
-        case AgentFastTrackRequest(Some(ClientType.business), ANYTRUST, _, _, _) =>
+        case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
 
-        case AgentFastTrackRequest(Some(ClientType.business), TRUSTNT, _, _, _) =>
+        case AgentFastTrackRequest(Some(ClientType.business), NONTAXABLETRUST, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
 
         case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
@@ -486,10 +487,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
       case CheckDetailsCompleteTrust(originalFtr, fastTrackRequest, continueUrl) =>
         if (confirmation.choice) {
+          val trustInvitation = fastTrackRequest.clientIdentifier match {
+            case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
+            case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+          }
           checkIfPendingOrActiveAndGoto(
             fastTrackRequest,
             agent.arn,
-            TrustInvitation(Utr(fastTrackRequest.clientIdentifier)),
+            trustInvitation,
             continueUrl
           )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
@@ -577,10 +582,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       Transition {
         case ConfirmClientTrust(originalFtr, ftr, continueUrl, trustName) =>
           if (confirmation.choice) {
+            val trustInvitation = ftr.clientIdentifier match {
+              case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
+              case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+            }
             checkIfPendingOrActiveAndGoto(
               ftr,
               agent.arn,
-              TrustInvitation(Utr(ftr.clientIdentifier)),
+              trustInvitation,
               continueUrl
             )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
           } else {

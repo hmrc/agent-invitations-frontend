@@ -217,7 +217,7 @@ class TrackService @Inject()(
   private def isOnOrAfter(a: Option[LocalDate], that: Option[LocalDate]) =
     a.flatMap(x => that.map(y => !x.isBefore(y))).getOrElse(false)
 
-   def isOnOrBefore(a: Option[LocalDate], that: Option[LocalDate]) =
+  def isOnOrBefore(a: Option[LocalDate], that: Option[LocalDate]) =
     a.flatMap(x => that.map(y => !x.isAfter(y))).getOrElse(false)
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =

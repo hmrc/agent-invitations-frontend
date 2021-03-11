@@ -90,7 +90,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                 Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
             goto(SelectServicePersonal(enabledPersonalServices))
           case "business" => goto(SelectServiceBusiness)
-          case "trust"    => goto(SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
+          case "trust"    => goto(SelectServiceTrust(agent.trustServices))
         }
     }
 
@@ -132,10 +132,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           if (enabledServices.contains(service)) {
             service match {
               case TRUST =>
-                if (showTrustFlag) goto(IdentifyClientTrust)
-                else fail(new Exception(s"Service: $service feature flag is switched off"))
-
-              case TRUSTNT =>
                 if (showTrustFlag) goto(IdentifyClientTrust)
                 else fail(new Exception(s"Service: $service feature flag is switched off"))
 
@@ -202,7 +198,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    //          not sure if we should leave this as utr or replace it with trustTaxIdentifier?
     def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClientTrust =>
@@ -327,10 +322,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
-//          not sure if we should leave this as utr or replace it with trustTaxIdentifier?
-        case ConfirmClientTrust(name, trustTaxIdentifier)   => gotoFinalState(trustTaxIdentifier.value, TRUST, Some(name))
-        case ConfirmClientTrustNT(name, trustTaxIdentifier) => gotoFinalState(trustTaxIdentifier.value, TRUSTNT, Some(name))
-        case ConfirmClientCgt(cgtRef, name)                 => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
+        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TAXABLETRUST, Some(name))
+        case ConfirmClientTrustNT(name, urn)     => gotoFinalState(urn.value, NONTAXABLETRUST, Some(name))
+        case ConfirmClientCgt(cgtRef, name)      => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
       }
     }
 

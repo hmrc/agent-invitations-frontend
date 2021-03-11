@@ -170,10 +170,16 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                   getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
                     case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
                     case consents =>
-                      val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TRUST))
-                      val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TRUST)
+                      val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TAXABLETRUST))
+                      //not sure about the application here of TRUSTNT?
+                      val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(NONTAXABLETRUST))
+                      val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TAXABLETRUST)
+                      val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == NONTAXABLETRUST)
                       if (containsTrust && butNoTrustEnrolment) {
                         logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
+                        goto(TrustNotClaimed)
+                      } else if (containsTrustNT && butNoTrustNtEnrolment) {
+                        logger.warn("client doesn't have the expected HMRC-TERSNT-ORG enrolment to accept/reject an invitation")
                         goto(TrustNotClaimed)
                       } else {
                         consents match {
@@ -279,12 +285,13 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     def determineNewConsents(oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] =
       oldConsents.map { oldConsent =>
         oldConsent.serviceKey match {
-          case "itsa"  => oldConsent.copy(consent = formTerms.itsaConsent)
-          case "afi"   => oldConsent.copy(consent = formTerms.afiConsent)
-          case "vat"   => oldConsent.copy(consent = formTerms.vatConsent)
-          case "trust" => oldConsent.copy(consent = formTerms.trustConsent)
-          case "cgt"   => oldConsent.copy(consent = formTerms.cgtConsent)
-          case _       => throw new IllegalStateException("the service key was not supported")
+          case "itsa"    => oldConsent.copy(consent = formTerms.itsaConsent)
+          case "afi"     => oldConsent.copy(consent = formTerms.afiConsent)
+          case "vat"     => oldConsent.copy(consent = formTerms.vatConsent)
+          case "trust"   => oldConsent.copy(consent = formTerms.trustConsent)
+          case "trustNT" => oldConsent.copy(consent = formTerms.trustNTConsent)
+          case "cgt"     => oldConsent.copy(consent = formTerms.cgtConsent)
+          case _         => throw new IllegalStateException("the service key was not supported")
         }
       }
 
@@ -296,12 +303,13 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     def determineChangedConsents(changedConsent: ClientConsent, oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] = {
       val newConsent = changedConsent.serviceKey match {
-        case "itsa"  => changedConsent.copy(consent = formTerms.itsaConsent)
-        case "afi"   => changedConsent.copy(consent = formTerms.afiConsent)
-        case "vat"   => changedConsent.copy(consent = formTerms.vatConsent)
-        case "trust" => changedConsent.copy(consent = formTerms.trustConsent)
-        case "cgt"   => changedConsent.copy(consent = formTerms.cgtConsent)
-        case _       => throw new IllegalStateException("the service key was not supported")
+        case "itsa"    => changedConsent.copy(consent = formTerms.itsaConsent)
+        case "afi"     => changedConsent.copy(consent = formTerms.afiConsent)
+        case "vat"     => changedConsent.copy(consent = formTerms.vatConsent)
+        case "trust"   => changedConsent.copy(consent = formTerms.trustConsent)
+        case "trustNT" => changedConsent.copy(consent = formTerms.trustNTConsent)
+        case "cgt"     => changedConsent.copy(consent = formTerms.cgtConsent)
+        case _         => throw new IllegalStateException("the service key was not supported")
       }
       oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
     }

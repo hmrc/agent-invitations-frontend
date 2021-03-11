@@ -98,7 +98,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresAcceptTrustURNIdentifier
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -661,10 +661,11 @@ object AgentInvitationFastTrackJourneyController {
           Valid
         case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)        => Valid
-        case AgentFastTrackRequest(_, TRUST, "utr", clientId, _) if clientId.matches(utrPattern)      => Valid
-        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId) => Valid
-        case _                                                                                        => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)             => Valid
+        case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)    => Valid
+        case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern) => Valid
+        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)      => Valid
+        case _                                                                                             => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -675,7 +676,7 @@ object AgentInvitationFastTrackJourneyController {
           lowerCaseText
             .verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)
             .transform(ClientType.toEnum, ClientType.fromEnum)),
-        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => fastTrackSupportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedClientIdentifierTypes.contains(clientType)),
         "clientIdentifier" -> uppercaseNormalizedText.verifying(validateClientId),
