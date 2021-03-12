@@ -191,7 +191,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   def submitConfirmCancel: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(confirmCancelForm)(cancelConfirmed(deleteRelationshipForService, getAgencyName))
+    whenAuthorisedWithForm(AsAgent)(confirmCancelForm)(cancelConfirmed(deleteRelationshipForService, getAgencyName, setRelationshipEnded))
   }
 
   def showAuthorisationCancelled: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {

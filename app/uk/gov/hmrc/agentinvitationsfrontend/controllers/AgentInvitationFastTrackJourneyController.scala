@@ -676,7 +676,7 @@ object AgentInvitationFastTrackJourneyController {
           lowerCaseText
             .verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business").contains _)
             .transform(ClientType.toEnum, ClientType.fromEnum)),
-        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => fastTrackSupportedServices.contains(service)),
+        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedClientIdentifierTypes.contains(clientType)),
         "clientIdentifier" -> uppercaseNormalizedText.verifying(validateClientId),

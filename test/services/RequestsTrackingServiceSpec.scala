@@ -44,8 +44,9 @@ class RequestsTrackingServiceSpec extends UnitSpec {
   val nino = Nino("AB123456A")
   val dateTime = DateTime.now.minusDays(10)
 
-  implicit val now: LocalDate = LocalDate.now
+  implicit val now: DateTime = DateTime.now
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val nowLocalDate = LocalDate.now()
 
   "RequestsTrackingService" when {
 
@@ -260,7 +261,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         "Pending",
         dateTime.minusDays(10),
         dateTime,
-        now.minusDays(1),
+        now.minusDays(1).toLocalDate,
         "foo",
         false,
         None,

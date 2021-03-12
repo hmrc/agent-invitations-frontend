@@ -36,30 +36,10 @@ trait AuthBehaviours extends AuthStubs {
       givenUnauthorisedWith("MissingBearerToken")
       val result = await(action(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("/gg/sign-in?continue=%2Ftrack%2F&origin=agent-invitations-frontend")
+      redirectLocation(result) shouldBe Some("/bas-gateway/sign-in?continue_url=%2Ftrack%2F&origin=agent-invitations-frontend")
       verifyAuthoriseAttempt()
     }
   }
-
-  def anIndividualWithLowConfidenceLevelWithoutNinoGetEndpoint(
-                                                            request: FakeRequest[AnyContentAsEmpty.type],
-                                                            action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout): Unit =
-
-    "redirect to Personal Details Validation when confidence level is below 200 for an Individual without a NINO" in {
-
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50, hasNino = false)))
-
-      // validationId will be added later by PDV on return
-      val completionUrl: String =
-        URLEncoder.encode(
-          routes.ClientInvitationJourneyController.pdvComplete(targetUrl = Some(request.uri), validationId = None).url,
-          StandardCharsets.UTF_8.toString)
-
-      status(result) shouldBe 303
-      redirectLocation(result).get should startWith("http://localhost:9968/start")
-      redirectLocation(result).get should endWith(s"completionUrl=$completionUrl")
-    }
 
   def anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(
     request: FakeRequest[AnyContentAsEmpty.type],
@@ -90,22 +70,5 @@ trait AuthBehaviours extends AuthStubs {
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url)
-    }
-
-  def anOrganisationWithLowConfidenceWithoutNinoGetEndpoint(
-                                                             request: FakeRequest[AnyContentAsEmpty.type],
-                                                             action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout): Unit =
-    "redirect to Personal Details Validation when confidence level is below 200 for an Organisation with ITSA enrolment and without a NINO" in {
-      implicit val hc: HeaderCarrier = HeaderCarrier()
-      val result = await(action(authorisedAsITSAOrganisationClient(request, 50)))
-      // validationId will be added later by PDV on return
-      val completionUrl: String =
-        URLEncoder.encode(
-          routes.ClientInvitationJourneyController.pdvComplete(targetUrl = Some(request.uri), validationId = None).url,
-          StandardCharsets.UTF_8.toString)
-
-      status(result) shouldBe 303
-      redirectLocation(result).get should startWith("http://localhost:9968/start")
-      redirectLocation(result).get should endWith(s"completionUrl=$completionUrl")
     }
 }

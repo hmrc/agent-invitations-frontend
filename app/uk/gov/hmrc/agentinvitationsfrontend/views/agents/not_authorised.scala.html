@@ -32,7 +32,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-authorised.h1"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages("not-authorised.h1"), ""))) {
+@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-authorised.h1"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
   <h1 id="notMatchedHeader" class="heading-xlarge">@Messages("not-authorised.h1")</h1>
 

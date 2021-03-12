@@ -34,7 +34,6 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val agentOriginToken = appConfig.agentOriginToken
   val clientOriginToken = appConfig.clientOriginToken
 
-  val pdvFrontendUrl = appConfig.pdvFrontendExternalUrl
   val subscriptionURL = appConfig.agentSubscriptionFrontendExternalUrl
   val agentClientManagementUrl = appConfig.acmExternalUrl
   val agentInvitationsExternalUrl = appConfig.agentInvitationsFrontendExternalUrl

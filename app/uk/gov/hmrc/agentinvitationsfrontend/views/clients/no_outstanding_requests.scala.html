@@ -24,7 +24,7 @@
 
 @(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("no-outstanding-requests.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = Some(gaPageEvent(Messages("no-outstanding-requests.heading"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("no-outstanding-requests.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("no-outstanding-requests.heading")</h1>
 

@@ -15,6 +15,7 @@
  */
 
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Logger
 import play.api.i18n.{Lang, MessagesApi}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
@@ -22,11 +23,11 @@ import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.auth.otac.{NoOtacTokenInSession, OtacFailureThrowable}
 import uk.gov.hmrc.http.BadGatewayException
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.play.test.{LogCapturing, UnitSpec}
 
 import scala.concurrent.Future
 
-class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite {
+class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite with LogCapturing {
 
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   val handler: ErrorHandler = app.injector.instanceOf[ErrorHandler]
@@ -64,6 +65,13 @@ class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite {
       contentType(result) shouldBe Some(HTML)
       checkIncludesText(result, "<p>If you typed the web address, check it is correct.</p>")
       checkIncludesMessages(result, "global.error.404.title", "global.error.404.heading")
+    }
+
+    """standardErrorTemplate shows up with logger.error("some error")""" in {
+      withCaptureOfLoggingFrom(Logger) { logEvents =>
+        handler.standardErrorTemplate("", "", "some error")(FakeRequest())
+        logEvents.count(_.getMessage.contains(s"some error")) shouldBe 1
+      }
     }
   }
 

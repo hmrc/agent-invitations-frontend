@@ -506,9 +506,10 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to AuthorisationCancelled when YES is selected" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
         def getAgencyName(arn: Arn) = Future("Popeye")
+        def setRelationshipEnded(arn: Arn, client: String, service: String): Future[Option[Boolean]] = Future(Some(true))
 
-        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName)(authorisedAgent)(
-          Confirmation(true)) should thenGo(
+        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName, setRelationshipEnded)(
+          authorisedAgent)(Confirmation(true)) should thenGo(
           AuthorisationCancelled(HMRCMTDIT, Some("Holly Herndon"), "Popeye")
         )
       }
@@ -516,28 +517,31 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to AuthorisationCancelled when YES is selected and service is Trust" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
         def getAgencyName(arn: Arn) = Future("Popeye")
+        def setRelationshipEnded(arn: Arn, client: String, service: String): Future[Option[Boolean]] = Future(Some(true))
 
-        given(ConfirmCancel(TAXABLETRUST, Some("some-trust"), utr.value)) when cancelConfirmed(deleteRelationship, getAgencyName)(authorisedAgent)(
-          Confirmation(true)) should thenGo(
-          AuthorisationCancelled(TAXABLETRUST, Some("some-trust"), "Popeye")
+        given(ConfirmCancel(TRUST, Some("some-trust"), utr.value)) when cancelConfirmed(deleteRelationship, getAgencyName, setRelationshipEnded)(
+          authorisedAgent)(Confirmation(true)) should thenGo(
+          AuthorisationCancelled(TRUST, Some("some-trust"), "Popeye")
         )
       }
 
       "transition to select client type when NO is selected" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(true))
         def getAgencyName(arn: Arn) = Future("Popeye")
+        def setRelationshipEnded(arn: Arn, client: String, service: String): Future[Option[Boolean]] = Future(Some(true))
 
-        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName)(authorisedAgent)(
-          Confirmation(false)) should thenGo(
+        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName, setRelationshipEnded)(
+          authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
       }
       "transition to ResponseFailed when the relationship termination fails" in {
         def deleteRelationship(service: String, arn: Arn, clientId: String) = Future(Some(false))
         def getAgencyName(arn: Arn) = Future("Popeye")
+        def setRelationshipEnded(arn: Arn, client: String, service: String): Future[Option[Boolean]] = Future(Some(true))
 
-        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName)(authorisedAgent)(
-          Confirmation(true)) should thenGo(
+        given(ConfirmCancel(HMRCMTDIT, Some("Holly Herndon"), nino)) when cancelConfirmed(deleteRelationship, getAgencyName, setRelationshipEnded)(
+          authorisedAgent)(Confirmation(true)) should thenGo(
           ResponseFailed(HMRCMTDIT, Some("Holly Herndon"), nino)
         )
       }

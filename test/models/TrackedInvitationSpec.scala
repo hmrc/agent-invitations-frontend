@@ -35,7 +35,7 @@ class TrackedInvitationSpec extends UnitSpec {
           .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
-        tracked.expiryDate shouldBe now.plusDays(1)
+        tracked.expiryDate shouldBe now.plusDays(1).toDateTimeAtStartOfDay
       }
 
       "have status Accepted" in {

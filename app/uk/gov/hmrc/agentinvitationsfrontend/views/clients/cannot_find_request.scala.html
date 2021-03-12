@@ -27,7 +27,7 @@
 
 @(clientType: String, agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("cannot-find-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("cannot-find-request.header"), "not applicable"))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("cannot-find-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("cannot-find-request.header")</h1>
 

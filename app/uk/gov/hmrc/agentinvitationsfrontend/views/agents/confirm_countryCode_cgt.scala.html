@@ -38,7 +38,7 @@
 
 @value = @{ countryCodeForm("countryCode").value match { case Some(x) => x case None => "" case x => x }}
 
-@mainTemplate(title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("confirm-countryCode-cgt.header"), "cgt"))) {
+@mainTemplate(title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @back_link(backLinkUrl)
 

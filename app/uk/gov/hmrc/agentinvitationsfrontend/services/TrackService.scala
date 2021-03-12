@@ -105,14 +105,25 @@ class TrackService @Inject()(
         case TrackedInvitation(ct, srv, cId, cidt, an, st, _, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
           TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb)
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb) =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(LocalDate.parse(lu.toLocalDate.toString)), None, Some(iid), ire, reb)
+          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb)
         case _ => TrackInformationSorted(None, "", "", "", None, "", None, None, None, false, None)
       })
 
     val futureRelationships = getInactiveClients
       .map(_.map {
         case InactiveClient(clientType, service, clientId, clientIdType, dateTo) =>
-          TrackInformationSorted(clientType, service, clientId, clientIdType, None, "InvalidRelationship", dateTo, None, None, true, None)
+          TrackInformationSorted(
+            clientType,
+            service,
+            clientId,
+            clientIdType,
+            None,
+            "InvalidRelationship",
+            dateTo.map(_.toDateTimeAtStartOfDay),
+            None,
+            None,
+            true,
+            None)
         case _ =>
           TrackInformationSorted(None, "", "", "", None, "", None, None, None, true, None)
       })
@@ -125,7 +136,7 @@ class TrackService @Inject()(
       (nameOk, nameEmpty) = refinedResults.partition(_.clientName.isDefined)
       nameRetrieved <- Future.traverse(nameEmpty) { trackInfo =>
                         logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
-                          s" status: ${trackInfo.status} date: ${trackInfo.date} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
+                          s" status: ${trackInfo.status} date: ${trackInfo.dateTime} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
                         getClientNameByService(trackInfo.clientId, trackInfo.service).map(name => trackInfo.copy(clientName = name))
                       }
       finalResults = nameOk ++ nameRetrieved
@@ -176,49 +187,59 @@ class TrackService @Inject()(
                         }
     } yield inactiveClients.filter(_.serviceName.nonEmpty)
 
-  private def matchAndDiscard(invitationsAndInvalids: Seq[TrackInformationSorted]) =
-    invitationsAndInvalids.flatMap {
-      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded => {
-        invitationsAndInvalids
-          .find(
-            b =>
-              b.status == "InvalidRelationship" &&
-                b.clientId == a.clientId &&
-                b.service == a.service &&
-                isOnOrAfter(b.date, a.date)) match {
-          case Some(invalid) => {
-            Some(a.copy(date = invalid.date))
-          }
-          case None => {
-            logger.warn(s"did not find a matching invalid relationship (date:${a.date} service: ${a.service} client ${a.clientId}")
-            Some(a)
-          }
-        }
-      }
-      case a: TrackInformationSorted if a.status == "InvalidRelationship" =>
-        invitationsAndInvalids
-          .find(
-            b =>
-              b.status == "Accepted" &&
-                b.isRelationshipEnded &&
-                b.clientId == a.clientId &&
-                b.service == a.service &&
-                isOnOrBefore(b.date, a.date)) match {
-          case Some(i) => None
-          case None => {
-            logger.warn(s"did not find an invitation for invalid relationship (date:${a.date} service: ${a.service} client: ${a.clientId})")
-            Some(a)
-          }
+  /*This method will match an Accepted with an Invalid. It is based on the premise that for a given client,
+  if there are n Accepted then there must be either n or n-1 Invalids. Revisit once we can depend on the
+  isRelationshipEnded flag (see comment in APB-5115).
+   * */
+  private def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
 
+    def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
+
+      val accepted = a.filter(_.status == "Accepted").sorted(TrackInformationSorted.orderingByDate).reverse
+      val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
+
+      def _match(remain: List[TrackInformationSorted], acc: List[Option[TrackInformationSorted]]): List[Option[TrackInformationSorted]] =
+        remain match {
+          case Nil => acc
+          case hd :: tl =>
+            hd.status match {
+              case "Pending" | "Rejected" | "Expired" | "Cancelled" => _match(tl, Some(hd) :: acc)
+              case "Accepted" | "InvalidRelationship" => {
+                accepted
+                  .filter(_.service == hd.service)
+                  .map(Some(_))
+                  .zipAll(
+                    invalid
+                      .filter(_.service == hd.service)
+                      .map(Some(_)),
+                    None,
+                    None)
+                  .find(_._1.contains(hd)) match {
+                  case Some((Some(accepted), Some(invalid))) =>
+                    _match(
+                      tl,
+                      Some(
+                        accepted.copy(
+                          dateTime = invalid.dateTime,
+                          isRelationshipEnded = true,
+                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent")))) :: acc //assumed agent led de-auth-- setRelationshipEnded was not in place until APB-5115), should change to Client after 30 days (allow for change to take effect)
+                    )
+                  case Some((Some(active), None)) => _match(tl, Some(active) :: acc) //unmatched so must still be active
+                  case None                       => _match(tl, None :: acc) //invalid found
+                  case e => {
+                    logger.error(
+                      s"unexpected match result on the track page: $e accepted " +
+                        s"size: ${accepted.size} invalid size: ${invalid.size}")
+                    _match(tl, None :: acc)
+                  }
+                }
+              }
+            }
         }
-      case a: TrackInformationSorted => Some(a)
+      _match(a.toList, List.empty)
     }
-
-  private def isOnOrAfter(a: Option[LocalDate], that: Option[LocalDate]) =
-    a.flatMap(x => that.map(y => !x.isBefore(y))).getOrElse(false)
-
-  def isOnOrBefore(a: Option[LocalDate], that: Option[LocalDate]) =
-    a.flatMap(x => that.map(y => !x.isAfter(y))).getOrElse(false)
+    a.groupBy(_.clientId).mapValues(matchAcceptedWithInvalids(_).flatten).values.flatten.toSeq
+  }
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {

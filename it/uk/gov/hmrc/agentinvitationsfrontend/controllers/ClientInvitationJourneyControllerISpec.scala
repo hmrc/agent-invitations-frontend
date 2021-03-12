@@ -141,12 +141,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "user is authenticated as individual without NINO, and low confidence level" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anIndividualWithLowConfidenceLevelWithoutNinoGetEndpoint(request(), controller.submitWarmUp)
+      behave like anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(request(), controller.submitWarmUp)
     }
 
     "user is authenticated as Organisation with ITSA enrolment and without NINO, and low confidence level" should {
       val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anOrganisationWithLowConfidenceWithoutNinoGetEndpoint(request(), controller.submitWarmUp)
+      behave like anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(request(), controller.submitWarmUp)
     }
 
     "user is authenticated as CGT individual and low confidence level" should {
@@ -320,7 +320,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
 
       redirectLocation(result) shouldBe Some(
-        s"/gg/sign-in?continue=$continueUrlEncoded&origin=agent-invitations-frontend")
+        s"/bas-gateway/sign-in?continue_url=$continueUrlEncoded&origin=agent-invitations-frontend")
     }
   }
 
@@ -1247,7 +1247,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/cannot-view-request" should {
     "display the error cannot view request page when current state is WarmUp" in {
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyAgent(FakeRequest()))
 
       status(result) shouldBe 403
 
@@ -1259,7 +1259,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the not authorised as client view if the current state is not WarmUp" in {
       journeyState.set(TrustNotClaimed, Nil)
-      val result = controller.showErrorCannotViewRequest(authorisedAsValidAgent(FakeRequest(), arn.value))
+      val result = controller.showErrorCannotViewRequest(authorisedAsAnyAgent(FakeRequest()))
 
       status(result) shouldBe 403
 
@@ -1344,73 +1344,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         "Call the HMRC Self Assessment online services helpline"
       )
     }
-  }
-
-  "GET /pdv-complete" should {
-
-    val validationId = "1234567890"
-    val targetUrl = "/targetUrl"
-    val providerId = "41414"
-
-    def request: FakeRequest[AnyContentAsEmpty.type] = requestWithJourneyIdInCookie("GET", "/pdv-complete")
-
-    "redirect to targetUrl when validation and upsert succeed" in {
-
-      givenIVUpsertSucceeded
-      givenPdvValidationSuccess(validationId)
-      val result = controller.pdvComplete(Some(targetUrl), Some(validationId))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(targetUrl)
-    }
-
-    "show internal server error when validation succeeds but upsert failed" in {
-
-      givenIVUpsertFailed
-      givenPdvValidationSuccess(validationId)
-      val result = controller.pdvComplete(Some(targetUrl), Some(validationId))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 500
-    }
-
-    "show internal server error when no validationId provided" in {
-
-      val result = controller.pdvComplete(Some("/targetUrl"), None)(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 500
-    }
-
-    "show internal server error when no targetUrl provided" in {
-
-      val result = controller.pdvComplete(None, Some("1234567890"))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 500
-    }
-
-    "show cannot-confirm-identity when validation failed" in {
-
-      givenPdvValidationFailure(validationId)
-      val result = controller.pdvComplete(Some(targetUrl), Some(validationId))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 403
-    }
-
-    "show internal server error when validation data not found in PDV" in {
-
-      givenPdvValidationNotFound(validationId)
-      val result = controller.pdvComplete(Some(targetUrl), Some(validationId))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 500
-    }
-
-    "show internal server error when there is no NINO in PDV response" in {
-
-      givenPdvValidationSuccessNoNino(validationId)
-      val result = controller.pdvComplete(Some(targetUrl), Some(validationId))(
-        authorisedAsIndividualWithCredentialRetrieval(request, providerId))
-      status(result) shouldBe 500
-    }
-
   }
 
   Set(FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence).foreach { reason =>

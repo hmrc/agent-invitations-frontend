@@ -32,8 +32,8 @@ object Services {
   val HMRCNI = "HMRC-NI"
   val TRUST = "TRUST"
 
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
-  val fastTrackSupportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
+  val supportedServicesWithAnyTrust = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
   val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
   val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)

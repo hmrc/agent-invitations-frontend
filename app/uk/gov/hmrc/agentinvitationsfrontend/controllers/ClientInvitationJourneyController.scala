@@ -47,7 +47,6 @@ class ClientInvitationJourneyController @Inject()(
   identityVerificationConnector: IdentityVerificationConnector,
   authActions: AuthActionsImpl,
   mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
-  pdvConnector: PersonalDetailsValidationConnector,
   override val journeyService: ClientInvitationJourneyService,
   notAuthorisedAsClientView: not_authorised_as_client,
   timedOutView: timed_out,
@@ -248,7 +247,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   val showErrorCannotViewRequest: Action[AnyContent] = Action.async { implicit request =>
-    withAuthorisedAsAgent { _ =>
+    withAuthorisedAsAnyAgent {
       journeyService.currentState.flatMap {
         case Some(stateAndBreadCrumbs) =>
           stateAndBreadCrumbs._1 match {
@@ -314,51 +313,6 @@ class ClientInvitationJourneyController @Inject()(
             .getIVResult(id)
             .map(reason => getErrorPage(reason, success)))
   }
-
-  /** Individual Users with low confidence level and also no NINO arrive here...
-    *
-    * they have just finished the personal-details-validation journey and entered either their NINO or Postcode.
-    * PDV will add a validationId to the response which we can use to find the result of the journey.
-    * If all went well, we can update the NINO for the user and send them back to the original endpoint (targetUrl)
-    *
-    *  */
-  def pdvComplete(targetUrl: Option[String] = None, validationId: Option[String] = None): Action[AnyContent] =
-    Action.async { implicit request =>
-      withIndividualAuth { providerId =>
-        (targetUrl, validationId) match {
-          case (Some(targetUrl), Some(validId)) =>
-            pdvConnector
-              .getPdvResult(validId)
-              .flatMap {
-                case Right(nino) =>
-                  identityVerificationConnector
-                    .updateEntry(NinoClStoreEntry(providerId, nino, None, None, None), providerId)
-                    .map {
-                      case 200 | 201 => Redirect(targetUrl)
-                      case status =>
-                        logger.error(s"identity-verification upsert /nino/credId returned: $status")
-                        InternalServerError("identity-verification upsert NINO failed")
-                    }
-                case Left(pdvError) => Future.successful(pdvErrorResult(pdvError, validId))
-              }
-          case (None, _) =>
-            logger.error(s"no targetUrl returned from personal-details-validation - assuming technical error")
-            Future.successful(InternalServerError("no targetUrl in /pdv-compelete"))
-          case (_, None) =>
-            logger.error(s"no validationId returned from personal-details-validation - assuming technical error")
-            Future.successful(InternalServerError("no validationId in /pdv-compelete"))
-        }
-      }
-    }
-
-  def pdvErrorResult[A](pdvError: PdvError, validationId: String)(implicit request: Request[A]): Result =
-    pdvError match {
-      case PdvValidationNotFound =>
-        InternalServerError(s"failed to get PDV result: data for validationId $validationId not found")
-      case PdvValidationNoNino =>
-        InternalServerError(s"failed to get PDV result: No NINO in response for $validationId")
-      case PdvValidationFailure => Forbidden(cannotConfirmIdentityView())
-    }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
     reason.fold(Forbidden(cannotConfirmIdentityView())) {

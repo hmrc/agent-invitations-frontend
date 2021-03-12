@@ -77,6 +77,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
     type VatRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
+    type SetRelationshipEnded = (Arn, String, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
@@ -328,13 +329,23 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName)(agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName, setRelationshipEnded: SetRelationshipEnded)(
+      agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmCancel(service, clientName, clientId) =>
           if (confirmation.choice) {
             deleteRelationship(service, agent.arn, clientId).flatMap {
-              case Some(true) =>
-                getAgencyName(agent.arn).flatMap(name => goto(AuthorisationCancelled(service, clientName, name)))
+              case Some(true) => {
+                for {
+                  name    <- getAgencyName(agent.arn)
+                  updated <- setRelationshipEnded(agent.arn, clientId, service)
+                  result <- if (updated.exists(x => x)) goto(AuthorisationCancelled(service, clientName, name))
+                           else {
+                             logger.warn(s"set relationship ended failed...proceeding with authorisation cancelled")
+                             goto(AuthorisationCancelled(service, clientName, name))
+                           }
+                } yield result
+              }
               case _ => goto(ResponseFailed(service, clientName, clientId))
             }
           } else goto(root)

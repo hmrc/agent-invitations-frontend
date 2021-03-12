@@ -55,6 +55,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
   case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
   case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
+  case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
   case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
   case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, postcode: Option[String], clientName: String) extends State
   case class ConfirmCountryCodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, countryCode: String, clientName: String) extends State
@@ -172,8 +173,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
       Transition {
-        case SelectTrustService(services, basket) => {
-          println(s"services $services basket is $basket service: $service")
+        case SelectTrustService(services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
             if (basket.nonEmpty)
               goto(ReviewAuthorisationsTrust(services, basket))
@@ -194,7 +194,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               IdentifyTrustClient(service, basket),
               AgentSuspended(service, basket))
           } else goto(SelectTrustService(services, basket))
-        }
       }
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =

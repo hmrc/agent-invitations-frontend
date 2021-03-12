@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedServices, supportedServicesWithAnyTrust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -341,6 +341,7 @@ class AgentsRequestTrackingController @Inject()(
       case "PERSONAL-INCOME-RECORD" => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
       case "HMRC-MTD-VAT"           => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
       case "HMRC-TERS-ORG"          => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
+      case "HMRC-TERSNT-ORG"        => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
       case "HMRC-CGT-PD"            => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
       case _                        => throw new Error("Service not supported")
     }

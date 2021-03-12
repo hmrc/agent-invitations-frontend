@@ -26,7 +26,7 @@
 
 @(config: CannotCreateRequestConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s"cannot-create-request.header"), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
 @back_link(config.backLink)
 

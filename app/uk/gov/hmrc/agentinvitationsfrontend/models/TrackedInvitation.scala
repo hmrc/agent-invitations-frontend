@@ -26,7 +26,7 @@ case class TrackedInvitation(
   clientName: Option[String],
   status: String,
   lastUpdated: DateTime,
-  expiryDate: LocalDate,
+  expiryDate: DateTime,
   invitationId: String,
   isRelationshipEnded: Boolean = false,
   relationshipEndedBy: Option[String] = None
@@ -56,7 +56,7 @@ object TrackedInvitation {
       i.detailsForEmail.map(_.clientName),
       i.status,
       i.lastUpdated,
-      i.expiryDate,
+      i.expiryDate.toDateTimeAtStartOfDay,
       i.invitationId,
       i.isRelationshipEnded,
       i.relationshipEndedBy

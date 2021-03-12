@@ -1840,7 +1840,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation present page" in {
 
-      fastTrackSupportedServices.foreach { service =>
+      supportedServices.foreach { service =>
         journeyState.set(
           ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(personal))))),
           List()

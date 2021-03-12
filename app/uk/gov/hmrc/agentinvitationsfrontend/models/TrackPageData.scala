@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
+import org.joda.time.DateTime
 
 case class TrackInformationSorted(
   clientType: Option[String],
@@ -25,21 +25,21 @@ case class TrackInformationSorted(
   clientIdType: String,
   clientName: Option[String],
   status: String,
-  date: Option[LocalDate],
-  expiryDate: Option[LocalDate],
+  dateTime: Option[DateTime],
+  expiryDate: Option[DateTime],
   invitationId: Option[String],
   isRelationshipEnded: Boolean,
   relationshipEndedBy: Option[String]) {
 
-  def sortDate: Option[LocalDate] =
-    if (date.isEmpty) expiryDate
-    else if (expiryDate.isEmpty) date
+  def sortDate: Option[DateTime] =
+    if (dateTime.isEmpty) expiryDate
+    else if (expiryDate.isEmpty) dateTime
     else None
 }
 
 object TrackInformationSorted {
 
-  implicit def dateOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+  implicit def dateOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isAfter _)
 
   val orderingByDate: Ordering[TrackInformationSorted] = Ordering.by(_.sortDate)
 }

@@ -165,7 +165,7 @@
     }
 
 @mainTemplate(bannerTitle = "banner.clients", title =  errorPrefix(confirmTermsForm) +  Messages("generic.title", title, Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-terms.multi.heading"), pageConfig.clientType))) {
+    bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     @back_link(pageConfig.backLink.url)
 

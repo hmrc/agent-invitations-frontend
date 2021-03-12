@@ -25,7 +25,7 @@
 @(service: String, continueUrl: Option[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 
-@mainTemplate(title = Messages("generic.title", Messages(s"agent-suspended.fastrack.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent(Messages(s""), ""))) {
+@mainTemplate(title = Messages("generic.title", Messages(s"agent-suspended.fastrack.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
 
   <h1 class="heading-xlarge margin-bottom-20">@Messages("agent-suspended.fastrack.heading")</h1>

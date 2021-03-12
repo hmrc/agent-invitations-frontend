@@ -49,7 +49,7 @@
     }
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("confirm-decline.heading"), ""))) {
+@mainTemplate(bannerTitle = "banner.clients", title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     @back_link(config.backLink.url)
 

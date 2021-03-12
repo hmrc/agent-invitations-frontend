@@ -37,7 +37,7 @@
         agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.vrn.required")))
     }
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = Some(gaPageEvent( Messages("identify-client.header"), "vat"))) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @back_link(backLinkUrl)
 

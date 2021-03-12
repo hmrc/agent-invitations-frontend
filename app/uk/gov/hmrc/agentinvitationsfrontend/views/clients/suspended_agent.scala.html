@@ -45,7 +45,7 @@
     <p>@Messages("suspended-agent.p2")</p>
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("suspended-agent.header"), pageConfig.suspendedServices.toString()))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     @if(pageConfig.isAllSuspended) {
         <h1 class="heading-xlarge">@Messages("suspended-agent.all.header")</h1>

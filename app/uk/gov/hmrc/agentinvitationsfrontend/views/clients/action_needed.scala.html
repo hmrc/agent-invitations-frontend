@@ -25,7 +25,7 @@
 
 @(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = Some(gaPageEvent(Messages("client-problem.header"), serviceMessageKey))) {
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@Messages("action-needed.header")</h1>
 
