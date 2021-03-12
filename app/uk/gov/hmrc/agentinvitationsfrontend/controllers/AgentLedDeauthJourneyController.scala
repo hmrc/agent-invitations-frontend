@@ -21,7 +21,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm, VatClientForm, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{IdentifyClientTrust, _}
@@ -69,6 +69,7 @@ class AgentLedDeauthJourneyController @Inject()(
 )(
   implicit ec: ExecutionContext,
   configuration: Configuration,
+  appConfig: AppConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val cc: MessagesControllerComponents)
@@ -83,6 +84,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -147,7 +149,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   val submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(submitIdentifyClientTrust(utr => acaConnector.getTrustName(utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(submitIdentifyClientTrust(taxId => acaConnector.getTrustName(taxId.value)))
   }
 
   val submitIdentifyCgtClient: Action[AnyContent] = action { implicit request =>
@@ -176,6 +178,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusiness    =>
     case _: ConfirmClientTrust       =>
+    case _: ConfirmClientTrustNT     =>
     case _: ConfirmClientCgt         =>
   }
 
@@ -229,6 +232,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmClientPersonalVat => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientBusiness    => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientTrust       => routes.AgentLedDeauthJourneyController.showConfirmClient()
+    case _: ConfirmClientTrustNT     => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmClientCgt         => routes.AgentLedDeauthJourneyController.showConfirmClient()
     case _: ConfirmCancel            => routes.AgentLedDeauthJourneyController.showConfirmCancel()
     case _: AuthorisationCancelled   => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
@@ -338,10 +342,11 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClientTrust =>
       Ok(
         identifyClientTrustView(
-          formWithErrors.or(TrustClientForm.form),
+          formWithErrors.or(TrustClientForm.form(urnEnabled)),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
           backLinkFor(breadcrumbs).url,
-          isDeAuthJourney = true
+          isDeAuthJourney = true,
+          showUrnEnabledContent = urnEnabled
         ))
 
     case IdentifyClientCgt =>
@@ -406,6 +411,17 @@ class AgentLedDeauthJourneyController @Inject()(
           backLinkFor(breadcrumbs).url,
           "utr",
           utr.value
+        ))
+
+    case ConfirmClientTrustNT(trustName, urn) =>
+      Ok(
+        confirmClientView(
+          trustName,
+          formWithErrors.or(confirmCancelForm),
+          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          backLinkFor(breadcrumbs).url,
+          "urn",
+          urn.value
         ))
 
     case _: ConfirmCountryCodeCgt =>

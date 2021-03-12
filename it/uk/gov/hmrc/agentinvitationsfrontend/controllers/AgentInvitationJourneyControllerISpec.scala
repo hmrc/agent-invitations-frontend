@@ -212,7 +212,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("select-single-service.HMRC-TERS-ORG.business.header"),
+//        htmlEscapedMessage("select-single-service.$Service.business.header"),
         htmlEscapedMessage("select-service.yes"),
         htmlEscapedMessage("select-service.no")
       )
@@ -325,7 +325,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
-      journeyState.get should have[State](IdentifyTrustClient(TRUST, emptyBasket),
+     journeyState.get should have[State](IdentifyTrustClient(TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -334,7 +334,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(TRUST)(
+      val result = controller.submitTrustSelectSingle(TAXABLETRUST)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -349,7 +349,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(TRUST)(
+      val result = controller.submitTrustSelectSingle(TAXABLETRUST)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
 
       status(result) shouldBe 303
@@ -448,7 +448,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-trust-client.header",
+        "identify-trust-client.header.true",
         "identify-trust-client.p1",
         "continue.button"
       )
@@ -757,10 +757,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
-
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
@@ -777,7 +776,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "handle invalid Utr passed in by the user and redirect back to previous /identify-client page " in {
 
-      journeyState.set(IdentifyTrustClient(TRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyTrustClient(TAXABLETRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
@@ -799,7 +798,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 
@@ -825,7 +824,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("utr" -> validUtr.value),
+          request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
         ))
 
@@ -1214,7 +1213,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(validUtr)), emptyBasket),
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyTrustClient(TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1229,7 +1228,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyTrustClient(TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1379,7 +1378,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to active authorisation exists when there is already an active authorisation for Trusts" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TRUST)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TAXABLETRUST)
       givenCheckRelationshipTrustWithStatus(arn, validUtr.value, 200)
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
       givenAgentReference(arn, nino, business)

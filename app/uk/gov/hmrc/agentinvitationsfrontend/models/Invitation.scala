@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 sealed trait Invitation {
@@ -35,11 +35,12 @@ sealed trait Invitation {
 object Invitation {
   def apply(clientType: Option[ClientType], service: String, clientIdentifier: String, knownFact: String): Invitation =
     service match {
-      case Services.HMRCMTDIT  => ItsaInvitation(Nino(clientIdentifier))
-      case Services.HMRCMTDVAT => VatInvitation(clientType, Vrn(clientIdentifier))
-      case Services.HMRCPIR    => PirInvitation(Nino(clientIdentifier))
-      case Services.TRUST      => TrustInvitation(Utr(clientIdentifier))
-      case Services.HMRCCGTPD  => CgtInvitation(CgtRef(clientIdentifier), clientType)
+      case Services.HMRCMTDIT       => ItsaInvitation(Nino(clientIdentifier))
+      case Services.HMRCMTDVAT      => VatInvitation(clientType, Vrn(clientIdentifier))
+      case Services.HMRCPIR         => PirInvitation(Nino(clientIdentifier))
+      case Services.TAXABLETRUST    => TrustInvitation(Utr(clientIdentifier))
+      case Services.NONTAXABLETRUST => TrustNTInvitation(Urn(clientIdentifier))
+      case Services.HMRCCGTPD       => CgtInvitation(CgtRef(clientIdentifier), clientType)
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -47,12 +48,13 @@ object Invitation {
     override def reads(json: JsValue): JsResult[Invitation] = {
       val t = (json \ "type").as[String]
       t match {
-        case "ItsaInvitation"  => JsSuccess((json \ "data").as[ItsaInvitation])
-        case "PirInvitation"   => JsSuccess((json \ "data").as[PirInvitation])
-        case "VatInvitation"   => JsSuccess((json \ "data").as[VatInvitation])
-        case "TrustInvitation" => JsSuccess((json \ "data").as[TrustInvitation])
-        case "CgtInvitation"   => JsSuccess((json \ "data").as[CgtInvitation])
-        case _                 => JsError(s"invalid json type for parsing invitation object, type=$t")
+        case "ItsaInvitation"    => JsSuccess((json \ "data").as[ItsaInvitation])
+        case "PirInvitation"     => JsSuccess((json \ "data").as[PirInvitation])
+        case "VatInvitation"     => JsSuccess((json \ "data").as[VatInvitation])
+        case "TrustInvitation"   => JsSuccess((json \ "data").as[TrustInvitation])
+        case "TrustNTInvitation" => JsSuccess((json \ "data").as[TrustNTInvitation])
+        case "CgtInvitation"     => JsSuccess((json \ "data").as[CgtInvitation])
+        case _                   => JsError(s"invalid json type for parsing invitation object, type=$t")
       }
     }
 
@@ -107,12 +109,23 @@ object VatInvitation {
 case class TrustInvitation(
   clientIdentifier: Utr,
   clientType: Option[ClientType] = Some(ClientType.business),
-  service: String = Services.TRUST,
+  service: String = Services.TAXABLETRUST,
   clientIdentifierType: String = "utr")
     extends Invitation
 
 object TrustInvitation {
   implicit val format: Format[TrustInvitation] = Json.format[TrustInvitation]
+}
+
+case class TrustNTInvitation(
+  clientIdentifier: Urn,
+  clientType: Option[ClientType] = Some(ClientType.business),
+  service: String = Services.NONTAXABLETRUST,
+  clientIdentifierType: String = "urn")
+    extends Invitation
+
+object TrustNTInvitation {
+  implicit val format: Format[TrustNTInvitation] = Json.format[TrustNTInvitation]
 }
 
 case class CgtInvitation(

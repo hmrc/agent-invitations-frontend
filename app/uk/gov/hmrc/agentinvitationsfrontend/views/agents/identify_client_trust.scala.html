@@ -18,6 +18,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+
 
 @this(
     mainTemplate: main_template,
@@ -26,7 +28,7 @@
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
-@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false, showUrnEnabledContent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
@@ -42,25 +44,26 @@
     @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
 
 
-        <div class="form-group margin-top-20 @if(trustClientForm.error("utr").isDefined) {form-field--error soft--ends}">
+        <div class="form-group margin-top-20 @if(trustClientForm.error("taxId").isDefined) {form-field--error soft--ends}">
             <h1>
-                <label for="utr" class="heading-xlarge">
-                @Html(Messages("identify-trust-client.header"))</label>
+                <label for="taxId" class="heading-xlarge">
+                @Html(Messages(s"identify-trust-client.header.${showUrnEnabledContent}"))
+                </label>
             </h1>
-            <p class="form-hint margin-bottom-20" id="utr-info">@Html(Messages("identify-trust-client.p1"))</p>
-            <p class="form-hint" id="utr-hint">@Html(Messages("identify-trust-client.p2"))</p>
-            @trustClientForm.error("utr").map{ formError =>
-                <span class="error-notification" data-journey="search-page:error:utr" id="utr-error">
+            <p class="form-hint margin-bottom-20" id="taxId-info">@Html(Messages("identify-trust-client.p1"))</p>
+            <p class="form-hint" id="taxId-hint">@Html(Messages(s"identify-trust-client.p2.${showUrnEnabledContent}"))</p>
+            @trustClientForm.error("taxId").map{ formError =>
+                <span class="error-notification" data-journey="search-page:error:taxId" id="taxId-error">
                     <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
             }
             <input
             class="form-control"
-            name="utr"
-            id="utr"
+            name="taxId"
+            id="taxId"
             type="text"
             spellcheck="false"
-            @trustClientForm.data.get("utr").map { v => value="@v"}
-            aria-describedby="utr-info utr-hint @if(trustClientForm.hasErrors){utr-error}"
+            @trustClientForm.data.get("taxId").map { v => value="@v"}
+            aria-describedby="taxId-info taxId-hint @if(trustClientForm.hasErrors){taxId-error}"
             >
         </div>
 

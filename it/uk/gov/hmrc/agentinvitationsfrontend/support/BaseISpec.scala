@@ -87,6 +87,7 @@ abstract class BaseISpec
         "features.enable-track-cancel-auth-action"                                -> true,
         "features.show-agent-led-de-auth"                                         -> true,
         "features.enable-welsh-toggle"                                            -> true,
+        "features.enable-trust-urn-identifier"                                    -> true,
         "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"

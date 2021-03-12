@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TAXABLETRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -168,8 +168,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       "CheckDetailsCompleteTrust" in {
         val state =
           CheckDetailsCompleteTrust(
-            AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
-            AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+            AgentFastTrackRequest(Some(business), TAXABLETRUST, "OriginalClientIdType", "OriginalClientId", None),
+            AgentFastTrackRequest(Some(business), TAXABLETRUST, "ClientIdType", "ClientId", None),
             Some("continue/url")
           )
         val json = Json.parse("""{
@@ -561,8 +561,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "IdentifyTrustClient" in {
         val state = IdentifyTrustClient(
-          AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
-          AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "ClientIdType", "ClientId", None),
           Some("continue/url")
         )
         val json = Json.parse("""{
@@ -619,8 +619,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "IdentifyNoClientTypeClient" in {
         val state = IdentifyNoClientTypeClient(
-          AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
-          AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "ClientIdType", "ClientId", None),
           Some("continue/url")
         )
         val json = Json.parse("""{
@@ -648,8 +648,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientTrust" in {
         val state = ConfirmClientTrust(
-          AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
-          AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "ClientIdType", "ClientId", None),
           Some("continue/url"),
           "some-trust-name"
         )
@@ -830,8 +830,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 
       "TrustNotFound" in {
         val state = TrustNotFound(
-          AgentFastTrackRequest(Some(business), TRUST, "OriginalClientIdType", "OriginalClientId", None),
-          AgentFastTrackRequest(Some(business), TRUST, "ClientIdType", "ClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "OriginalClientIdType", "OriginalClientId", None),
+          AgentFastTrackRequest(Some(business), TAXABLETRUST, "ClientIdType", "ClientId", None),
           Some("continue/url")
         )
         val json = Json.parse("""{

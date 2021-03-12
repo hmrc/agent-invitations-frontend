@@ -51,6 +51,9 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
   val utr = Utr("1977030537")
+  val urn = Urn("XXTRUST10010010")
+  val TRUSTNT = "HMRC-TERSNT-ORG"
+  val TRUST = "HMRC-TERS-ORG"
   val cgtRef = CgtRef("XMCGTP123456789")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
@@ -198,7 +201,19 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       }
 
       "transition to CheckDetailsCompleteTrust when there are all the required fields are present for a Trust service" in {
-        val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), TRUST, "utr", utr.value, None)
+        val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), TAXABLETRUST, "utr", utr.value, None)
+
+        given(Prologue(None, None)) when start(true, notSuspended)(None)(authorisedAgent)(fastTrackRequest) should
+          thenGo(
+            CheckDetailsCompleteTrust(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
+      }
+
+      "transition to CheckDetailsCompleteTrust when there are all the required fields are present for a TrustNT service" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.business), NONTAXABLETRUST, "urn", urn.value, None)
 
         given(Prologue(None, None)) when start(true, notSuspended)(None)(authorisedAgent)(fastTrackRequest) should
           thenGo(
@@ -452,12 +467,12 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for Trust" in {
-        val fastTrackRequest = AgentFastTrackRequest(Some(business), TRUST, "utr", utr.value, None)
+        val fastTrackRequest = AgentFastTrackRequest(Some(business), TAXABLETRUST, "utr", utr.value, None)
 
         given(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
           authorisedAgent)(Confirmation(true)) should
-          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", TRUST))
+          thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", TAXABLETRUST))
       }
       "transition to IdentifyBusinessClient for Business VAT when changing information" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(business), HMRCMTDVAT, "vrn", vrn, vatRegDate)

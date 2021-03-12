@@ -96,6 +96,7 @@ class AgentInvitationJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -207,8 +208,8 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   def submitIdentifyTrustClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(
-      Transitions.identifiedTrustClient(utr => acaConnector.getTrustName(utr))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(
+      Transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value))
     )
   }
 
@@ -223,6 +224,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ConfirmClientPersonalVat =>
     case _: ConfirmClientBusinessVat =>
     case _: ConfirmClientTrust       =>
+    case _: ConfirmClientTrustNT     =>
     case _: ConfirmClientCgt         =>
   }
 
@@ -408,12 +410,13 @@ class AgentInvitationJourneyController @Inject()(
       case IdentifyTrustClient(Services.TRUST, _) =>
         Ok(
           identifyClientTrustView(
-            formWithErrors.or(TrustClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
-            backLinkFor(breadcrumbs).url
+            trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
+            submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
+            backLinkUrl = backLinkFor(breadcrumbs).url,
+            isDeAuthJourney = false,
+            showUrnEnabledContent = urnEnabled
           )
         )
-
       case IdentifyTrustClient(Services.HMRCCGTPD, _) =>
         Ok(
           identifyClientCgtView(

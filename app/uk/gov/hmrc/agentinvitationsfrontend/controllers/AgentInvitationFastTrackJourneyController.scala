@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -98,6 +98,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
+  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -179,7 +180,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     }
 
   val submitIdentifyTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form)(Transitions.showConfirmTrustClient(utr => acaConnector.getTrustName(utr)))
+    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(Transitions.showConfirmTrustClient(taxId =>
+      acaConnector.getTrustName(taxId.value)))
   }
 
   val submitIdentifyCgtClient = action { implicit request =>
@@ -511,7 +513,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case IdentifyTrustClient(_, _, _) =>
         Ok(
           identifyClientTrustView(
-            formWithErrors.or(IdentifyTrustClientForm),
+            formWithErrors.or(TrustClientForm.form(urnEnabled)),
             routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
             backLinkFor(breadcrumbs).url
           )
@@ -659,10 +661,11 @@ object AgentInvitationFastTrackJourneyController {
           Valid
         case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)        => Valid
-        case AgentFastTrackRequest(_, TRUST, "utr", clientId, _) if clientId.matches(utrPattern)      => Valid
-        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId) => Valid
-        case _                                                                                        => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)             => Valid
+        case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)    => Valid
+        case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern) => Valid
+        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)      => Valid
+        case _                                                                                             => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -708,11 +711,11 @@ object AgentInvitationFastTrackJourneyController {
     )(VatClient.apply)(VatClient.unapply)
   )
 
-  def IdentifyTrustClientForm: Form[TrustClient] = Form(
-    mapping(
-      "utr" -> normalizedText.verifying(validUtr())
-    )(x => TrustClient.apply(Utr(x)))(x => Some(x.utr.value))
-  )
+  def IdentifyTrustClientForm(urnEnabled: Boolean): Form[TrustClient] =
+    Form(
+      mapping(
+        "taxId" -> normalizedText.verifying(validTrustTaxId(urnEnabled))
+      )(x => TrustClient.apply(x, urnEnabled))(x => Some(x.taxId.value)))
 
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(

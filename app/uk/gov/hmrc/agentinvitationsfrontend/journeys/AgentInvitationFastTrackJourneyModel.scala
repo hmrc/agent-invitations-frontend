@@ -22,6 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -211,7 +212,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
 
-    type GetTrustName = Utr => Future[TrustResponse]
+    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
@@ -254,7 +255,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
           goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
 
+        case AgentFastTrackRequest(Some(ClientType.business), TAXABLETRUST, _, _, _) =>
+          goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+//here not sure if we should use ANYTRUST/TRUSTNT?
         case AgentFastTrackRequest(Some(ClientType.business), TRUST, _, _, _) =>
+          goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
+
+        case AgentFastTrackRequest(Some(ClientType.business), NONTAXABLETRUST, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, continueUrl))
 
         case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
@@ -480,10 +487,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
       case CheckDetailsCompleteTrust(originalFtr, fastTrackRequest, continueUrl) =>
         if (confirmation.choice) {
+          val trustInvitation = fastTrackRequest.clientIdentifier match {
+            case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
+            case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+          }
           checkIfPendingOrActiveAndGoto(
             fastTrackRequest,
             agent.arn,
-            TrustInvitation(Utr(fastTrackRequest.clientIdentifier)),
+            trustInvitation,
             continueUrl
           )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
         } else goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
@@ -554,12 +565,12 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     def showConfirmTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyTrustClient(originalFtr, ftr, continueUrl) =>
-          getTrustName(trustClient.utr).flatMap { trustResponse =>
+          getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(originalFtr, ftr.copy(clientIdentifier = trustClient.utr.value), continueUrl, name))
+                goto(ConfirmClientTrust(originalFtr, ftr.copy(clientIdentifier = trustClient.taxId.value), continueUrl, name))
               case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound(originalFtr, ftr, continueUrl))
             }
           }
@@ -571,10 +582,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       Transition {
         case ConfirmClientTrust(originalFtr, ftr, continueUrl, trustName) =>
           if (confirmation.choice) {
+            val trustInvitation = ftr.clientIdentifier match {
+              case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
+              case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+            }
             checkIfPendingOrActiveAndGoto(
               ftr,
               agent.arn,
-              TrustInvitation(Utr(ftr.clientIdentifier)),
+              trustInvitation,
               continueUrl
             )(hasPendingInvitations, hasActiveRelationship)(createInvitation, getAgentLink, getAgencyEmail)
           } else {

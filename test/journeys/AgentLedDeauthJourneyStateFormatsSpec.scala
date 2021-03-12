@@ -57,7 +57,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "SelectServiceTrust" in {
-        val state = SelectServiceTrust(Set(TRUST, HMRCCGTPD))
+        val state = SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))
         val json = Json.parse("""{"state":"SelectServiceTrust","properties":{"enabledServices":["HMRC-TERS-ORG","HMRC-CGT-PD"]}}""")
 
         Json.toJson(state) shouldBe json

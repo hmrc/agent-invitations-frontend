@@ -44,6 +44,7 @@ object ClientType {
       case "HMRC-MTD-IT"            => Some(ClientType.personal)
       case "PERSONAL-INCOME-RECORD" => Some(ClientType.personal)
       case "HMRC-TERS-ORG"          => Some(ClientType.business)
+      case "HMRC-TERSNT-ORG"        => Some(ClientType.business)
       case _                        => None
     })
 }

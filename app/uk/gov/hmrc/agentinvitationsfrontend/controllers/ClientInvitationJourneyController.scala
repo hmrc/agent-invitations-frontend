@@ -513,11 +513,12 @@ object ClientInvitationJourneyController {
   val confirmTermsMultiForm: Form[ConfirmedTerms] =
     Form[ConfirmedTerms](
       mapping(
-        "confirmedTerms.itsa"  -> boolean,
-        "confirmedTerms.afi"   -> boolean,
-        "confirmedTerms.vat"   -> boolean,
-        "confirmedTerms.trust" -> boolean,
-        "confirmedTerms.cgt"   -> boolean
+        "confirmedTerms.itsa"    -> boolean,
+        "confirmedTerms.afi"     -> boolean,
+        "confirmedTerms.vat"     -> boolean,
+        "confirmedTerms.trust"   -> boolean,
+        "confirmedTerms.cgt"     -> boolean,
+        "confirmedTerms.trustNT" -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =

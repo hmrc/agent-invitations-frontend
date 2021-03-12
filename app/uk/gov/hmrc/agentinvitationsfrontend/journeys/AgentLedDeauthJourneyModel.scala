@@ -21,7 +21,7 @@ import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetTrustName}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -54,6 +54,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
+    case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
@@ -90,7 +91,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                 Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
             goto(SelectServicePersonal(enabledPersonalServices))
           case "business" => goto(SelectServiceBusiness)
-          case "trust"    => goto(SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
+          case "trust"    => goto(SelectServiceTrust(agent.trustServices))
         }
     }
 
@@ -201,12 +202,17 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClientTrust =>
-          getTrustName(trustClient.utr).flatMap { trustResponse =>
+          getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
-              case Right(TrustName(name)) =>
-                goto(ConfirmClientTrust(name, trustClient.utr))
+              case Right(TrustName(name)) => {
+                trustClient.taxId match {
+                  case Utr(_) => goto(ConfirmClientTrust(name, Utr(trustClient.taxId.value)))
+                  case Urn(_) => goto(ConfirmClientTrustNT(name, Urn(trustClient.taxId.value)))
+                }
+
+              }
               case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.utr}")
+                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound)
             }
           }
@@ -317,7 +323,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, HMRCPIR, name)
         case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, HMRCMTDVAT, name)
         case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, HMRCMTDVAT, name)
-        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TRUST, Some(name))
+        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, TAXABLETRUST, Some(name))
+        case ConfirmClientTrustNT(name, urn)     => gotoFinalState(urn.value, NONTAXABLETRUST, Some(name))
         case ConfirmClientCgt(cgtRef, name)      => gotoFinalState(cgtRef.value, HMRCCGTPD, Some(name))
       }
     }

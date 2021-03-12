@@ -842,10 +842,10 @@ trait ACAStubs {
         .willReturn(aResponse()
           .withStatus(responseStatus)))
 
-  def givenTrustClientReturns(utr: Utr, responseStatus: Int, body: String) =
+  def givenTrustClientReturns(taxIdentifier: TrustTaxIdentifier, responseStatus: Int, body: String) =
     stubFor(
       get(urlEqualTo(
-        s"/agent-client-authorisation/known-facts/organisations/trust/${utr.value}"))
+        s"/agent-client-authorisation/known-facts/organisations/trust/${taxIdentifier.value}"))
         .willReturn(aResponse()
           .withStatus(responseStatus)
         .withBody(body)))

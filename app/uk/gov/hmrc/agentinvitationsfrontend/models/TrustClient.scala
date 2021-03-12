@@ -15,13 +15,15 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.agentmtdidentifiers.model.Utr
-
-case class TrustClient(utr: Utr)
+case class TrustClient(taxId: TrustTaxIdentifier)
 
 object TrustClient {
-  implicit val format: Format[TrustClient] = Json.format[TrustClient]
 
+  def apply(taxId: String, urnEnabled: Boolean): TrustClient = taxId match {
+    case x if x.matches(utrPattern)              => TrustClient(Utr(x))
+    case x if urnEnabled & x.matches(urnPattern) => TrustClient(Urn(x))
+  }
 }

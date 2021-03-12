@@ -944,7 +944,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
-      "transition to InvitationSentBusiness" in {
+      "transition to InvitationSentBusiness with taxable trust" in {
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
@@ -976,7 +976,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
             hasActiveRelationship)(authorisedAgent)(Confirmation(true)) should
-          thenGo(ActiveAuthorisationExists(business, Services.TRUST, emptyBasket))
+          thenGo(ActiveAuthorisationExists(business, Services.TAXABLETRUST, emptyBasket))
       }
     }
 
@@ -1098,7 +1098,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an Exception when there is no corresponding itemId in the basket" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(personal), TRUST, "AB123456A", "BN114AW"), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(personal), TAXABLETRUST, "AB123456A", "BN114AW"), AuthorisationRequest.NEW, "ABC123")
 
         intercept[Exception] {
           given(
