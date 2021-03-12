@@ -558,10 +558,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       // format: on
     Transition {
       case ReviewAuthorisationsTrust(_, basket) =>
-        if (confirmation.choice) {
-          println(s"basket on review authorisation is $basket")
+        if (confirmation.choice)
           goto(SelectTrustService(agent.trustServices, basket))
-        } else {
+        else {
           for {
             agencyEmail    <- getAgencyEmail()
             invitationLink <- getAgentLink(agent.arn, Some(business))

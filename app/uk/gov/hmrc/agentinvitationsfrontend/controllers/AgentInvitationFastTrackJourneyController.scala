@@ -711,11 +711,11 @@ object AgentInvitationFastTrackJourneyController {
     )(VatClient.apply)(VatClient.unapply)
   )
 
-//  def IdentifyTrustClientForm: Form[TrustClient] = Form(
-//    mapping(
-//      "utr" -> normalizedText.verifying(validUtr())
-//    )(x => TrustClientTaxable.apply(Utr(x)))(x => Some(x.taxId.value))
-//  )
+  def IdentifyTrustClientForm(urnEnabled: Boolean): Form[TrustClient] =
+    Form(
+      mapping(
+        "taxId" -> normalizedText.verifying(validTrustTaxId(urnEnabled))
+      )(x => TrustClient.apply(x, urnEnabled))(x => Some(x.taxId.value)))
 
   def IdentifyIrvClientForm: Form[IrvClient] = Form(
     mapping(
