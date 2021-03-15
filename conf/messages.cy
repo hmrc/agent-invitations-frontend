@@ -165,10 +165,16 @@ agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth a
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
 
 ## Identify Trust Client
-identify-trust-client.title=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.header=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
-identify-trust-client.p2=Mae Cyfeirnod Unigryw y Trethdalwr yn 10 rhif, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/dod-o-hyd-i-utr-sydd-ar-goll"  target="_blank" rel="noopener noreferrer">Dod o hyd i UTR sydd ar goll (yn agor ffenestr neu dab newydd).</a>
+identify-trust-client.title=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.header.false=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.p1=This will help us match their details against information we hold.
+identify-trust-client.p2=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+
+## Identify Trust Client Helper Text
+identify-trust-alternative=More about the UTR and URN
+identify-trust.alt-suggestion=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
+identify-trust.suggestion=A Unique Reference Number (URN) is 15 characters, for example ABTRUST12345678. If you registered the trust, we will send a Unique Reference Number (URN) to the lead trustee by post. They must then give this to you.
 
 ## Identify CGT Client
 identify-cgt-client.header=Pa rif cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU sydd gan eich cleient?
