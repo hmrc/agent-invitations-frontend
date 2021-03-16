@@ -55,6 +55,12 @@ utr.hint.expandable.p3=Os oes ganddo UTR Hunanasesiad, gallwch ddod o hyd iddo a
 error.utr.required=Nodwch UTR eich cleient
 enter-utr.invalid-format=Nodwch UTR dilys, megis 3957820631
 
+#URN
+error.urn.required=Enter your client’s URN
+enter-urn.invalid-format=Enter a valid URN, like XXTRUST80000001
+urn-enabled-agents.label=Unique Reference Number (URN)
+urn-enabled-agents.header=What is the Unique Reference Number of the trust or estate?
+
 error.cgt.required=Nodwch gyfeirnod cyfrif Treth Enillion Cyfalaf y cleient
 enter-cgt.invalid-format=Nodwch gyfeirnod cyfrif Treth Enillion Cyfalaf y cleient yn y fformat cywir
 
