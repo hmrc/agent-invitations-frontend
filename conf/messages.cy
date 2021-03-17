@@ -109,8 +109,7 @@ select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm T
 select-service.HMRC-MTD-IT.personal=Rheoli ei Dreth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
-select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
-select-service.HMRC-TERSNT-ORG.business=Cynnal ymddiriedolaeth neu ystâd
+select-service.TRUST.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer cleient
