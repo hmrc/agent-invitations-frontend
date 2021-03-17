@@ -110,6 +110,7 @@ select-service.HMRC-MTD-IT.personal=Rheoli ei Dreth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ymddiriedolaeth neu ystâd
+select-service.HMRC-TERSNT-ORG.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer cleient
@@ -152,6 +153,7 @@ agent-suspended.p1=Ni allwch ofyn i gleient eich awdurdodi i {0} oherwydd bod ei
 agent-suspended.p1.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwedd
 agent-suspended.p1.HMRC-MTD-VAT=cyflwyno ei Ffurflenni TAW drwy feddalwedd
 agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
+agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
@@ -164,6 +166,7 @@ agent-suspended.fastrack.p2=Mae hyn yn golygu na fyddwch yn gallu defnyddio’r 
 agent-suspended.fastrack.p2.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwedd.
 agent-suspended.fastrack.p2.HMRC-MTD-VAT=cyflwyno Ffurflenni TAW cleient drwy ddefnyddio meddalwedd.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
+agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 
 
@@ -172,10 +175,11 @@ agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein b
 
 ## Identify Trust Client
 identify-trust-client.title=Enter a reference number to help us identify your client's trust or estate?
-identify-trust-client.header.false=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.header.false=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+identify-trust-client.p2.false=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+identify-trust-client.p2.true=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
 
 ## Identify Trust Client Helper Text
 identify-trust-alternative=More about the UTR and URN
@@ -241,11 +245,13 @@ check-details.p.HMRC-MTD-IT=Rydych ar fin dechrau cais am awdurdodiad i reoli Tr
 check-details.p.PERSONAL-INCOME-RECORD=Rydych ar fin dechrau cais am awdurdodiad i fwrw golwg dros gofnod incwm TWE cleient.
 check-details.p.HMRC-MTD-VAT=Rydych ar fin dechrau cais am awdurdodiad i reoli TAW cleient.
 check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
+check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 check-details.table.heading=Manylion y cleient
 check-details.client-type=Math o gleient
 check-details.client-type.personal=Unigolyn neu unig fasnachwr
 check-details.client-type.business.HMRC-MTD-VAT=Cwmni neu bartneriaeth
+check-details.client-type.business.HMRC-TERS-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-TERS-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
 check-details.nino=Rhif Yswiriant Gwladol
@@ -271,6 +277,7 @@ review-authorisations.table.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
 review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
+review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
@@ -307,6 +314,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’ch awd
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu gweld y cofnod incwm TWE ar gyfer y cleient hwn.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cyflwyno Ffurflenni TAW drwy feddalwedd ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {0}.
 cancel-authorisation.confirm-cancel.yes=Iawn – hoffwn ganslo’r awdurdodiad hwn
 cancel-authorisation.confirm-cancel.no=Na – mae angen i mi ddechrau eto
@@ -319,6 +327,7 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-IT=Nid yw {0} wedi’i awdurdodi mwya
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD=Nid yw {0} wedi’i awdurdodi mwyach i weld ei gofnod incwm TWE.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT=Nid yw {0} wedi’i awdurdodi mwyach i reoli TAW {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
+cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
 cancel-authorisation.business-select-service.header=A ydych am ganslo rheoli TAW y cleient hwn?
@@ -344,6 +353,7 @@ not-authorised.HMRC-MTD-IT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli 
 not-authorised.PERSONAL-INCOME-RECORD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i fwrw golwg dros ei gofnod incwm TWE.
 not-authorised.HMRC-MTD-VAT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei TAW.
 not-authorised.HMRC-TERS-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
+not-authorised.HMRC-TERSNT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-CGT-PD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 not-authorised.button=Dechrau eto
 
@@ -353,6 +363,7 @@ delete.subheading.HMRC-MTD-IT=Ni fyddwch yn anfon cais am awdurdodiad ato i reol
 delete.subheading.PERSONAL-INCOME-RECORD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn bwrw golwg dros ei gofnod incwm TWE.
 delete.subheading.HMRC-MTD-VAT=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli ei TAW.
 delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
+delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 delete.radio-yes=Iawn
 delete.radio-no=Na
@@ -376,11 +387,13 @@ not-enrolled.title=Nid yw’r cleient hwn wedi {0}
 not-enrolled.title.HMRC-MTD-IT=cofrestru am y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
 not-enrolled.title.HMRC-MTD-VAT=cofrestru am y cynllun Troi Treth yn Ddigidol ar gyfer TAW
 not-enrolled.title.HMRC-TERS-ORG=hawlio ymddiriedolaeth
+not-enrolled.title.HMRC-TERSNT-ORG=hawlio ymddiriedolaeth
 
 not-enrolled.p=Nid oes modd iddo eich awdurdodi ar gyfer y gwasanaeth hwn nes iddo {0}
 not-enrolled.p.HMRC-MTD-IT=gofrestru.
 not-enrolled.p.HMRC-MTD-VAT=gofrestru.
 not-enrolled.p.HMRC-TERS-ORG=hawlio ymddiriedolaeth.
+not-enrolled.p.HMRC-TERSNT-ORG=hawlio ymddiriedolaeth.
 
 not-enrolled.existing.header=Cleientiaid {0} presennol
 not-enrolled.existing.p=Os gwnaethoch gopïo awdurdodiad {0} presennol ar gyfer y cleient hwn i’ch cyfrif gwasanaethau asiant, gallwch {1}
@@ -426,6 +439,7 @@ create-auth-failed.HMRC-MTD-IT=Rheoli ei Dreth Incwm
 create-auth-failed.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
 create-auth-failed.HMRC-MTD-VAT=Rheoli ei TAW
 create-auth-failed.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
+create-auth-failed.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 create-auth-failed.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad newydd</a>, neu roi cynnig arall arni.
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
