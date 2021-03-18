@@ -48,8 +48,6 @@ object Validators {
 
   val urnPattern = "^((?i)[a-z]{2}trust[0-9]{8})$"
 
-  //val taxIdPattern = "^([A-Z0-9]{1,15})$"
-
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String): Constraint[String] =
     Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
@@ -167,9 +165,6 @@ object Validators {
 
   def validTrustTaxIdentifier(): Constraint[String] =
     validateTrustTaxIdentifier("error.urn.required", "enter-urn.invalid-format")
-
-//  def validTaxId(): Constraint[String] =
-//    patternConstraint(taxIdPattern, "error.taxID.required", "enter-taxID.invalid-format")
 
   def validCgtRef(): Constraint[String] =
     patternConstraint(CgtRef.cgtRegex, s"error.cgt.required", s"enter-cgt.invalid-format")
