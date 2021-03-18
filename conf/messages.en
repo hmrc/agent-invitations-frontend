@@ -173,11 +173,12 @@ agent-suspended.fastrack.p3=You can still access any other service available to 
 agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
 
 ## Identify Trust Client
-identify-trust-client.title=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.title.false=What is the Unique Taxpayer Reference of the trust or estate?
+identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate?
 identify-trust-client.header.false=What is the Unique Taxpayer Reference of the trust or estate?
 identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate?
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2.false=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+identify-trust-client.p2.false=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number" target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
 identify-trust-client.p2.true=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
 
 ## Identify Trust Client Helper Text
