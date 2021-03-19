@@ -287,7 +287,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
-        "identify-trust-client.header.false",
+        "identify-trust-client.header.true",
        "identify-trust-client.p1")
     }
 
