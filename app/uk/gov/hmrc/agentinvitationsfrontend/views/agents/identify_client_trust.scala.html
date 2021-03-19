@@ -52,12 +52,25 @@
             </h1>
             <p class="form-hint margin-bottom-20" id="taxId-info">@Html(Messages("identify-trust-client.p1"))</p>
             <p class="form-hint" id="taxId-hint">@Html(Messages(s"identify-trust-client.p2.${showUrnEnabledContent}"))</p>
+
+        <details id="identifyTrustHelper">
+            <summary id="identifyTrustSummary">
+            <span id="identifyTrustAlt" class="summary">
+             @Messages("identify-trust-alternative")
+            </span>
+            </summary>
+                <div class="panel panel-border-narrow" aria-hidden="true">
+                <p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
+                <p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
+            </div>
+        </details>
+
             @trustClientForm.error("taxId").map{ formError =>
-                <span class="error-notification" data-journey="search-page:error:taxId" id="taxId-error">
+                <span class="error-notification margin-top-20" data-journey="search-page:error:taxId" id="taxId-error">
                     <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
             }
             <input
-            class="form-control"
+            class="form-control @if(!trustClientForm.hasErrors){margin-top-20}"
             name="taxId"
             id="taxId"
             type="text"
