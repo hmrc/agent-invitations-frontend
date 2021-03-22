@@ -670,6 +670,7 @@ client-complete.afi.p1={0} is now confirmed as your authorised tax agent for vie
 client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for managing your Income Tax.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for managing your VAT.
 client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
+client-complete.trustNT.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
 client-complete.cgt.p1={0} is now confirmed as your authorised tax agent for managing your Capital Gains Tax on UK property account
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
