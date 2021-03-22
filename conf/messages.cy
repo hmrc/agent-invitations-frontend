@@ -131,8 +131,8 @@ select-single-service.HMRC-MTD-VAT.personal.header=A ydych am reoli TAW y cleien
 select-single-service.HMRC-MTD-VAT.personal.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
 
 # Note: trusts are internally treated as "business" client type
-select-single-service.HMRC-TERS-ORG.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
-select-single-service.HMRC-TERS-ORG.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
+select-single-service.TRUST.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
+select-single-service.TRUST.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn
@@ -260,6 +260,7 @@ check-details.postcode=Cod post
 check-details.dob=Dyddiad geni
 check-details.vat-reg-date=Dyddiad cofrestru TAW
 check-details.utr=Cyfeirnod Unigryw y Trethdalwr
+check-details.urn=Unique Reference Number
 check-details.cgt=Cyfeirnod cyfrif Treth Enillion Cyfalaf
 check-details.change.link=Newid yr wybodaeth hon
 check-details.change.p1=Mae angen ychydig yn fwy o fanylion arnom am y cleient hwn fel y gallwn greu’ch cais am awdurdodiad.
@@ -933,6 +934,7 @@ confirm-cancel.subheader.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddw
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE.
 confirm-cancel.subheader.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli TAW ar gyfer y cleient hwn.
 confirm-cancel.subheader.HMRC-TERS-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
+confirm-cancel.subheader.HMRC-TERSNT-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-cancel.subheader.HMRC-CGT-PD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 
 confirm-cancel.radio.yes=Iawn

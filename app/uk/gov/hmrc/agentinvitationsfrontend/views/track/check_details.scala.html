@@ -76,16 +76,16 @@
                     case "ni" => Messages("check-details.nino")
                     case "vrn" => Messages("check-details.vrn")
                     case "utr" => Messages("check-details.utr")
+                    case "urn" => Messages("check-details.urn")
                     case "CGTPDRef" => Messages("check-details.cgt")
                     case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
-                @if(config.fastTrackRequest.service == "HMRC-MTD-VAT") {
-                    @config.fastTrackRequest.clientIdentifier
-                }else{
-                    @config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
-                }
+                @{config.fastTrackRequest.service match {
+                    case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" => config.fastTrackRequest.clientIdentifier
+                    case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                }}
             </dd>
         </div>
         @if(config.showKnownFact) {

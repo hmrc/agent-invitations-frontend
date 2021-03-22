@@ -3,6 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
+import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs {
@@ -235,6 +236,41 @@ trait AuthStubs {
          |      "key": "HMRC-MTD-VAT",
          |      "identifiers": [
          |         {"key":"VRN", "value": "101747696"}
+         |      ]
+         |     }
+         |  ]
+         |}
+          """.stripMargin
+    )
+    request.withSession(
+      SessionKeys.authToken -> "Bearer XYZ",
+      SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
+  }
+
+  def authorisedAsOrganisationTrustClient[A](taxId: TrustTaxIdentifier)(request: FakeRequest[A])(implicit hc: HeaderCarrier): FakeRequest[A] = {
+    val (enrolKey, enrolType, enrolValue) = taxId match {
+      case Utr(utr) => ("HMRC-TERS-ORG", "SAUTR", utr)
+      case Urn(urn) => ("HMRC-TERSNT-ORG", "URN", urn)
+    }
+    givenAuthorisedFor(
+      """
+      {
+        "authorise": [ {
+        "authProviders": [ "GovernmentGateway" ]
+       }],
+        "retrieve": [ "affinityGroup", "confidenceLevel", "allEnrolments" ]
+      }
+       """.stripMargin,
+      s"""
+         |{
+         |  "affinityGroup":"Organisation",
+         |  "confidenceLevel":50,
+         |  "allEnrolments":
+         |  [
+         |     {
+         |      "key": "$enrolKey",
+         |      "identifiers": [
+         |         {"key":"$enrolType", "value": "$enrolValue"}
          |      ]
          |     }
          |  ]

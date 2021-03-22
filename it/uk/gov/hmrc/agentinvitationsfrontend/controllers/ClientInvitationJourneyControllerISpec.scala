@@ -551,6 +551,44 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkIncludesText(result, "I consent to HMRC allowing My Agency to manage a trust’s Capital Gains Tax on UK property account.")
 
     }
+
+    "display the multi consent page for trust - UTR" in {
+      journeyState.set(
+        MultiConsent(
+          business,
+          uid,
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), "trust", consent = true))),
+        Nil)
+
+      val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUtr)(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trust.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.trust.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trust.list.item1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trust.list.item2"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.trust.label", "My Agency"))
+    }
+
+    "display the multi consent page for trust - URN" in {
+      journeyState.set(
+        MultiConsent(
+          business,
+          uid,
+          "My Agency",
+          Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), "trustNT", consent = true))),
+        Nil)
+
+      val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUrn)(request))
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trustNT.heading"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.trustNT.p1", "My Agency"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trustNT.list.item1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.trustNT.list.item2"))
+      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.trustNT.label", "My Agency"))
+    }
   }
 
   "POST /consent" should {

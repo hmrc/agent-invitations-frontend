@@ -195,22 +195,10 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       val result =
         controller.submitTrustService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "TRUST"), arn.value))
       status(result) shouldBe 303
 
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService().url
-    }
-
-    "redirect to identify trust client when trustNT is selected" in {
-      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
-      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
-
-      val result =
-        controller.submitTrustService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERSNT-ORG"), arn.value))
-      status(result) shouldBe 303
-
-      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService().url
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
     }
 
     "redirect to identify cgt client when cgt is selected" in {
@@ -284,11 +272,19 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       journeyState.set(IdentifyClientTrust, Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result,
         "identify-trust-client.header.true",
-       "identify-trust-client.p1")
+        "identify-trust-client.p1",
+        "identify-trust-client.p2.true",
+        "identify-trust-alternative",
+        "identify-trust.suggestion",
+        "continue.button"
+      )
+      checkHtmlResultWithBodyText(result, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
+
     }
 
     "display the identify client page for cgt trust service" in {
@@ -430,7 +426,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
   }
 
-  "POST /agents/cancel-authorisation/identify-trust-client" should {
+  "POST /agents/cancel-authorisation/identify-trust-client - UTR" should {
 
     "redirect to confirm client for trust" in {
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
@@ -702,8 +698,21 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
     }
 
-    "display the confirm client page for Trust" in {
+    "display the confirm client page for Trust - UTR" in {
       journeyState.set(ConfirmClientTrust("some-trust", validUtr), List(IdentifyClientTrust))
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
+      val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "Is this the client you want to cancel your authorisation for?","Is some-trust the client you want to cancel your authorisation for?",
+        htmlEscapedMessage("cancel-authorisation.confirm-client.yes")
+      )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
+    }
+
+    "display the confirm client page for Trust - URN" in {
+      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), List(IdentifyClientTrust))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -764,11 +773,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised().url
     }
 
-    "redirect to confirm cancel when YES is selected for trust" in {
+    "redirect to confirm cancel when YES is selected for trust - UTR" in {
       journeyState.set(ConfirmClientTrust("some-trust", validUtr), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
-      givenCheckRelationshipTrustWithStatus(arn, validUtr.value, 200)
+      givenCheckRelationshipTrustWithStatus(arn, validUtr, 200)
 
       val result =
         controller.submitConfirmClient(
@@ -781,11 +790,45 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
 
-    "redirect to not authorised when there are is no active relationship to de-authorise for trusts" in {
+    "redirect to confirm cancel when YES is selected for trust - URN" in {
+      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
+
+      givenCheckRelationshipTrustWithStatus(arn, validUrn, 200)
+
+      val result =
+        controller.submitConfirmClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+    }
+
+    "redirect to not authorised when there are is no active relationship to de-authorise for trusts - UTR" in {
       journeyState.set(ConfirmClientTrust("some-trust", validUtr), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
-      givenCheckRelationshipTrustWithStatus(arn, validUtr.value, 404)
+      givenCheckRelationshipTrustWithStatus(arn, validUtr, 404)
+
+      val result =
+        controller.submitConfirmClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised().url
+    }
+
+    "redirect to not authorised when there are is no active relationship to de-authorise for trusts - URN" in {
+      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
+
+      givenCheckRelationshipTrustWithStatus(arn, validUtr, 404)
 
       val result =
         controller.submitConfirmClient(
@@ -837,13 +880,13 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         .url
     }
 
-    "redirect to the authorisation cancelled page for trusts" in {
+    "redirect to the authorisation cancelled page for trusts - UTR" in {
       journeyState.set(ConfirmCancel(TAXABLETRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenCancelledAuthorisationTrust(arn,validUtr, 204)
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, validUtr.value, TRUST, "UTR", DateTime.now())
+      givenASingleAcceptedInvitation(arn, validUtr.value, TAXABLETRUST, "UTR", DateTime.now())
       givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
@@ -859,13 +902,56 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         .url
     }
 
-    "redirect to the authorisation cancelled page when no Accepted invitation found" in {
+    "redirect to the authorisation cancelled page for trusts - URN" in {
+      journeyState.set(ConfirmCancel(NONTAXABLETRUST, Some("Sufjan Stevens"), validUrn.value), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenCancelledAuthorisationTrust(arn,validUrn, 204)
+      givenGetAgencyNameClientStub(arn)
+      givenASingleAcceptedInvitation(arn, validUrn.value, NONTAXABLETRUST, "URN", DateTime.now())
+      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+
+    "redirect to the authorisation cancelled page when no Accepted invitation found - UTR" in {
       journeyState.set(ConfirmCancel(TAXABLETRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenCancelledAuthorisationTrust(arn,validUtr, 204)
       givenGetAgencyNameClientStub(arn)
-      givenNoAcceptedInvitationFound(arn, validUtr.value, TRUST)
+      givenNoAcceptedInvitationFound(arn, validUtr.value, TAXABLETRUST)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+
+    "redirect to the authorisation cancelled page when no Accepted invitation found - URN" in {
+      journeyState.set(ConfirmCancel(NONTAXABLETRUST, Some("Sufjan Stevens"), validUrn.value), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenCancelledAuthorisationTrust(arn,validUrn, 204)
+      givenGetAgencyNameClientStub(arn)
+      givenNoAcceptedInvitationFound(arn, validUrn.value, NONTAXABLETRUST)
 
       val result =
         controller.submitConfirmCancel(

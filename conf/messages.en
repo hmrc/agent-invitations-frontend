@@ -131,8 +131,8 @@ select-single-service.HMRC-MTD-VAT.personal.header=Do you want to manage this cl
 select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to submit this client’s VAT
 
 # Note: trusts are internally treated as "business" client type
-select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
-select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
+select-single-service.TRUST.business.header=Do you want to maintain a trust or an estate for this client?
+select-single-service.TRUST.business.error=Select yes if you want to maintain a trust or an estate for this client
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client’s PAYE income record?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client’s PAYE income record
@@ -260,6 +260,7 @@ check-details.postcode=Postcode
 check-details.dob=Date of birth
 check-details.vat-reg-date=VAT registration date
 check-details.utr=Unique Taxpayer Reference
+check-details.urn=Unique Reference Number
 check-details.cgt=Capital Gains Tax account reference
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
@@ -933,6 +934,7 @@ confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view their PAYE income record.
 confirm-cancel.subheader.HMRC-MTD-VAT=If you cancel this request, you will not be able to manage their VAT.
 confirm-cancel.subheader.HMRC-TERS-ORG=If you cancel this request, you will not be able to maintain a trust or an estate.
+confirm-cancel.subheader.HMRC-TERSNT-ORG=If you cancel this request, you will not be able to maintain a trust or an estate.
 confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be able to manage their Capital Gains Tax on UK property account.
 
 confirm-cancel.radio.yes=Yes
