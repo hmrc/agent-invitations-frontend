@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 import java.time.LocalDate
@@ -144,14 +144,19 @@ trait ACRStubs {
         )
     )
 
-  def givenCancelledAuthorisationTrust(arn: Arn, utr: Utr, status: Int) =
+  def givenCancelledAuthorisationTrust(arn: Arn, taxId: TrustTaxIdentifier, status: Int) = {
+    val (enrolKey, identifierType) = taxId match {
+      case Utr(_) => ("HMRC-TERS-ORG", "SAUTR")
+      case Urn(_) => ("HMRC-TERSNT-ORG", "URN")
+    }
     stubFor(
-      delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/${utr.value}"))
+      delete(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/$enrolKey/client/$identifierType/${taxId.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)
         )
     )
+  }
 
   def givenCheckRelationshipItsaWithStatus(arn: Arn, nino: String, status: Int) =
     stubFor(
@@ -171,12 +176,17 @@ trait ACRStubs {
         )
     )
 
-  def givenCheckRelationshipTrustWithStatus(arn: Arn, utr: String, status: Int) =
+  def givenCheckRelationshipTrustWithStatus(arn: Arn, taxId: TrustTaxIdentifier, status: Int) = {
+    val (enrolKey, identifierType) = taxId match {
+      case Utr(_) => ("HMRC-TERS-ORG", "SAUTR")
+      case Urn(_) => ("HMRC-TERSNT-ORG", "URN")
+    }
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-TERS-ORG/client/SAUTR/$utr"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/$enrolKey/client/$identifierType/${taxId.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)
         )
     )
+  }
 }

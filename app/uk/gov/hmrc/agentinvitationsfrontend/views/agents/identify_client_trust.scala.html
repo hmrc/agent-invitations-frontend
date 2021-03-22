@@ -33,7 +33,7 @@
 @titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
 @banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages("identify-trust-client.title"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     @back_link(backLinkUrl)
 
@@ -47,23 +47,25 @@
         <div class="form-group margin-top-20 @if(trustClientForm.error("taxId").isDefined) {form-field--error soft--ends}">
             <h1>
                 <label for="taxId" class="heading-xlarge">
-                @Html(Messages(s"identify-trust-client.header.${showUrnEnabledContent}"))
+                @Messages(s"identify-trust-client.header.$showUrnEnabledContent")
                 </label>
             </h1>
-            <p class="form-hint margin-bottom-20" id="taxId-info">@Html(Messages("identify-trust-client.p1"))</p>
-            <p class="form-hint" id="taxId-hint">@Html(Messages(s"identify-trust-client.p2.${showUrnEnabledContent}"))</p>
+            <p class="form-hint margin-bottom-20" id="taxId-info">@Messages("identify-trust-client.p1")</p>
+            <p class="form-hint" id="taxId-hint">@Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent"))</p>
 
-        <details id="identifyTrustHelper">
-            <summary id="identifyTrustSummary">
-            <span id="identifyTrustAlt" class="summary">
-             @Messages("identify-trust-alternative")
-            </span>
-            </summary>
-                <div class="panel panel-border-narrow" aria-hidden="true">
-                <p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
-                <p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
-            </div>
-        </details>
+            @if(showUrnEnabledContent) {
+                <details id="identifyTrustHelper">
+                    <summary id="identifyTrustSummary">
+                        <span id="identifyTrustAlt" class="summary">
+                        @Messages("identify-trust-alternative")
+                        </span>
+                    </summary>
+                    <div class="panel panel-border-narrow" aria-hidden="true">
+                        <p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
+                        <p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
+                    </div>
+                </details>
+            }
 
             @trustClientForm.error("taxId").map{ formError =>
                 <span class="error-notification margin-top-20" data-journey="search-page:error:taxId" id="taxId-error">

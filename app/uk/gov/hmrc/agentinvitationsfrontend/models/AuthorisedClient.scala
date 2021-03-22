@@ -36,7 +36,7 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
         val trustOrEstateCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForTrustOrEstate)
         if (businessCoverage.isEmpty) {
           if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
-          else if (trustOrEstateCoverage.size == allSupportedEnrolmentKeysForTrustOrEstate.size)
+          else if (trustOrEstateCoverage.size == allSupportedEnrolmentKeysForTrustOrEstate.size - 1) //not going to have both UTR and URN
             AllSupportedMTDEnrolments
           else SomeSupportedMTDEnrolments
         } else {
