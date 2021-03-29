@@ -500,6 +500,7 @@ invitation-declined.multi.itsa.p1=You have not given permission to {0} to manage
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to manage your VAT.
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
+invitation-declined.multi.trustNT.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
 invitation-declined.sign-out.button=Finish and sign out
 

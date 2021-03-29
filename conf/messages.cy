@@ -500,6 +500,7 @@ invitation-declined.multi.itsa.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch
 invitation-declined.multi.afi.p1=Nid ydych wedi rhoi caniatâd i {0} fwrw golwg dros eich cofnodion incwm personol.
 invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch TAW.
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
+invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.sign-out.button=Gorffen ac allgofnodi
 
