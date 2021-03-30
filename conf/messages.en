@@ -56,8 +56,8 @@ error.utr.required=Enter your client’s UTR
 enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
 #URN
-error.urn.required=Enter your client’s URN
-enter-urn.invalid-format=Enter a valid URN, like XXTRUST80000001
+error.urn.required=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN)
+enter-urn.invalid-format=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN) in the correct format
 urn-enabled-agents.label=Unique Reference Number (URN)
 urn-enabled-agents.header=What is the Unique Reference Number of the trust or estate?
 
@@ -174,12 +174,12 @@ agent-suspended.fastrack.p4=If you did not receive our letter, or think we have 
 
 ## Identify Trust Client
 identify-trust-client.title.false=What is the Unique Taxpayer Reference of the trust or estate?
-identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.header.false=What is the Unique Taxpayer Reference of the trust or estate?
-identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.p1=This will help us match their details against information we hold.
 identify-trust-client.p2.false=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number" target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
-identify-trust-client.p2.true=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+identify-trust-client.p2.true=Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.
 
 ## Identify Trust Client Helper Text
 identify-trust-alternative=More about the UTR and URN
@@ -500,7 +500,6 @@ invitation-declined.multi.itsa.p1=You have not given permission to {0} to manage
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to manage your VAT.
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
-invitation-declined.multi.trustNT.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
 invitation-declined.sign-out.button=Finish and sign out
 
