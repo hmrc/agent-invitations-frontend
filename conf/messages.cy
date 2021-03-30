@@ -56,8 +56,8 @@ error.utr.required=Nodwch UTR eich cleient
 enter-utr.invalid-format=Nodwch UTR dilys, megis 3957820631
 
 #URN
-error.urn.required=Enter your client’s URN
-enter-urn.invalid-format=Enter a valid URN, like XXTRUST80000001
+error.urn.required=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN)
+enter-urn.invalid-format=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN) in the correct format
 urn-enabled-agents.label=Unique Reference Number (URN)
 urn-enabled-agents.header=What is the Unique Reference Number of the trust or estate?
 
@@ -174,12 +174,12 @@ agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein b
 
 ## Identify Trust Client
 identify-trust-client.title.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.header.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate?
+identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-trust-client.p2.false=Mae Cyfeirnod Unigryw y Trethdalwr yn 10 rhif, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/dod-o-hyd-i-utr-sydd-ar-goll"  target="_blank" rel="noopener noreferrer">Dod o hyd i UTR sydd ar goll (yn agor ffenestr neu dab newydd).</a>
-identify-trust-client.p2.true=Use a Unique Taxpayer Reference(UTR) if the trust is taxable or a Unique Reference Number(URN) if the trust is non-taxable.
+identify-trust-client.p2.true=Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.
 
 ## Identify Trust Client Helper Text
 identify-trust-alternative=More about the UTR and URN
@@ -500,6 +500,7 @@ invitation-declined.multi.itsa.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch
 invitation-declined.multi.afi.p1=Nid ydych wedi rhoi caniatâd i {0} fwrw golwg dros eich cofnodion incwm personol.
 invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch TAW.
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
+invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.sign-out.button=Gorffen ac allgofnodi
 
