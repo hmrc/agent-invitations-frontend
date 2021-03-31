@@ -37,6 +37,7 @@
             <span class="@args.toMap.get('_legendSpanClass).map { legendSpanClass => @legendSpanClass}">
             @args.toMap.get('_legend).map { legend => @legend}
             </span>
+        </legend>
             @args.toMap.get('_inputHint).map { hint =>
                 <span class="form-hint">@hint</span>
             }
@@ -46,7 +47,7 @@
                 }
                 @Messages(error.message, error.args: _*)
             </span>}
-        </legend>
+
 
         @input(
             formItem(s"${fieldName}.day"),
