@@ -56,9 +56,9 @@ error.utr.required=Nodwch UTR eich cleient
 enter-utr.invalid-format=Nodwch UTR dilys, megis 3957820631
 
 #URN
-error.urn.required=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN)
-enter-urn.invalid-format=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN) in the correct format
-urn-enabled-agents.label=Unique Reference Number (URN)
+error.urn.required=Nodwch Gyfeirnod Unigryw y Trethdalwr (UTR) neu Gyfeirnod Unigryw (URN)
+enter-urn.invalid-format=Nodwch Gyfeirnod Unigryw y Trethdalwr (UTR) neu Gyfeirnod Unigryw (URN) yn y fformat cywir
+urn-enabled-agents.label=neu Gyfeirnod Unigryw (URN)
 urn-enabled-agents.header=What is the Unique Reference Number of the trust or estate?
 
 error.cgt.required=Nodwch gyfeirnod cyfrif Treth Enillion Cyfalaf y cleient
@@ -176,15 +176,15 @@ agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein b
 identify-trust-client.title.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
 identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.header.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate
+identify-trust-client.header.true=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
 identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-trust-client.p2.false=Mae Cyfeirnod Unigryw y Trethdalwr yn 10 rhif, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/dod-o-hyd-i-utr-sydd-ar-goll"  target="_blank" rel="noopener noreferrer">Dod o hyd i UTR sydd ar goll (yn agor ffenestr neu dab newydd).</a>
-identify-trust-client.p2.true=Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.
+identify-trust-client.p2.true=Defnyddiwch Gyfeirnod Unigryw y Trethdalwr (UTR) os yw’r ymddiriedolaeth yn drethadwy, neu Gyfeirnod Unigryw (URN) os nad yw’r ymddiriedolaeth yn drethadwy.
 
 ## Identify Trust Client Helper Text
-identify-trust-alternative=More about the UTR and URN
-identify-trust.alt-suggestion=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number"  target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
-identify-trust.suggestion=A Unique Reference Number (URN) is 15 characters, for example ABTRUST12345678. If you registered the trust, we will send a Unique Reference Number (URN) to the lead trustee by post. They must then give this to you.
+identify-trust-alternative=Rhagor am yr UTR a’r URN
+identify-trust.alt-suggestion=Mae Cyfeirnod Unigryw y Trethdalwr yn rhif 10 digid, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/find-lost-utr-number" target="_blank" rel="noopener noreferrer">Dewch o hyd i UTR coll (yn agor ffenestr neu dab newydd).</a>
+identify-trust.suggestion=Mae Cyfeirnod Unigryw (URN) yn 15 o gymeriadau, er enghraifft, ABTRUST12345678. Os ydych wedi cofrestru’r ymddiriedolaeth, byddwn yn anfon Cyfeirnod Unigryw (URN) at y prif ymddiriedolwr drwy’r post. Yna, mae’n rhaid iddo roi hyn i chi.
 
 ## Identify CGT Client
 identify-cgt-client.header=Pa rif cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU sydd gan eich cleient?
