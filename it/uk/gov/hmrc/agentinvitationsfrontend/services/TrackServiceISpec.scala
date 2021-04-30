@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, TrackInformationSorted}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId}
@@ -18,7 +18,7 @@ class TrackServiceISpec extends BaseISpec {
   override val mtdItId = MtdItId("ABCDE1234567890")
   val mtdItId2 = MtdItId("JKKL80894713304")
 
-  def nowMinus(days: Int) = DateTime.now().minusDays(days).withTimeAtStartOfDay()
+  def nowMinus(days: Int) = DateTime.now(DateTimeZone.UTC).minusDays(days).withTimeAtStartOfDay()
 
   val itsaRelationship = InactiveClient(
     Some("personal"),
