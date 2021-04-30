@@ -2,7 +2,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation, SuspensionDetails}
@@ -1047,7 +1047,7 @@ trait ACAStubs {
   }
 
   def givenGetInvitations() = {
-    def nowMinus(d: Int) = DateTime.now().minusDays(d).withTimeAtStartOfDay()
+    def nowMinus(d: Int) = DateTime.now(DateTimeZone.UTC).minusDays(d).withTimeAtStartOfDay()
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
         .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))

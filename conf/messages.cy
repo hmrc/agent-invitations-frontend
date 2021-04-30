@@ -173,7 +173,7 @@ agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein b
 
 ## Identify Trust Client
 identify-trust-client.title.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate
+identify-trust-client.title.true=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
 identify-trust-client.header.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
 identify-trust-client.header.true=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
 identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
@@ -259,7 +259,7 @@ check-details.postcode=Cod post
 check-details.dob=Dyddiad geni
 check-details.vat-reg-date=Dyddiad cofrestru TAW
 check-details.utr=Cyfeirnod Unigryw y Trethdalwr
-check-details.urn=Unique Reference Number
+check-details.urn=Cyfeirnod Unigryw
 check-details.cgt=Cyfeirnod cyfrif Treth Enillion Cyfalaf
 check-details.change.link=Newid yr wybodaeth hon
 check-details.change.p1=Mae angen ychydig yn fwy o fanylion arnom am y cleient hwn fel y gallwn greu’ch cais am awdurdodiad.
