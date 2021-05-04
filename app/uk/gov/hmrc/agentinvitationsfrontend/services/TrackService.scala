@@ -196,9 +196,9 @@ class TrackService @Inject()(
     def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
 
       val accepted = a.filter(_.status == "Accepted").sorted(TrackInformationSorted.orderingByDate).reverse
-      val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
-      val deauthed = a.filter(_.status == "Deauthorised").sorted(TrackInformationSorted.orderingByDate).reverse
-      val invalidOrDeauthed = invalid.toList ::: deauthed.toList
+      val invalid = a.filter(_.status == "InvalidRelationship")
+      val deauthed = a.filter(_.status == "Deauthorised")
+      val invalidOrDeauthed = (invalid.toList ::: deauthed.toList).sorted(TrackInformationSorted.orderingByDate).reverse
 
       logDiscrepancy(invalid, deauthed)
 
@@ -233,7 +233,7 @@ class TrackService @Inject()(
                   case e => {
                     logger.error(
                       s"unexpected match result on the track page: $e accepted " +
-                        s"size: ${accepted.size} invalid size: ${invalid.size}")
+                        s"size: ${accepted.size} invalidOrDeauthed size: ${invalidOrDeauthed.size}")
                     throw new RuntimeException("fubar")
                     _match(tl, None :: acc)
                   }
@@ -257,12 +257,12 @@ class TrackService @Inject()(
 
   private def logDiscrepancy(invalid: Seq[TrackInformationSorted], deauthorised: Seq[TrackInformationSorted]) =
     invalid.length - deauthorised.length match {
-      case 0 => logger.info(s"Deauthed statuses == Invalid statuses (${deauthorised.length} == ${invalid.length})")
+      case 0 => logger.warn(s"Deauthed statuses == Invalid statuses (${deauthorised.length} == ${invalid.length})")
       case n if n > 0 =>
-        logger.info(s"Deauthed statuses < Invalid statuses (${deauthorised.length} < ${invalid.length})")
+        logger.warn(s"Deauthed statuses < Invalid statuses (${deauthorised.length} < ${invalid.length})")
         logDiscrepancyDetail(invalid, deauthorised)
       case n if n < 0 =>
-        logger.info(s"Deauthed statuses > Invalid statuses (${deauthorised.length} > ${invalid.length})")
+        logger.warn(s"Deauthed statuses > Invalid statuses (${deauthorised.length} > ${invalid.length})")
         logDiscrepancyDetail(invalid, deauthorised)
     }
 
@@ -271,8 +271,8 @@ class TrackService @Inject()(
     val deauthedAsId = deauthorised.map(_.clientId)
     val deauthedButNotInvalid = (deauthedAsId diff invalidAsId).mkString(", ")
     val invalideButNotDeauthed = (invalidAsId diff deauthedAsId).mkString(", ")
-    logger.debug(s"Deauthed contains $deauthedButNotInvalid not in Invalid")
-    logger.debug(s"Invalid contains $invalideButNotDeauthed not in Deauthed")
+    logger.warn(s"Deauthed contains $deauthedButNotInvalid not in Invalid")
+    logger.warn(s"Invalid contains $invalideButNotDeauthed not in Deauthed")
   }
 
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
