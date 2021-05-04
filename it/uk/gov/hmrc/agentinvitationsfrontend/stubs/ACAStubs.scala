@@ -1028,6 +1028,24 @@ trait ACAStubs {
             ).mkString("[", ",", "]")))))
   }
 
+  def givenTwoInvitationsExistForSameClientOneWithDeauthedStatus(
+    clientId: String,
+    service: String,
+    clientIdType: String,
+    accepted: DateTime,
+    deauthed: DateTime) = {
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(accepted, "Accepted", service, clientIdType, "Dave", clientId, "foo1", "2021-03-13", true, Some("Agent")),
+              invitationTemporal(deauthed, "Deauthorised", service, clientIdType, "Dave", clientId, "foo2", "2021-03-17", true, None)
+            ).mkString("[", ",", "]")))))
+  }
+
   def givenTwoInvitationsExistForSameClientWithOneDeAuthorised(
                                                    clientId: String,
                                                    service: String,

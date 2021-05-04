@@ -195,10 +195,10 @@ class TrackService @Inject()(
 
     def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
 
-      val accepted = a.filter(_.status == "Accepted").sorted(TrackInformationSorted.orderingByDate).reverse
-      val invalid = a.filter(_.status == "InvalidRelationship")
+      val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
+      val accepted = a.filter(_.status == "Accepted")
       val deauthed = a.filter(_.status == "Deauthorised")
-      val invalidOrDeauthed = (invalid.toList ::: deauthed.toList).sorted(TrackInformationSorted.orderingByDate).reverse
+      val acceptedOrDeauthed = (accepted.toList ::: deauthed.toList).sorted(TrackInformationSorted.orderingByDate).reverse
 
       logDiscrepancy(invalid, deauthed)
 
@@ -209,11 +209,11 @@ class TrackService @Inject()(
             hd.status match {
               case "Pending" | "Rejected" | "Expired" | "Cancelled" => _match(tl, Some(hd) :: acc)
               case "Accepted" | "InvalidRelationship" | "Deauthorised" => {
-                accepted
+                acceptedOrDeauthed
                   .filter(_.service == hd.service)
                   .map(Some(_))
                   .zipAll(
-                    invalidOrDeauthed
+                    invalid
                       .filter(_.service == hd.service)
                       .map(Some(_)),
                     None,
@@ -232,8 +232,8 @@ class TrackService @Inject()(
                   case None                       => _match(tl, None :: acc) //invalid found
                   case e => {
                     logger.error(
-                      s"unexpected match result on the track page: $e accepted " +
-                        s"size: ${accepted.size} invalidOrDeauthed size: ${invalidOrDeauthed.size}")
+                      s"unexpected match result on the track page: $e accepted or deauthed" +
+                        s"size: ${acceptedOrDeauthed.size} invalid size: ${invalid.size}")
                     _match(tl, None :: acc)
                   }
                 }
@@ -251,6 +251,10 @@ class TrackService @Inject()(
           if (a.status == "Accepted" || a.status == "Deauthorised") && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
         a.copy(status = s"AcceptedThenCancelledBy${a.relationshipEndedBy.get}")
       }
+      case a: TrackInformationSorted if a.status == "Deauthorised" && !(a.isRelationshipEnded && a.relationshipEndedBy.isDefined) => {
+        a.copy(status = "Accepted")
+      }
+
       case b: TrackInformationSorted => b
     }
 

@@ -115,7 +115,10 @@ class TrackServiceISpec extends BaseISpec {
       val acceptedAndDeauthed = Seq(
         dummyTrackInformationSorted("123456789", "Accepted", false, 2),
         dummyTrackInformationSorted("123456789", "Deauthorised", true, 1))
-      service.matchAndDiscard(acceptedAndDeauthed) shouldBe Seq(dummyTrackInformationSorted("123456789", "Accepted", true, 1))
+      service.matchAndDiscard(acceptedAndDeauthed) shouldBe Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", true, 1),
+        dummyTrackInformationSorted("123456789", "Deauthorised", true, 2),
+      )
     }
   }
 
@@ -159,7 +162,7 @@ class TrackServiceISpec extends BaseISpec {
 
     "match an deauthorised relationship with the corresponding invitation and the agent and client create a new relationship" in {
 
-      givenTwoInvitationsExistForSameClientWithOneDeAuthorised("123456789", "HMRC-MTD-VAT", "vrn", accepted1 = nowMinus(15), accepted2 = nowMinus(4))
+      givenTwoInvitationsExistForSameClientOneWithDeauthedStatus("123456789", "HMRC-MTD-VAT", "vrn", accepted = nowMinus(15), deauthed = nowMinus(4))
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(15).toString, LocalDate.now().minusDays(5).toString)
 
