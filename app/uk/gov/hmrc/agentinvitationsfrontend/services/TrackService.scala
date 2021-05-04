@@ -234,7 +234,6 @@ class TrackService @Inject()(
                     logger.error(
                       s"unexpected match result on the track page: $e accepted " +
                         s"size: ${accepted.size} invalidOrDeauthed size: ${invalidOrDeauthed.size}")
-                    throw new RuntimeException("fubar")
                     _match(tl, None :: acc)
                   }
                 }
