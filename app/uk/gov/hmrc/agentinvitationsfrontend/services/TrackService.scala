@@ -191,12 +191,16 @@ class TrackService @Inject()(
   if there are n Accepted then there must be either n or n-1 Invalids. Revisit once we can depend on the
   isRelationshipEnded flag (see comment in APB-5115).
    * */
-  private def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
+  def matchAndDiscard(a: Seq[TrackInformationSorted]): Seq[TrackInformationSorted] = {
 
     def matchAcceptedWithInvalids(a: Seq[TrackInformationSorted]) = {
 
       val accepted = a.filter(_.status == "Accepted").sorted(TrackInformationSorted.orderingByDate).reverse
       val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
+      val deauthed = a.filter(_.status == "Deauthorised").sorted(TrackInformationSorted.orderingByDate).reverse
+      val invalidOrDeauthed = invalid.toList ::: deauthed.toList
+
+      logDiscrepancy(invalid, deauthed)
 
       def _match(remain: List[TrackInformationSorted], acc: List[Option[TrackInformationSorted]]): List[Option[TrackInformationSorted]] =
         remain match {
@@ -204,12 +208,12 @@ class TrackService @Inject()(
           case hd :: tl =>
             hd.status match {
               case "Pending" | "Rejected" | "Expired" | "Cancelled" => _match(tl, Some(hd) :: acc)
-              case "Accepted" | "InvalidRelationship" => {
+              case "Accepted" | "InvalidRelationship" | "Deauthorised" => {
                 accepted
                   .filter(_.service == hd.service)
                   .map(Some(_))
                   .zipAll(
-                    invalid
+                    invalidOrDeauthed
                       .filter(_.service == hd.service)
                       .map(Some(_)),
                     None,
@@ -230,6 +234,7 @@ class TrackService @Inject()(
                     logger.error(
                       s"unexpected match result on the track page: $e accepted " +
                         s"size: ${accepted.size} invalid size: ${invalid.size}")
+                    throw new RuntimeException("fubar")
                     _match(tl, None :: acc)
                   }
                 }
@@ -243,11 +248,32 @@ class TrackService @Inject()(
 
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
-      case a: TrackInformationSorted if a.status == "Accepted" && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
+      case a: TrackInformationSorted
+          if (a.status == "Accepted" || a.status == "Deauthorised") && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
         a.copy(status = s"AcceptedThenCancelledBy${a.relationshipEndedBy.get}")
       }
       case b: TrackInformationSorted => b
     }
+
+  private def logDiscrepancy(invalid: Seq[TrackInformationSorted], deauthorised: Seq[TrackInformationSorted]) =
+    invalid.length - deauthorised.length match {
+      case 0 => logger.info(s"Deauthed statuses == Invalid statuses (${deauthorised.length} == ${invalid.length})")
+      case n if n > 0 =>
+        logger.info(s"Deauthed statuses < Invalid statuses (${deauthorised.length} < ${invalid.length})")
+        logDiscrepancyDetail(invalid, deauthorised)
+      case n if n < 0 =>
+        logger.info(s"Deauthed statuses > Invalid statuses (${deauthorised.length} > ${invalid.length})")
+        logDiscrepancyDetail(invalid, deauthorised)
+    }
+
+  private def logDiscrepancyDetail(invalid: Seq[TrackInformationSorted], deauthorised: Seq[TrackInformationSorted]) = {
+    val invalidAsId = invalid.map(_.clientId)
+    val deauthedAsId = deauthorised.map(_.clientId)
+    val deauthedButNotInvalid = (deauthedAsId diff invalidAsId).mkString(", ")
+    val invalideButNotDeauthed = (invalidAsId diff deauthedAsId).mkString(", ")
+    logger.debug(s"Deauthed contains $deauthedButNotInvalid not in Invalid")
+    logger.debug(s"Invalid contains $invalideButNotDeauthed not in Deauthed")
+  }
 
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 }
