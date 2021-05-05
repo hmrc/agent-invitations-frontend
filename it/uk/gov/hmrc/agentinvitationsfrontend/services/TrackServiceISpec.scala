@@ -78,6 +78,50 @@ class TrackServiceISpec extends BaseISpec {
     }
   }
 
+  private val r = new scala.util.Random()
+
+  private def dummyTrackInformationSorted(clientId: String, status: String, isRelationshipEnded: Boolean, daysInPast: Int) = TrackInformationSorted(
+    clientType = Some("personal"),
+    service = "HMRC-MTD-VAT",
+    clientId = clientId, //(0 to 8).map(_ => r.nextInt(9)).mkString,
+    clientIdType = "vrn",
+    clientName = Some("Dave"),
+    status = status,
+    dateTime = Some(DateTime.now().minusDays(daysInPast).withTimeAtStartOfDay()),
+    expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = isRelationshipEnded, relationshipEndedBy = Some("Agent")
+  )
+
+  "matchAndDiscard" should {
+    "correctly match accepted with invalid and deauthorised" in {
+      service.matchAndDiscard(Nil) shouldBe Nil
+
+      val justAccepted = Seq(dummyTrackInformationSorted("123456789", "Accepted", false, 2))
+      service.matchAndDiscard(justAccepted) shouldBe justAccepted
+
+      val acceptedAndInvalid = Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", false, 2),
+        dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 1))
+      service.matchAndDiscard(acceptedAndInvalid) shouldBe Seq(dummyTrackInformationSorted("123456789", "Accepted", true, 1))
+
+      val acceptedAndInvalidAndAccepted = Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", false, 3),
+        dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 2),
+        dummyTrackInformationSorted("123456789", "Accepted", false, 1))
+      service.matchAndDiscard(acceptedAndInvalidAndAccepted) shouldBe Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", false, 1),
+        dummyTrackInformationSorted("123456789", "Accepted", true, 2)
+      )
+
+      val acceptedAndDeauthed = Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", false, 2),
+        dummyTrackInformationSorted("123456789", "Deauthorised", true, 1))
+      service.matchAndDiscard(acceptedAndDeauthed) shouldBe Seq(
+        dummyTrackInformationSorted("123456789", "Accepted", true, 1),
+        dummyTrackInformationSorted("123456789", "Deauthorised", true, 2),
+      )
+    }
+  }
+
   "allResults" should {
     "match an invitation that has relationshipIsEnded = true with an invalid relationship, discarding the inactive relationship" in {
       givenASingleInvitationWithRelationshipEnded("123456789", "HMRC-MTD-VAT", "vrn", DateTime.now().minusDays(20).withTimeAtStartOfDay())
@@ -103,6 +147,22 @@ class TrackServiceISpec extends BaseISpec {
     "match an inactive relationship with the corresponding invitation and the agent and client create a new relationship" in {
 
       givenTwoInvitationsExistForSameClientWithOneDeAuthorised("123456789", "HMRC-MTD-VAT", "vrn", accepted1 = nowMinus(15), accepted2 = nowMinus(4))
+      givenInactiveAfiRelationshipNotFound
+      givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(15).toString, LocalDate.now().minusDays(5).toString)
+
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), true, 30))
+
+      result.size shouldBe 2
+
+      result.map(s => (s.dateTime.map(_.toLocalDate.toString), s.status)) shouldBe Seq(
+        (Some(nowMinus(4).toLocalDate.toString), "Accepted"),
+        (Some(nowMinus(5).toLocalDate.toString), "AcceptedThenCancelledByAgent")
+      )
+    }
+
+    "match an deauthorised relationship with the corresponding invitation and the agent and client create a new relationship" in {
+
+      givenTwoInvitationsExistForSameClientOneWithDeauthedStatus("123456789", "HMRC-MTD-VAT", "vrn", accepted = nowMinus(15), deauthed = nowMinus(4))
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(15).toString, LocalDate.now().minusDays(5).toString)
 
