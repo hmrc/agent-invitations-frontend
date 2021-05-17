@@ -1388,4 +1388,14 @@ trait ACAStubs {
                """.stripMargin)
         )
     )
+
+  def givenPutAltItsaAuth(arn: Arn, nino: Option[Nino]) =
+    stubFor(
+      put(urlEqualTo(s"/agent-client-authorisation/alt-itsa/update?arn=$arn&nino=${nino.fold("")(_.value)}"))
+        .willReturn(
+          aResponse()
+            .withStatus(204)
+        )
+    )
+
 }

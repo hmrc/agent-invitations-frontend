@@ -121,6 +121,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def getAllInvitationDetailsUrl(uid: String) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid")
 
+  private[connectors] def putAltItsaAuthorisationUrl(arn: Arn, nino: Option[Nino]) =
+    new URL(baseUrl, s"/agent-client-authorisation/alt-itsa/update?arn=$arn&nino=${nino.fold("")(_.value)}")
+
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
   private val originHeader = Seq("Origin" -> "agent-invitations-frontend")
@@ -548,6 +551,19 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
               None
           }
         }
+    }
+
+  def createAltItsaAuthorisation(arn: Arn, nino: Option[Nino])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-CreateAltItsaAuthorisation-PUT") {
+      {
+        http
+          .PUT[Boolean, HttpResponse](putAltItsaAuthorisationUrl(arn, nino).toString, false)
+          .map(_.status == 204)
+      }.recover {
+        case e =>
+          logger.error(s"Create AlT ITSA Relationship Failed: ${e.getMessage}")
+          false
+      }
     }
 
   object Reads {
