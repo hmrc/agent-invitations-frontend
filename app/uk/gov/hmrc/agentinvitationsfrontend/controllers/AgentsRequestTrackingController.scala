@@ -23,12 +23,12 @@ import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.{Configuration, Logger, Logging}
+import play.api.{Configuration, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedServices, supportedServicesWithAnyTrust}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -79,9 +79,9 @@ class AgentsRequestTrackingController @Inject()(
       withAuthorisedAsAgent { agent =>
         implicit val now: LocalDate = LocalDate.now()
         for {
-          _ <- agentClientAuthorisationConnector.createAltItsaAuthorisation(agent.arn, request.session.get("clientId").map(Nino)).recover {
+          _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover {
                 case e =>
-                  logger.warn("Error creating alt-itsa authorisations from track page", e)
+                  logger.warn("Error updating alt-itsa authorisations from track page", e)
                   ()
               }
           config <- trackPageConfig(page, agent, client, status)

@@ -1389,9 +1389,9 @@ trait ACAStubs {
         )
     )
 
-  def givenPutAltItsaAuth(arn: Arn, nino: Option[Nino]) =
+  def givenPutAltItsaAuth(arn: Arn) =
     stubFor(
-      put(urlEqualTo(s"/agent-client-authorisation/alt-itsa/update?arn=$arn&nino=${nino.fold("")(_.value)}"))
+      put(urlEqualTo(s"/agent-client-authorisation/agent/alt-itsa/update/$arn"))
         .willReturn(
           aResponse()
             .withStatus(204)

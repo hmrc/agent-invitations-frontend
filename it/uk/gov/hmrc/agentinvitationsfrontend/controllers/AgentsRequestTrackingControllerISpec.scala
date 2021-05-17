@@ -57,7 +57,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenInactiveRelationships() // 4 relationships
       given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenPutAltItsaAuth(arn, Some(Nino("AB123456A")))
+      givenPutAltItsaAuth(arn)
 
       val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(resultPageOne) shouldBe 200
@@ -123,7 +123,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenGetInvitationsReturnsEmpty(arn)
       givenInactiveRelationshipsNotFound
       givenInactiveAfiRelationshipNotFound
-      givenPutAltItsaAuth(arn, None)
+      givenPutAltItsaAuth(arn)
       val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
@@ -143,7 +143,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenInactiveRelationships() // 4 relationships
       given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenPutAltItsaAuth(arn, Some(Nino("AB123456A")))
+      givenPutAltItsaAuth(arn)
 
         val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
         status(resultPageOne) shouldBe 200
@@ -164,7 +164,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenInactiveRelationships() // 4 relationships
       given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
-      givenPutAltItsaAuth(arn, Some(Nino("AB123456A")))
+      givenPutAltItsaAuth(arn)
 
       val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(resultPageOne) shouldBe 200
