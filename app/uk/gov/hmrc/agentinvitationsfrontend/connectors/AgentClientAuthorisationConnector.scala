@@ -121,6 +121,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def getAllInvitationDetailsUrl(uid: String) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid")
 
+  private[connectors] def putAltItsaAuthorisationUrl(arn: Arn) =
+    new URL(baseUrl, s"/agent-client-authorisation/agent/alt-itsa/update/$arn")
+
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
   private val originHeader = Seq("Origin" -> "agent-invitations-frontend")
@@ -548,6 +551,19 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
               None
           }
         }
+    }
+
+  def updateAltItsaAuthorisation(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-updateAltItsaAuthorisation-PUT") {
+      {
+        http
+          .PUT[Boolean, HttpResponse](putAltItsaAuthorisationUrl(arn).toString, false)
+          .map(_.status == 204)
+      }.recover {
+        case e =>
+          logger.error(s"update AlT-ITSA Relationship Failed: ${e.getMessage}")
+          false
+      }
     }
 
   object Reads {

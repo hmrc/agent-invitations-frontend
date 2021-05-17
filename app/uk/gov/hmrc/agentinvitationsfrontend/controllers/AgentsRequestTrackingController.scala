@@ -23,12 +23,12 @@ import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedServices, supportedServicesWithAnyTrust}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -56,6 +56,7 @@ class AgentsRequestTrackingController @Inject()(
   val trackService: TrackService,
   val invitationsService: InvitationsService,
   val relationshipsConnector: RelationshipsConnector,
+  val agentClientAuthorisationConnector: AgentClientAuthorisationConnector,
   val pirRelationshipConnector: PirRelationshipConnector,
   acaConnector: AgentClientAuthorisationConnector,
   trackView: track,
@@ -70,14 +71,21 @@ class AgentsRequestTrackingController @Inject()(
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
   appConfig: AppConfig)
-    extends FrontendController(cc) with I18nSupport {
+    extends FrontendController(cc) with I18nSupport with Logging {
   import authActions._
 
   def showTrackRequests(page: Int, client: Option[String], status: Option[FilterFormStatus]): Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { agent =>
         implicit val now: LocalDate = LocalDate.now()
-        trackPageConfig(page, agent, client, status).map { config =>
+        for {
+          _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover {
+                case e =>
+                  logger.warn("Error updating alt-itsa authorisations from track page", e)
+                  ()
+              }
+          config <- trackPageConfig(page, agent, client, status)
+        } yield {
           if (config.totalResults > 0 && page > config.numberOfPages) {
             Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
           } else {
@@ -167,7 +175,7 @@ class AgentsRequestTrackingController @Inject()(
         .bindFromRequest()
         .fold(
           _ => {
-            Logger(getClass).error("Error in form when redirecting to resend-link page.")
+            logger.error("Error in form when redirecting to resend-link page.")
             Future successful BadRequest
           },
           data => {
@@ -195,7 +203,7 @@ class AgentsRequestTrackingController @Inject()(
         .bindFromRequest()
         .fold(
           _ => {
-            Logger(getClass).error("Error when redirecting to confirm cancel page.")
+            logger.error("Error when redirecting to confirm cancel page.")
             Future successful BadRequest
           },
           data =>
@@ -273,7 +281,7 @@ class AgentsRequestTrackingController @Inject()(
         .bindFromRequest()
         .fold(
           _ => {
-            Logger(getClass).error("Error in form when redirecting to resend-link page.")
+            logger.error("Error in form when redirecting to resend-link page.")
             Future successful BadRequest
           },
           (data: CancelAuthorisationForm) =>

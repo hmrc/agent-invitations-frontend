@@ -91,8 +91,6 @@ class ClientInvitationJourneyController @Inject()(
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
-  private val logger = Logger(getClass)
-
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier =
     appendJourneyId(super.hc)
 
