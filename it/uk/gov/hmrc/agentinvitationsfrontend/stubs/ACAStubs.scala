@@ -1396,4 +1396,14 @@ trait ACAStubs {
           aResponse()
             .withStatus(200)
             .withBody(halEnvelope(Seq(invitation(arn, "Partialauth", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)).mkString("[", ",", "]")))))
+
+  def givenPutAltItsaAuth(arn: Arn) =
+    stubFor(
+      put(urlEqualTo(s"/agent-client-authorisation/agent/alt-itsa/update/$arn"))
+        .willReturn(
+          aResponse()
+            .withStatus(204)
+        )
+    )
+
 }
