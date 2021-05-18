@@ -1681,6 +1681,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "active-authorisation-exists.header")
     }
+
+    "show the already-authorisation-active page when there is a PartialAuth invitation" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        PartialAuthorisationExists(ftr, None),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "partial-authorisation-exists.header")
+    }
   }
 
   class ItsaHappyScenario {

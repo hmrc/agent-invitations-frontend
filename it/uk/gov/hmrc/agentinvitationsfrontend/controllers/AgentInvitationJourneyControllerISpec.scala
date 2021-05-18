@@ -1539,6 +1539,27 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
+
+    "redirect to active authorisation exists when there is already a partial authorisation for ITSA" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
+      givenCheckRelationshipItsaWithStatus(arn, nino, 404)
+      givenPartialAuthorisationExists(arn, nino)
+
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn, nino, business)
+      givenGetAgencyEmailAgentStub
+
+      journeyState.set(
+        ConfirmClientItsa(AuthorisationRequest("GDT", ItsaInvitation(Nino(nino), Some(personal))), emptyBasket),
+        List())
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
+    }
   }
 
   "GET /agents/review-authorisations" should {

@@ -1002,6 +1002,13 @@ active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised yo
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 
+#Partial authorisation exists
+partial-authorisation-exists.header=You are already authorised
+partial-authorisation-exists.p1=This client has already authorised you to manage their Income Tax. This means that you can now <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax'> sign your client up for Making Tax Digital for Income Tax</a>.
+partial-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
+partial-authorisation-exists.return=Return to your authorisation requests
+partial-authorisation-exists.new-request.button=Start a new request
+
 #Error Cannot View Request
 error.cannot-view-request.title=You cannot view this authorisation request
 error.cannot-view-request.header=You cannot view this authorisation request

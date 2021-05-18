@@ -82,6 +82,12 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"
     )
 
+  private[connectors] def getAltItsaInvitationsForClientUrl(arn: Arn, clientId: String): URL =
+    new URL(
+      baseUrl,
+      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=PartialAuth&clientId=$clientId&service=HMRC-MTD-IT"
+    )
+
   private[connectors] def getAgentInvitationUrl(invitationId: InvitationId): URL =
     new URL(baseUrl, s"/agent-client-authorisation/invitations/${invitationId.value}")
 
@@ -224,6 +230,19 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
           case OK => (r.json \ "_embedded" \ "invitations").as[Seq[StoredInvitation]]
           case status: Int =>
             logger.warn(s"unexpected status from agent-client-authorisation when getAllPendingInvitationsForClient, status: $status")
+            Seq.empty
+        }
+      }
+    }
+
+  def getPartialAuthorisationsForClient(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[StoredInvitation]] =
+    monitor(s"ConsumedAPI-Get-PartialAuthorisation-GET") {
+      val url = getAltItsaInvitationsForClientUrl(arn, clientId)
+      http.GET[HttpResponse](url.toString).map { r =>
+        r.status match {
+          case OK => (r.json \ "_embedded" \ "invitations").as[Seq[StoredInvitation]]
+          case status: Int =>
+            logger.warn(s"unexpected status from agent-client-authorisation when getPartialAuthorisationsForClient, status: $status")
             Seq.empty
         }
       }

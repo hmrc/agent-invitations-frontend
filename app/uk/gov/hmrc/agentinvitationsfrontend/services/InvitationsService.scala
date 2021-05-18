@@ -213,6 +213,13 @@ class InvitationsService @Inject()(
                                 .map(s => s.nonEmpty)
     } yield hasPendingInvitations
 
+  def hasPartialAuthorisationFor(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    for {
+      hasPartialAuth <- acaConnector
+                         .getPartialAuthorisationsForClient(arn, clientId)
+                         .map(s => s.nonEmpty)
+    } yield hasPartialAuth
+
   def getActiveInvitationFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[InvitationId]] = {

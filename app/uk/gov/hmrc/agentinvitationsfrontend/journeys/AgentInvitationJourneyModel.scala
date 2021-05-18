@@ -50,6 +50,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class CannotCreateRequest(basket: Basket) extends State
   case class TrustNotFound(basket: Basket) extends State
   case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
+  case class PartialAuthorisationExists(basket: Basket) extends State
 
   case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
   case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
@@ -80,6 +81,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
+    type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
@@ -304,7 +306,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                basket))
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket))
+                       case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket)) //since alt-itsa this case is actually client does not have SAUTR
                      }
         } yield endState
     }
@@ -362,6 +364,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def identifiedIrvClient(checkDobMatches: CheckDOBMatches)
                            (hasPendingInvitationsFor: HasPendingInvitations)
                            (hasActiveRelationshipFor: HasActiveRelationship)
+                           (hasAltItsaInvitations: HasPartialAuthorisation)
                            (getClientName: GetClientName)
                            (createMultipleInvitations: CreateMultipleInvitations)
                            (getAgentLink: GetAgentLink)
@@ -385,7 +388,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                agent.arn,
                                request.invitation.clientId,
                                HMRCPIR,
-                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
@@ -410,7 +413,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     private def checkIfPendingOrActiveAndGoto(
       successState: State)(clientType: ClientType, arn: Arn, clientIdentifier: String, service: String, basket: Basket)(
       hasPendingInvitationsFor: HasPendingInvitations,
-      hasActiveRelationshipFor: HasActiveRelationship): Future[State] =
+      hasActiveRelationshipFor: HasActiveRelationship,
+      hasPartialAuthorisationFor: HasPartialAuthorisation): Future[State] =
       for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
                                      basket.exists(_.invitation.clientId == clientIdentifier))
@@ -421,8 +425,14 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                    goto(PendingInvitationExists(clientType, basket))
                  } else {
                    hasActiveRelationshipFor(arn, clientIdentifier, service).flatMap {
-                     case true  => goto(ActiveAuthorisationExists(clientType, service, basket))
-                     case false => goto(successState)
+                     case true => goto(ActiveAuthorisationExists(clientType, service, basket))
+                     case false =>
+                       if (service == HMRCMTDIT) hasPartialAuthorisationFor(arn, clientIdentifier).flatMap {
+                         case true =>
+                           goto(PartialAuthorisationExists(basket))
+                         case false =>
+                           goto(successState)
+                       } else goto(successState)
                    }
                  }
       } yield result
@@ -439,6 +449,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        (getAgencyEmail: GetAgencyEmail)
                        (hasPendingInvitationsFor: HasPendingInvitations)
                        (hasActiveRelationshipFor: HasActiveRelationship)
+                       (hasPartialAuthorisationFor: HasPartialAuthorisation)
                        (authorisedAgent: AuthorisedAgent)
                        (confirmation: Confirmation) =
     // format: on
@@ -451,7 +462,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDIT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
         } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
 
       case ConfirmClientCgt(request, basket) => {
@@ -466,7 +477,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         if (confirmation.choice) {
           checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCCGTPD, basket)(
             hasPendingInvitationsFor,
-            hasActiveRelationshipFor)
+            hasActiveRelationshipFor,
+            hasPartialAuthorisationFor)
         } else goto(state)
       }
 
@@ -477,7 +489,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
         } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
 
       case ConfirmClientBusinessVat(request) =>
@@ -515,7 +527,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request.invitation.clientId,
               request.invitation.service,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor)
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {

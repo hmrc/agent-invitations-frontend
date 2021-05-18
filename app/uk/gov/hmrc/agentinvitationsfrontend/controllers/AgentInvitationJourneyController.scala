@@ -73,7 +73,8 @@ class AgentInvitationJourneyController @Inject()(
   cannotCreateRequestView: cannot_create_request,
   invitationCreationFailedView: invitation_creation_failed,
   allAuthRemovedView: all_authorisations_removed,
-  agentSuspendedView: agent_suspended)(
+  agentSuspendedView: agent_suspended,
+  partialAuthExistsView: partial_auth_exists)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -203,7 +204,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)
+        hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)
     )
   }
 
@@ -231,7 +232,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
       Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)
+        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)
     )
   }
 
@@ -287,7 +288,8 @@ class AgentInvitationJourneyController @Inject()(
     case _: PendingInvitationExists =>
   }
   def showActiveAuthorisationExists: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ActiveAuthorisationExists =>
+    case _: ActiveAuthorisationExists  =>
+    case _: PartialAuthorisationExists =>
   }
 
   def showAllAuthorisationsRemoved: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -337,20 +339,21 @@ class AgentInvitationJourneyController @Inject()(
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case DeleteAuthorisationRequestTrust(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case _: InvitationSentPersonal    => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentBusiness    => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: KnownFactNotMatched       => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: TrustNotFound             => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CgtRefNotFound            => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CannotCreateRequest       => routes.AgentInvitationJourneyController.showCannotCreateRequest()
-    case _: SomeAuthorisationsFailed  => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
-    case _: AllAuthorisationsFailed   => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
-    case _: ClientNotSignedUp         => routes.AgentInvitationJourneyController.showClientNotSignedUp()
-    case _: PendingInvitationExists   => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
-    case _: ActiveAuthorisationExists => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case AllAuthorisationsRemoved     => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
-    case _: AgentSuspended            => routes.AgentInvitationJourneyController.showAgentSuspended()
-    case _                            => throw new Exception(s"Link not found for $state")
+    case _: InvitationSentPersonal     => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: InvitationSentBusiness     => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: KnownFactNotMatched        => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: TrustNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CgtRefNotFound             => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CannotCreateRequest        => routes.AgentInvitationJourneyController.showCannotCreateRequest()
+    case _: SomeAuthorisationsFailed   => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
+    case _: AllAuthorisationsFailed    => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
+    case _: ClientNotSignedUp          => routes.AgentInvitationJourneyController.showClientNotSignedUp()
+    case _: PendingInvitationExists    => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
+    case _: ActiveAuthorisationExists  => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case _: PartialAuthorisationExists => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case AllAuthorisationsRemoved      => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
+    case _: AgentSuspended             => routes.AgentInvitationJourneyController.showAgentSuspended()
+    case _                             => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -666,6 +669,15 @@ class AgentInvitationJourneyController @Inject()(
               routes.AgentInvitationJourneyController.showReviewAuthorisations(),
               routes.AgentInvitationJourneyController.showClientType()
             )))
+
+      case PartialAuthorisationExists(basket) =>
+        Ok(
+          partialAuthExistsView(
+            basket.nonEmpty,
+            fromFastTrack = false,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+            routes.AgentInvitationJourneyController.showClientType()
+          ))
 
       case ClientNotSignedUp(service, basket) => {
         val pageConfig = notSignedUpPageConfig.render(service)
