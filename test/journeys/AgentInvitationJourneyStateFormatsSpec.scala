@@ -352,6 +352,15 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "PartialAuthorisationExists" in {
+        val state = PartialAuthorisationExists(Set.empty)
+        val json =
+          Json.parse(s"""{"state": "PartialAuthorisationExists", "properties":{"basket":[]}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "AgentSuspended" in {
         val state = AgentSuspended(HMRCMTDIT, Set.empty)
         val json =

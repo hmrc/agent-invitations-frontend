@@ -357,6 +357,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
 
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future successful (false)
+
       def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] =
         Future(emptyBasket)
 
@@ -481,8 +484,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
 
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when
-          identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
-            getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
+          identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(clientName)(
+            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
@@ -491,8 +494,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
 
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when
-          identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(getAgentLink)(
-            getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
+          identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(clientName)(
+            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
     }
@@ -678,6 +681,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
 
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future.successful(false)
+
+      def hasPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future successful (true)
+
       def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] =
         Future(emptyBasket)
 
@@ -694,7 +703,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenMatch {
             case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty =>
           }
@@ -704,7 +713,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
 
@@ -722,9 +731,19 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenMatch {
             case PendingInvitationExists(_, basket) if basket.nonEmpty =>
+          }
+      }
+
+      "transition to PartialAuthorisationExists when there is a Partial Authorisation" in {
+
+        given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
+          clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
+            hasNoActiveRelationship)(hasPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
+          thenMatch {
+            case PartialAuthorisationExists(_) =>
           }
       }
     }
@@ -740,6 +759,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         Future.successful(false)
 
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
         Future.successful(false)
 
       "transition to Start" in {
@@ -775,7 +797,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenMatch {
             case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty =>
           }
@@ -796,7 +818,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
     }
@@ -820,6 +842,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
 
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future.successful(false)
+
       "after start transition to Start" in {
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when start should thenGo(
@@ -831,7 +856,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(authorisationRequest.invitation.service)))
       }
 
@@ -839,7 +864,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyBusinessClient)
       }
 
@@ -849,7 +874,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(PendingInvitationExists(business, emptyBasket))
       }
 
@@ -862,7 +887,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           showCgtFlag = false
         )(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation
-        )(hasActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+        )(hasActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(business, HMRCMTDVAT, emptyBasket))
       }
     }
@@ -884,9 +909,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(false)
 
+        def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+          Future.successful(false)
+
         given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
 
       }
@@ -910,9 +938,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(false)
 
+        def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+          Future.successful(false)
+
         given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyTrustClient(HMRCCGTPD, emptyBasket))
 
       }
@@ -936,11 +967,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
         Future.successful(false)
 
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future.successful(false)
+
       "transition to IdentifyTrustClient if NO is selected" in {
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
@@ -948,7 +982,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(
             InvitationSentBusiness(
               "invitation/link",
@@ -964,7 +998,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
-            hasNoActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(PendingInvitationExists(business, emptyBasket))
       }
 
@@ -975,7 +1009,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasActiveRelationship)(authorisedAgent)(Confirmation(true)) should
+            hasActiveRelationship)(hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(business, Services.TAXABLETRUST, emptyBasket))
       }
     }
