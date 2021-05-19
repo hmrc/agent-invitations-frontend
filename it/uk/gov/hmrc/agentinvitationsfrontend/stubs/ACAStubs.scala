@@ -1397,6 +1397,15 @@ trait ACAStubs {
             .withStatus(200)
             .withBody(halEnvelope(Seq(invitation(arn, "Partialauth", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)).mkString("[", ",", "]")))))
 
+  def givenPartialAuthNotExists(arn: Arn, clientId: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=PartialAuth&clientId=$clientId&service=HMRC-MTD-IT"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq.empty.mkString("[", ",", "]")))))
+
+
   def givenPutAltItsaAuth(arn: Arn) =
     stubFor(
       put(urlEqualTo(s"/agent-client-authorisation/agent/alt-itsa/update/$arn"))

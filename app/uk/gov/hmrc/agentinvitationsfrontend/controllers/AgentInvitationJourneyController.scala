@@ -74,7 +74,8 @@ class AgentInvitationJourneyController @Inject()(
   invitationCreationFailedView: invitation_creation_failed,
   allAuthRemovedView: all_authorisations_removed,
   agentSuspendedView: agent_suspended,
-  partialAuthExistsView: partial_auth_exists)(
+  partialAuthExistsView: partial_auth_exists,
+  clientNotRegisteredView: client_not_registered)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -190,7 +191,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitIdentifyItsaClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ItsaClientForm.form)(
       Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)
+        getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(appConfig)
     )
   }
 
@@ -284,6 +285,10 @@ class AgentInvitationJourneyController @Inject()(
     case _: ClientNotSignedUp =>
   }
 
+  def showClientNotRegistered: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case _: ClientNotRegistered =>
+  }
+
   def showPendingAuthorisationExists: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
     case _: PendingInvitationExists =>
   }
@@ -353,6 +358,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: PartialAuthorisationExists => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
     case AllAuthorisationsRemoved      => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
     case _: AgentSuspended             => routes.AgentInvitationJourneyController.showAgentSuspended()
+    case _: ClientNotRegistered        => routes.AgentInvitationJourneyController.showClientNotRegistered()
     case _                             => throw new Exception(s"Link not found for $state")
   }
 
@@ -682,6 +688,15 @@ class AgentInvitationJourneyController @Inject()(
       case ClientNotSignedUp(service, basket) => {
         val pageConfig = notSignedUpPageConfig.render(service)
         Ok(notSignedupView(service, basket.nonEmpty, false, pageConfig))
+      }
+
+      case ClientNotRegistered(basket) => {
+        Ok(
+          clientNotRegisteredView(
+            basket.nonEmpty,
+            false,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
+            routes.AgentInvitationJourneyController.showClientType()))
       }
 
       case AllAuthorisationsRemoved =>

@@ -103,4 +103,5 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val featuresEnableTrustURNIdentifier: Boolean = servicesConfig.getBoolean("features.enable-trust-urn-identifier")
 
+  val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
 }

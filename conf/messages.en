@@ -1009,6 +1009,15 @@ partial-authorisation-exists.p2=You do not need to ask them to authorise you for
 partial-authorisation-exists.return=Return to your authorisation requests
 partial-authorisation-exists.new-request.button=Start a new request
 
+#Client not registered (ALT-ITSA)
+client-not-registered.header=Your client needs to register for Self Assessment
+client-not-registered.p1=You cannot create an authorisation request for this client until they have registered for Self Assessment and have a Self Assessment Unique Taxpayer Reference.
+client-not-registered.h2=What to do next
+client-not-registered.p2=Ask your client to <a href="{0}">register for Self Assessment</a>. After they have registered, they will receive a Self Assessment Unique Taxpayer Reference.
+client-not-registered.p3=Then you can <a href={0}>create an authorisation request to send them</a>.
+client-not-registered.return=Return to your authorisation requests
+client-not-registered.new-request.button=Start a new request
+
 #Error Cannot View Request
 error.cannot-view-request.title=You cannot view this authorisation request
 error.cannot-view-request.header=You cannot view this authorisation request
