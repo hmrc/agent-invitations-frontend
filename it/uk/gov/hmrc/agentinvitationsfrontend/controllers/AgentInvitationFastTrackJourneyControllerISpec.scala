@@ -1368,10 +1368,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
     }
 
-    "redirect to not-signed-up when the client is not signed up for the service" in {
+    "redirect to client-not-registered when the client is not signed up for the service and there is no SAUTR on CiD record" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
       givenNotEnrolledClientITSA(Nino(nino), "BN32TN")
+      givenPartialAuthNotExists(arn, nino)
 
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", None)
       journeyState.set(NoPostcode(ftr, ftr, None), List())
@@ -1381,7 +1382,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp().url)
+        routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered().url)
 
     }
   }
@@ -1696,6 +1697,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "partial-authorisation-exists.header")
+    }
+
+    "show the client-not-registered page when client does not have an SAUTR or MTDITID" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        ClientNotRegistered(ftr, None),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.showClientNotRegistered(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "client-not-registered.header")
     }
   }
 

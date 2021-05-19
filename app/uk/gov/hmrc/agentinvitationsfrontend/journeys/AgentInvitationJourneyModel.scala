@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -73,6 +74,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class ClientNotSignedUp(service: String, basket: Basket) extends State
   case object AllAuthorisationsRemoved extends State
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
+  case class ClientNotRegistered(basket: Basket) extends State
 
   type Basket = Set[AuthorisationRequest]
 
@@ -291,6 +293,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                             (createMultipleInvitations: CreateMultipleInvitations)
                             (getAgentLink: GetAgentLink)
                             (getAgencyEmail: GetAgencyEmail)
+                            (appConfig: AppConfig)
                             (agent: AuthorisedAgent)
                             (itsaClient: ItsaClient) = Transition {
       // format: on
@@ -306,7 +309,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                basket))
                          }
                        case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None        => goto(ClientNotSignedUp(HMRCMTDIT, basket)) //since alt-itsa this case is actually client does not have SAUTR
+                       case None        => if (appConfig.featuresAltItsa) goto(ClientNotRegistered(basket)) else goto(ClientNotSignedUp(HMRCMTDIT, basket))
                      }
         } yield endState
     }

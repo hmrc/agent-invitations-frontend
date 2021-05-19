@@ -1,0 +1,49 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+        mainTemplate: main_template
+)
+
+@(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(title = Messages("generic.title", Messages(s"client-not-registered.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+
+    @back_link_referer(request)
+
+    <h1 class="heading-xlarge">@Messages("client-not-registered.header")</h1>
+
+    <p>@Messages(s"client-not-registered.p1")</p>
+
+    <h2 class="heading-medium">@Messages("client-not-registered.h2")</h2>
+
+
+    <p>@Html(Messages("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))</p>
+
+    <p>@Html(Messages("client-not-registered.p3", clientTypeCall))</p>
+
+    @if(authRequestsExist && !fromFastTrack) {
+        <a href=@reviewAuthsCall class="button" role="button">@Messages("client-not-registered.return")</a>
+    }else {
+        @if(!fromFastTrack) {
+            <div><a href=@clientTypeCall class="button" role="button">@Messages("client-not-registered.new-request.button")</a></div>
+        }
+    }
+}

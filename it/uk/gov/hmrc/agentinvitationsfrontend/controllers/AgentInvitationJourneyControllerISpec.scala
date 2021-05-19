@@ -608,7 +608,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
     }
 
-    "redirect to client not signed up when the client is not signed up for the service" in {
+    "redirect to client not registered when the client is not signed up for the service and no SAUTR was found on CiD record" in {
       givenNotEnrolledClientITSA(Nino(nino), "BN114AW")
 
       journeyState.set(IdentifyPersonalClient(HMRCMTDIT, emptyBasket), List())
@@ -619,7 +619,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientNotSignedUp().url)
+      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientNotRegistered().url)
     }
   }
 
@@ -2066,6 +2066,28 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
 
     }
+  }
+
+  "GET /client-not-registered" should {
+    val request = FakeRequest("GET", "/agents/client-not-registered")
+
+    "display the client not registered page" in {
+      journeyState.set(
+        ClientNotRegistered(emptyBasket),
+        List()
+      )
+      val result = controller.showClientNotRegistered(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "client-not-registered.header",
+        "client-not-registered.p1",
+        "client-not-registered.h2"
+      )
+    }
+
   }
 
   "GET /all-authorisations-removed" should {

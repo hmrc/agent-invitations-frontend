@@ -45,8 +45,10 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val guidanceUrlVatNew = s"${appConfig.govUkGuidanceExternalUrl}/sign-your-business-up-for-making-tax-digital-for-vat"
   val guidanceUrlSaExisting = s"${appConfig.govUkGuidanceExternalUrl}/agents-use-software-to-send-income-tax-updates"
   val guidanceUrlSaNew = s"${appConfig.govUkGuidanceExternalUrl}/use-software-to-send-income-tax-updates"
-  val guidanceAuthoriseAgent =
+  val guidanceAuthoriseAgent = {
     s"${appConfig.govUkGuidanceExternalUrl}/authorise-an-agent-to-deal-with-certain-tax-services-for-you"
+  }
+  val guidanceUrlSaSignup = s"${appConfig.govUkGuidanceExternalUrl}/register-for-self-assessment/self-employed"
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
   val companyAuthFrontendSignInUrl = s"$companyAuthUrl$companyAuthSignInPath"

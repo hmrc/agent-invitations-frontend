@@ -17,7 +17,9 @@
 package journeys
 
 import org.joda.time.LocalDate
+import org.mockito.Mockito.{mock, when}
 import play.api.http.Status
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.{AgentInvitationJourneyModel, _}
@@ -50,6 +52,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD)
   private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+  private val mockAppConfig = mock(classOf[AppConfig])
 
   def makeBasket(services: Set[String]) = services.map {
     case `HMRCCGTPD` =>
@@ -365,6 +368,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
 
+      when(mockAppConfig.featuresAltItsa).thenReturn(true)
+
       // format: off
       def itsaClientIdentified(postcodeCheck: CheckPostcodeMatches) =
         identifiedItsaClient(
@@ -374,7 +379,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientName)(
           createMultipleInvitations)(
           getAgentLink)(
-          getAgencyEmail)(
+          getAgencyEmail)(mockAppConfig)(
           authorisedAgent)(
           ItsaClient("AB123456A", "BN114AW"))
 
@@ -417,6 +422,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when
           itsaClientIdentified(postcodeCheck = (_, _) => Future(Some(false))) should
           thenGo(KnownFactNotMatched(emptyBasket))
+      }
+
+      "transition to ClientNotRegistered when service is HMRC-MTD-IT and the client has no SAUTR on CiD record" in {
+
+        given(IdentifyPersonalClient(HMRCMTDIT, emptyBasket)) when
+          itsaClientIdentified(postcodeCheck = (_, _) => Future(None)) should
+          thenGo(ClientNotRegistered(emptyBasket))
       }
 
       "transition to ConfirmPostcodeCgt for personal cgt clients" in {

@@ -57,6 +57,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val TrustNotFoundFormat: OFormat[TrustNotFound] = Json.format
   val CgtRefNotFoundFormat: OFormat[CgtRefNotFound] = Json.format
   val AgentSuspendedFormat: OFormat[AgentSuspended] = Json.format
+  val ClientNotRegisteredFormat: OFormat[ClientNotRegistered] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType                   => SelectClientTypeFormat.writes(s)
@@ -87,6 +88,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: ActiveAuthorisationExists          => ActiveAuthorisationExistsFormat.writes(s)
     case s: AgentSuspended                     => AgentSuspendedFormat.writes(s)
     case s: PartialAuthorisationExists         => PartialAuthorisationExistsFormat.writes(s)
+    case s: ClientNotRegistered                => ClientNotRegisteredFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -121,6 +123,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "AllAuthorisationsRemoved"           => JsSuccess(AllAuthorisationsRemoved)
     case "AgentSuspended"                     => AgentSuspendedFormat.reads(properties)
     case "PartialAuthorisationExists"         => PartialAuthorisationExistsFormat.reads(properties)
+    case "ClientNotRegistered"                => ClientNotRegisteredFormat.reads(properties)
     case _                                    => JsError(s"Unknown state name $stateName")
   }
 

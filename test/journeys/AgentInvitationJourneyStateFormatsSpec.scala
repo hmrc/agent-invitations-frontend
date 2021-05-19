@@ -361,6 +361,15 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "ClientNotRegistered" in {
+        val state = ClientNotRegistered(Set.empty)
+        val json =
+          Json.parse(s"""{"state": "ClientNotRegistered", "properties":{"basket":[]}}""")
+
+        Json.toJson(state) shouldBe json
+        json.as[State] shouldBe state
+      }
+
       "AgentSuspended" in {
         val state = AgentSuspended(HMRCMTDIT, Set.empty)
         val json =
