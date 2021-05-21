@@ -146,12 +146,20 @@ class InvitationsService @Inject()(
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     acaConnector.checkCitizenRecord(nino, dob)
 
+  private def isAltItsa(i: StoredInvitation): Boolean =
+    i.service == "HMRC-MTD-IT" && i.clientId == i.suppliedClientId
+
   private def determineInvitationResponse(invitationId: InvitationId, si: StoredInvitation, agentName: String, response: String)(
     implicit request: Request[_],
     hc: HeaderCarrier,
     ec: ExecutionContext) =
     for {
       result <- Services.determineServiceMessageKey(invitationId) match {
+                 case "itsa" if isAltItsa(si) =>
+                   if (response == "Accepted")
+                     acaConnector.acceptAltITSAInvitation(Nino(si.clientId), invitationId)
+                   else acaConnector.rejectAltITSAInvitation(Nino(si.clientId), invitationId)
+
                  case "itsa" =>
                    if (response == "Accepted")
                      acaConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)

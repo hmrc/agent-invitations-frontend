@@ -714,7 +714,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.submitCheckAnswers)
 
     "redirect to invitations accepted when all invitations are successfully accepted" in {
-      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
       givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
@@ -742,7 +742,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
     }
     "redirect to invitations rejected when all invitations are successfully rejected" in {
-      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
       givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
@@ -771,7 +771,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
 
     "redirect to some responses failed when some of the invitations are not successfully accepted" in {
-      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
       givenAcceptInvitationReturnsNotFound("ABCDEF123456789", invitationIdITSA, identifierITSA)
@@ -796,7 +796,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
     }
     "redirect to all responses failed when all of the invitations are not successfully accepted" in {
-      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
       givenAcceptInvitationReturnsNotFound("ABCDEF123456789", invitationIdITSA, identifierITSA)
@@ -887,7 +887,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.submitConfirmDecline)
 
     "redirect to invitation declined when yes is selected" in {
-      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789")
+      givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       journeyState.set(
         ConfirmDecline(
