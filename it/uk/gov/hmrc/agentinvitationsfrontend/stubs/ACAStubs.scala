@@ -456,7 +456,7 @@ trait ACAStubs {
                          |  }
                          |}""".stripMargin)))
 
-  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String, service: String = "HMRC-MTD-IT", clientIdType: String = "mtditid"): StubMapping =
+  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String, service: String = "HMRC-MTD-IT", clientIdType: String = "mtditid", suppliedClientId: Option[String] = None, suppliedClientIdType: Option[String] = None): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}"))
         .willReturn(
@@ -469,8 +469,8 @@ trait ACAStubs {
                  |  "service" : "$service",
                  |  "clientId" : "$clientId",
                  |  "clientIdType" : "$clientIdType",
-                 |  "suppliedClientId" : "$clientId",
-                 |  "suppliedClientIdType" : "$clientIdType",
+                 |  "suppliedClientId" : "${suppliedClientId.getOrElse(clientId)}",
+                 |  "suppliedClientIdType" : "${suppliedClientIdType.getOrElse(suppliedClientIdType)}",
                  |  "status" : "Pending",
                  |  "created" : "2017-10-31T23:22:50.971Z",
                  |  "lastUpdated" : "2017-10-31T23:22:50.971Z",

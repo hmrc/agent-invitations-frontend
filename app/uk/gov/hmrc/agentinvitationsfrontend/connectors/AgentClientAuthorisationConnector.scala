@@ -17,9 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.{Inject, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
@@ -94,8 +94,14 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
     new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
 
+  private[connectors] def acceptAltITSAInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
+
   private[connectors] def rejectITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
+
+  private[connectors] def rejectAltITSAInvitationUrl(nino: Nino, invitationId: InvitationId) =
+    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def acceptAFIInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
     new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
@@ -274,6 +280,17 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
+  def acceptAltITSAInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      http
+        .PUT[Boolean, HttpResponse](acceptAltITSAInvitationUrl(nino, invitationId).toString, false)
+        .map(_.status == 204)
+    }.recover {
+      case e =>
+        logger.error(s"Create Alt-ITSA Relationship Failed: ${e.getMessage}")
+        false
+    }
+
   def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       http
@@ -282,6 +299,17 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     }.recover {
       case e =>
         logger.error(s"Reject ITSA Invitation Failed: ${e.getMessage}")
+        false
+    }
+
+  def rejectAltITSAInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      http
+        .PUT[Boolean, HttpResponse](rejectAltITSAInvitationUrl(nino, invitationId).toString, false)
+        .map(_.status == 204)
+    }.recover {
+      case e =>
+        logger.error(s"Reject Alt-ITSA Invitation Failed: ${e.getMessage}")
         false
     }
 

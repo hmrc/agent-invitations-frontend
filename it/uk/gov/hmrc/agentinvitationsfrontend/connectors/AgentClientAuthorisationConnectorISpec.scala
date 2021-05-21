@@ -324,6 +324,27 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         result shouldBe false
         verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
       }
+
+      "return true if invitation was accepted and it is alt-Itsa" in {
+        givenAcceptInvitationSucceeds(nino, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe true
+        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+      }
+
+      "return false if invitation is already actioned and it is alt-Itsa" in {
+        givenAcceptInvitationReturnsAlreadyActioned(nino, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe false
+        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+      }
+
+      "return an error if invitation not found and it is alt-Itsa" in {
+        givenAcceptInvitationReturnsNotFound(nino, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe false
+        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+      }
     }
 
     "service is for PIR" should {
@@ -418,6 +439,27 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
         result shouldBe false
         verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
+      }
+
+      "return status 204 if invitation was rejected and it is alt-itsa" in {
+        givenRejectInvitationSucceeds(nino, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe true
+        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
+      }
+
+      "return an error if invitation is already actioned and it is alt-Itsa" in {
+        givenRejectInvitationReturnsAlreadyActioned(nino, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe false
+        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
+      }
+
+      "return an error if invitation not found and it is alt-Itsa" in {
+        givenRejectInvitationReturnsWithStatus(nino, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        result shouldBe false
+        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
       }
     }
 
