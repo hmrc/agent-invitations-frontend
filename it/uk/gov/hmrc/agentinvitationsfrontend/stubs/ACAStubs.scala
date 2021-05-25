@@ -984,16 +984,17 @@ trait ACAStubs {
                                     clientId: String,
                                     service: String,
                                     clientIdType: String,
-                                    lastUpdated: DateTime
+                                    lastUpdated: DateTime,
+                                    isPartialAuth: Boolean = false
                                     ) = {
     stubFor(
-      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
+      get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?clientId=$clientId&service=$service"))
         .willReturn(
           aResponse()
         .withStatus(200)
         .withBody(halEnvelope(
           Seq(
-            invitationTemporal(lastUpdated, "Accepted", service, clientIdType, "Julius", clientId, "foo1", "2021-03-13", false, None)
+            invitationTemporal(lastUpdated, if(isPartialAuth)"Partialauth" else "Accepted", service, clientIdType, "Julius", clientId, "foo1", "2021-03-13", false, None)
           ).mkString("[", ",", "]")))))
 
   }
