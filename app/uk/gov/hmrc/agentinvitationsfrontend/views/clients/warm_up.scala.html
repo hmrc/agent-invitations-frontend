@@ -50,6 +50,16 @@
 
     <div class="panel panel-border-wide margin-bottom-30">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
+    @if(pageConfig.altItsaEnabled && pageConfig.typeOfClient == "personal") {
+      <h2 class="heading-medium margin-top-40">@Messages("warm-up.h2.personal")</h2>
+      <p>@Messages("warm-up.p3.personal")</p>
+
+      <ul class="list-bullet margin-bottom-30">
+        <li>@Messages("warm-up.l1.personal")</li>
+        <li><a href="@pageConfig.ggRegistrationUrl">@Messages("warm-up.l2.personal")</a></li>
+      </ul>
+    }
+
     @uiFormHelper(pageConfig.getConfirmTermsCall) {
         <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
     }
