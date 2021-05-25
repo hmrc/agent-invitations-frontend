@@ -475,6 +475,10 @@ warm-up.p1=Defnyddiwch y gwasanaeth i ganiatáu i {0} eich helpu i reoli’ch ma
 warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>.
 warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
+warm-up.h2.personal=Authorisation for Making Tax Digital for Income Tax
+warm-up.p3.personal=If you want to authorise an agent for Making Tax Digital for Income Tax, sign in with the Government Gateway user ID you use for Self Assessment. If you do not have one, you can:
+warm-up.l1.personal=sign in with a Government Gateway user ID you use for your personal tax affairs
+warm-up.l2.personal=create a new Government Gateway user ID
 warm-up.link=Ni hoffwn benodi {0}
 
 # suspended agent

@@ -51,6 +51,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
 
     "journey ID is already present in the session cookie, show the warmup page" should {
+
+      "show new warmup prototype when personal client type" in new Setup {
+        val reqAuthorisedWithJourneyId =
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
+        val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        checkWarmUpPageIsShown(result)
+        checkNewWarmUpPageIsShown(result)
+      }
+
+      "show old warmup prototype when business client type" in new Setup {
+        val reqAuthorisedWithJourneyId =
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
+        val result = controller.warmUp("business", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        checkWarmUpPageIsShown(result)
+        checkNewWarmUpPageIsNotShown(result)
+      }
+
       "work when signed in" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
@@ -91,6 +108,24 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           htmlEscapedMessage("warm-up.header", "My Agency"),
           htmlEscapedMessage("warm-up.inset", "My Agency"))
         checkIncludesText(result, "<p>So we can confirm who you are")
+      }
+
+      def checkNewWarmUpPageIsShown(result: Result): Unit = {
+        checkHtmlResultWithBodyText(
+          result,
+          htmlEscapedMessage("warm-up.h2.personal"),
+          htmlEscapedMessage("warm-up.p3.personal"),
+          htmlEscapedMessage("warm-up.l1.personal"),
+          htmlEscapedMessage("warm-up.l2.personal"))
+      }
+
+      def checkNewWarmUpPageIsNotShown(result: Result): Unit = {
+        checkHtmlResultWithNotBodyText(
+          result,
+          htmlEscapedMessage("warm-up.h2.personal"),
+          htmlEscapedMessage("warm-up.p3.personal"),
+          htmlEscapedMessage("warm-up.l1.personal"),
+          htmlEscapedMessage("warm-up.l2.personal"))
       }
     }
 

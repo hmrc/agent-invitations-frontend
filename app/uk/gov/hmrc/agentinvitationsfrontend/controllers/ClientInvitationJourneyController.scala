@@ -29,6 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneySer
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.addParamsToUrl
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
@@ -372,7 +373,12 @@ class ClientInvitationJourneyController @Inject()(
               clientType,
               uid,
               routes.ClientInvitationJourneyController.submitWarmUp(),
-              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline()
+              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline(),
+              addParamsToUrl(
+                appConfig.ggRegistrationFrontendExternalUrl,
+                "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp().url)
+              ),
+              appConfig.featuresAltItsa
             )))
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?

@@ -28,6 +28,7 @@ import scala.concurrent.duration.Duration
 class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) {
 
   val appName = "agent-invitations-frontend"
+  val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
 
   private def baseUrl(serviceName: String) = servicesConfig.baseUrl(serviceName)
 
@@ -53,6 +54,8 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val contactFrontendExternalUrl: String = getConfString("contact-frontend.external-url")
   val btaExternalUrl: String = getConfString("business-tax-account.external-url")
   val asaFrontendExternalUrl: String = getConfString("agent-services-account-frontend.external-url")
+  val ggRegistrationFrontendExternalUrl: String =
+    s"${getConfString("government-gateway-registration-frontend.external-url")}$ssoRedirectUrl"
 
   val ptaExternalUrl: String = getConfString("personal-tax-account.external-url")
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")

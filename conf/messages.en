@@ -475,6 +475,10 @@ warm-up.p1=Use this service to allow {0} to help you manage your tax affairs.
 warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
 warm-up.p2.personal=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> personal tax affairs</strong>.
 warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
+warm-up.h2.personal=Authorisation for Making Tax Digital for Income Tax
+warm-up.p3.personal=If you want to authorise an agent for Making Tax Digital for Income Tax, sign in with the Government Gateway user ID you use for Self Assessment. If you do not have one, you can:
+warm-up.l1.personal=sign in with a Government Gateway user ID you use for your personal tax affairs
+warm-up.l2.personal=create a new Government Gateway user ID
 warm-up.link=I do not want to appoint {0}
 
 # suspended agent
