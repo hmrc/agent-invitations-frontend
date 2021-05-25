@@ -140,7 +140,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
-      submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService, hasActiveRelationshipFor))
+      submitIdentifyClientIrv(checkCitizenRecordMatches, getClientNameByService, hasActiveRelationshipFor, hasPartialAuthorisationFor))
   }
 
   def submitIdentifyVatClient: Action[AnyContent] = action { implicit request =>
@@ -183,7 +183,7 @@ class AgentLedDeauthJourneyController @Inject()(
   }
 
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(confirmCancelForm)(clientConfirmed(hasActiveRelationshipFor))
+    whenAuthorisedWithForm(AsAgent)(confirmCancelForm)(clientConfirmed(hasActiveRelationshipFor)(hasPartialAuthorisationFor))
   }
 
   def showConfirmCancel: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
@@ -448,7 +448,7 @@ class AgentLedDeauthJourneyController @Inject()(
           cgtRef.value
         ))
 
-    case ConfirmCancel(service, clientName, _) =>
+    case ConfirmCancel(service, clientName, _, _) =>
       Ok(
         confirmCancelView(
           formWithErrors.or(confirmCancelForm),

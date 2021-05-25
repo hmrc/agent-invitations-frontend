@@ -71,7 +71,7 @@ class InvitationsServiceSpec extends UnitSpec {
     "getActiveInvitationsFor" should {
       "return the most recent invitation" in {
         when(
-          acaConnector.getAcceptedInvitationsForClient(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
+          acaConnector.getInvitationsForClient(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
             any(classOf[HeaderCarrier]),
             any(classOf[ExecutionContext])))
           .thenReturn(
@@ -88,7 +88,7 @@ class InvitationsServiceSpec extends UnitSpec {
     "setRelationshipEndedForActiveInvitation" should {
       "return Some(true) when it succeeds" in {
         when(
-          acaConnector.getAcceptedInvitationsForClient(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
+          acaConnector.getInvitationsForClient(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
             any(classOf[HeaderCarrier]),
             any(classOf[ExecutionContext])))
           .thenReturn(

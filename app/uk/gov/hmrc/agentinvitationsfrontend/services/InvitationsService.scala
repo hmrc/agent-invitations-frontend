@@ -233,13 +233,13 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[Option[InvitationId]] = {
     implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isAfter _)
     acaConnector
-      .getAcceptedInvitationsForClient(arn, clientId, service)
+      .getInvitationsForClient(arn, clientId, service)
       .map(
-        s =>
-          s.sortBy(_.lastUpdated)
-            .map(_.invitationId)
-            .map(InvitationId(_))
-            .headOption)
+        _.filter(inv => inv.status == "Accepted" || inv.status == "Partialauth")
+          .sortBy(_.lastUpdated)
+          .map(_.invitationId)
+          .map(InvitationId(_))
+          .headOption)
   }
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =

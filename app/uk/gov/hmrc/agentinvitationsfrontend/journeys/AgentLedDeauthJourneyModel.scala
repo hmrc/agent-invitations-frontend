@@ -55,7 +55,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
     case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
     case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
-    case class ConfirmCancel(service: String, clientName: Option[String], clientId: String) extends State
+    case class ConfirmCancel(service: String, clientName: Option[String], clientId: String, isPartialAuth: Boolean = false) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
     //error states
@@ -73,6 +73,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
+    type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
     type VatRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
@@ -172,8 +173,11 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def submitIdentifyClientIrv(checkDOBMatches: DOBMatches, getClientName: GetClientName, hasActiveRelationship: HasActiveRelationship)(
-      agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientIrv(
+      checkDOBMatches: DOBMatches,
+      getClientName: GetClientName,
+      hasActiveRelationship: HasActiveRelationship,
+      hasPartialAuthorisation: HasPartialAuthorisation)(agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(dobMatchResult: Option[Boolean]): Future[State] =
         for {
@@ -181,7 +185,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                          case Some(true) =>
                            getClientName(irvClient.clientIdentifier, HMRCPIR).flatMap(
                              name =>
-                               clientConfirmed(hasActiveRelationship)(agent)(Confirmation(true))
+                               clientConfirmed(hasActiveRelationship)(hasPartialAuthorisation)(agent)(Confirmation(true))
                                  .apply(ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(HMRCPIR))
@@ -306,7 +310,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def clientConfirmed(hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(
+    def clientConfirmed(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(agent: AuthorisedAgent)(
       confirmation: Confirmation): AgentLedDeauthJourneyModel.Transition = {
 
       def gotoFinalState(clientId: String, service: String, name: Option[String]) =
@@ -314,7 +318,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           for {
             relationshipIsActive <- hasActiveRelationship(agent.arn, clientId, service)
             result <- if (relationshipIsActive) goto(ConfirmCancel(service, name, clientId))
-                     else goto(NotAuthorised(service))
+                     else if (service == HMRCMTDIT) hasPartialAuthorisation(agent.arn, clientId).flatMap {
+                       case true  => goto(ConfirmCancel(service, name, clientId, true))
+                       case false => goto(NotAuthorised(service))
+                     } else goto(NotAuthorised(service))
           } yield result
         } else goto(root)
 
@@ -332,9 +339,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName, setRelationshipEnded: SetRelationshipEnded)(
       agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
-        case ConfirmCancel(service, clientName, clientId) =>
+        case ConfirmCancel(service, clientName, clientId, isAltItsa) =>
           if (confirmation.choice) {
-            deleteRelationship(service, agent.arn, clientId).flatMap {
+            val fCall = if (!isAltItsa) deleteRelationship(service, agent.arn, clientId) else Future successful Some(true)
+            fCall.flatMap {
               case Some(true) => {
                 for {
                   name    <- getAgencyName(agent.arn)

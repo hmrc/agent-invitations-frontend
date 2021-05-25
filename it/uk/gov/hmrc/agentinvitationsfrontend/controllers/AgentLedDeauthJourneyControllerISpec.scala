@@ -756,11 +756,29 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
-    "redirect to not authorised when there are is no active relationship to de-authorise" in {
+    "redirect to confirm cancel when YES is selected for alt-itsa" in {
       journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
+      givenPartialAuthorisationExists(arn, nino)
+
+      val result =
+        controller.submitConfirmClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+    }
+    "redirect to not authorised when there are is no active relationship or partial auth to de-authorise" in {
+      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
+
+      givenCheckRelationshipItsaWithStatus(arn, nino, 404)
+      givenPartialAuthNotExists(arn, nino)
 
       val result =
         controller.submitConfirmClient(
@@ -856,6 +874,21 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
+
+    "display the confirm cancel page for alt-itsa" in {
+      journeyState.set(
+        ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value, true),
+        List(ConfirmClientItsa(Some("Barry Block"), validNino)))
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
+      val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.header"),
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block")
+      )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
+    }
   }
   "POST /agents/cancel-authorisation/confirm-cancel" should {
     "redirect to the authorisation cancelled page" in {
@@ -865,6 +898,27 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       givenCancelledAuthorisationItsa(arn, Nino(nino), 204)
       givenGetAgencyNameClientStub(arn)
       givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now())
+      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
+
+      val result =
+        controller.submitConfirmCancel(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody("accepted" -> "true"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
+        .showAuthorisationCancelled()
+        .url
+    }
+
+    "redirect to the authorisation cancelled page for alt-itsa" in {
+      journeyState.set(ConfirmCancel(HMRCMTDIT, Some("Sufjan Stevens"), nino, true), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
+
+      givenGetAgencyNameClientStub(arn)
+      givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now(), true)
       givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =

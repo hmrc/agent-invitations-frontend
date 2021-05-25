@@ -153,7 +153,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "ConfirmCancel" in {
         val state = ConfirmCancel("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "AB123456A")
         val json = Json.parse(
-          """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A"}}""")
+          """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A", "isPartialAuth": false}}""")
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
