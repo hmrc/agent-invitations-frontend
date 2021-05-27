@@ -737,7 +737,6 @@ not-found-invitation.description.1=Os gwnaethoch deipio’r cyfeiriad gwe, gwiri
 not-found-invitation.description.2=Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.
 not-found-invitation.description.3=Os yw’r cyfeiriad gwe’n gywir, cysylltwch â’r asiant treth a anfonodd y cais atoch os hoffech ei awdurdodi o hyd.
 
-
 # Invitation Already Responded
 invitation-already-responded.header=Rydych eisoes wedi ymateb i’r cais hwn
 invitation-already-responded.description=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant treth a anfonodd y cais atoch.
@@ -1046,6 +1045,14 @@ agent-cancelled-request.link-text=Bwrw golwg dros hanes eich ceisiadau
 already-responded.header=Rydych eisoes wedi ymateb i’r cais am awdurdodiad hwn
 already-responded.p1=Gwnaethoch ymateb i’r cais hwn ar {0}.
 already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+
+#Already Copied
+already-copied.header=This client has already authorised you to manage their Making Tax Digital for Income Tax
+already-copied.p1=This means that you have an authorisation in place for Making Tax Digital for Income Tax for this client.
+already-copied.header2=What to do next
+already-copied.p2=You need to do one of the following:
+already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy">sign your client up to Making Tax Digital for Income Tax</a>
+already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax.cy">ask your client to sign up for Making Tax Digital for Income Tax</a>
 
 #Cannot find request
 cannot-find-request.header=Ni allwn ddod o hyd i’r cais hwn am awdurdodiad

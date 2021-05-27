@@ -21,7 +21,7 @@ import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}

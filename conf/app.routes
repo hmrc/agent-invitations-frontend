@@ -47,6 +47,7 @@ POST        /agents/client-country                                      uk.gov.h
 
 GET         /agents/confirm-client                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showConfirmClient
 POST        /agents/confirm-client                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitConfirmClient
+
 GET         /agents/review-authorisations                               uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showReviewAuthorisations
 POST        /agents/review-authorisations                               uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitReviewAuthorisations
 GET         /agents/invitation-sent                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showInvitationSent
@@ -67,6 +68,7 @@ POST        /agents/some-create-authorisation-failed                    uk.gov.h
 GET         /agents/access-removed                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAgentSuspended
 GET         /agents/timed-out                                           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.timedOut
 GET         /agents/sign-out                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.signOut
+GET         /agents/already-copied-across-itsa                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
@@ -117,6 +119,7 @@ GET         /agents/no-match-try-again                                  uk.gov.h
 GET         /agents/authorisation-already-requested                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
 GET         /agents/already-authorised                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
 GET         /agents/suspended                                           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showSuspended
+GET         /agents/track/already-copied-across-itsa                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa
 
 # agent led deauth FSM
 GET         /agents/cancel-authorisation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.agentLedDeauthRoot

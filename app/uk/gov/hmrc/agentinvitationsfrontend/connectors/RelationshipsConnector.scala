@@ -71,6 +71,9 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
+  private def hasLegacyRelationshipUrl(arn: Arn, nino: String): String =
+    s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
+
   private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
     new URL(
       baseUrl,
@@ -86,6 +89,19 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
             case OK        => r.json.as[Seq[InactiveTrackRelationship]]
             case NOT_FOUND => Seq.empty
             case other     => throw new RuntimeException(s"unexpected $other error when calling 'getInactiveRelationships'")
+          }
+        }
+    }
+
+  def getHasLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
+      http
+        .GET[HttpResponse](hasLegacyRelationshipUrl(arn, nino))
+        .map { r =>
+          r.status match {
+            case NO_CONTENT => true
+            case NOT_FOUND  => false
+            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasLegacyRelationships'")
           }
         }
     }

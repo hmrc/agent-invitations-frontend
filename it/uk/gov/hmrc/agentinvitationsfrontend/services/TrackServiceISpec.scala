@@ -78,12 +78,10 @@ class TrackServiceISpec extends BaseISpec {
     }
   }
 
-  private val r = new scala.util.Random()
-
   private def dummyTrackInformationSorted(clientId: String, status: String, isRelationshipEnded: Boolean, daysInPast: Int) = TrackInformationSorted(
     clientType = Some("personal"),
     service = "HMRC-MTD-VAT",
-    clientId = clientId, //(0 to 8).map(_ => r.nextInt(9)).mkString,
+    clientId = clientId,
     clientIdType = "vrn",
     clientName = Some("Dave"),
     status = status,

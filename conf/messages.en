@@ -737,7 +737,6 @@ not-found-invitation.description.1=If you typed the web address, check it is cor
 not-found-invitation.description.2=If you pasted the web address, check you copied the entire address.
 not-found-invitation.description.3=If the web address is correct, contact the tax agent who sent you the request if you still want to authorise them.
 
-
 # Invitation Already Responded
 invitation-already-responded.header=You have already responded to this request
 invitation-already-responded.description=If you think this is wrong, contact the tax agent who sent you the request.
@@ -1046,6 +1045,14 @@ agent-cancelled-request.link-text=View your request history
 already-responded.header=You have already responded to this authorisation request
 already-responded.p1=You responded to this request on {0}.
 already-responded.p2=If you think this is wrong, contact the agent who sent you the request or <a href="{0}">view your request history</a>
+
+#Already Copied
+already-copied.header=This client has already authorised you to manage their Making Tax Digital for Income Tax
+already-copied.p1=This means that you have an authorisation in place for Making Tax Digital for Income Tax for this client.
+already-copied.header2=What to do next
+already-copied.p2=You need to do one of the following:
+already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax">sign your client up to Making Tax Digital for Income Tax</a>
+already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax">ask your client to sign up for Making Tax Digital for Income Tax</a>
 
 #Cannot find request
 cannot-find-request.header=We cannot find this authorisation request

@@ -121,6 +121,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "PendingInvitationExists"            => PendingInvitationExistsFormat.reads(properties)
     case "ActiveAuthorisationExists"          => ActiveAuthorisationExistsFormat.reads(properties)
     case "AllAuthorisationsRemoved"           => JsSuccess(AllAuthorisationsRemoved)
+    case "AlreadyCopiedAcrossItsa"            => JsSuccess(AlreadyCopiedAcrossItsa)
     case "AgentSuspended"                     => AgentSuspendedFormat.reads(properties)
     case "PartialAuthorisationExists"         => PartialAuthorisationExistsFormat.reads(properties)
     case "ClientNotRegistered"                => ClientNotRegisteredFormat.reads(properties)
