@@ -102,11 +102,11 @@ class TrackService @Inject()(
 
     val futureInvitations = getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
       .map(_.map {
-        case TrackedInvitation(ct, srv, cId, cidt, an, st, _, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb)
+        case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
+          TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu))
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb) =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb)
-        case _ => TrackInformationSorted(None, "", "", "", None, "", None, None, None, false, None)
+          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb, Some(lu))
+        case _ => TrackInformationSorted(None, "", "", "", None, "", None, None, None, isRelationshipEnded = false, None, None)
       })
 
     val futureRelationships = getInactiveClients
@@ -122,10 +122,11 @@ class TrackService @Inject()(
             dateTo.map(_.toDateTimeAtStartOfDay),
             None,
             None,
-            true,
+            isRelationshipEnded = true,
+            None,
             None)
         case _ =>
-          TrackInformationSorted(None, "", "", "", None, "", None, None, None, true, None)
+          TrackInformationSorted(None, "", "", "", None, "", None, None, None, isRelationshipEnded = true, None, None)
       })
 
     for {
@@ -207,7 +208,7 @@ class TrackService @Inject()(
           case Nil => acc
           case hd :: tl =>
             hd.status match {
-              case "Pending" | "Rejected" | "Expired" | "Cancelled" => _match(tl, Some(hd) :: acc)
+              case "Pending" | "Rejected" | "Expired" | "Cancelled" | "Partialauth" => _match(tl, Some(hd) :: acc)
               case "Accepted" | "InvalidRelationship" | "Deauthorised" => {
                 acceptedOrDeauthed
                   .filter(_.service == hd.service)

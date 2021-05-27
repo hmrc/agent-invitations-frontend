@@ -62,7 +62,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(7))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -75,7 +76,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.plusDays(11)),
             invitationId = Some("id1"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime)
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -88,7 +90,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id5"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(9))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -101,7 +104,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id4"),
             isRelationshipEnded = true,
-            relationshipEndedBy = Some("Agent")
+            relationshipEndedBy = Some("Agent"),
+            lastUpdated = Some(dateTime.plusDays(8))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -114,7 +118,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id3"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(7))
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -127,7 +132,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id6"),
             isRelationshipEnded = true,
-            relationshipEndedBy = Some("Client")
+            relationshipEndedBy = Some("Client"),
+            lastUpdated = Some(dateTime.plusDays(4))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -140,7 +146,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.minusDays(9)),
             invitationId = Some("id2"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(1))
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -153,7 +160,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id8"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime)
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -166,7 +174,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id9"),
             isRelationshipEnded = true,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.minusDays(25))
           )
         ),
         totalResults = 9,
@@ -213,7 +222,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = None,
             invitationId = Some("id3"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(7))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -226,7 +236,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.minusDays(9)),
             invitationId = Some("id2"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(1))
           )
         ),
         totalResults = 2,
@@ -273,7 +284,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(7))
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -286,7 +298,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.plusDays(11)),
             invitationId = Some("id1"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime)
           )
         ),
         totalResults = 2,
@@ -332,7 +345,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             expiryDate = Some(now.plusDays(18)),
             invitationId = Some("id7"),
             isRelationshipEnded = false,
-            relationshipEndedBy = None
+            relationshipEndedBy = None,
+            lastUpdated = Some(dateTime.plusDays(7))
           )
         ),
         totalResults = 1,

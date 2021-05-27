@@ -94,7 +94,8 @@ class FilterFormStatusSpec extends UnitSpec {
       expiryDate.map(_.toDateTimeAtStartOfDay),
       None,
       isRelationshipEnded,
-      relationshipEndedBy
+      relationshipEndedBy,
+      lastUpdated = None
     )
 
   private def testFilter(filterFormStatus: FilterFormStatus, i: TrackInformationSorted): Boolean =
