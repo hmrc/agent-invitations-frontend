@@ -1083,6 +1083,7 @@ trait ACAStubs {
               invitationTemporal(nowMinus(25), "Accepted", "HMRC-TERS-ORG", "utr", "Doreen","4937455253", "foo7", "2017-12-18", true, Some("Agent")),
               invitationTemporal(nowMinus(22), "Accepted", "HMRC-CGT-PD", "cgtRef", "Duck","XMCGTP123456789", "foo2", "2017-12-18", true, Some("Client")),
               invitationTemporal(nowMinus(30), "Cancelled", "HMRC-MTD-IT", "ni", "Dean","AB123456A", "foo9", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(30), "Partialauth", "HMRC-MTD-IT", "ni", "Debby","AB123456C", "foo10", "2017-12-18", false, Some("Client")),
             ).mkString("[", ",", "]")))))
   }
 

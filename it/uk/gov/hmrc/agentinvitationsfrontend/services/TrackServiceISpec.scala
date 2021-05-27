@@ -88,7 +88,8 @@ class TrackServiceISpec extends BaseISpec {
     clientName = Some("Dave"),
     status = status,
     dateTime = Some(DateTime.now().minusDays(daysInPast).withTimeAtStartOfDay()),
-    expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = isRelationshipEnded, relationshipEndedBy = Some("Agent")
+    expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = isRelationshipEnded, relationshipEndedBy = Some("Agent"),
+    lastUpdated = None
   )
 
   "matchAndDiscard" should {
@@ -132,7 +133,8 @@ class TrackServiceISpec extends BaseISpec {
 
   "allResults" should {
     "match an invitation that has relationshipIsEnded = true with an invalid relationship, discarding the inactive relationship" in {
-      givenASingleInvitationWithRelationshipEnded("123456789", "HMRC-MTD-VAT", "vrn", DateTime.now().minusDays(20).withTimeAtStartOfDay())
+      val lastUpdated = DateTime.now().withZone(DateTimeZone.UTC).minusDays(20).withTimeAtStartOfDay()
+      givenASingleInvitationWithRelationshipEnded("123456789", "HMRC-MTD-VAT", "vrn", lastUpdated)
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(20).toString, LocalDate.now().minusDays(4).toString)
 
@@ -148,7 +150,8 @@ class TrackServiceISpec extends BaseISpec {
         clientName = Some("Dave"),
         status = "AcceptedThenCancelledByAgent",
         dateTime = Some(DateTime.now().minusDays(4).withTimeAtStartOfDay()),
-        expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = true, relationshipEndedBy = Some("Agent")
+        expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = true, relationshipEndedBy = Some("Agent"),
+        lastUpdated = Some(DateTime.parse(lastUpdated.toString))
       ))
     }
 
@@ -208,7 +211,7 @@ class TrackServiceISpec extends BaseISpec {
 
       val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"),true, 30))
 
-      result.size shouldBe 9
+      result.size shouldBe 10
 
       result.map(s => (s.clientId, s.service, s.status, s.dateTime.map(_.toLocalDate.toString))) shouldBe Seq(
 
@@ -218,6 +221,7 @@ class TrackServiceISpec extends BaseISpec {
         ("XMCGTP123456789", "HMRC-CGT-PD", "AcceptedThenCancelledByClient", Some(nowMinus(5).toLocalDate.toString)),
         ("AB123256B", "HMRC-MTD-IT", "Accepted", Some(nowMinus(25).toLocalDate.toString)),
         ("AB123456A", "HMRC-MTD-IT", "Cancelled", Some(nowMinus(30).toLocalDate.toString)),
+        ("AB123456C", "HMRC-MTD-IT", "Partialauth", Some(nowMinus(30).toLocalDate.toString)),
         ("AB127456A", "HMRC-MTD-IT", "Pending", None),
         ("101747696", "HMRC-MTD-VAT", "Pending", None),
         ("AB129456B", "HMRC-MTD-IT", "Pending", None)

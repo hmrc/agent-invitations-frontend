@@ -29,6 +29,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
+  val signupClientUrl: String = "/sign-up-your-client-for-making-tax-digital-for-income-tax"
 
   private def baseUrl(serviceName: String) = servicesConfig.baseUrl(serviceName)
 
@@ -72,6 +73,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val invitationExpirationDuration: Duration = servicesConfig.getDuration("invitation.expiryDuration")
   val agentMappingFrontendExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
   val govUkGuidanceExternalUrl: String = getConfString("gov-uk-guidance.external-url")
+  val govUkGuidanceSignupUrl: String = s"${getConfString("gov-uk-guidance.external-url")}$signupClientUrl"
   val passcodeVerificationUrl =
     servicesConfig.getConfString(s"govuk-tax.${runMode.env}.url.verification-frontend.redirect", "/verification")
   val languageMap: Map[String, Lang] = Map(
@@ -87,6 +89,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val timeoutDialogTimeoutSeconds: Int = servicesConfig.getInt("timeoutDialog.timeout-seconds")
   val timeoutDialogCountdownSeconds: Int = servicesConfig.getInt("timeoutDialog.timeout-countdown-seconds")
   val mongoSessionExpireAfterSeconds: Int = servicesConfig.getInt("mongodb.session.expireAfterSeconds")
+  val altItsaSignupDays: Int = servicesConfig.getInt("alt-itsa-signup-days")
 
   //Booleans
   val featuresMtdIt: Boolean = servicesConfig.getBoolean("features.show-hmrc-mtd-it")

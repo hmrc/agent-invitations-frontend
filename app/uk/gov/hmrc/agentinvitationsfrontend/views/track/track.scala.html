@@ -29,6 +29,7 @@
 @this(
     mainTemplate: main_template,
     pendingForm: pending_form,
+    preAuthForm: preauth_form,
     cancelAuthForm: cancel_authorisation_form,
         uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     newRequestForm: new_request_form,
@@ -145,9 +146,10 @@
                     <h3 class="context">@Messages("recent-invitations.table-row-header.actions")</h3>
                     @{
                         invitationOrRelationship.status match {
+                            case "Partialauth" => preAuthForm(invitationOrRelationship, index)
                             case "Pending" => pendingForm(invitationOrRelationship, index)
                             case "Accepted" => if(config.cancelAuthActionFlag) {
-                                if(invitationOrRelationship.isRelationshipEnded == false) {
+                                if(!invitationOrRelationship.isRelationshipEnded) {
                                   cancelAuthForm(invitationOrRelationship, index)
                                 }
                             }
