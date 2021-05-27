@@ -36,8 +36,9 @@ class InvitationsServiceSpec extends UnitSpec {
   val acaConnector = mock(classOf[AgentClientAuthorisationConnector])
   val cidConnector = mock(classOf[CitizenDetailsConnector])
   val auditService = mock(classOf[AuditService])
+  val relationshipConnector = mock(classOf[RelationshipsConnector])
 
-  val tested = new InvitationsService(acaConnector, cidConnector, auditService)
+  val tested = new InvitationsService(acaConnector, cidConnector, relationshipConnector, auditService)
 
   val vrn = Vrn("101747696")
   val arn = Arn("TARN6169111")

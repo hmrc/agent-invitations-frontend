@@ -75,6 +75,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case object AllAuthorisationsRemoved extends State
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State
+  case object AlreadyCopiedAcrossItsa extends State
 
   type Basket = Set[AuthorisationRequest]
 
@@ -94,6 +95,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
+    type HasLegacyMapping = (Arn, String) => Future[Boolean]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType(basket) =>
@@ -372,6 +374,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            (createMultipleInvitations: CreateMultipleInvitations)
                            (getAgentLink: GetAgentLink)
                            (getAgencyEmail: GetAgencyEmail)
+                           (hasLegacyMapping: HasLegacyMapping)
+                           (appConfig: AppConfig)
                            (agent: AuthorisedAgent)
                            (irvClient: IrvClient) = Transition {
       // format: on
@@ -391,7 +395,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                agent.arn,
                                request.invitation.clientId,
                                HMRCPIR,
-                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations)
+                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations, hasLegacyMapping, appConfig)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
@@ -417,7 +421,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       successState: State)(clientType: ClientType, arn: Arn, clientIdentifier: String, service: String, basket: Basket)(
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship,
-      hasPartialAuthorisationFor: HasPartialAuthorisation): Future[State] =
+      hasPartialAuthorisationFor: HasPartialAuthorisation,
+      hasLegacyMapping: HasLegacyMapping,
+      appConfig: AppConfig
+    ): Future[State] =
       for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
                                      basket.exists(_.invitation.clientId == clientIdentifier))
@@ -434,7 +441,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                          case true =>
                            goto(PartialAuthorisationExists(basket))
                          case false =>
-                           goto(successState)
+                           if (appConfig.featuresAltItsa) hasLegacyMapping(arn, clientIdentifier).map { legacy =>
+                             if (legacy) AlreadyCopiedAcrossItsa
+                             else successState
+                           } else goto(successState)
                        } else goto(successState)
                    }
                  }
@@ -453,6 +463,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        (hasPendingInvitationsFor: HasPendingInvitations)
                        (hasActiveRelationshipFor: HasActiveRelationship)
                        (hasPartialAuthorisationFor: HasPartialAuthorisation)
+                       (hasLegacyMapping: HasLegacyMapping)
+                       (appConfig: AppConfig)
                        (authorisedAgent: AuthorisedAgent)
                        (confirmation: Confirmation) =
     // format: on
@@ -465,7 +477,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDIT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
 
       case ConfirmClientCgt(request, basket) => {
@@ -481,7 +493,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCCGTPD, basket)(
             hasPendingInvitationsFor,
             hasActiveRelationshipFor,
-            hasPartialAuthorisationFor)
+            hasPartialAuthorisationFor,
+            hasLegacyMapping,
+            appConfig)
         } else goto(state)
       }
 
@@ -492,7 +506,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
 
       case ConfirmClientBusinessVat(request) =>
@@ -530,7 +544,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request.invitation.clientId,
               request.invitation.service,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor)
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {

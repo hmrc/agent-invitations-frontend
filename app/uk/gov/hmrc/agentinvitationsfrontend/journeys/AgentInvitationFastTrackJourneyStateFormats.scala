@@ -139,6 +139,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "ConfirmCountryCodeCgt"           => ConfirmCgtCountryCodeFormat.reads(properties)
     case "SuspendedAgent"                  => SuspendedAgentFormat.reads(properties)
     case "PartialAuthorisationExists"      => PartialAuthorisationExistsFormat.reads(properties)
+    case "AlreadyCopiedAcrossItsa"         => JsSuccess(AlreadyCopiedAcrossItsa)
     case "ClientNotRegistered"             => ClientNotRegisteredFormat.reads(properties)
     case _                                 => JsError(s"Unknown state name $stateName")
   }

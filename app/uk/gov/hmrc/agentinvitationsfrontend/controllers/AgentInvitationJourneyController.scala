@@ -68,6 +68,7 @@ class AgentInvitationJourneyController @Inject()(
   selectFromServicesView: select_from_services,
   selectSingleServiceView: select_single_service,
   reviewAuthView: review_authorisations,
+  alreadyCopiedAcrossView: already_copied_across_itsa,
   deleteView: delete,
   notSignedupView: not_signed_up,
   cannotCreateRequestView: cannot_create_request,
@@ -205,7 +206,8 @@ class AgentInvitationJourneyController @Inject()(
   def submitIdentifyIrvClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(IrvClientForm.form)(
       Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)
+        hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
+        hasLegacyMapping)(appConfig)
     )
   }
 
@@ -233,7 +235,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitConfirmClient: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ConfirmClientForm)(
       Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)
+        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMapping)(appConfig)
     )
   }
 
@@ -305,6 +307,10 @@ class AgentInvitationJourneyController @Inject()(
     case _: AgentSuspended =>
   }
 
+  def showAlreadyCopiedAcrossItsa: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
+    case AlreadyCopiedAcrossItsa =>
+  }
+
   private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
       .map { is =>
@@ -359,6 +365,7 @@ class AgentInvitationJourneyController @Inject()(
     case AllAuthorisationsRemoved      => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
     case _: AgentSuspended             => routes.AgentInvitationJourneyController.showAgentSuspended()
     case _: ClientNotRegistered        => routes.AgentInvitationJourneyController.showClientNotRegistered()
+    case AlreadyCopiedAcrossItsa       => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
     case _                             => throw new Exception(s"Link not found for $state")
   }
 
@@ -705,8 +712,9 @@ class AgentInvitationJourneyController @Inject()(
       case AgentSuspended(suspendedService, basket) =>
         Ok(agentSuspendedView(basket, suspendedService, backLinkFor(breadcrumbs).url))
 
-      case _ => throw new Exception(s"Cannot render a page for unexpected state: $state")
+      case AlreadyCopiedAcrossItsa => Ok(alreadyCopiedAcrossView())
 
+      case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }
 }
 

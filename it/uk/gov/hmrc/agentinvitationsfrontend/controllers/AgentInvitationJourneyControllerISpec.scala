@@ -1733,6 +1733,21 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
     }
 
+    "show the already copied across warning page when there is a legacy mapping" in {
+      val request = FakeRequest("GET", "/agents/already-copied-across-itsa")
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        AlreadyCopiedAcrossItsa,
+        Nil
+      )
+
+      val result = controller.showAlreadyCopiedAcrossItsa(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "already-copied.header")
+    }
+
+
     "show the invitation sent page for a business service" in {
       journeyState.set(
         InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)),

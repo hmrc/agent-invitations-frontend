@@ -17,7 +17,8 @@
 package journeys
 
 import org.joda.time.LocalDate
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.{mock, when}
+import org.scalatest.BeforeAndAfter
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions._
@@ -34,7 +35,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatchers[State] {
+class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatchers[State] with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -66,10 +67,17 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   def cgtSubscription(countryCode: String = "GB") =
     CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails(countryCode)))
 
+  def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
+    Future.successful(false)
+
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
     CgtRef => Future(Some(cgtSubscription(countryCode)))
 
   val mockAppConfig = mock(classOf[AppConfig])
+
+  before {
+    when(mockAppConfig.featuresAltItsa).thenReturn(false)
+  }
 
   "AgentInvitationFastTrackJourneyService" when {
 
@@ -320,8 +328,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription())(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription())(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(ConfirmPostcodeCgt(fastTrackRequest, fastTrackRequest, None, Some("BN13 1FN"), "firstName lastName"))
       }
 
@@ -330,8 +338,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription("FR"))(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription("FR"))(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(ConfirmCountryCodeCgt(fastTrackRequest, fastTrackRequest, None, "FR", "firstName lastName"))
       }
 
@@ -340,8 +348,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeCgt(fastTrackRequest, fastTrackRequest, None, isChanging = true)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription("FR"))(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription("FR"))(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(IdentifyCgtClient(fastTrackRequest, fastTrackRequest, None))
       }
     }
@@ -400,7 +408,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(ConfirmClientCgt(fastTrackRequest, fastTrackRequest, None, "some-cgt-name")) when
           submitConfirmClientCgt(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-            hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(true)) should
+            hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCCGTPD))
       }
 
@@ -410,7 +418,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(ConfirmClientCgt(originalFastTrackRequest, fastTrackRequest, None, "some-cgt-name")) when
           submitConfirmClientCgt(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-            hasNoPartialAuthorisation)(authorisedAgent)(Confirmation(false)) should
+            hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, None))
       }
     }
@@ -435,7 +443,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDIT))
       }
       "transition to IdentifyPersonalClient for ITSA when changing information" in {
@@ -449,7 +457,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteIrv(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCPIR))
       }
       "transition to IdentifyPersonalClient for IRV when changing information" in {
@@ -463,7 +471,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDVAT))
       }
       "transition to IdentifyPersonalClient for Personal VAT when changing information" in {
@@ -477,7 +485,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
       "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for Trust" in {
@@ -485,7 +493,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", TAXABLETRUST))
       }
       "transition to IdentifyBusinessClient for Business VAT when changing information" in {
@@ -500,7 +508,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for irv" in {
@@ -509,7 +518,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for personal vat" in {
@@ -518,7 +528,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to IdentifyPersonalClient when the form is false for business vat" in {
@@ -527,7 +538,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteBusinessVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(IdentifyBusinessClient(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for itsa" in {
@@ -537,7 +549,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for irv" in {
@@ -547,7 +560,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when checkedDetailsAllInformation(checkPostcodeMatches)(
           checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
-          hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for personal vat" in {
@@ -557,7 +570,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for business vat" in {
@@ -567,7 +581,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for itsa service" in {
@@ -576,7 +591,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to knownFactNotMatched when the client is not enrolled for afi service - as afi clients don't need any enrolment" in {
@@ -586,7 +602,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteIrv(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for personal vat service" in {
@@ -595,7 +612,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to ClientNotSignedUp when the client is not enrolled for business vat service" in {
@@ -604,7 +622,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompletePersonalVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(ClientNotSignedUp(fastTrackRequest, None))
       }
       "transition to PendingInvitationExists when there is already a pending invitation for this request" in {
@@ -614,9 +633,11 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(PendingInvitationExists(fastTrackRequest, None))
       }
+
       "transition to ActiveAuthorisationExists when there is already an active relationship between agent and client for this service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
@@ -624,7 +645,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(fastTrackRequest, None))
       }
 
@@ -635,8 +657,21 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasPartialAuthorisation)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(PartialAuthorisationExists(fastTrackRequest, None))
+      }
+
+      "transition to AlreadyCopiedAcross when there is a legacy mapping between agent and client for ITSA" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, postCode)
+        def hasLegacyMapping(arn: Arn, clientId: String): Future[Boolean] = Future.successful(true)
+        when(mockAppConfig.featuresAltItsa).thenReturn(true)
+
+        given(CheckDetailsCompleteItsa(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            Confirmation(true)) should
+          thenGo(AlreadyCopiedAcrossItsa)
       }
 
       "transition to NoPostcode when there is no known fact in the request" in {
@@ -707,7 +742,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           identifiedClientItsa(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
             ItsaClient("AB123456C", "BN32TM")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDIT))
       }
@@ -716,7 +751,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           identifiedClientIrv(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
             IrvClient("AB123456C", "1990-10-10")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCPIR))
       }
@@ -725,7 +760,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(IdentifyPersonalClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
             VatClient("1234567", "2010-10-10")) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDVAT))
       }
@@ -734,7 +769,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(IdentifyBusinessClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
             VatClient("1234567", "2010-10-10")) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
@@ -745,7 +780,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(IdentifyNoClientTypeClient(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           identifiedClientVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
             VatClient(newVrn, newVatRegDate)) should
           thenGo(
             SelectClientTypeVat(
@@ -774,7 +809,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(NoPostcode(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           moreDetailsItsa(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)("BN114AW") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)("BN114AW") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDIT))
       }
       "transition to InvitationSent for irv service" in {
@@ -782,7 +817,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(NoDob(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           moreDetailsIrv(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)("1991-10-10") should
+            hasNoPendingInvitation)(hasNoLegacyMapping)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)(
+            "1991-10-10") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCPIR))
       }
       "transition to InvitationSent for personal vat service" in {
@@ -790,7 +826,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(NoVatRegDate(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)("2011-10-10") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            "2011-10-10") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDVAT))
       }
       "transition to InvitationSent for business vat service" in {
@@ -798,7 +835,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(NoVatRegDate(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           moreDetailsVat(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(mockAppConfig)(authorisedAgent)("2011-10-10") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            "2011-10-10") should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com"))
       }
     }
@@ -822,8 +860,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription())(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription())(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCMTDVAT))
       }
       "transition to MoreDetails for vat service when there is no known fact" in {
@@ -832,8 +870,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription())(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription())(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(NoVatRegDate(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
       }
 
@@ -843,8 +881,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
         given(SelectClientTypeVat(originalFastTrackRequest, fastTrackRequest, None, isChanging = true)) when
           selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
-            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(getCgtSubscription())(mockAppConfig)(authorisedAgent)(
-            "personal") should
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(getCgtSubscription())(mockAppConfig)(
+            authorisedAgent)("personal") should
           thenGo(IdentifyPersonalClient(originalFastTrackRequest, fastTrackRequest.copy(clientType = Some(personal)), None))
       }
     }

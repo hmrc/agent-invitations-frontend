@@ -38,20 +38,20 @@ trait MongoSessionStore[T] extends Logging {
       case Some(sessionId) ⇒
         cacheRepository
           .findById(Id(sessionId))
-          .flatMap(_.flatMap(_.data))
+          .map(_.flatMap(_.data))
           .flatMap {
             case Some(cache) =>
               (cache \ sessionName).asOpt[JsObject] match {
-                case None => Right(None)
+                case None => toFuture(Right(None))
                 case Some(obj) =>
                   obj.validate[T] match {
-                    case JsSuccess(p, _) => Right(Some(p))
+                    case JsSuccess(p, _) => toFuture(Right(Some(p)))
                     case JsError(errors) =>
                       val allErrors = errors.map(_._2.map(_.message).mkString(",")).mkString(",")
-                      Left(allErrors)
+                      toFuture(Left(allErrors))
                   }
               }
-            case None => Right(None)
+            case None => toFuture(Right(None))
           }
           .recover {
             case e ⇒
@@ -59,7 +59,7 @@ trait MongoSessionStore[T] extends Logging {
           }
 
       case None ⇒
-        Right(None)
+        toFuture(Right(None))
     }
 
   def store(newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
@@ -80,7 +80,7 @@ trait MongoSessionStore[T] extends Logging {
           }
 
       case None ⇒
-        Left(s"no sessionId found in the HeaderCarrier to store in mongo")
+        toFuture(Left(s"no sessionId found in the HeaderCarrier to store in mongo"))
     }
 
   def delete()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
@@ -101,6 +101,6 @@ trait MongoSessionStore[T] extends Logging {
           }
 
       case None ⇒
-        Right(())
+        toFuture(Right(()))
     }
 }

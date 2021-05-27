@@ -27,7 +27,7 @@ trait SessionCache[T] extends MongoSessionStore[T] with Logging {
 
   def fetch(implicit hc: HeaderCarrier, reads: Reads[T], ec: ExecutionContext): Future[Option[T]] =
     get.flatMap {
-      case Right(cache) => cache
+      case Right(cache) => toFuture(cache)
       case Left(error) =>
         logger.warn(error)
         Future.failed(new RuntimeException(error))
@@ -40,7 +40,7 @@ trait SessionCache[T] extends MongoSessionStore[T] with Logging {
     } yield cache
 
     result.flatMap {
-      case Right(cache) => cache
+      case Right(cache) => toFuture(cache)
       case Left(error) =>
         logger.warn(error)
         Future.failed(new RuntimeException(error))
@@ -49,7 +49,7 @@ trait SessionCache[T] extends MongoSessionStore[T] with Logging {
 
   def save(input: T)(implicit hc: HeaderCarrier, writes: Writes[T], ec: ExecutionContext): Future[T] =
     store(input).flatMap {
-      case Right(_) => input
+      case Right(_) => toFuture(input)
       case Left(error) =>
         logger.warn(error)
         Future.failed(new RuntimeException(error))

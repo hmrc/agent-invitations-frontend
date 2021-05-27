@@ -34,6 +34,7 @@ import scala.util.control.NonFatal
 class InvitationsService @Inject()(
   val acaConnector: AgentClientAuthorisationConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
+  val relationshipsConnector: RelationshipsConnector,
   auditService: AuditService)
     extends GetClientName with Logging {
 
@@ -241,6 +242,10 @@ class InvitationsService @Inject()(
           .map(InvitationId(_))
           .headOption)
   }
+
+
+  def hasLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    relationshipsConnector.getHasLegacyRelationships(arn, nino)
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     getActiveInvitationFor(arn, clientId, service).flatMap {
