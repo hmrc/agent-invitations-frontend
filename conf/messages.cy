@@ -1011,7 +1011,7 @@ active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Partial authorisation exists
 partial-authorisation-exists.header=You are already authorised
-partial-authorisation-exists.p1=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei Dreth Incwm. Mae hyn yn golygu y gallwch nawr <a href=’https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy'> gofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>.
+partial-authorisation-exists.p1=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei Dreth Incwm. Mae hyn yn golygu y gallwch nawr <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy'> gofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>.
 partial-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 partial-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 partial-authorisation-exists.new-request.button=Dechrau cais newydd
