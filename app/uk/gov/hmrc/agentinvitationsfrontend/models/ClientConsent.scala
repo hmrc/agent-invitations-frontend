@@ -21,7 +21,13 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.controllers.RestFormats.localDateFormats
 
-case class ClientConsent(invitationId: InvitationId, expiryDate: LocalDate, serviceKey: String, consent: Boolean, processed: Boolean = false) {
+case class ClientConsent(
+  invitationId: InvitationId,
+  expiryDate: LocalDate,
+  serviceKey: String,
+  consent: Boolean,
+  processed: Boolean = false,
+  isAltItsa: Boolean = false) {
 
   def service: String = Services.determineServiceFromServiceMessageKey(this.serviceKey)
 }

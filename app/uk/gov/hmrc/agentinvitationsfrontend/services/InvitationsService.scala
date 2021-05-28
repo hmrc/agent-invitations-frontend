@@ -243,7 +243,6 @@ class InvitationsService @Inject()(
           .headOption)
   }
 
-
   def hasLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     relationshipsConnector.getHasLegacyRelationships(arn, nino)
 

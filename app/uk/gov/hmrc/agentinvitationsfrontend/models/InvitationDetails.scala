@@ -48,7 +48,8 @@ case class InvitationDetails(
   expiryDate: LocalDate,
   status: InvitationStatus,
   isRelationshipEnded: Boolean,
-  events: List[StatusChangeEvent]) {
+  events: List[StatusChangeEvent],
+  isAltItsa: Boolean = false) {
 
   def firstEvent(): StatusChangeEvent =
     events.head
