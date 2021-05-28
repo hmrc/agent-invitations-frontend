@@ -41,7 +41,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |"expiryDate": "2010-01-01",
                            |"serviceKey": "itsa",
                            |"consent": true,
-                           |"processed": false
+                           |"processed": false,
+                           |"isAltItsa":false
                            |}, {
                            |"invitationId": {
                            |  "value": "B1BEOZEO7MNO6"
@@ -49,7 +50,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |"expiryDate": "2010-02-02",
                            |"serviceKey": "afi",
                            |"consent": true,
-                           |"processed": false
+                           |"processed": false,
+                           |"isAltItsa":false
                            |}
                            |]"""
 
@@ -112,12 +114,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           "uid",
           "agent name",
           Seq(
-            ClientConsent(
-              InvitationId("A1BEOZEO7MNO6"),
-              LocalDate.parse("2010-01-01"),
-              "itsa",
-              consent = true
-            ),
+            ClientConsent(InvitationId("A1BEOZEO7MNO6"), LocalDate.parse("2010-01-01"), "itsa", consent = true),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
@@ -161,7 +158,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           )
         )
         val json = Json.parse(
-          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "serviceKey": "afi", "consent": true, "processed": false}, $jsonConsents}}""".stripMargin)
+          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "serviceKey": "afi", "consent": true, "processed": false, "isAltItsa":false}, $jsonConsents}}""".stripMargin)
 
         Json.toJson(state) shouldBe json
         json.as[State] shouldBe state
@@ -283,7 +280,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                         |  "expiryDate": "2010-01-01",
                         |  "serviceKey": "itsa",
                         |  "consent": true,
-                        |  "processed": false
+                        |  "processed": false,
+                        |  "isAltItsa":false
                         |}],
                         |"successfulConsents": [{
                         |  "invitationId": {
@@ -292,7 +290,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                         |  "expiryDate": "2010-02-02",
                         |  "serviceKey": "afi",
                         |  "consent": true,
-                        |  "processed": true
+                        |  "processed": true,
+                        |  "isAltItsa":false
                         |}],
                         |"clientType": "personal"}}""".stripMargin)
 

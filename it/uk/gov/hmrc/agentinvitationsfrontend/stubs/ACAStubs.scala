@@ -80,7 +80,8 @@ trait ACAStubs {
                          |           "time" : 1595502969891,
                          |           "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -94,7 +95,8 @@ trait ACAStubs {
                          |           "time": 1595502969892,
                          |           "status": "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -108,7 +110,8 @@ trait ACAStubs {
                          |            "time" : 1595502969893,
                          |            "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  }
                          |]
                          |""".stripMargin)
@@ -135,7 +138,8 @@ trait ACAStubs {
                          |            "time" : 1595502969898,
                          |            "status" : "Accepted"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -149,7 +153,8 @@ trait ACAStubs {
                          |            "time" : 1595502969899,
                          |            "status" : "$mostRecentStatus"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -163,7 +168,8 @@ trait ACAStubs {
                          |            "time" : 1595502969890,
                          |            "status" : "Cancelled"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  }
                          |]
                          |""".stripMargin)
@@ -190,7 +196,8 @@ trait ACAStubs {
                          |            "time" : 1595502969897,
                          |            "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -204,7 +211,8 @@ trait ACAStubs {
                          |            "time" : 1595502969896,
                          |            "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -218,7 +226,8 @@ trait ACAStubs {
                          |            "time" : 1595502969895,
                          |            "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
@@ -232,7 +241,8 @@ trait ACAStubs {
                          |            "time" : 1595502969894,
                          |            "status" : "$status"
                          |        }
-                         |    ]
+                         |    ],
+                         |    "isAltItsa":false
                          |  }
                          |]
                          |""".stripMargin)
@@ -252,19 +262,22 @@ trait ACAStubs {
                          |    "invitationId": {
                          |      "value": "AG1UGUKTPNJ7W"
                          |    },
-                         |    "expiryDate": "9999-11-01"
+                         |    "expiryDate": "9999-11-01",
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "AG1UGUKTPNJ7Z"
                          |    },
-                         |    "expiryDate": "9999-11-01"
+                         |    "expiryDate": "9999-11-01",
+                         |    "isAltItsa":false
                          |  },
                          |  {
                          |    "invitationId": {
                          |      "value": "CZTW1KY6RTAAT"
                          |    },
-                         |    "expiryDate": "9999-12-25"
+                         |    "expiryDate": "9999-12-25",
+                         |    "isAltItsa":false
                          |  }
                          |]
                          |""".stripMargin)

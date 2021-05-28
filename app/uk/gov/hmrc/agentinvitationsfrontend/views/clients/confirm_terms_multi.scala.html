@@ -38,13 +38,13 @@
 
 <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</span>
 <ul class="list list-bullet">
+    <li>@Messages("confirm-terms-multi.itsa.list.item7")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item2")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item3")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item4")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item5")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item6")</li>
-    <li>@Messages("confirm-terms-multi.itsa.list.item7")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item8")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item9")</li>
     <li>@Messages("confirm-terms-multi.itsa.list.item10")</li>
@@ -140,7 +140,10 @@
    }
 }
 
-@suitableTerms(serviceKey: String, expiryDate: String) = {
+@suitableTerms(serviceKey: String, expiryDate: String, isAltItsa: Boolean) = {
+    @if(isAltItsa) {
+        <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
+    }
     @{serviceKey match {
         case "itsa" => itsaTerms
         case "afi" => pirTerms
@@ -149,7 +152,12 @@
         case "trustNT" => trustNTTerms
         case "cgt" => cgtTerms
     }}
-    <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
+    @if(!isAltItsa) {
+        <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
+    }
+    @if(isAltItsa) {
+        <p>@Messages("confirm-terms-multi.itsa.p2")</p>
+    }
 }
 
 @title = @{
@@ -198,13 +206,13 @@
                         <h2 class="margin-top-0 heading-medium margin-bottom-20 margin-top-20">@Messages(s"confirm-terms-multi.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}.heading")</h2>
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
-                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
+                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
                             @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
                                 '_label -> label(consent.serviceKey),
                                 '_groupDivClass -> "div-underline",
                                 '_value -> "true")
                         } else {
-                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate))
+                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
                             @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
                                 '_label -> label(consent.serviceKey),
                                 '_groupDivClass -> "div-underline")

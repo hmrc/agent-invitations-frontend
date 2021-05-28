@@ -133,8 +133,14 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       }
 
     private def getConsents(pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
-      pendingInvitationDetails.map(invitation =>
-        ClientConsent(invitation.invitationId, invitation.expiryDate, determineServiceMessageKey(invitation.invitationId), consent = false))
+      pendingInvitationDetails.map(
+        invitation =>
+          ClientConsent(
+            invitation.invitationId,
+            invitation.expiryDate,
+            determineServiceMessageKey(invitation.invitationId),
+            consent = false,
+            isAltItsa = invitation.isAltItsa))
 
     def submitWarmUp(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
@@ -323,7 +329,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       agentName: String): Future[Seq[ClientConsent]] =
       for {
         result <- Future.traverse(consents) {
-                   case chosenConsent @ ClientConsent(invitationId, _, _, consent, _) =>
+                   case chosenConsent @ ClientConsent(invitationId, _, _, consent, _, _) =>
                      if (consent) {
                        acceptInvitation(invitationId)(agentName)
                          .map(acceptSuccess => chosenConsent.copy(processed = acceptSuccess))
