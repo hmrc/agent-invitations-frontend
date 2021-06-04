@@ -1011,20 +1011,20 @@ active-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi a
 active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Partial authorisation exists
-partial-authorisation-exists.header=You are already authorised
+partial-authorisation-exists.header=Rydych eisoes wedi’ch awdurdodi
 partial-authorisation-exists.p1=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei Dreth Incwm. Mae hyn yn golygu y gallwch nawr <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy'> gofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>.
 partial-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 partial-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 partial-authorisation-exists.new-request.button=Dechrau cais newydd
 
 #Client not registered (ALT-ITSA)
-client-not-registered.header=Your client needs to register for Self Assessment
-client-not-registered.p1=You cannot create an authorisation request for this client until they have registered for Self Assessment and have a Self Assessment Unique Taxpayer Reference.
-client-not-registered.h2=What to do next
-client-not-registered.p2=Ask your client to <a href="{0}">register for Self Assessment</a>. After they have registered, they will receive a Self Assessment Unique Taxpayer Reference.
-client-not-registered.p3=Then you can <a href={0}>create an authorisation request to send them</a>.
-client-not-registered.return=Return to your authorisation requests
-client-not-registered.new-request.button=Start a new request
+client-not-registered.header=Mae angen i’ch cleient gofrestru ar gyfer Hunanasesiad
+client-not-registered.p1=Ni allwch greu cais am awdurdodiad ar gyfer y cleient hwn hyd nes ei fod wedi cofrestru ar gyfer Hunanasesiad a bod ganddo Gyfeirnod Unigryw y Trethdalwr ar gyfer Hunanasesiad.
+client-not-registered.h2=Yr hyn i’w wneud nesaf
+client-not-registered.p2=Gofynnwch i’ch cleient <a href="{0}">gofrestru ar gyfer Hunanasesiad</a>. Ar ôl iddo gofrestru, bydd yn cael Cyfeirnod Unigryw y Trethdalwr ar gyfer Hunanasesiad.
+client-not-registered.p3=Wedyn, gallwch <a href="{0}">greu cais am awdurdodiad i’w anfon ato</a>.
+client-not-registered.return=Dychwelyd i’ch ceisiadau am awdurdodiad
+client-not-registered.new-request.button=Dechrau cais newydd
 
 #Error Cannot View Request
 error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
