@@ -72,8 +72,9 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
 
   val invitationExpirationDuration: Duration = servicesConfig.getDuration("invitation.expiryDuration")
   val agentMappingFrontendExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
-  val govUkGuidanceExternalUrl: String = getConfString("gov-uk-guidance.external-url")
-  val govUkGuidanceSignupUrl: String = s"${getConfString("gov-uk-guidance.external-url")}$signupClientUrl"
+  val govUkExternalUrl: String = s"${getConfString("gov-uk.external-url")}"
+  val govUkGuidanceExternalUrl: String = s"$govUkExternalUrl/guidance"
+  val govUkGuidanceSignupUrl: String = s"$govUkGuidanceExternalUrl$signupClientUrl"
   val passcodeVerificationUrl =
     servicesConfig.getConfString(s"govuk-tax.${runMode.env}.url.verification-frontend.redirect", "/verification")
   val languageMap: Map[String, Lang] = Map(

@@ -134,7 +134,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     new URL(baseUrl, s"/agent-client-authorisation/clients/invitations/uid/$uid")
 
   private[connectors] def putAltItsaAuthorisationUrl(arn: Arn) =
-    new URL(baseUrl, s"/agent-client-authorisation/agent/alt-itsa/update/$arn")
+    new URL(baseUrl, s"/agent-client-authorisation/agent/alt-itsa/update/${arn.value}")
 
   private def invitationUrl(location: String) = new URL(baseUrl, location)
 
