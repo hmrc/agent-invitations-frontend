@@ -30,6 +30,7 @@ case class InvitationSentPageConfig(
   expiryDate: LocalDate,
   agencyEmail: String,
   services: Set[String],
+  isAltItsa: Boolean,
   serviceType: String = "personal")(implicit externalUrls: ExternalUrls, messages: Messages) {
 
   val continueUrl: String = continueUrlOpt match {
@@ -51,4 +52,6 @@ case class InvitationSentPageConfig(
     else if (services(TAXABLETRUST)) Some(Messages("invitation-sent.step1.business.trust"))
     else None
   } else None
+
+  val showWarning: Boolean = !isAltItsa || isAltItsa && services.size > 1
 }

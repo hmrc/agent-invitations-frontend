@@ -231,12 +231,11 @@ invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a
 invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
 invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu bydd eich cysylltiad sy’n gais am awdurdodiad yn dod i ben. Byddwn yn anfon e-bost atoch yn {1} i’ch diweddaru ar statws y cais hwn.
 invitation-sent.client-warning=Ni fydd cleientiaid yn gallu eich awdurdodi os na fyddant yn defnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth y gwnaethant ei ddefnyddio i gofrestru ar gyfer y gwasanaeth treth y mae angen awdurdodiad ar ei gyfer arnoch.
-invitation-sent.client-help=Gall cleientiaid sydd angen help o hyd ddilyn <a href={0} target="_blank">arweiniad cam wrth gam ynghylch sut i awdurdodi asiant treth (yn agor tab newydd)</a>
-invitation-sent.next-steps.heading=Ar ôl i chi anfon y cysylltiad sy’n gais am awdurdodiad
-invitation-sent.next-steps.p=Pan fyddwch wedi cwblhau’r camau hyn, efallai yr hoffech wneud y canlynol:
-invitation-sent.next-steps.link-text.track=Olrhain eich ceisiadau am awdurdodiad
-invitation-sent.next-steps.link-text.new=Dechrau cais am awdurdodiad newydd
-invitation-sent.next-steps.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
+invitation-sent.further-help.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
+invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authorising a tax agent for clients (opens in new tab)
+invitation-sent.further-help.heading=Further help
+invitation-sent.further-help.p=Get help to complete another task, including:
+invitation-sent.all-steps=You must follow all four steps.
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen

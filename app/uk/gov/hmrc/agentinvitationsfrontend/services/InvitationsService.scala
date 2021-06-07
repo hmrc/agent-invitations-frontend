@@ -22,7 +22,9 @@ import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSentPersonal, State}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
@@ -147,7 +149,7 @@ class InvitationsService @Inject()(
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     acaConnector.checkCitizenRecord(nino, dob)
 
-  private def isAltItsa(i: StoredInvitation): Boolean =
+  def isAltItsa(i: StoredInvitation): Boolean =
     i.service == "HMRC-MTD-IT" && i.clientId == i.suppliedClientId
 
   private def determineInvitationResponse(invitationId: InvitationId, si: StoredInvitation, agentName: String, response: String)(
@@ -216,18 +218,35 @@ class InvitationsService @Inject()(
     } yield result
 
   def hasPendingInvitationsFor(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    for {
-      hasPendingInvitations <- acaConnector
-                                .getAllPendingInvitationsForClient(arn, clientId, service)
-                                .map(s => s.nonEmpty)
-    } yield hasPendingInvitations
+    acaConnector.getAllPendingInvitationsForClient(arn, clientId, service).map(s => s.nonEmpty)
+
+  def isAltItsa(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    acaConnector.getAllPendingInvitationsForClient(arn, clientId, Services.HMRCMTDIT).map { pendingInvitations =>
+      pendingInvitations.exists { storedInvitation =>
+        storedInvitation.clientId == storedInvitation.suppliedClientId && storedInvitation.clientIdType == "ni"
+      }
+    }
+
+  def createInvitationSent(agencyEmail: String, invitationLink: String, arn: Arn, basket: Set[AuthorisationRequest])(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[State] = {
+
+    val services = basket.map(_.invitation.service)
+
+    basket
+      .find(_.invitation.service == Services.HMRCMTDIT)
+      .map(_.invitation.clientId)
+      .fold(toFuture(false)) { clientId =>
+        isAltItsa(arn, clientId)
+      }
+      .map { hasAltItsa =>
+        InvitationSentPersonal(invitationLink, None, agencyEmail, services, hasAltItsa)
+      }
+
+  }
 
   def hasPartialAuthorisationFor(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    for {
-      hasPartialAuth <- acaConnector
-                         .getPartialAuthorisationsForClient(arn, clientId)
-                         .map(s => s.nonEmpty)
-    } yield hasPartialAuth
+    acaConnector.getPartialAuthorisationsForClient(arn, clientId).map(s => s.nonEmpty)
 
   def getActiveInvitationFor(arn: Arn, clientId: String, service: String)(
     implicit hc: HeaderCarrier,
@@ -242,7 +261,6 @@ class InvitationsService @Inject()(
           .map(InvitationId(_))
           .headOption)
   }
-
 
   def hasLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     relationshipsConnector.getHasLegacyRelationships(arn, nino)

@@ -325,14 +325,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "invitation-sent.link-text",
         "invitation-sent.select-link",
         "invitation-sent.client-warning",
-        "invitation-sent.next-steps.heading",
-        "invitation-sent.next-steps.p",
-        "invitation-sent.next-steps.link-text.track",
-        "invitation-sent.next-steps.link-text.new",
-        "invitation-sent.next-steps.link-text.asa")
-
-      checkHtmlResultWithBodyText(result, hasMessage("invitation-sent.client-respond", "5 May 2017", "abc@xyz.com"),
-        "Clients who still need help can follow a <a href=https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you target=\"_blank\">step-by-step guide to authorising a tax agent (opens in a new tab)</a>")
+        "invitation-sent.further-help.heading",
+        "invitation-sent.further-help.link-text.sbs",
+        "invitation-sent.further-help.link-text.asa")
     }
   }
 
