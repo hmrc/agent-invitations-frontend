@@ -48,7 +48,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val guidanceAuthoriseAgent = {
     s"${appConfig.govUkGuidanceExternalUrl}/authorise-an-agent-to-deal-with-certain-tax-services-for-you"
   }
-  val guidanceUrlSaSignup = s"${appConfig.govUkGuidanceExternalUrl}/register-for-self-assessment/self-employed"
+  val guidanceUrlSaSignup = s"${appConfig.govUkExternalUrl}/register-for-self-assessment/self-employed"
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
   val companyAuthFrontendSignInUrl = s"$companyAuthUrl$companyAuthSignInPath"
