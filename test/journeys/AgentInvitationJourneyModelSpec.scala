@@ -79,6 +79,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
 
+  def createInvitationSentMock: CreateInvitationSent = (_: String, _: String, _: Arn, _: Basket) => Future(???)
+
   def hasNoLegacyMapping: HasLegacyMapping = (_: Arn, _: String) => Future(false)
 
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
@@ -1077,7 +1079,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
 
         given(ReviewAuthorisationsTrust(availableTrustServices, emptyBasket)) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(true)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(SelectTrustService(availableTrustServices, emptyBasket))
       }
 
@@ -1098,7 +1101,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT)))
       }
 
@@ -1119,7 +1123,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(AllAuthorisationsFailed(Set(authorisationRequestFailed)))
       }
 
@@ -1146,7 +1151,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew1, authorisationRequestNew2)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(
             SomeAuthorisationsFailed(
               "invitation/link",
@@ -1207,7 +1213,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]): Future[Set[AuthorisationRequest]] = Future(emptyBasket)
 
         given(ReviewAuthorisationsPersonal(availableServices, emptyBasket)) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(true)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
+            Confirmation(true)) should
           thenGo(SelectPersonalService(availableServices, emptyBasket)) //FIXME check basket has invitation added
       }
 
@@ -1228,8 +1235,33 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
-          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT)))
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+            Confirmation(false)) should
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))
+      }
+
+      "after authorisationsReviewed(false) transition to InvitationSentPersonal (alt itsa)" in {
+
+        val authorisationRequestNew =
+          AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", "BN114AW"), AuthorisationRequest.NEW, "ABC123")
+
+        val authorisationRequestCreated =
+          AuthorisationRequest("Mr Client", Invitation(Some(personal), HMRCMTDIT, "AB123456A", "BN114AW"), AuthorisationRequest.CREATED, "ABC123")
+
+        def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest]) =
+          Future(Set(authorisationRequestCreated))
+
+        given(
+          ReviewAuthorisationsPersonal(
+            availableServices,
+            Set(authorisationRequestNew)
+          )
+        ) when
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))(authorisedAgent)(
+            Confirmation(false)) should
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
       }
 
       "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
@@ -1249,7 +1281,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(AllAuthorisationsFailed(Set(authorisationRequestFailed)))
       }
 
@@ -1276,7 +1310,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew1, authorisationRequestNew2)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(authorisedAgent)(Confirmation(false)) should
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
+            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+            Confirmation(false)) should
           thenGo(
             SomeAuthorisationsFailed(
               "invitation/link",
@@ -1403,7 +1439,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set.empty
           )
         ) when continueSomeResponsesFailed(authorisedAgent) should
-          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty, isAltItsa = false))
       }
     }
   }

@@ -84,7 +84,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       "the current state is SelectClientType and there are breadcrumbs" in {
         journeyState.set(
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty, isAltItsa = false))
         )
 
         behave like itShowsClientTypePage(
@@ -92,7 +92,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         journeyState.get should have[State](
           state = SelectClientType(emptyBasket),
-          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
+          breadcrumbs = List(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty, isAltItsa = false))
         )
       }
 
@@ -1627,7 +1627,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
       journeyState.get should have[State](
-        InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com", Set.empty))
+        InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com", Set.empty, isAltItsa = false))
     }
 
     "redirect to select-service when yes is selected" in {
@@ -1702,14 +1702,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the invitation sent page for a personal service" in {
       journeyState.set(
-        InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)),
+        InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false),
         List(
           ReviewAuthorisationsPersonal(availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCMTDIT), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1730,7 +1730,48 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       checkInviteSentPageContainsSurveyLink(result, true)
 
-      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)))
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false))
+    }
+
+    "show the invitation sent page for a personal service alt itsa" in {
+      journeyState.set(
+        InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true),
+        List(
+          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          SelectPersonalService(Set(HMRCMTDIT), emptyBasket),
+          SelectClientType(emptyBasket)
+        )
+      )
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
+      checkInviteSentPageContainsSurveyLink(result, true)
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
+    }
+
+    "show the invitation sent page for a personal service alt itsa with other services" in {
+      journeyState.set(
+        InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true),
+        List(
+          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          SelectPersonalService(Set(HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectClientType(emptyBasket)
+        )
+      )
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
+      checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
+      checkInviteSentPageContainsSurveyLink(result, true)
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true))
     }
 
     "show the already copied across warning page when there is a legacy mapping" in {
@@ -1746,7 +1787,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "already-copied.header")
     }
-
 
     "show the invitation sent page for a business service" in {
       journeyState.set(
@@ -1925,7 +1965,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
-      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty))
+      journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty, isAltItsa = false))
     }
   }
 

@@ -228,20 +228,27 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "InvitationSentPersonal" in {
-        Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com", Set(HMRCMTDIT, HMRCPIR))) shouldBe Json.obj(
-          "state" -> "InvitationSentPersonal",
-          "properties" -> Json
-            .obj(
-              "invitationLink" -> "invitation/link",
-              "continueUrl"    -> "continue/url",
-              "agencyEmail"    -> "abc@xyz.com",
-              "services"       -> Json.arr("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD")
-            )
-        )
+        Json.toJson(InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com", Set(HMRCMTDIT, HMRCPIR), isAltItsa = false)) shouldBe Json
+          .obj(
+            "state" -> "InvitationSentPersonal",
+            "properties" -> Json
+              .obj(
+                "invitationLink" -> "invitation/link",
+                "continueUrl"    -> "continue/url",
+                "agencyEmail"    -> "abc@xyz.com",
+                "services"       -> Json.arr("HMRC-MTD-IT", "PERSONAL-INCOME-RECORD"),
+                "isAltItsa"      -> false
+              )
+          )
         Json
           .parse(
-            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "services": ["HMRC-MTD-IT", "PERSONAL-INCOME-RECORD"]}}""")
-          .as[State] shouldBe InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com", Set(HMRCMTDIT, HMRCPIR))
+            """{"state":"InvitationSentPersonal", "properties": {"invitationLink": "invitation/link", "continueUrl": "continue/url", "agencyEmail": "abc@xyz.com", "services": ["HMRC-MTD-IT", "PERSONAL-INCOME-RECORD"], "isAltItsa": false}}""")
+          .as[State] shouldBe InvitationSentPersonal(
+          "invitation/link",
+          Some("continue/url"),
+          "abc@xyz.com",
+          Set(HMRCMTDIT, HMRCPIR),
+          isAltItsa = false)
       }
 
       "InvitationSentBusiness" in {

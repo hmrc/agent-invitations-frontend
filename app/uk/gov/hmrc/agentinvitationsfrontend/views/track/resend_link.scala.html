@@ -57,13 +57,13 @@
                 <strong class="govuk-warning-text__text">@Messages("invitation-sent.client-warning")</strong>
             </div>
         </li>
-
+    </ol>
         <p>@Html(Messages("invitation-sent.client-help", externalUrls.guidanceAuthoriseAgent))</p>
-
-            <h2 class="heading-medium">@Messages("invitation-sent.next-steps.heading")</h2>
-            <p>@Messages("invitation-sent.next-steps.p")</p>
-            <p><a href="@config.trackLink" id="trackAuthRequest">@Messages("invitation-sent.next-steps.link-text.track")</a></p>
-            <p><a href="@config.newRequestLink" id="startNewAuthRequest">@Messages("invitation-sent.next-steps.link-text.new")</a></p>
-            <a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.next-steps.link-text.asa")</a>
+            <h2 class="heading-medium">@Messages("invitation-sent.further-help.heading")</h2>
+            <p>@Messages("invitation-sent.further-help.p")</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" class="form-field-group" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
+                <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
+            </ul>
 
 }

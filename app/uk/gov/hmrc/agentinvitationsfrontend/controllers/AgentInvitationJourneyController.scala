@@ -246,7 +246,7 @@ class AgentInvitationJourneyController @Inject()(
 
   def submitReviewAuthorisations: Action[AnyContent] = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(ReviewAuthorisationsForm)(
-      Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail))
+      Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(createInvitationSent))
   }
 
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] = action { implicit request =>
@@ -603,7 +603,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(DeleteAuthorisationForm)
           ))
 
-      case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services) =>
+      case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
         Ok(
           invitationSentView(
             InvitationSentPageConfig(
@@ -613,7 +613,9 @@ class AgentInvitationJourneyController @Inject()(
               ClientType.fromEnum(personal),
               inferredExpiryDate,
               agencyEmail,
-              services)))
+              services,
+              isAltItsa
+            )))
 
       case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, services) =>
         Ok(
@@ -626,6 +628,7 @@ class AgentInvitationJourneyController @Inject()(
               inferredExpiryDate,
               agencyEmail,
               services,
+              isAltItsa = false,
               services.head)))
 
       case KnownFactNotMatched(basket) =>

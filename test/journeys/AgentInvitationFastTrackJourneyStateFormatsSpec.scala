@@ -775,11 +775,16 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "InvitationSentPersonal" in {
-        val state = InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com", HMRCMTDIT)
+        val state = InvitationSentPersonal("invitation/link", Some("continue/url"), "abc@xyz.com", HMRCMTDIT, isAltItsa = false)
         val json = Json.obj(
           "state" -> "InvitationSentPersonal",
           "properties" -> Json
-            .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com", "service" -> "HMRC-MTD-IT")
+            .obj(
+              "invitationLink" -> "invitation/link",
+              "continueUrl"    -> "continue/url",
+              "agencyEmail"    -> "abc@xyz.com",
+              "service"        -> "HMRC-MTD-IT",
+              "isAltItsa"      -> false)
         )
 
         Json.toJson(state) shouldBe json
