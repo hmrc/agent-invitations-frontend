@@ -232,9 +232,9 @@ invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofy
 invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu bydd eich cysylltiad sy’n gais am awdurdodiad yn dod i ben. Byddwn yn anfon e-bost atoch yn {1} i’ch diweddaru ar statws y cais hwn.
 invitation-sent.client-warning=Ni fydd cleientiaid yn gallu eich awdurdodi os na fyddant yn defnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth y gwnaethant ei ddefnyddio i gofrestru ar gyfer y gwasanaeth treth y mae angen awdurdodiad ar ei gyfer arnoch.
 invitation-sent.further-help.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
-invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authorising a tax agent for clients (opens in new tab)
-invitation-sent.further-help.heading=Rhagor o help
-invitation-sent.further-help.p=Cael help i gwblhau tasg arall, gan gynnwys:
+invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch sut i awdurdodi asiant treth ar gyfer cleientiaid (yn agor tab newydd)
+invitation-sent.further-help.heading=Help bellach
+invitation-sent.further-help.p=Mae help ar gael i chi gwblhau tasgau eraill, gan gynnwys:
 invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
 
 #Check Details
