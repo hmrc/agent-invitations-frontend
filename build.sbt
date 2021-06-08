@@ -28,7 +28,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.4.0",
   "uk.gov.hmrc"       %% "play-partials"              % "7.1.0-play-27",
   "uk.gov.hmrc"       %% "mongo-caching"              % "6.16.0-play-27",
-  "uk.gov.hmrc"       %% "play-language"              % "4.12.0-play-27",
+  "uk.gov.hmrc"       %% "play-language"              % "4.10.0-play-27",
   "com.typesafe.play" %% "play-json-joda"             % "2.7.4"
 )
 
@@ -51,12 +51,12 @@ lazy val root = (project in file("."))
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
     resolvers := Seq(
+      Resolver.bintrayRepo("hmrc", "releases"),
+      Resolver.bintrayRepo("hmrc", "release-candidates"),
       Resolver.typesafeRepo("releases"),
       Resolver.jcenterRepo
     ),
-    resolvers += "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
-    resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
-    libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.0" cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % "1.7.0" % Provided cross CrossVersion.full
