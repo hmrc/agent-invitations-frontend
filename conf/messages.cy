@@ -233,9 +233,9 @@ invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu byd
 invitation-sent.client-warning=Ni fydd cleientiaid yn gallu eich awdurdodi os na fyddant yn defnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth y gwnaethant ei ddefnyddio i gofrestru ar gyfer y gwasanaeth treth y mae angen awdurdodiad ar ei gyfer arnoch.
 invitation-sent.further-help.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
 invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authorising a tax agent for clients (opens in new tab)
-invitation-sent.further-help.heading=Further help
-invitation-sent.further-help.p=Get help to complete another task, including:
-invitation-sent.all-steps=You must follow all four steps.
+invitation-sent.further-help.heading=Rhagor o help
+invitation-sent.further-help.p=Cael help i gwblhau tasg arall, gan gynnwys:
+invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
@@ -474,10 +474,10 @@ warm-up.p1=Defnyddiwch y gwasanaeth i ganiatáu i {0} eich helpu i reoli’ch ma
 warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>.
 warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
-warm-up.h2.personal=Authorisation for Making Tax Digital for Income Tax
-warm-up.p3.personal=If you want to authorise an agent for Making Tax Digital for Income Tax, sign in with the Government Gateway user ID you use for Self Assessment. If you do not have one, you can:
-warm-up.l1.personal=sign in with a Government Gateway user ID you use for your personal tax affairs
-warm-up.l2.personal=create a new Government Gateway user ID
+warm-up.h2.personal=Awdurdodiad ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm
+warm-up.p3.personal=Os ydych am awdurdodi asiant ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm, mewngofnodwch gyda Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth rydych yn ei ddefnyddio ar gyfer Hunanasesiad. Os nad oes un gennych, gallwch wneud y canlynol:
+warm-up.l1.personal=mewngofnodi gyda Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth rydych yn ei ddefnyddio ar gyfer eich materion treth bersonol
+warm-up.l2.personal=creu Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth
 warm-up.link=Ni hoffwn benodi {0}
 
 # suspended agent
@@ -558,15 +558,15 @@ confirm-terms.legend.single=Dewiswch a ydych yn rhoi’ch caniatâd i CThEM rann
 
 confirm-terms-multi.itsa.heading=Rheoli fy Nhreth Incwm
 confirm-terms-multi.itsa.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch Treth Incwm, mae hyn yn golygu y gall {0} wneud y canlynol:
-confirm-terms-multi.itsa.p2=If you are not signed up to Making Tax Digital for Income Tax within 4 months, the authorisation will be cancelled.
-confirm-terms-multi.itsa.list.item1=discuss your current and previous returns with HMRC
-confirm-terms-multi.itsa.list.item2=view and change your details, such as sources of income
+confirm-terms-multi.itsa.p2=Os nad ydych wedi cofrestru am y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cyn pen 4 mis, bydd yr awdurdodiad yn cael ei ganslo.
+confirm-terms-multi.itsa.list.item1=trafod eich Ffurflenni Treth cyfredol a blaenorol gyda CThEM
+confirm-terms-multi.itsa.list.item2=bwrw golwg dros a newid eich manylion, megis ffynonellau incwm
 confirm-terms-multi.itsa.list.item3=rhoi manylion banc i CThEM ar gyfer ad-daliadau pan fo ad-daliad yn ddyledus
-confirm-terms-multi.itsa.list.item4=view and submit your updates (income and expenses)
+confirm-terms-multi.itsa.list.item4=bwrw golwg dros a chyflwyno’ch diweddariadau (incwm a threuliau)
 confirm-terms-multi.itsa.list.item5=cwblhau eich sefyllfa dreth gyffredinol
-confirm-terms-multi.itsa.list.item6=view your calculations and amounts owed and paid
-confirm-terms-multi.itsa.list.item7=sign you up or opt you out
-confirm-terms-multi.itsa.list.item8=manage your Making Tax Digital for Income Tax using software
+confirm-terms-multi.itsa.list.item6=bwrw golwg dros eich cyfrifiadau a’r symiau dyledus a’r symiau sydd wedi’u talu
+confirm-terms-multi.itsa.list.item7=eich cofrestru neu eich optio allan
+confirm-terms-multi.itsa.list.item8=rheoli’ch Troi Treth yn Ddigidol ar gyfer Treth Incwm gan ddefnyddio meddalwedd
 confirm-terms-multi.itsa.list.item9=canslo’ch cofrestriad Hunanasesiad
 confirm-terms-multi.itsa.list.item10=cael mynediad at eich manylion Hunanasesiad, megis eich enw, cyfeiriad, rhif Yswiriant Gwladol a Chyfeirnod Unigryw y Trethdalwr
 confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy Nhreth Incwm.
@@ -887,7 +887,7 @@ recent-invitations.invitation.identifier.MTDITID=Dynodydd Troi Treth yn Ddigidol
 recent-invitations.invitation.expires=Yn dod i ben:
 recent-invitations.invitation.status.pending=Nid yw’r cleient wedi ymateb eto
 recent-invitations.invitation.status.accepted=Derbyniwyd gan y cleient
-recent-invitations.invitation.status.partialauth=Accepted by client
+recent-invitations.invitation.status.partialauth=Derbyniwyd gan y cleient
 recent-invitations.invitation.status.rejected=Gwrthodwyd gan y cleient
 recent-invitations.invitation.status.expired=Daeth y cais i ben gan i’r cleient fethu ag ymateb mewn pryd
 recent-invitations.invitation.status.cancelled=Gwnaethoch ganslo’r cais hwn
@@ -899,9 +899,9 @@ recent-invitations.invitations.actions.acceptedthencancelledbyagent=Dechrau cais
 recent-invitations.invitations.actions.aria-text=Dechrau cais newydd ar gyfer {0} i {1}
 recent-invitations.invitations.actions.acceptedthencancelledbyclient=Dechrau cais newydd
 recent-invitations.invitations.actions.acceptedthencancelledbyhmrc=Dechrau cais newydd
-recent-invitations.invitations.actions.partialauth.signup=Sign client up by {0} (opens in a new tab)
-recent-invitations.invitations.actions.partialauth.cancel=Cancel this request
-recent-invitations.invitations.actions.partialauth.cancel.aria-text=Cancel this request for {0} to {1}
+recent-invitations.invitations.actions.partialauth.signup=Cofrestru’r cleient erbyn {0} (yn agor tab newydd)
+recent-invitations.invitations.actions.partialauth.cancel=Canslo’r cais hwn
+recent-invitations.invitations.actions.partialauth.cancel.aria-text=Canslo’r cais hwn ar gyfer {0} i {1}
 recent-invitations.invitations.actions.pending=Ailanfon cais at y cleient
 recent-invitations.invitations.actions.pending.aria-text=Ailanfon cais at gleient {0} i {1}
 recent-invitations.invitations.actions.pending.cancel=Canslo’r cais hwn
@@ -1055,12 +1055,12 @@ already-responded.p1=Gwnaethoch ymateb i’r cais hwn ar {0}.
 already-responded.p2=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
 
 #Already Copied
-already-copied.header=This client has already authorised you to manage their Making Tax Digital for Income Tax
-already-copied.p1=This means that you have an authorisation in place for Making Tax Digital for Income Tax for this client.
-already-copied.header2=What to do next
-already-copied.p2=You need to do one of the following:
-already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy">sign your client up to Making Tax Digital for Income Tax</a>
-already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax.cy">ask your client to sign up for Making Tax Digital for Income Tax</a>
+already-copied.header=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei gynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
+already-copied.p1=Mae hyn y golygu bod awdurdod ar waith gennych i ddelio â’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm ar gyfer y cleient hwn.
+already-copied.header2=Yr hyn i’w wneud nesaf
+already-copied.p2=Mae’n rhaid i chi wneud un o’r canlynol:
+already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy">cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>
+already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax.cy">gofyn i’ch cleient gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>
 
 #Cannot find request
 cannot-find-request.header=Ni allwn ddod o hyd i’r cais hwn am awdurdodiad
