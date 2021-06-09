@@ -236,6 +236,8 @@ invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch
 invitation-sent.further-help.heading=Help bellach
 invitation-sent.further-help.p=Mae help ar gael i chi gwblhau tasgau eraill, gan gynnwys:
 invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
+invitation-sent.four-months=Mae’n rhaid i chi ei gofrestru cyn pen 4 mis ar ôl iddo dderbyn eich cais am awdurdodiad.
+invitation-sent.mtd=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
