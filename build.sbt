@@ -1,11 +1,6 @@
-import com.geirsson.coursiersmall.{Repository => R}
 import play.core.PlayVersion
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-
-scalafixResolvers in ThisBuild += new R.Maven("https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases")
-// always use the latest version of scalafix-rules available
-scalafixDependencies in ThisBuild := Seq("uk.gov.hmrc" % "scalafix-rules_2.11" % "0.6.0")
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -20,27 +15,27 @@ lazy val scoverageSettings = {
 }
 
 lazy val compileDeps = Seq(
-  "uk.gov.hmrc"       %% "bootstrap-frontend-play-27" % "3.4.0",
-  "uk.gov.hmrc"       %% "play-fsm"                   % "0.70.0-play-27",
-  "uk.gov.hmrc"       %% "govuk-template"             % "5.61.0-play-27",
-  "uk.gov.hmrc"       %% "play-ui"                    % "8.21.0-play-27",
-  "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.23.0-play-27",
+  "uk.gov.hmrc"       %% "bootstrap-frontend-play-27" % "5.3.0",
+  "uk.gov.hmrc"       %% "play-fsm"                   % "0.83.0-play-27",
+  "uk.gov.hmrc"       %% "govuk-template"             % "5.66.0-play-27",
+  "uk.gov.hmrc"       %% "play-ui"                    % "9.4.0-play-27",
+  "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.24.0-play-27",
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.4.0",
-  "uk.gov.hmrc"       %% "play-partials"              % "7.1.0-play-27",
+  "uk.gov.hmrc"       %% "play-partials"              % "8.1.0-play-27",
   "uk.gov.hmrc"       %% "mongo-caching"              % "6.16.0-play-27",
-  "uk.gov.hmrc"       %% "play-language"              % "4.10.0-play-27",
-  "com.typesafe.play" %% "play-json-joda"             % "2.7.4"
+  //"uk.gov.hmrc"       %% "play-language"              % "4.10.0-play-27",
+  "com.typesafe.play" %% "play-json-joda"             % "2.9.2"
 )
 
 def testDeps(scope: String) = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.10.0-play-26" % scope,
-  "com.github.tomakehurst" % "wiremock-jre8" % "2.27.1" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
-  "org.jsoup" % "jsoup" % "1.12.1" % scope,
-  "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % scope,
-  "org.mockito" % "mockito-core" % "3.2.0" % scope,
-  "uk.gov.hmrc" %% "reactivemongo-test" % "4.22.0-play-27" % scope
+  "uk.gov.hmrc"             %% "hmrctest"           % "3.10.0-play-26" % scope,
+  "com.github.tomakehurst"  % "wiremock-jre8"       % "2.27.2" % scope,
+  "org.scalatest"           %% "scalatest"          % "3.0.8" % scope,
+  "org.jsoup"               % "jsoup"               % "1.12.1" % scope,
+  //"com.typesafe.play"       %% "play-test"          % PlayVersion.current % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play" % "3.1.3" % scope,
+  "org.mockito"             % "mockito-core"        % "3.2.0" % scope,
+  "uk.gov.hmrc"             %% "reactivemongo-test" % "5.0.0-play-27" % scope
 )
 
 lazy val root = (project in file("."))
@@ -51,12 +46,11 @@ lazy val root = (project in file("."))
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
     resolvers := Seq(
-      Resolver.bintrayRepo("hmrc", "releases"),
-      Resolver.bintrayRepo("hmrc", "release-candidates"),
       Resolver.typesafeRepo("releases"),
-      Resolver.jcenterRepo
     ),
-libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    resolvers += "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
+    resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
+    libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.0" cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % "1.7.0" % Provided cross CrossVersion.full
@@ -71,7 +65,7 @@ libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
   )
   .configs(IntegrationTest)
   .settings(
-    Keys.fork in IntegrationTest := true,
+    Keys.fork in IntegrationTest := false,
     Defaults.itSettings,
     unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
     parallelExecution in IntegrationTest := false,
