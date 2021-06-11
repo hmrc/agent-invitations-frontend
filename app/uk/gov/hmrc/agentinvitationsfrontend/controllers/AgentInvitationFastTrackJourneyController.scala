@@ -109,30 +109,32 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
-  val agentFastTrack =
+  val agentFastTrackOld =
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
-            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
+            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent).apply(agentFastTrackForm)(
               Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl))
           }
         }
       }
     }
 
-  val showCheckDetails = actionShowStateWhenAuthorised(AsAgent) {
-    case _: CheckDetailsCompleteItsa        =>
-    case _: CheckDetailsCompleteIrv         =>
-    case _: CheckDetailsCompletePersonalVat =>
-    case _: CheckDetailsCompleteBusinessVat =>
-    case _: CheckDetailsCompleteTrust       =>
-    case _: CheckDetailsCompleteCgt         =>
-    case _: CheckDetailsNoPostcode          =>
-    case _: CheckDetailsNoDob               =>
-    case _: CheckDetailsNoVatRegDate        =>
-    case _: CheckDetailsNoClientTypeVat     =>
-  }
+  val agentFastTrack: Action[AnyContent] =
+    action { implicit request =>
+      maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
+        maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
+          maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
+            legacy.whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent).apply(
+              Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl)
+            )
+          }
+        }
+      }
+    }
+
+  val showCheckDetails = actions.whenAuthorised(AsAgent).showCurrentState
 
   val submitCheckDetails = action { implicit request =>
     whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
@@ -141,8 +143,20 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
   }
 
+  val submitCheckDetails = action { implicit request =>
+    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(checkDetailsForm).apply(
+      Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
+        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+  }
+
+
   val progressToIdentifyClient = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)
+  }
+
+  val progressToIdentifyClient = action { implicit request =>
+    actions.whenAuthorised(AsAgent).apply(Transitions.checkedDetailsChangeInformation)(redirect)
   }
 
   val showSuspended = actionShowStateWhenAuthorised(AsAgent) {
