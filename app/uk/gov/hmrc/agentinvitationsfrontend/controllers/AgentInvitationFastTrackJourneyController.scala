@@ -109,26 +109,16 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
-  val agentFastTrackOld =
-    action { implicit request =>
-      maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
-        maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
-          maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
-            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent).apply(agentFastTrackForm)(
-              Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl))
-          }
-        }
-      }
-    }
-
   val agentFastTrack: Action[AnyContent] =
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
-            legacy.whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent).apply(
-              Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl)
-            )
+            actions
+              .whenAuthorisedWithRetrievals(AsAgent)
+              .applyWithRequest(
+                Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails())
+              )
           }
         }
       }
@@ -144,12 +134,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
 
   val submitCheckDetails = action { implicit request =>
-    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(checkDetailsForm).apply(
-      Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(checkDetailsForm)
+      .apply(
+        Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
   }
-
 
   val progressToIdentifyClient = action { implicit request =>
     whenAuthorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)

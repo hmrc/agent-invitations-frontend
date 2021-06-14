@@ -38,38 +38,49 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
   case class SelectClientType(basket: Basket) extends State
 
-  case class SelectPersonalService(services: Set[String], basket: Basket) extends State
-  case object SelectBusinessService extends State
-  case class SelectTrustService(services: Set[String], basket: Basket) extends State
+  trait SelectService extends State
+  case class SelectPersonalService(services: Set[String], basket: Basket) extends SelectService
+  case object SelectBusinessService extends SelectService
+  case class SelectTrustService(services: Set[String], basket: Basket) extends SelectService
 
-  case class IdentifyPersonalClient(service: String, basket: Basket) extends State
-  case object IdentifyBusinessClient extends State
-  case class IdentifyTrustClient(service: String, basket: Basket) extends State
+  trait Identify extends State
+  case class IdentifyPersonalClient(service: String, basket: Basket) extends Identify
+  case object IdentifyBusinessClient extends Identify
+  case class IdentifyTrustClient(service: String, basket: Basket) extends Identify
 
   case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
-  case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends State
-  case class KnownFactNotMatched(basket: Basket) extends State
+
+  trait AuthorisationExists extends State
+  case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
+  case class PartialAuthorisationExists(basket: Basket) extends AuthorisationExists
+
+  trait NotFound extends State
+  case class KnownFactNotMatched(basket: Basket) extends NotFound
+  case class TrustNotFound(basket: Basket) extends NotFound
+  case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends NotFound
+
   case class CannotCreateRequest(basket: Basket) extends State
-  case class TrustNotFound(basket: Basket) extends State
-  case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends State
-  case class PartialAuthorisationExists(basket: Basket) extends State
 
-  case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends State
-  case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends State
-  case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends State
-  case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends State
-  case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
-  case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends State
-  case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, postcode: Option[String], clientName: String) extends State
-  case class ConfirmCountryCodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, countryCode: String, clientName: String) extends State
+  trait Confirm extends State
+  case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmClientBusinessVat(request: AuthorisationRequest) extends Confirm
+  case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends Confirm
+  case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, postcode: Option[String], clientName: String) extends Confirm
+  case class ConfirmCountryCodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, countryCode: String, clientName: String) extends Confirm
 
-  case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends State
-  case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends State
+  trait Review extends State
+  case class ReviewAuthorisationsPersonal(services: Set[String], basket: Basket) extends Review
+  case class ReviewAuthorisationsTrust(services: Set[String], basket: Basket) extends Review
 
   case class SomeAuthorisationsFailed(invitationLink: String, continueUrl: Option[String], agencyEmail: String, basket: Basket) extends State
   case class AllAuthorisationsFailed(basket: Basket) extends State
   case class DeleteAuthorisationRequestTrust(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
   case class DeleteAuthorisationRequestPersonal(authorisationRequest: AuthorisationRequest, basket: Basket) extends State
+
+  trait InvitationSent extends State
   case class InvitationSentPersonal(
     invitationLink: String,
     continueUrl: Option[String],
@@ -77,8 +88,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     services: Set[String],
     isAltItsa: Boolean)
       extends State
-  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String]) extends State
-  case class ClientNotSignedUp(service: String, basket: Basket) extends State
+
+  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String])
+      extends InvitationSent
+  case class ClientNotSignedUp(service: String, basket: Basket) extends InvitationSent
   case object AllAuthorisationsRemoved extends State
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State

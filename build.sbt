@@ -23,7 +23,7 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.4.0",
   "uk.gov.hmrc"       %% "play-partials"              % "8.1.0-play-27",
   "uk.gov.hmrc"       %% "mongo-caching"              % "6.16.0-play-27",
-  //"uk.gov.hmrc"       %% "play-language"              % "4.10.0-play-27",
+  "uk.gov.hmrc"       %% "play-language"              % "5.1.0-play-27",
   "com.typesafe.play" %% "play-json-joda"             % "2.9.2"
 )
 
@@ -32,7 +32,7 @@ def testDeps(scope: String) = Seq(
   "com.github.tomakehurst"  % "wiremock-jre8"       % "2.27.2" % scope,
   "org.scalatest"           %% "scalatest"          % "3.0.8" % scope,
   "org.jsoup"               % "jsoup"               % "1.12.1" % scope,
-  //"com.typesafe.play"       %% "play-test"          % PlayVersion.current % scope,
+  "com.typesafe.play"       %% "play-test"          % PlayVersion.current % scope,
   "org.scalatestplus.play"  %% "scalatestplus-play" % "3.1.3" % scope,
   "org.mockito"             % "mockito-core"        % "3.2.0" % scope,
   "uk.gov.hmrc"             %% "reactivemongo-test" % "5.0.0-play-27" % scope
