@@ -36,35 +36,41 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
   object State {
     case object SelectClientType extends State
-    case class SelectServicePersonal(enabledServices: Set[String]) extends State
-    case object SelectServiceBusiness extends State
-    case class SelectServiceTrust(enabledServices: Set[String]) extends State
-    case class IdentifyClientPersonal(service: String) extends State
-    case object IdentifyClientBusiness extends State
-    case object IdentifyClientTrust extends State
-    case object IdentifyClientCgt extends State
+
+    trait SelectService extends State
+    case class SelectServicePersonal(enabledServices: Set[String]) extends SelectService
+    case object SelectServiceBusiness extends SelectService
+    case class SelectServiceTrust(enabledServices: Set[String]) extends SelectService
+
+    trait IdentifyClient extends State
+    case class IdentifyClientPersonal(service: String) extends IdentifyClient
+    case object IdentifyClientBusiness extends IdentifyClient
+    case object IdentifyClientTrust extends IdentifyClient
+    case object IdentifyClientCgt extends IdentifyClient
 
     case class ConfirmPostcodeCgt(cgtRef: CgtRef, postcode: Option[String], clientName: String) extends State
     case class ConfirmCountryCodeCgt(cgtRef: CgtRef, countryCode: String, clientName: String) extends State
 
-    case class ConfirmClientCgt(cgtRef: CgtRef, clientName: String) extends State
+    trait ConfirmClient extends State
+    case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends ConfirmClient
+    case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends ConfirmClient
+    case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends ConfirmClient
+    case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends ConfirmClient
+    case class ConfirmClientTrust(clientName: String, utr: Utr) extends ConfirmClient
+    case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends ConfirmClient
+    case class ConfirmClientCgt(cgtRef: CgtRef, clientName: String) extends ConfirmClient
 
-    case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends State
-    case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends State
-    case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends State
-    case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends State
-    case class ConfirmClientTrust(clientName: String, utr: Utr) extends State
-    case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends State
     case class ConfirmCancel(service: String, clientName: Option[String], clientId: String, isPartialAuth: Boolean = false) extends State
     case class AuthorisationCancelled(service: String, clientName: Option[String], agencyName: String) extends State
 
     //error states
-    case object KnownFactNotMatched extends State
+    trait ErrorState extends State
+    case object KnownFactNotMatched extends ErrorState
     case class NotSignedUp(service: String) extends State
     case class NotAuthorised(service: String) extends State
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
-    case object TrustNotFound extends State
-    case class CgtRefNotFound(cgtRef: CgtRef) extends State
+    case object TrustNotFound extends ErrorState
+    case class CgtRefNotFound(cgtRef: CgtRef) extends ErrorState
   }
 
   object Transitions {

@@ -197,7 +197,7 @@ GET         /some-responses-failed                                      uk.gov.h
 POST        /some-responses-failed                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitSomeResponsesFailed
 GET         /not-authorised-as-client                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.incorrectlyAuthorisedAsAgent
 GET         /cannot-confirm-identity                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCannotConfirmIdentity(journeyId: Option[String] ?= None, success: Option[String] ?= None)
-GET         /session-timeout                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
+#GET         /session-timeout                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showMissingJourneyHistory
 GET         /from-iv-signed-out                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.handleIVTimeout(success: Option[String] ?= None)
 GET         /timed-out                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.timedOut
 GET         /sign-out                                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.signOut

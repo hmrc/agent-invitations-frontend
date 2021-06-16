@@ -118,7 +118,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitPersonalSelectService: Action[AnyContent] =
     actions
-      .whenAuthorised(AsAgent)
+      .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .applyWithRequest(implicit request =>
         Transitions.selectedPersonalService(
@@ -199,7 +199,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitConfirmCgtPostcode: Action[AnyContent] =
     actions
-      .whenAuthorised(AsAgent)
+      .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PostcodeForm.form)
       .applyWithRequest(implicit request => Transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
@@ -213,7 +213,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val submitIdentifyItsaClient: Action[AnyContent] =
     actions
-      .whenAuthorised(AsAgent)
+      .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ItsaClientForm.form)
       .applyWithRequest(implicit request =>
         Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
@@ -284,7 +284,7 @@ class AgentInvitationJourneyController @Inject()(
   val showSomeAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SomeAuthorisationsFailed]
 
   val submitSomeAuthorisationsFailed: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.continueSomeResponsesFailed)
+    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.continueSomeResponsesFailed).redirect
 
   val showAllAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AllAuthorisationsFailed]
 
