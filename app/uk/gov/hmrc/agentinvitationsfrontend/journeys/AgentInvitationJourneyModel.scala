@@ -87,7 +87,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     agencyEmail: String,
     services: Set[String],
     isAltItsa: Boolean)
-      extends State
+      extends InvitationSent
 
   case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String])
       extends InvitationSent

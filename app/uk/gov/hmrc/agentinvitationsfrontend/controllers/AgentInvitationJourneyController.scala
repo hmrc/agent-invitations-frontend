@@ -114,7 +114,10 @@ class AgentInvitationJourneyController @Inject()(
   val submitClientType: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.authorisationForm).apply(Transitions.selectedClientType)
 
-  val showSelectService: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectService]
+  // TODO: Broken using DSL
+  val showSelectService: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
+    case _: SelectService =>
+  }
 
   val submitPersonalSelectService: Action[AnyContent] =
     actions
@@ -249,7 +252,7 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(CgtClientForm.form())
       .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm]
+  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm].display
 
   val submitConfirmClient: Action[AnyContent] =
     actions
@@ -270,12 +273,12 @@ class AgentInvitationJourneyController @Inject()(
         Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(createInvitationSent))
 
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(agent => Transitions.deleteAuthorisationRequest(itemId)(agent))
+    actions.whenAuthorisedWithRetrievals(AsAgent).apply(agent => Transitions.deleteAuthorisationRequest(itemId)(agent)).display
 
   val submitDeleteAuthorisation: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(DeleteAuthorisationForm).apply(Transitions.confirmDeleteAuthorisationRequest)
 
-  val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent]
+  val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent].display
 
   val showNotMatched: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[NotFound]
 
@@ -296,7 +299,7 @@ class AgentInvitationJourneyController @Inject()(
 
   val showActiveAuthorisationExists: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AuthorisationExists]
 
-  val showAllAuthorisationsRemoved: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AllAuthorisationsRemoved.type]
+  val showAllAuthorisationsRemoved: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AllAuthorisationsRemoved.type].display
 
   val showAgentSuspended: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AgentSuspended]
 

@@ -58,6 +58,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     case class CannotFindRequest(clientType: ClientType, agencyName: String) extends State with IsError
 
     trait AuthErrorState extends State
+
     case class AuthorisationRequestExpired(
       expiredOn: String,
       clientType: ClientType

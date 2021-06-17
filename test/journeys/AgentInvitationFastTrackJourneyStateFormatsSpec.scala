@@ -37,7 +37,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json =
           Json.parse("""{"state":"Prologue","properties":{"failureUrl": "failure/url", "refererUrl": "referer/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsCompleteItsa" in {
@@ -68,7 +68,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsCompleteIrv" in {
@@ -99,7 +99,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsCompletePersonalVat" in {
@@ -130,7 +130,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsCompleteBusinessVat" in {
@@ -161,7 +161,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -191,7 +191,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -221,7 +221,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -251,7 +251,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsNoDob" in {
@@ -280,7 +280,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsNoVatRegDate" in {
@@ -309,7 +309,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "CheckDetailsNoClientTypeVat" in {
@@ -338,7 +338,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "NoPostcode" in {
@@ -369,7 +369,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "NoDob" in {
@@ -400,7 +400,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "NoVatRegDate" in {
@@ -431,7 +431,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "SelectClientTypeVat" in {
@@ -462,7 +462,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -494,7 +494,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -525,7 +525,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "IdentifyBusinessClient" in {
@@ -555,7 +555,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -584,7 +584,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -613,7 +613,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -642,7 +642,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -673,7 +673,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -704,7 +704,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -737,7 +737,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -770,7 +770,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -787,7 +787,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
               "isAltItsa"      -> false)
         )
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "InvitationSentBusiness" in {
@@ -798,7 +798,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
             .obj("invitationLink" -> "invitation/link", "continueUrl" -> "continue/url", "agencyEmail" -> "abc@xyz.com", "service" -> "HMRC-MTD-VAT")
         )
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "KnownFactNotMatched" in {
@@ -829,7 +829,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -858,7 +858,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
                                 |  }
                                 |}""".stripMargin)
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -868,7 +868,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "PendingInvitationExists" in {
@@ -879,7 +879,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state":"PendingInvitationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "ActiveAuthorisationExists" in {
@@ -890,7 +890,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state":"ActiveAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -901,7 +901,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state":"PartialAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -911,14 +911,14 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state":"ClientNotRegistered","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "TryAgainWithoutFastTrack" in {
         val state = TryAgainWithoutFastTrack
         val json = Json.parse("""{"state":"TryAgainWithoutFastTrack"}""")
 
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
@@ -927,7 +927,7 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(
           """{"state": "SuspendedAgent", "properties": {"service": "HMRC-MTD-IT", "continueUrl" : "continue/url"}}"""
         )
-        Json.toJson(state) shouldBe json
+        Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
     }

@@ -7,7 +7,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.SessionId
 
 class TestEndpointsControllerISpec extends BaseISpec {
 

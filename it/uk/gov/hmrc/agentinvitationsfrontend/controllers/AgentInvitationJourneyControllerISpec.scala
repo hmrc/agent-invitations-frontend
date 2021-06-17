@@ -365,7 +365,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
-      controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
     }
 
     "show identify client page for IRV service" in {
@@ -373,7 +373,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCPIR, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -396,7 +396,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -417,7 +417,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for business VAT service" in {
       journeyState.set(IdentifyBusinessClient, List(SelectBusinessService, SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -443,7 +443,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -472,7 +472,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -498,7 +498,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1023,7 +1023,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmCgtPostcode()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1101,7 +1101,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmCgtCountryCode()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1255,7 +1255,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?","Is Sylvia Plath the client you want authorisation from?")
@@ -1285,7 +1285,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?","Is GDT the client you want authorisation from?")
@@ -1315,7 +1315,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
@@ -1343,7 +1343,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
@@ -1367,7 +1367,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is GDT the client you want authorisation from?")
@@ -1392,7 +1392,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(ConfirmCountryCodeCgt(cgtRef, business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService, SelectClientType(emptyBasket))
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is CGT_NAME the client you want authorisation from?")
@@ -1583,7 +1583,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -1713,7 +1713,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket)
         )
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -1746,7 +1746,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket)
         )
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
       checkInviteSentPageContainsSurveyLink(result, true)
@@ -1766,7 +1766,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket)
         )
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
       checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
@@ -1782,7 +1782,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         Nil
       )
 
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showAlreadyCopiedAcrossItsa(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "already-copied.header")
@@ -1799,7 +1799,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SelectClientType(emptyBasket)
         )
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -1977,7 +1977,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         KnownFactNotMatched(emptyBasket),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showNotMatched(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -1999,7 +1999,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         CannotCreateRequest(emptyBasket),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showCannotCreateRequest(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2021,7 +2021,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2042,7 +2042,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2065,7 +2065,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(personal))))),
           List()
         )
-        val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+        val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
         status(result) shouldBe 200
 
@@ -2089,7 +2089,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         PendingInvitationExists(personal, emptyBasket),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2110,7 +2110,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ClientNotSignedUp(HMRCMTDIT, emptyBasket),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showClientNotSignedUp(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2131,7 +2131,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ClientNotRegistered(emptyBasket),
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showClientNotRegistered(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2153,7 +2153,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         AllAuthorisationsRemoved,
         List()
       )
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showAllAuthorisationsRemoved(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
@@ -2171,7 +2171,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the access removed page" in {
       journeyState.set(AgentSuspended(HMRCMTDIT, Set.empty), List())
-      val result = controller.showCurrentStateWhenAuthorised(authorisedAsValidAgent(request, arn.value))
+      val result = controller.showAgentSuspended(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")

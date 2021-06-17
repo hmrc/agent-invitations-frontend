@@ -115,7 +115,10 @@ class ClientInvitationJourneyController @Inject()(
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
-  def showMissingJourneyHistory: Action[AnyContent] = actions.showCurrentState
+  def showMissingJourneyHistory =
+    legacy.actionShowState {
+      case _ =>
+    }
 
   def warmUp(clientType: String, uid: String, agentName: String): Action[AnyContent] =
     Action.async { implicit request =>
@@ -126,7 +129,7 @@ class ClientInvitationJourneyController @Inject()(
         case _ =>
           helpers.apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
-            null
+            helpers.display
           )
       }
     }
@@ -153,17 +156,20 @@ class ClientInvitationJourneyController @Inject()(
 
   val showErrorCannotFindRequest: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CannotFindRequest]
 
-  def submitConsent: Action[AnyContent] =
+  val submitConsent: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm).apply(Transitions.submitConsents)
 
-  def showConsentChange: Action[AnyContent] = actions.whenAuthorised(AsClient).show[SingleConsent]
+  // TODO: Broken using DSL
+  val showConsentChange: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsClient) {
+    case _: SingleConsent =>
+  }
 
-  def submitChangeConsents: Action[AnyContent] =
+  val submitChangeConsents: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm)(Transitions.submitChangeConsents)
 
-  def showCheckAnswers: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CheckAnswers]
+  val showCheckAnswers: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CheckAnswers]
 
-  def submitCheckAnswers: Action[AnyContent] =
+  val submitCheckAnswers: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsClient)
       .applyWithRequest(
@@ -174,31 +180,31 @@ class ClientInvitationJourneyController @Inject()(
   def submitCheckAnswersChange(uid: String): Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(uid)).redirect
 
-  def submitWarmUpConfirmDecline: Action[AnyContent] =
+  val submitWarmUpConfirmDecline: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsClient)
       .applyWithRequest(implicit request =>
         Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
       .redirect
 
-  def showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline]
+  val showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline]
 
-  def submitConfirmDecline: Action[AnyContent] =
+  val submitConfirmDecline: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsClient)
       .bindForm(confirmDeclineForm)
       .applyWithRequest(implicit request => Transitions.submitConfirmDecline(rejectInvitation))
 
-  def showInvitationsAccepted: Action[AnyContent] =
+  val showInvitationsAccepted: Action[AnyContent] =
     actions.whenAuthorised(AsClient).show[InvitationsAccepted].andCleanBreadcrumbs()
 
-  def showInvitationsDeclined: Action[AnyContent] = actions.whenAuthorised(AsClient).show[InvitationsDeclined].andCleanBreadcrumbs()
+  val showInvitationsDeclined: Action[AnyContent] = actions.whenAuthorised(AsClient).show[InvitationsDeclined].andCleanBreadcrumbs()
 
-  def showAllResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[AllResponsesFailed.type]
+  val showAllResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[AllResponsesFailed.type]
 
-  def showSomeResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[SomeResponsesFailed]
+  val showSomeResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[SomeResponsesFailed]
 
-  def submitSomeResponsesFailed: Action[AnyContent] =
+  val submitSomeResponsesFailed: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.continueSomeResponsesFailed).redirect
 
   val showErrorCannotViewRequest: Action[AnyContent] = Action.async { implicit request =>
@@ -286,7 +292,7 @@ class ClientInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    //case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
+    case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
     case NotFoundInvitation    => routes.ClientInvitationJourneyController.showNotFoundInvitation()
