@@ -3,7 +3,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.UUID
-
 import org.joda.time.LocalDate
 import org.scalatest.Assertion
 import play.api.Application
@@ -16,7 +15,9 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 
 class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
 

@@ -39,112 +39,120 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   case class Prologue(failureUrl: Option[String], refererUrl: Option[String]) extends State
 
+  trait CheckDetails extends State
+  
   case class CheckDetailsNoPostcode(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsNoDob(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsNoVatRegDate(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsNoClientTypeVat(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompleteItsa(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompleteIrv(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompletePersonalVat(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompleteBusinessVat(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompleteTrust(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
 
   case class CheckDetailsCompleteCgt(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends CheckDetails
+
+  trait MissingDetail extends State
 
   case class NoPostcode(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends MissingDetail
 
   case class NoDob(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends MissingDetail
 
   case class NoVatRegDate(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends MissingDetail
+
+  trait ClientTypeState extends State
 
   case class SelectClientTypeVat(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String],
     isChanging: Boolean = false)
-      extends State
+      extends ClientTypeState
 
   case class SelectClientTypeCgt(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String],
     isChanging: Boolean = false
-  ) extends State
+  ) extends ClientTypeState
 
+  trait Identify extends State
+  
   case class IdentifyPersonalClient(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends Identify
 
   case class IdentifyBusinessClient(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends Identify
 
   case class IdentifyNoClientTypeClient(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends Identify
 
   case class IdentifyTrustClient(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends Identify
 
   case class IdentifyCgtClient(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends Identify
 
   case class ConfirmClientTrust(
     originalFastTrackRequest: AgentFastTrackRequest,
@@ -153,29 +161,34 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     trustName: String)
       extends State
 
-  case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String, isAltItsa: Boolean) extends State
+  trait InvitationSent extends State
+
+  case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String, isAltItsa: Boolean)
+    extends InvitationSent
 
   case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String = HMRCMTDVAT)
-      extends State
+    extends InvitationSent
 
   case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
-  case class ActiveAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+  trait AuthExists extends State
+  case class ActiveAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends AuthExists
+  case class PartialAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends AuthExists
 
-  case class PartialAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+  trait NotMatched extends State
 
   case class KnownFactNotMatched(
     originalFastTrackRequest: AgentFastTrackRequest,
     fastTrackRequest: AgentFastTrackRequest,
     continueUrl: Option[String])
-      extends State
+      extends NotMatched
 
   case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
   case class ClientNotRegistered(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
   case class TrustNotFound(originalFastTrackRequest: AgentFastTrackRequest, fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends State
+      extends NotMatched
 
   case object TryAgainWithoutFastTrack extends State
 
@@ -204,7 +217,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   case class SuspendedAgent(service: String, continueUrl: Option[String]) extends State
 
-  case class CgtRefNotFound(cgtRef: CgtRef) extends State
+  case class CgtRefNotFound(cgtRef: CgtRef) extends NotMatched
 
   case object AlreadyCopiedAcrossItsa extends State
 

@@ -49,22 +49,24 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case object NoOutstandingRequests extends State with IsError
 
-    case class RequestExpired(expiredOn: String) extends State with IsError
+    trait ErrorState extends State
 
-    case class AlreadyRespondedToRequest(respondedOn: String) extends State with IsError
-
-    case class AgentCancelledRequest(cancelledOn: String) extends State with IsError
+    case class RequestExpired(expiredOn: String) extends ErrorState with IsError
+    case class AlreadyRespondedToRequest(respondedOn: String) extends ErrorState with IsError
+    case class AgentCancelledRequest(cancelledOn: String) extends ErrorState with IsError
 
     case class CannotFindRequest(clientType: ClientType, agencyName: String) extends State with IsError
+
+    trait AuthErrorState extends State
 
     case class AuthorisationRequestExpired(
       expiredOn: String,
       clientType: ClientType
-    ) extends State with IsError
+    ) extends AuthErrorState with IsError
 
-    case class AuthorisationRequestCancelled(cancelledOn: String, clientType: ClientType) extends State with IsError
+    case class AuthorisationRequestCancelled(cancelledOn: String, clientType: ClientType) extends AuthErrorState with IsError
 
-    case class AuthorisationRequestAlreadyResponded(respondedOn: String, clientType: ClientType) extends State with IsError
+    case class AuthorisationRequestAlreadyResponded(respondedOn: String, clientType: ClientType) extends AuthErrorState with IsError
 
     case class MultiConsent(clientType: ClientType, uid: String, agentName: String, consents: Seq[ClientConsent]) extends State
 

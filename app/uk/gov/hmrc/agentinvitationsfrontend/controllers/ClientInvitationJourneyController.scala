@@ -82,7 +82,8 @@ class ClientInvitationJourneyController @Inject()(
   val mcc: MessagesControllerComponents,
   featureFlags: FeatureFlags,
   ec: ExecutionContext,
-  val appConfig: AppConfig)
+  val appConfig: AppConfig,
+  override val actionBuilder: DefaultActionBuilder)
     extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier] with I18nSupport {
 
   import ClientInvitationJourneyController._
@@ -115,135 +116,96 @@ class ClientInvitationJourneyController @Inject()(
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def showMissingJourneyHistory =
-    actionShowState {
+    legacy.actionShowState {
       case _ =>
     }
 
-  def warmUp(clientType: String, uid: String, agentName: String) =
+  def warmUp(clientType: String, uid: String, agentName: String): Action[AnyContent] =
     Action.async { implicit request =>
       journeyId match {
         case None =>
           // redirect to itself with new journeyId generated
           Future.successful(appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName)))(request))
         case _ =>
-          apply(
+          helpers.apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
-            display
+            helpers.display
           )
       }
     }
 
-  val submitWarmUp = {
-    action { implicit request =>
-      whenAuthorised(AsClient)(
-        Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))(redirect)
-    }
-  }
+  val submitWarmUp: Action[AnyContent] = actions
+    .whenAuthorisedWithRetrievals(AsClient)
+    .applyWithRequest(implicit request =>
+      Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .redirect
 
-  val submitSuspendedAgent = {
-    action { implicit request =>
-      whenAuthorised(AsClient)(Transitions.submitSuspension)(redirect)
-    }
-  }
+  val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
 
-  val showConsent = actionShowStateWhenAuthorised(AsClient) {
-    case _: MultiConsent =>
-  }
+  val showConsent: Action[AnyContent] = actions.whenAuthorised(AsClient).show[MultiConsent]
 
-  val showActionNeeded = actionShowStateWhenAuthorised(AsClient) {
-    case _: ActionNeeded =>
-  }
+  val showActionNeeded: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ActionNeeded]
 
-  val showNotFoundInvitation = actionShowStateWhenAuthorised(AsClient) {
-    case NotFoundInvitation =>
-  }
+  val showNotFoundInvitation: Action[AnyContent] = actions.whenAuthorised(AsClient).show[NotFoundInvitation.type]
 
-  val showErrorNoOutstandingRequests = actionShowStateWhenAuthorised(AsClient) {
-    case NoOutstandingRequests =>
-  }
+  val showErrorNoOutstandingRequests: Action[AnyContent] = actions.whenAuthorised(AsClient).show[NoOutstandingRequests.type]
 
-  val showErrorAuthorisationRequestInvalid = actionShowStateWhenAuthorised(AsClient) {
-    case _: RequestExpired            =>
-    case _: AgentCancelledRequest     =>
-    case _: AlreadyRespondedToRequest =>
-  }
+  val showErrorAuthorisationRequestInvalid: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ErrorState]
 
-  val showErrorAuthorisationRequestUnsuccessful = actionShowStateWhenAuthorised(AsClient) {
-    case _: AuthorisationRequestExpired          =>
-    case _: AuthorisationRequestCancelled        =>
-    case _: AuthorisationRequestAlreadyResponded =>
-  }
+  val showErrorAuthorisationRequestUnsuccessful: Action[AnyContent] = actions.whenAuthorised(AsClient).show[AuthErrorState]
 
-  val showErrorCannotFindRequest = actionShowStateWhenAuthorised(AsClient) {
-    case _: CannotFindRequest =>
-  }
+  val showErrorCannotFindRequest: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CannotFindRequest]
 
-  def submitConsent = action { implicit request =>
-    whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitConsents)
-  }
+  val submitConsent: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm).apply(Transitions.submitConsents)
 
-  def showConsentChange = actionShowStateWhenAuthorised(AsClient) {
+  // TODO: Broken using DSL
+  val showConsentChange: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsClient) {
     case _: SingleConsent =>
   }
 
-  def submitChangeConsents = action { implicit request =>
-    whenAuthorisedWithForm(AsClient)(confirmTermsMultiForm)(Transitions.submitChangeConsents)
-  }
+  val submitChangeConsents: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm)(Transitions.submitChangeConsents)
 
-  def showCheckAnswers = actionShowStateWhenAuthorised(AsClient) {
-    case _: CheckAnswers =>
-  }
+  val showCheckAnswers: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CheckAnswers]
 
-  def submitCheckAnswers = action { implicit request =>
-    whenAuthorised(AsClient)(Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation))(redirect)
-  }
+  val submitCheckAnswers: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsClient)
+      .applyWithRequest(
+        implicit request => Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation)
+      )
+      .redirect
 
-  def submitCheckAnswersChange(uid: String) = action { implicit request =>
-    whenAuthorised(AsClient)(Transitions.submitCheckAnswersChange(uid))(redirect)
-  }
+  def submitCheckAnswersChange(uid: String): Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(uid)).redirect
 
-  def submitWarmUpConfirmDecline = action { implicit request =>
-    whenAuthorised(AsClient)(
-      Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))(redirect)
-  }
+  val submitWarmUpConfirmDecline: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsClient)
+      .applyWithRequest(implicit request =>
+        Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+      .redirect
 
-  def showConfirmDecline = actionShowStateWhenAuthorised(AsClient) {
-    case _: ConfirmDecline =>
-  }
+  val showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline]
 
-  def submitConfirmDecline = action { implicit request =>
-    whenAuthorisedWithForm(AsClient)(confirmDeclineForm)(Transitions.submitConfirmDecline(rejectInvitation))
-  }
+  val submitConfirmDecline: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsClient)
+      .bindForm(confirmDeclineForm)
+      .applyWithRequest(implicit request => Transitions.submitConfirmDecline(rejectInvitation))
 
-  def showInvitationsAccepted = action { implicit request =>
-    showStateWhenAuthorised(AsClient) {
-      case _: InvitationsAccepted =>
-    }.andThen {
-      // clears journey history
-      case Success(_) => journeyService.cleanBreadcrumbs()
-    }
-  }
+  val showInvitationsAccepted: Action[AnyContent] =
+    actions.whenAuthorised(AsClient).show[InvitationsAccepted].andCleanBreadcrumbs()
 
-  def showInvitationsDeclined = action { implicit request =>
-    showStateWhenAuthorised(AsClient) {
-      case _: InvitationsDeclined =>
-    }.andThen {
-      // clears journey history
-      case Success(_) => journeyService.cleanBreadcrumbs()
-    }
-  }
+  val showInvitationsDeclined: Action[AnyContent] = actions.whenAuthorised(AsClient).show[InvitationsDeclined].andCleanBreadcrumbs()
 
-  def showAllResponsesFailed = actionShowStateWhenAuthorised(AsClient) {
-    case AllResponsesFailed =>
-  }
+  val showAllResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[AllResponsesFailed.type]
 
-  def showSomeResponsesFailed = actionShowStateWhenAuthorised(AsClient) {
-    case _: SomeResponsesFailed =>
-  }
+  val showSomeResponsesFailed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[SomeResponsesFailed]
 
-  def submitSomeResponsesFailed = action { implicit request =>
-    whenAuthorised(AsClient)(Transitions.continueSomeResponsesFailed)(redirect)
-  }
+  val submitSomeResponsesFailed: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.continueSomeResponsesFailed).redirect
 
   val showErrorCannotViewRequest: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAnyAgent {
@@ -324,13 +286,9 @@ class ClientInvitationJourneyController @Inject()(
       case _                      => Forbidden(cannotConfirmIdentityView())
     }
 
-  def showTrustNotClaimed: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
-    case TrustNotClaimed =>
-  }
+  def showTrustNotClaimed: Action[AnyContent] = actions.whenAuthorised(AsClient).show[TrustNotClaimed.type]
 
-  def showSuspendedAgent: Action[AnyContent] = actionShowStateWhenAuthorised(AsClient) {
-    case _: SuspendedAgent =>
-  }
+  def showSuspendedAgent: Action[AnyContent] = actions.whenAuthorised(AsClient).show[SuspendedAgent]
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {

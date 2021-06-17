@@ -82,7 +82,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   featureFlags: FeatureFlags,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
-  val appConfig: AppConfig)
+  val appConfig: AppConfig,
+  override val actionBuilder: DefaultActionBuilder)
     extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationFastTrackJourneyController._
@@ -109,207 +110,190 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
-  val agentFastTrack =
+  val agentFastTrack: Action[AnyContent] =
     action { implicit request =>
       maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
-            whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
+            legacy.whenAuthorisedWithBootstrapAndForm(Transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
               Transitions.start(featureFlags.agentSuspensionEnabled, getAgencySuspensionDetails)(redirectUrl))
           }
         }
       }
     }
 
-  val showCheckDetails = actionShowStateWhenAuthorised(AsAgent) {
-    case _: CheckDetailsCompleteItsa        =>
-    case _: CheckDetailsCompleteIrv         =>
-    case _: CheckDetailsCompletePersonalVat =>
-    case _: CheckDetailsCompleteBusinessVat =>
-    case _: CheckDetailsCompleteTrust       =>
-    case _: CheckDetailsCompleteCgt         =>
-    case _: CheckDetailsNoPostcode          =>
-    case _: CheckDetailsNoDob               =>
-    case _: CheckDetailsNoVatRegDate        =>
-    case _: CheckDetailsNoClientTypeVat     =>
-  }
+  val showCheckDetails: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[CheckDetails]
 
-  val submitCheckDetails = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
-      Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-  }
+  val submitCheckDetails: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(checkDetailsForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val progressToIdentifyClient = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.checkedDetailsChangeInformation)(redirect)
-  }
+  val progressToIdentifyClient: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.checkedDetailsChangeInformation).redirect
 
-  val showSuspended = actionShowStateWhenAuthorised(AsAgent) {
-    case _: SuspendedAgent =>
-  }
+  val showSuspended: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SuspendedAgent]
 
-  val identifyClientRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()))
+  val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient = actionShowStateWhenAuthorised(AsAgent) {
-    case _: IdentifyPersonalClient     =>
-    case _: IdentifyBusinessClient     =>
-    case _: IdentifyTrustClient        =>
-    case _: IdentifyNoClientTypeClient =>
-    case _: IdentifyCgtClient          =>
-  }
+  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Identify]
 
-  val submitIdentifyItsaClient =
-    action { implicit request =>
-      whenAuthorisedWithForm(AsAgent)(IdentifyItsaClientForm)(
-        Transitions.identifiedClientItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-    }
+  val submitIdentifyItsaClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(IdentifyItsaClientForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.identifiedClientItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig)
+      )
 
-  val submitIdentifyIrvClient =
-    action { implicit request =>
-      whenAuthorisedWithForm(AsAgent)(IdentifyIrvClientForm)(
-        Transitions.identifiedClientIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-    }
+  val submitIdentifyIrvClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(IdentifyIrvClientForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.identifiedClientIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val submitIdentifyVatClient =
-    action { implicit request =>
-      whenAuthorisedWithForm(AsAgent)(IdentifyVatClientForm)(
-        Transitions.identifiedClientVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-    }
+  val submitIdentifyVatClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(IdentifyVatClientForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.identifiedClientVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val submitIdentifyTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(TrustClientForm.form(urnEnabled))(Transitions.showConfirmTrustClient(taxId =>
-      acaConnector.getTrustName(taxId.value)))
-  }
+  val submitIdentifyTrustClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(TrustClientForm.form(urnEnabled))
+      .applyWithRequest(implicit request => Transitions.showConfirmTrustClient(taxId => acaConnector.getTrustName(taxId.value)))
 
-  val submitIdentifyCgtClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CgtClientForm.form())(
-      Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef))
-    )
-  }
+  val submitIdentifyCgtClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(CgtClientForm.form())
+      .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  val progressToKnownFact = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.checkedDetailsNoKnownFact(acaConnector.getCgtSubscription(_)))(redirect)
-  }
+  val progressToKnownFact: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .applyWithRequest(implicit request => Transitions.checkedDetailsNoKnownFact(acaConnector.getCgtSubscription(_))) // TODO: (redirect)
 
-  val showConfirmTrustClient = actionShowStateWhenAuthorised(AsAgent) {
-    case _ =>
-  }
+  val showConfirmTrustClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).showCurrentState
 
-  val submitConfirmTrustClient = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
-      Transitions.submitConfirmTrustClient(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-  }
+  val submitConfirmTrustClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(checkDetailsForm)
+      .applyWithRequest(implicit request =>
+        Transitions.submitConfirmTrustClient(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val knownFactRedirect = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
+  val knownFactRedirect: Action[AnyContent] = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
 
-  val showKnownFact = actionShowStateWhenAuthorised(AsAgent) {
-    case _: NoPostcode | _: NoDob | _: NoVatRegDate =>
-  }
+  val showKnownFact: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[MissingDetail]
 
-  val submitKnownFactItsa =
-    action { implicit request =>
-      whenAuthorisedWithForm(AsAgent)(agentFastTrackPostcodeForm)(
-        Transitions.moreDetailsItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-    }
+  val submitKnownFactItsa: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(agentFastTrackPostcodeForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.moreDetailsItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val submitKnownFactIrv =
-    action { implicit request =>
-      whenAuthorisedWithForm(AsAgent)(agentFastTrackDateOfBirthForm)(
-        Transitions.moreDetailsIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-          invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasLegacyMapping)(
-          hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(appConfig))
-    }
-  val submitKnownFactVat = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(agentFastTrackVatRegDateForm)(
-      Transitions.moreDetailsVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-  }
+  val submitKnownFactIrv: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(agentFastTrackDateOfBirthForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.moreDetailsIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasLegacyMapping)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(appConfig))
 
-  val progressToClientType = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.checkedDetailsNoClientType)(redirect)
-  }
+  val submitKnownFactVat: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(agentFastTrackVatRegDateForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.moreDetailsVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val showClientType = actionShowStateWhenAuthorised(AsAgent) {
-    case _: SelectClientTypeVat =>
-    case _: SelectClientTypeCgt =>
-  }
+  val progressToClientType
+    : Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)(Transitions.checkedDetailsNoClientType) //.apply(helpers.redirect)
 
-  val submitClientType = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.fastTrackForm)(
-      Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
-  }
+  val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientTypeState]
 
-  val submitClientTypeCgt = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(ClientTypeForm.cgtClientTypeForm)(
-      Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-        invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasActiveRelationshipFor)(
-        hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
-  }
+  val submitClientType: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(ClientTypeForm.fastTrackForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
 
-  val showInvitationSent = actionShowStateWhenAuthorised(AsAgent) {
-    case _: InvitationSentPersonal | _: InvitationSentBusiness =>
-  }
+  val submitClientTypeCgt: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(ClientTypeForm.cgtClientTypeForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
 
-  val showNotMatched = actionShowStateWhenAuthorised(AsAgent) {
-    case _: KnownFactNotMatched =>
-    case _: TrustNotFound       =>
-    case _: CgtRefNotFound      =>
-  }
+  val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent]
 
-  val redirectTryAgainNotMatchedKnownFact = action { implicit request =>
-    whenAuthorised(AsAgent)(Transitions.tryAgainNotMatchedKnownFact)(redirect)
-  }
+  val showNotMatched: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[NotMatched]
 
-  def showConfirmCgtPostcode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ConfirmPostcodeCgt =>
-  }
+  val redirectTryAgainNotMatchedKnownFact: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.tryAgainNotMatchedKnownFact) // TODO: redirect
 
-  def submitConfirmCgtPostcode: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(PostcodeForm.form)(Transitions.confirmPostcodeCgt)
-  }
+  def showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt]
 
-  def showConfirmCgtCountryCode: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ConfirmCountryCodeCgt =>
-  }
+  def submitConfirmCgtPostcode: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(PostcodeForm.form).apply(Transitions.confirmPostcodeCgt)
 
-  def submitConfirmCgtCountryCode: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt)
-  }
+  def showConfirmCgtCountryCode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt]
 
-  def showConfirmClientCgt: Action[AnyContent] = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ConfirmClientCgt =>
-  }
+  def submitConfirmCgtCountryCode: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt)
 
-  def submitConfirmCgtClient: Action[AnyContent] = action { implicit request =>
-    whenAuthorisedWithForm(AsAgent)(checkDetailsForm)(
-      Transitions.submitConfirmClientCgt(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
-  }
+  def showConfirmClientCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientCgt]
 
-  val showClientNotSignedUp = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotSignedUp                => }
-  val showPendingAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) { case _: PendingInvitationExists => }
-  val showActiveAuthorisationExists = actionShowStateWhenAuthorised(AsAgent) {
-    case _: ActiveAuthorisationExists  =>
-    case _: PartialAuthorisationExists =>
-  }
-  val showClientNotRegistered = actionShowStateWhenAuthorised(AsAgent) { case _: ClientNotRegistered => }
+  def submitConfirmCgtClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(checkDetailsForm)
+      .applyWithRequest(implicit request =>
+        Transitions.submitConfirmClientCgt(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
 
-  val showAlreadyCopiedAcrossItsa = actionShowStateWhenAuthorised(AsAgent) {
-    case AlreadyCopiedAcrossItsa =>
-  }
+  val showClientNotSignedUp: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientNotSignedUp]
+  val showPendingAuthorisationExists: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[PendingInvitationExists]
+  val showActiveAuthorisationExists: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AuthExists]
+
+  val showClientNotRegistered: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientNotRegistered]
+
+  val showAlreadyCopiedAcrossItsa: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AlreadyCopiedAcrossItsa.type]
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
