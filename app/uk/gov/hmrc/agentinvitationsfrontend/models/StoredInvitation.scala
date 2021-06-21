@@ -38,7 +38,9 @@ case class StoredInvitation(
   isRelationshipEnded: Boolean,
   relationshipEndedBy: Option[String] = None,
   selfUrl: URL)
-    extends ServiceAndClient
+    extends ServiceAndClient {
+  val altItsa: Option[Boolean] = if (service == Services.HMRCMTDIT) Some(clientId == suppliedClientId) else None
+}
 
 object StoredInvitation {
 
