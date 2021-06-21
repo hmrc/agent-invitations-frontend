@@ -43,7 +43,8 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     invitation: Invitation,
     uid: String,
     result: String,
-    failure: Option[String] = None)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): Future[Unit] =
+    failure: Option[String] = None,
+    altItsa: Option[Boolean] = None)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       "Agent client service authorisation request created",
@@ -56,7 +57,9 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "clientId"             -> invitation.clientId,
         "service"              -> invitation.service,
         "uid"                  -> uid
-      ).filter(_._2.nonEmpty) ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
+      ).filter(_._2.nonEmpty)
+        ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
+        ++ altItsa.map(r => Seq("alt-itsa"           -> r)).getOrElse(Seq.empty)
     )
 
   def sendAgentInvitationResponse(

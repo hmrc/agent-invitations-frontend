@@ -58,13 +58,14 @@ class InvitationsService @Inject()(
         val id = storedInvitation.selfUrl.toString.split("/").toStream.last
         acaConnector
           .getAgentReferenceRecord(storedInvitation.arn)
-          .map(agentRefRecord => auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success"))
+          .map(agentRefRecord =>
+            auditService.sendAgentInvitationSubmitted(arn, id, invitation, agentRefRecord.uid, "Success", None, storedInvitation.altItsa))
         InvitationId(id)
       })
       .recoverWith {
         case NonFatal(e) =>
           logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
-          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage))
+          auditService.sendAgentInvitationSubmitted(arn, "", invitation, "", "Fail", Option(e.getMessage), None)
           Future.failed(e)
       }
   }
@@ -93,14 +94,14 @@ class InvitationsService @Inject()(
             .getAgentReferenceRecord(invitation.arn)
             .map(agentRefRecord =>
               auditService
-                .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success"))
+                .sendAgentInvitationSubmitted(arn, id, authRequest.invitation, agentRefRecord.uid, "Success", None, invitation.altItsa))
           authRequest.copy(state = AuthorisationRequest.CREATED)
         })
         .recover {
           case NonFatal(e) =>
             logger.warn(s"Invitation Creation Failed: ${e.getMessage}")
             auditService
-              .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage))
+              .sendAgentInvitationSubmitted(arn, "", authRequest.invitation, "", "Fail", Option(e.getMessage), None)
             authRequest.copy(state = AuthorisationRequest.FAILED)
         }
     }))
