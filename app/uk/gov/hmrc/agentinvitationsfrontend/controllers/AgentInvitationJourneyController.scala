@@ -263,7 +263,9 @@ class AgentInvitationJourneyController @Inject()(
           hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMapping)(appConfig))
 
   // TODO review whether we only need one state/page here?
-  val showReviewAuthorisations: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Review]
+  def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
+    case _: ReviewAuthorisationsPersonal | _: ReviewAuthorisationsTrust =>
+  }
 
   val submitReviewAuthorisations: Action[AnyContent] =
     actions
