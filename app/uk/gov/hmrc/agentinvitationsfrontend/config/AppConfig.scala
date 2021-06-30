@@ -20,12 +20,12 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.Lang
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.duration.Duration
 
 @Singleton
-class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) {
+class AppConfig @Inject()(servicesConfig: ServicesConfig) {
 
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
@@ -75,8 +75,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, val runMode: RunMode) 
   val govUkExternalUrl: String = s"${getConfString("gov-uk.external-url")}"
   val govUkGuidanceExternalUrl: String = s"$govUkExternalUrl/guidance"
   val govUkGuidanceSignupUrl: String = s"$govUkGuidanceExternalUrl$signupClientUrl"
-  val passcodeVerificationUrl =
-    servicesConfig.getConfString(s"govuk-tax.${runMode.env}.url.verification-frontend.redirect", "/verification")
+
   val languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
     "cymraeg" -> Lang("cy")

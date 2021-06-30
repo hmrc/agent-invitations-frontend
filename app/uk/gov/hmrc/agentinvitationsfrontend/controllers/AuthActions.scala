@@ -37,7 +37,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AuthActionsImpl @Inject()(
-  val withVerifiedPasscode: PasscodeVerification,
   val externalUrls: ExternalUrls,
   val env: Environment,
   val config: Configuration,
@@ -46,9 +45,6 @@ class AuthActionsImpl @Inject()(
   featureFlags: FeatureFlags,
   pirRelationshipConnector: PirRelationshipConnector)
     extends AuthorisedFunctions with AuthRedirects with Logging {
-
-  val isDevEnv: Boolean =
-    if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.contains("Dev")
 
   private val requiredCL = ConfidenceLevel.L200
 
@@ -75,12 +71,8 @@ class AuthActionsImpl @Inject()(
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
-          case Some(arn) if featureFlags.enableIrvAllowlist =>
-            pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
-              body(AuthorisedAgent(arn, allowed))
-            }
           case Some(arn) =>
-            withVerifiedPasscode { allowed =>
+            pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
               body(AuthorisedAgent(arn, allowed))
             }
           case None =>
@@ -160,7 +152,7 @@ class AuthActionsImpl @Inject()(
   }
 
   private def redirectToIdentityVerification[A]()(implicit request: Request[A]) = {
-    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env, appConfig) _
+    val toLocalFriendlyUrl = CallOps.localFriendlyUrl(env) _
     val successUrl = toLocalFriendlyUrl(request.uri, request.host)
     val rawFailureUrl =
       toLocalFriendlyUrl(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url, request.host)
@@ -179,7 +171,7 @@ class AuthActionsImpl @Inject()(
   }
 
   private def continueUrlWithJourneyId(journeyId: Option[String])(implicit request: Request[_]): String = {
-    val url = localFriendlyUrl(env, appConfig)(request.uri, request.host)
+    val url = localFriendlyUrl(env)(request.uri, request.host)
     journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
   }
 

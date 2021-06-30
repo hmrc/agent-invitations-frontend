@@ -21,10 +21,10 @@ import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, PasscodeVerification, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServicesWithAnyTrust
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
@@ -41,7 +41,6 @@ class TestEndpointsController @Inject()(
   pirRelationshipConnector: PirRelationshipConnector,
   val authConnector: AuthConnector,
   val env: Environment,
-  val withVerifiedPasscode: PasscodeVerification,
   deleteRelationshipView: delete_relationship,
   createRelationshipView: create_relationship,
   testFastTrackView: test_fast_track)(
@@ -53,6 +52,10 @@ class TestEndpointsController @Inject()(
     extends FrontendController(cc) with I18nSupport {
 
   import TestEndpointsController._
+
+  val isLocalEnv = {
+    if (env.mode.equals(Mode.Test)) false else env.mode.equals(Mode.Dev)
+  }
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(deleteRelationshipView(testRelationshipForm))
@@ -96,7 +99,7 @@ class TestEndpointsController @Inject()(
 
   def getFastTrackForm: Action[AnyContent] = Action.async { implicit request =>
     authActions.withAuthorisedAsAgent { _ =>
-      Future successful Ok(testFastTrackView(testCurrentAuthorisationRequestForm, authActions.isDevEnv))
+      Future successful Ok(testFastTrackView(testCurrentAuthorisationRequestForm, isLocalEnv))
     }
   }
 }
