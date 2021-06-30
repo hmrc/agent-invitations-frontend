@@ -239,7 +239,7 @@ class ClientInvitationJourneyController @Inject()(
   def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
     val continueUrl = CallOps
-      .localFriendlyUrl(env, appConfig)(successUrl, request.host)
+      .localFriendlyUrl(env)(successUrl, request.host)
     Future successful Forbidden(timedOutView(s"$ggLoginUrl?continue=$continueUrl"))
   }
 
@@ -258,7 +258,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   private def toLocalFriendly(url: String)(implicit request: Request[_]): String =
-    CallOps.localFriendlyUrl(env, appConfig)(url, request.host)
+    CallOps.localFriendlyUrl(env)(url, request.host)
 
   def lockedOut: Action[AnyContent] = Action.async { implicit request =>
     Future successful Forbidden(cannotConfirmIdentityView(titleKey = Some("locked-out.header"), html = Some(lockedOutView())))

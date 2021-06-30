@@ -312,7 +312,7 @@ class AgentInvitationJourneyController @Inject()(
       .map { is =>
         val uri = externalUrls.agentServicesAccountUrl
         val continueUrl = CallOps
-          .localFriendlyUrl(env, appConfig)(uri, request.host)
+          .localFriendlyUrl(env)(uri, request.host)
         s"$ggLoginUrl?continue=$continueUrl"
       }
 

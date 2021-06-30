@@ -6,8 +6,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, FeatureFlags, PasscodeVerification}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
@@ -19,7 +20,6 @@ class AuthActionsISpec extends BaseISpec {
   val authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
   val config: Configuration = app.injector.instanceOf[Configuration]
   val env: Environment = app.injector.instanceOf[Environment]
-  val withVerifiedPasscode: PasscodeVerification = app.injector.instanceOf[PasscodeVerification]
   val externalUrls: ExternalUrls = app.injector.instanceOf[ExternalUrls]
   val featureFlags = app.injector.instanceOf[FeatureFlags]
   val pirRelationshipConnector = app.injector.instanceOf[PirRelationshipConnector]
@@ -29,7 +29,7 @@ class AuthActionsISpec extends BaseISpec {
     FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
   object TestController
-      extends AuthActionsImpl(withVerifiedPasscode, externalUrls, env, config, authConnector, appConfig, featureFlags, pirRelationshipConnector) {
+      extends AuthActionsImpl(externalUrls, env, config, authConnector, appConfig, featureFlags, pirRelationshipConnector) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
         Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
@@ -48,6 +48,7 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin
       )
+      givenArnIsAllowlistedForIrv(Arn("fooArn"))
       val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 200
       bodyOf(result) shouldBe "(fooArn,true)"

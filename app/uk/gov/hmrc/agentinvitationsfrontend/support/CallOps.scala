@@ -40,9 +40,9 @@ object CallOps {
     * Absolute URLs are unaffected
     * Just passes through the URL as normal if running in a non-local environment
     * */
-  def localFriendlyUrl(env: Environment, appConfig: AppConfig)(url: String, hostAndPort: String) = {
+  def localFriendlyUrl(env: Environment)(url: String, hostAndPort: String) = {
     val isLocalEnv = {
-      if (env.mode.equals(Mode.Test)) false else appConfig.runMode.env.equals("Dev")
+      if (env.mode.equals(Mode.Test)) false else env.mode.equals(Mode.Dev)
     }
 
     val uri = new URI(url)
