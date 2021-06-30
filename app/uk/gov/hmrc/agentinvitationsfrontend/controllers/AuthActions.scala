@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
-import play.api.{Configuration, Environment, Logging, Mode}
+import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
@@ -33,6 +32,7 @@ import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -71,10 +71,11 @@ class AuthActionsImpl @Inject()(
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
-          case Some(arn) =>
+          case Some(arn) if appConfig.featuresIrvAllowlist =>
             pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
               body(AuthorisedAgent(arn, allowed))
             }
+          case Some(arn) => body(AuthorisedAgent(arn, true))
           case None =>
             logger.warn("Arn not found for the logged in agent")
             Future successful Forbidden
