@@ -45,6 +45,7 @@
             choiceForm("accepted"),
             Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
             '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
+            '_horizontal -> true,
             '_groupDivClass -> "form-group",
             '_fieldsetAttributes -> Html("""id='accepted'""")
         )
