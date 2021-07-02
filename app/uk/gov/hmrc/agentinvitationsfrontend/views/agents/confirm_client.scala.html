@@ -52,6 +52,7 @@
         Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
     '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("confirm-client.header", clientName)}</h1>"""),
     '_groupDivClass -> "form-group",
+    '_horizontal -> true,
     '_fieldsetAttributes -> Html("""id='accepted'""")
     )
 <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>

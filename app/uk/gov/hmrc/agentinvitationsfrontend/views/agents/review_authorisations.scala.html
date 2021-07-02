@@ -82,6 +82,7 @@
                 reviewAuthorisationsForm("accepted"),
                 Seq(("true", Messages("review-authorisations.radio.yes")), ("false", Messages("review-authorisations.radio.no"))),
                 '_legend -> Html("""<h2 class="heading-medium margin-top-0">""" + Messages("review-authorisations.subheader") + """</h2>"""),
+                '_horizontal -> true,
                 '_legendClass -> "form-label",
                 '_groupDivClass -> "form-group",
                 '_fieldsetAttributes -> Html("""id='accepted'""")
