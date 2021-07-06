@@ -114,19 +114,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       def checkNewWarmUpPageIsShown(result: Result): Unit = {
         checkHtmlResultWithBodyText(
           result,
-          htmlEscapedMessage("warm-up.h2.personal"),
-          htmlEscapedMessage("warm-up.p3.personal"),
-          htmlEscapedMessage("warm-up.l1.personal"),
-          htmlEscapedMessage("warm-up.l2.personal"))
+          htmlEscapedMessage("warm-up.p2.personal"),
+          htmlEscapedMessage("warm-up.p3.personal")
+        )
       }
 
       def checkNewWarmUpPageIsNotShown(result: Result): Unit = {
         checkHtmlResultWithNotBodyText(
           result,
-          htmlEscapedMessage("warm-up.h2.personal"),
-          htmlEscapedMessage("warm-up.p3.personal"),
-          htmlEscapedMessage("warm-up.l1.personal"),
-          htmlEscapedMessage("warm-up.l2.personal"))
+          htmlEscapedMessage("warm-up.p2.personal"),
+          htmlEscapedMessage("warm-up.p3.personal")
+        )
       }
     }
 

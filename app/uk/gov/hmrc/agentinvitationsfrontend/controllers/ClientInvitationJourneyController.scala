@@ -335,8 +335,7 @@ class ClientInvitationJourneyController @Inject()(
               addParamsToUrl(
                 appConfig.ggRegistrationFrontendExternalUrl,
                 "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp().url)
-              ),
-              appConfig.featuresAltItsa
+              )
             )))
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?

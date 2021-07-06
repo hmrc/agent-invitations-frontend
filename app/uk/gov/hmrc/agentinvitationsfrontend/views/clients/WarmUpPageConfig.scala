@@ -24,8 +24,7 @@ case class WarmUpPageConfig(
   uid: String,
   getConfirmTermsCall: Call,
   getConfirmDeclineCall: Call,
-  ggRegistrationUrl: String,
-  altItsaEnabled: Boolean = false) {
+  ggRegistrationUrl: String) {
 
   val typeOfClient = ClientType.fromEnum(clientType)
 }
