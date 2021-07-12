@@ -350,11 +350,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitWarmUp(request())
       status(result) shouldBe 303
 
-      val continueUrlEncoded =
-        URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
-
       redirectLocation(result) shouldBe Some(
-        s"/bas-gateway/sign-in?continue_url=$continueUrlEncoded&origin=agent-invitations-frontend")
+        s"http://localhost:9553/bas-gateway/sign-in?continue_url=http://localhost:9448/warm-up?clientInvitationJourney=foo&origin=agent-invitations-frontend")
     }
   }
 
