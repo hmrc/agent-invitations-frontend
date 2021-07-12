@@ -43,6 +43,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String) extends State
 
+    case class GGUserIdNeeded(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String) extends State
+
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
     case object NotFoundInvitation extends State with IsError
@@ -121,7 +123,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             result <- record match {
                        case Some(r) if r.normalisedAgentNames.map(_.trim).contains(agentName.trim) =>
                          getAgencyName(r.arn).flatMap { name =>
-                           goto(WarmUp(clientType, uid, r.arn, name, agentName.trim))
+                           if (clientType == ClientType.personal) goto(GGUserIdNeeded(clientType, uid, r.arn, name, agentName.trim))
+                           else goto(WarmUp(clientType, uid, r.arn, name, agentName.trim))
                          }
                        case Some(r) =>
                          val names = r.normalisedAgentNames.mkString(",")
@@ -133,6 +136,12 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                      }
           } yield result
       }
+
+    def submitConfirmGGUserId()(confirmation: Confirmation) = Transition {
+      case GGUserIdNeeded(clientType, uid, arn, name, agentName) =>
+        if (confirmation.choice) goto(WarmUp(clientType, uid, arn, name, agentName))
+        else goto(NotFoundInvitation)
+    }
 
     private def getConsents(pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
       pendingInvitationDetails.map(

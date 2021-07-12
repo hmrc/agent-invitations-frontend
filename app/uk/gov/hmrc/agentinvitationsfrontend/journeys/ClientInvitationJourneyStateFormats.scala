@@ -41,6 +41,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val AuthorisationRequestExpiredFormat = Json.format[AuthorisationRequestExpired]
   val AuthorisationRequestCancelledFormat = Json.format[AuthorisationRequestCancelled]
   val AuthorisationRequestAlreadyRespondedFormat = Json.format[AuthorisationRequestAlreadyResponded]
+  val GGUserIdNeededFormat = Json.format[GGUserIdNeeded]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp                               => WarmUpFormat.writes(s)
@@ -60,6 +61,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: AuthorisationRequestExpired          => AuthorisationRequestExpiredFormat.writes(s)
     case s: AuthorisationRequestCancelled        => AuthorisationRequestCancelledFormat.writes(s)
     case s: AuthorisationRequestAlreadyResponded => AuthorisationRequestAlreadyRespondedFormat.writes(s)
+    case s: GGUserIdNeeded                       => GGUserIdNeededFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -85,6 +87,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "AuthorisationRequestExpired"          => AuthorisationRequestExpiredFormat.reads(properties)
     case "AuthorisationRequestCancelled"        => AuthorisationRequestCancelledFormat.reads(properties)
     case "AuthorisationRequestAlreadyResponded" => AuthorisationRequestAlreadyRespondedFormat.reads(properties)
+    case "GGUserIdNeeded"                       => GGUserIdNeededFormat.reads(properties)
   }
 
 }

@@ -726,5 +726,4 @@ object AgentInvitationJourneyController {
   val ReviewAuthorisationsForm: Form[Confirmation] = confirmationForm("error.review-authorisation.required")
 
   val DeleteAuthorisationForm: Form[Confirmation] = confirmationForm("error.delete.radio")
-
 }

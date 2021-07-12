@@ -479,6 +479,11 @@ warm-up.p3.personal=If you do not have a Government Gateway user ID for your per
 warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to authorise {0}
 
+#GG User ID Needed
+gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax affairs or VAT?
+gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
+error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
+
 # suspended agent
 suspended-agent.all.header=You cannot appoint this tax agent
 suspended-agent.single.header=You cannot appoint this tax agent for a service they want to deal with
