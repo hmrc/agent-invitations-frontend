@@ -1,0 +1,64 @@
+@*
+* Copyright 2021 HM Revenue & Customs
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+mainTemplate: main_template,
+uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+)
+
+
+@(confirmForm: Form[ConfirmForm])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@gaCallsWithoutName(analyticsHost: String, token: String) = {
+var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
+ga('create', '@token', '@analyticsHost');
+ga('set',  'page', pathWithoutName);
+ga('send', 'pageview', { 'anonymizeIp': true });
+}
+
+@mainTemplate(
+title = Messages("generic.title", Messages(s"which-service.header"), Messages("title.suffix.client")),
+bodyClasses = None,
+isAgent = false,
+bannerTitle = "banner.clients",
+gaCalls = Some(gaCallsWithoutName _),
+hasTimeout = false
+) {
+
+    <h1 class="heading-xlarge">@Messages("which-service.header")</h1>
+
+
+    @uiFormHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
+
+    @uiInputRadioGroupCustom(
+        confirmForm("submitWhichService"),
+        Seq(("true", Messages("which-service.radio.yes")),("false",Messages("which-service.radio.no"))),
+        '_fieldsetAttributes -> Html("""id='whichService'""")
+    )
+
+    <div class="form-group margin-top-30">
+        <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+</div>
+
+}
+
+}

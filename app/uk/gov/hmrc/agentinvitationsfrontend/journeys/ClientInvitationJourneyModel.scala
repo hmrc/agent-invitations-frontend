@@ -47,6 +47,10 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class GGUserIdNeeded(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
+    case object WhichTaxService extends State
+
+    case object SubmitWhichTaxService extends State
+
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
     case object NotFoundInvitation extends State with IsError
