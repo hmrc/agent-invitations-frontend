@@ -307,7 +307,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
-        List(SelectBusinessService, SelectClientType(emptyBasket)))
+        List())
     }
   }
 
@@ -342,7 +342,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
-        List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+        List())
     }
 
     "do not blow up if user enters invalid value in the form for confirmation" in {

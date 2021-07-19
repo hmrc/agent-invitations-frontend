@@ -76,6 +76,7 @@ class ClientInvitationJourneyController @Inject()(
   agentCancelledRequestView: agent_cancelled_request,
   alreadyRespondedView: already_responded,
   cannotFindRequestView: cannot_find_request,
+  ggUserIdNeededView: gg_user_id_needed,
   authorisationRequestErrorTemplateView: authorisation_request_error_template)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
@@ -113,6 +114,12 @@ class ClientInvitationJourneyController @Inject()(
     withAuthorisedAsAnyClient(journeyId)
   }
 
+  type WithAuthorisedMaybe[User] = Request[_] => (Option[User] => Future[Result]) => Future[Result]
+
+  val AsMaybeLoggedInClient: WithAuthorisedMaybe[AuthorisedClient] = { implicit request: Request[Any] =>
+    withMaybeLoggedInClient
+  }
+
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def showMissingJourneyHistory =
@@ -134,10 +141,20 @@ class ClientInvitationJourneyController @Inject()(
       }
     }
 
+  val showGGUserIdNeeded: Action[AnyContent] = actions.show[GGUserIdNeeded].orApply(Transitions.transitionFromLaterState)
+
+  val submitGGUserIdNeeded: Action[AnyContent] = actions.bindForm(confirmHasGGIdForm).apply(Transitions.submitConfirmGGUserId)
+
   val submitWarmUp: Action[AnyContent] = actions
-    .whenAuthorisedWithRetrievals(AsClient)
+    .whenAuthorisedWithRetrievals(AsMaybeLoggedInClient)
     .applyWithRequest(implicit request =>
       Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .redirect
+
+  val submitWarmUpSessionRequired: Action[AnyContent] = actions
+    .whenAuthorisedWithRetrievals(AsClient)
+    .applyWithRequest(implicit request =>
+      Transitions.submitWarmUpSessionRequired(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
   val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
@@ -295,8 +312,10 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case NotFoundInvitation    => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case NoOutstandingRequests => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
+    case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
+    case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
+    case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case NoOutstandingRequests    => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
     case _: RequestExpired | _: AgentCancelledRequest | _: AlreadyRespondedToRequest =>
       routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid()
     case _: CannotFindRequest => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
@@ -337,6 +356,16 @@ class ClientInvitationJourneyController @Inject()(
                 "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp().url)
               )
             )))
+
+      case _: GGUserIdNeeded =>
+        Ok(
+          ggUserIdNeededView(
+            formWithErrors.or(confirmHasGGIdForm),
+            backLinkFor(breadcrumbs),
+            routes.ClientInvitationJourneyController.submitGGUserIdNeeded()))
+
+      case _: WarmUpSessionRequired =>
+        Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
       case ActionNeeded(clientType) =>
@@ -382,7 +411,7 @@ class ClientInvitationJourneyController @Inject()(
         val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
         Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, respondedOn, AuthRequestErrorCase.AlreadyResponded))
 
-      case MultiConsent(clientType, uid, agentName, consents) =>
+      case MultiConsent(clientType, uid, agentName, _, consents) =>
         val clientTypeStr = ClientType.fromEnum(clientType)
         Ok(
           confirmTermsMultiView(
@@ -429,7 +458,7 @@ class ClientInvitationJourneyController @Inject()(
               backLink = backLinkFor(breadcrumbs)
             )))
 
-      case ConfirmDecline(clientType, uid, agentName, consents) =>
+      case ConfirmDecline(clientType, uid, agentName, _, consents) =>
         Ok(
           confirmDeclineView(
             formWithErrors.or(confirmDeclineForm),
@@ -461,7 +490,7 @@ class ClientInvitationJourneyController @Inject()(
           else Call("GET", externalUrls.agentClientManagementUrl)
         Ok(trustNotClaimedView(backLink))
 
-      case SuspendedAgent(_, _, _, suspendedServices, nonSuspendedConsents) =>
+      case SuspendedAgent(_, _, _, _, suspendedServices, nonSuspendedConsents) =>
         Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
     }
 
@@ -491,5 +520,7 @@ object ClientInvitationJourneyController {
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
   val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
+
+  val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 
 }

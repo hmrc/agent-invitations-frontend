@@ -173,6 +173,7 @@ GET         /assets/*file                                               controll
 
 #Journey Client endpoints
 GET         /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+GET         /warm-up/session-required                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpSessionRequired
 GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET         /action-needed                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showActionNeeded
@@ -211,5 +212,6 @@ GET         /keep-alive                                                 uk.gov.h
 GET         /trust-not-claimed                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /:clientType/:uid/:agentName                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
 GET         /:clientType-taxes/manage-who-can-deal-with-HMRC-for-you/:uid/:agentName   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
-
+GET         /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showGGUserIdNeeded
+POST        /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitGGUserIdNeeded
 GET         /language/:lang                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsLanguageController.switchToLanguage(lang: String)

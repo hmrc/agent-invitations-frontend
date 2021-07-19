@@ -1,0 +1,46 @@
+
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.back_link
+
+@this(
+        mainTemplate: main_template,
+        errorPrefix: error_prefix,
+        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+)
+
+
+@(ggUserIdForm: Form[Confirmation], backLinUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("gg-user-id-needed.h1"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
+
+    @back_link(backLinUrl.url)
+
+    @if(ggUserIdForm.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), ggUserIdForm, Seq.empty, Some("client-type"))
+    }
+
+    @uiFormHelper(
+        action = submitAction,
+        'class -> "form js-form") {
+
+        @uiInputRadioGroupCustom(
+            ggUserIdForm("accepted"),
+            Seq("true" -> Messages("gg-user-id-needed.yes"), "false" -> Messages("gg-user-id-needed.no")),
+            '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("gg-user-id-needed.h1")}</h1>"""),
+            '_inputHint -> Messages("gg-user-id-needed.p"),
+            '_fieldsetAttributes -> Html("""id='accepted'"""),
+            '_groupDivClass -> "form-group",
+        '_horizontal -> true
+        )
+
+        <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
+    }
+
+}
