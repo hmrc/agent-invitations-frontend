@@ -213,13 +213,13 @@ class AuthActionsImpl @Inject()(
   }
 
   private def continueUrlWithJourneyId(journeyId: Option[String])(implicit request: Request[_]): String = {
-    val url = localFriendlyUrl(env)(request.uri, request.host)
+    val url = s"$continueUrl${request.uri}"
     journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
   }
 
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession ⇒
-      toGGLogin(continueUrlWithJourneyId(journeyId))
+      Redirect(s"$signInUrl?continue_url=${continueUrlWithJourneyId(journeyId)}&origin=${getString("appName")}")
 
     case _: InsufficientEnrolments ⇒
       logger.warn(s"Logged in user does not have required enrolments")
@@ -229,4 +229,9 @@ class AuthActionsImpl @Inject()(
       logger.warn(s"user logged in with unsupported auth provider")
       Forbidden
   }
+
+  private def getString(key: String): String = config.underlying.getString(key)
+
+  private val signInUrl = getString("bas-gateway.url")
+  private val continueUrl = getString("login.continue")
 }
