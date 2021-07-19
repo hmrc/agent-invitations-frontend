@@ -479,6 +479,13 @@ warm-up.p3.personal=Os ydych am awdurdodi asiant ar gyfer Troi Treth yn Ddigidol
 warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
 warm-up.link=Ni hoffwn benodi {0}
 
+#GG User ID Needed
+gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax affairs or VAT?
+gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
+gg-user-id-needed.yes=Yes
+gg-user-id-needed.no=No
+error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
+
 # suspended agent
 suspended-agent.all.header=Ni allwch benodi’r asiant treth hwn
 suspended-agent.single.header=Ni allwch benodi’r asiant treth hwn ar gyfer gwasanaeth yr hoffai ddelio ag ef

@@ -173,6 +173,7 @@ GET         /assets/*file                                               controll
 
 #Journey Client endpoints
 GET         /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+GET         /warm-up/session-required                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpSessionRequired
 GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /not-found                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
 GET         /action-needed                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showActionNeeded

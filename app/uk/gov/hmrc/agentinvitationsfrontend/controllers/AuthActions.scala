@@ -33,7 +33,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 @Singleton
 class AuthActionsImpl @Inject()(
@@ -132,6 +133,46 @@ class AuthActionsImpl @Inject()(
       }
       .recover {
         handleFailure(isAgent = false, journeyId)
+      }
+
+  def withMaybeLoggedInClient[A](
+    body: Option[AuthorisedClient] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    authorised(AuthProviders(GovernmentGateway))
+      .retrieve(affinityGroup and confidenceLevel and allEnrolments and nino) {
+        case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
+          (affinity, confidence) match {
+            case (AffinityGroup.Individual, cl) =>
+              withConfidenceLevelUplift(cl, enrols) {
+                body(Some(AuthorisedClient(affinity, enrols)))
+              }
+            case (AffinityGroup.Organisation, cl) => {
+              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, enrols) {
+                body(Some(AuthorisedClient(affinity, enrols)))
+              } else body(Some(AuthorisedClient(affinity, enrols)))
+            }
+            case (AffinityGroup.Agent, _) => {
+              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
+            }
+            case (affinityGroup, _) =>
+              logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
+              Future successful Forbidden
+          }
+
+        case _ =>
+          logger.warn("the logged in client had no affinity group")
+          Future successful Forbidden
+      }
+      .recoverWith {
+        case _: NoActiveSession ⇒
+          body(None)
+
+        case _: InsufficientEnrolments ⇒
+          logger.warn(s"Logged in user does not have required enrolments")
+          Future.successful(Forbidden)
+
+        case _: UnsupportedAuthProvider ⇒
+          logger.warn(s"user logged in with unsupported auth provider")
+          Future.successful(Forbidden)
       }
 
   private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, enrols: Enrolments)(body: => Future[Result])(

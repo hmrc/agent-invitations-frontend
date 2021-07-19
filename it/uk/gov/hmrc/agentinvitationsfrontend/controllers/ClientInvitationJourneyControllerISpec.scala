@@ -342,7 +342,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }.getMessage shouldBe "UnsupportedAffinityGroup"
     }
 
-    "redirect to gg log in with an appended journey ID on the continue url when there is no session" in {
+    "redirect to /Government-Gateway-user-ID-needed when there is no session and client type is personal" in {
       givenUnauthorisedWith("MissingBearerToken")
       journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
@@ -350,18 +350,81 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitWarmUp(request())
       status(result) shouldBe 303
 
-      val continueUrlEncoded =
-        URLEncoder.encode("/warm-up?clientInvitationJourney=foo", StandardCharsets.UTF_8.toString())
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showGGUserIdNeeded().url)
+    }
 
-      redirectLocation(result) shouldBe Some(
-        s"/bas-gateway/sign-in?continue_url=$continueUrlEncoded&origin=agent-invitations-frontend")
+    "redirect to /warm-up/session-required when there is no session and client type is business" in {
+      givenUnauthorisedWith("MissingBearerToken")
+      journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
+      val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
+
+      val result = controller.submitWarmUp(request())
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+    }
+  }
+
+  "GET /Government-Gateway-user-ID-needed" should {
+    "display the correct content" in {
+      def request() = requestWithJourneyIdInCookie("GET", "/Government-Gateway-user-ID-needed")
+    journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+      val result = controller.showGGUserIdNeeded(request())
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "gg-user-id-needed.h1",
+        "gg-user-id-needed.p",
+        "gg-user-id-needed.yes",
+        "gg-user-id-needed.no")
+    }
+  }
+
+  "POST /Government-Gateway-user-ID-needed" should {
+    "redirect to /warm-up/session-required when 'Yes' was selected" in {
+      def request() = requestWithJourneyIdInCookie("POST", "/Government-Gateway-user-ID-needed")
+
+      journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+
+      val result =
+        controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+    }
+
+    "redirect to /invitation-not-found (change with APB-) when 'No' was selected" in {
+      def request() = requestWithJourneyIdInCookie("POST", "/Government-Gateway-user-ID-needed")
+
+      journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+
+      val result =
+        controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+    }
+  }
+
+  "POST warm-up/session-required" should {
+    "redirect to /consent when invitation found" in {
+
+      def request() = requestWithJourneyIdInCookie("GET", "/warm-up/session-required")
+
+      givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
+      givenAllInvitationIdsByStatus(uid, "Pending")
+      journeyState.set(WarmUpSessionRequired(personal, uid, arn, "My Agency"), Nil)
+
+      val result = controller.submitWarmUpSessionRequired(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
     }
   }
 
   "GET /cannot-appoint" should {
     "display the agent suspended page" in {
       def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
-      journeyState.set(SuspendedAgent(personal, "uid", "name", Set("ITSA", "VATC"), Seq()), Nil)
+      journeyState.set(SuspendedAgent(personal, "uid", "name", arn, Set("ITSA", "VATC"), Seq()), Nil)
 
       val result = controller.showSuspendedAgent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -483,6 +546,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true, isAltItsa = true))),
         Nil)
 
@@ -516,6 +580,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true))),
         Nil)
 
@@ -548,6 +613,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
         Nil)
 
@@ -579,6 +645,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true),
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
         Nil)
@@ -596,6 +663,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           business,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
         Nil)
 
@@ -625,6 +693,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           business,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), "trust", consent = true))),
         Nil)
 
@@ -644,6 +713,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           business,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), "trustNT", consent = true))),
         Nil)
 
@@ -669,6 +739,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           uid,
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
         Nil)
 
@@ -900,6 +971,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
         Nil)
 
@@ -916,6 +988,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
         Nil)
 
@@ -932,6 +1005,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
             ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))
@@ -961,6 +1035,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
         Nil)
 
@@ -976,6 +1051,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
         Nil)
 
@@ -994,6 +1070,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))),
         Nil)
 
@@ -1014,6 +1091,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           personal,
           "uid",
           "My Agency",
+          arn,
           Seq(
             ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
             ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))

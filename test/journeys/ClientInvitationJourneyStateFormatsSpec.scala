@@ -102,9 +102,9 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "SuspendedAgent" in {
-        val state = SuspendedAgent(personal, "uid", "agent name", Set("ITSA", "VATC"), Seq())
+        val state = SuspendedAgent(personal, "uid", "agent name", Arn("1234"), Set("ITSA", "VATC"), Seq())
         val json = Json.parse(
-          """{"state":"SuspendedAgent","properties":{"clientType": "personal", "uid": "uid",  "agentName": "agent name", "suspendedRegimes": ["ITSA", "VATC"], "nonSuspendedConsents": []}}""")
+          """{"state":"SuspendedAgent","properties":{"clientType": "personal", "uid": "uid",  "agentName": "agent name", "arn": "1234", "suspendedRegimes": ["ITSA", "VATC"], "nonSuspendedConsents": []}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -114,6 +114,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           personal,
           "uid",
           "agent name",
+          Arn("1234"),
           Seq(
             ClientConsent(InvitationId("A1BEOZEO7MNO6"), LocalDate.parse("2010-01-01"), "itsa", consent = true),
             ClientConsent(
@@ -127,7 +128,9 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         val json = Json.parse(s"""{"state":"MultiConsent",
                                  |"properties":{"clientType": "personal", 
                                  |"uid": "uid", 
-                                 |"agentName": "agent name", $jsonConsents}}""".stripMargin)
+                                 |"agentName": "agent name",
+                                 | "arn": "1234",
+                                 | $jsonConsents}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -304,6 +307,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           personal,
           "uid",
           "agent name",
+          Arn("1234"),
           Seq(
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
@@ -320,7 +324,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           )
         )
         val json = Json.parse(
-          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin)
+          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "arn": "1234", $jsonConsents}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -334,6 +338,21 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
 
+      "WarmUpSessionRequired" in {
+        val state = WarmUpSessionRequired(ClientType.personal, "uid", Arn("1234"), "agentName")
+        val json = Json.parse(
+          s"""{"state":"WarmUpSessionRequired","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}""")
+        Json.toJson(state: State) shouldBe json
+        json.as[State] shouldBe state
+      }
+
+      "GGUserIdNeeded" in {
+        val state = GGUserIdNeeded(ClientType.personal, "uid", Arn("1234"), "agentName")
+        val json =
+          Json.parse(s"""{"state":"GGUserIdNeeded","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}""")
+        Json.toJson(state: State) shouldBe json
+        json.as[State] shouldBe state
+      }
     }
   }
 }
