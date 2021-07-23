@@ -59,7 +59,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "uid"                  -> uid
       ).filter(_._2.nonEmpty)
         ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
-        ++ altItsa.map(r => Seq("alt-itsa"           -> r)).getOrElse(Seq.empty)
+        ++ altItsa.map(r => Seq("altITSASource"      -> r)).getOrElse(Seq.empty)
     )
 
   def sendAgentInvitationResponse(
