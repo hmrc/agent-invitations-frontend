@@ -47,9 +47,12 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class GGUserIdNeeded(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
-    case object WhichTaxService extends State
+    case class WhichTaxService(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
-    case object SubmitWhichTaxService extends State
+    case class SubmitWhichTaxService(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
+
+    case object SignUpToTaxService extends State
+    case object CreateNewUserId extends State
 
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
@@ -146,7 +149,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     def submitConfirmGGUserId(confirmation: Confirmation) = Transition {
       case GGUserIdNeeded(clientType, uid, arn, name) =>
         if (confirmation.choice) goto(WarmUpSessionRequired(clientType, uid, arn, name))
-        else goto(NotFoundInvitation) //TODO APB-5241
+        else goto(WhichTaxService(clientType, uid, arn, name))
     }
 
     def transitionFromLaterState = Transition {
@@ -454,5 +457,15 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           case None          => throw new IllegalStateException("the key for this consent was not found")
         }
     }
+
+    def submitWhichTaxService(confirmation: Confirmation) =
+      Transition {
+        case WhichTaxService(clientType, uid, arn, name) =>
+          if (confirmation.choice) {
+            goto(WarmUpSessionRequired(clientType, uid, arn, name))
+          } else {
+            goto(WarmUpSessionRequired(clientType, uid, arn, name))
+          }
+      }
   }
 }

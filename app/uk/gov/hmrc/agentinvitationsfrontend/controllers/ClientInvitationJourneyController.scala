@@ -24,7 +24,6 @@ import play.api.mvc._
 import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyService, MongoDBCachedClientInvitationJourneyService}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -159,11 +158,11 @@ class ClientInvitationJourneyController @Inject()(
       Transitions.submitWarmUpSessionRequired(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
-  val showWhichTaxService: Action[AnyContent] = actions.whenAuthorised(AsClient).show[WhichTaxService.type]
+  val showWhichTaxService: Action[AnyContent] = actions.show[WhichTaxService]
 
   val submitWhichTaxService: Action[AnyContent] = actions
-    .whenAuthorised(AsClient)
-    .bindForm(ConfirmForm)[SubmitWhichTaxService.type]
+    .bindForm(whichTaxServiceForm)
+    .apply(Transitions.submitWhichTaxService)
 
   val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
 
@@ -320,11 +319,14 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case WhichTaxService       => routes.ClientInvitationJourneyController.showWhichTaxService()
+    case _: WhichTaxService =>
+      routes.ClientInvitationJourneyController.showWhichTaxService()
+    case _: SubmitWhichTaxService =>
+      routes.ClientInvitationJourneyController.submitWhichTaxService()
     case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
     case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
-    case NotFoundInvitation    => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case NoOutstandingRequests => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
+    case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
+    case NoOutstandingRequests    => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
     case _: RequestExpired | _: AgentCancelledRequest | _: AlreadyRespondedToRequest =>
       routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid()
     case _: CannotFindRequest => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
@@ -375,6 +377,13 @@ class ClientInvitationJourneyController @Inject()(
 
       case _: WarmUpSessionRequired =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
+
+      case _: WhichTaxService =>
+        Ok(
+          whichTaxServiceView(
+            formWithErrors.or(whichTaxServiceForm),
+            backLinkFor(breadcrumbs),
+            routes.ClientInvitationJourneyController.submitWhichTaxService()))
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
       case ActionNeeded(clientType) =>
@@ -520,17 +529,17 @@ object ClientInvitationJourneyController {
         "confirmedTerms.trustNT" -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
-  def confirmationForm(errorMessage: String, field: String): Form[Confirmation] =
+  def confirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
       mapping(
-        field -> optional(normalizedText)
+        "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid", "accepted")
+  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 
-  val whichTaxServiceForm = ConfirmForm("???", "")
+  val whichTaxServiceForm: Form[Confirmation] = confirmationForm("???")
 }
