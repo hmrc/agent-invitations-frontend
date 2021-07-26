@@ -394,7 +394,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
     }
 
-    "redirect to /invitation-not-found (change with APB-) when 'No' was selected" in {
+    "redirect to /which-tax-service when 'No' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/Government-Gateway-user-ID-needed")
 
       journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
@@ -402,7 +402,48 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showNotFoundInvitation().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showWhichTaxService().url)
+    }
+  }
+
+  "GET /which-tax-service" should {
+    "display the correct content" in {
+      def request() = requestWithJourneyIdInCookie("GET", "/which-tax-service")
+      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+      val result = controller.showWhichTaxService(request())
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "which-service.header",
+        "which-service.radio.yes",
+        "which-service.radio.no")
+    }
+  }
+
+  // TODO: These will be updated with APB-5242 and APB-5243
+  "POST /which-tax-service" should {
+    "redirect to /warm-up/session-required when 'Yes' was selected" in {
+      def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
+
+      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+
+      val result =
+        controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+    }
+
+    "redirect to /warm-up/session-required when 'No' was selected" in {
+      def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
+
+      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+
+      val result =
+        controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
     }
   }
 

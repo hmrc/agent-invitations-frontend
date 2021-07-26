@@ -390,7 +390,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           thenGo(WarmUpSessionRequired(personal, "uid", arn, "agentName"))
       }
 
-      "transition to NotFoundInvitation when No selected" in {
+      "transition to WhichTaxService when No selected" in {
         given(
           GGUserIdNeeded(
             personal,
@@ -399,7 +399,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agentName"
           )) when
           submitConfirmGGUserId(Confirmation(false)) should
-          thenGo(NotFoundInvitation)
+          thenGo(WhichTaxService(personal, "uid", arn, "agentName"))
       }
     }
 

@@ -61,6 +61,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationExpiredView: invitation_expired,
   invitationAlreadyRespondedView: invitation_already_responded,
   warmupView: warm_up,
+  whichTaxServiceView: which_tax_service,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
   confirmDeclineView: confirm_decline,
@@ -156,6 +157,12 @@ class ClientInvitationJourneyController @Inject()(
     .applyWithRequest(implicit request =>
       Transitions.submitWarmUpSessionRequired(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
+
+  val showWhichTaxService: Action[AnyContent] = actions.show[WhichTaxService]
+
+  val submitWhichTaxService: Action[AnyContent] = actions
+    .bindForm(whichTaxServiceForm)
+    .apply(Transitions.submitWhichTaxService)
 
   val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
 
@@ -312,6 +319,10 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
+    case _: WhichTaxService =>
+      routes.ClientInvitationJourneyController.showWhichTaxService()
+    case _: SubmitWhichTaxService =>
+      routes.ClientInvitationJourneyController.submitWhichTaxService()
     case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
     case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
     case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
@@ -366,6 +377,13 @@ class ClientInvitationJourneyController @Inject()(
 
       case _: WarmUpSessionRequired =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
+
+      case _: WhichTaxService =>
+        Ok(
+          whichTaxServiceView(
+            formWithErrors.or(whichTaxServiceForm),
+            backLinkFor(breadcrumbs),
+            routes.ClientInvitationJourneyController.submitWhichTaxService()))
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
       case ActionNeeded(clientType) =>
@@ -523,4 +541,5 @@ object ClientInvitationJourneyController {
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 
+  val whichTaxServiceForm: Form[Confirmation] = confirmationForm("???")
 }

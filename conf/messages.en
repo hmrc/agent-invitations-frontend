@@ -486,6 +486,11 @@ gg-user-id-needed.yes=Yes
 gg-user-id-needed.no=No
 error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
 
+# Which Service
+which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
+which-service.radio.yes=Yes
+which-service.radio.no=No - my agent is requesting authorisation for a different tax service
+
 # suspended agent
 suspended-agent.all.header=You cannot appoint this tax agent
 suspended-agent.single.header=You cannot appoint this tax agent for a service they want to deal with
