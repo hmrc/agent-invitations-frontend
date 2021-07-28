@@ -422,9 +422,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  // TODO: These will be updated with APB-5242 and APB-5243
   "POST /which-tax-service" should {
-    "redirect to /warm-up/session-required when 'Yes' was selected" in {
+    "redirect to /create-new-user-ID when 'Yes' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
 
       journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
@@ -432,7 +431,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCreateNewUserId().url)
     }
 
     "redirect to /warm-up/session-required when 'No' was selected" in {
@@ -444,6 +443,22 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+    }
+  }
+
+  "GET /create-new-user-id" should {
+    "display the correct content" in {
+      def request() = requestWithJourneyIdInCookie("GET", "/create-new-user-id")
+      journeyState.set(CreateNewUserId(personal, "uid", arn, "name"), Nil)
+      val result = controller.showCreateNewUserId(request())
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "new-gg-id.header",
+        "new-gg-id.li1",
+        "new-gg-id.li2")
     }
   }
 

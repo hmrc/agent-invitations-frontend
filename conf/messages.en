@@ -491,6 +491,13 @@ which-service.header=Is your agent requesting authorisation for Making Tax Digit
 which-service.radio.yes=Yes
 which-service.radio.no=No - my agent is requesting authorisation for a different tax service
 
+## New GG ID
+new-gg-id.header=You need to create a new Government Gateway user ID
+new-gg-id.p1=Only create a new Government Gateway user ID if:
+new-gg-id.li1=your agent is requesting authorisation for Making Tax Digital for Income Tax or PAYE income record
+new-gg-id.li2=you do not have a Government Gateway user ID for personal tax affairs or VAT, for example, one that you use for your personal tax account or Self Assessment
+new-gg-id.p4=Next we will ask for your details to set up your new Government Gateway user ID and to confirm your identity.
+
 # suspended agent
 suspended-agent.all.header=You cannot appoint this tax agent
 suspended-agent.single.header=You cannot appoint this tax agent for a service they want to deal with

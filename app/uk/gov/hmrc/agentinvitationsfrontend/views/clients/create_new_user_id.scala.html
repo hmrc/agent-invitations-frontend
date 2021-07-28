@@ -1,0 +1,56 @@
+@*
+* Copyright 2021 HM Revenue & Customs
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CreateNewUserIdConfig
+
+@this(
+mainTemplate: main_template,
+uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+
+@(createNewUserIdConfig: CreateNewUserIdConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@gaCallsWithoutName(analyticsHost: String, token: String) = {
+var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
+ga('create', '@token', '@analyticsHost');
+ga('set',  'page', pathWithoutName);
+ga('send', 'pageview', { 'anonymizeIp': true });
+}
+
+@mainTemplate(
+title = Messages("generic.title", Messages(s"new-gg-id.header")),
+bodyClasses = None,
+isAgent = false,
+bannerTitle = "banner.clients",
+gaCalls = Some(gaCallsWithoutName _),
+hasTimeout = false
+) {
+    <h1 class="heading-xlarge">@Messages("new-gg-id.header")</h1>
+
+    <p>@Messages("new-gg-id.p1")</p>
+    <ul class="list list-bullet">
+        <li>@Messages("new-gg-id.li1")</li>
+        <li>@Messages("new-gg-id.li2")</li>
+    </ul>
+    <p>@Messages("new-gg-id.p4")</p>
+            <a class="button" role="button" href=@createNewUserIdConfig.ggUrl>@Messages("confirm-decline.button")</a>
+}

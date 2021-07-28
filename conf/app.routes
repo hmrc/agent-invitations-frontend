@@ -175,6 +175,8 @@ GET         /assets/*file                                               controll
 GET         /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
 GET         /warm-up/session-required                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpSessionRequired
 GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
+GET         /create-new-user-id                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCreateNewUserId
+GET         /accept-tax-agent-invitation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCreateNewUserId
 GET         /which-tax-service                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showWhichTaxService
 POST        /which-tax-service                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWhichTaxService
 GET         /not-found                                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showNotFoundInvitation
