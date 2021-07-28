@@ -61,6 +61,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationExpiredView: invitation_expired,
   invitationAlreadyRespondedView: invitation_already_responded,
   warmupView: warm_up,
+  createNewUserId: create_new_user_id,
   whichTaxServiceView: which_tax_service,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
@@ -151,6 +152,14 @@ class ClientInvitationJourneyController @Inject()(
     .applyWithRequest(implicit request =>
       Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
+
+  val submitCreateNewUserId: Action[AnyContent] = actions
+    .whenAuthorisedWithRetrievals(AsClient)
+    .applyWithRequest(implicit request =>
+      Transitions.submitCreateNewUserId(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .redirect
+
+  val showCreateNewUserId: Action[AnyContent] = actions.show[CreateNewUserId]
 
   val submitWarmUpSessionRequired: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsClient)
@@ -319,10 +328,9 @@ class ClientInvitationJourneyController @Inject()(
     case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
+    case _: CreateNewUserId => routes.ClientInvitationJourneyController.showCreateNewUserId()
     case _: WhichTaxService =>
       routes.ClientInvitationJourneyController.showWhichTaxService()
-    case _: SubmitWhichTaxService =>
-      routes.ClientInvitationJourneyController.submitWhichTaxService()
     case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
     case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
     case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
@@ -367,6 +375,14 @@ class ClientInvitationJourneyController @Inject()(
                 "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp().url)
               )
             )))
+
+      case _: CreateNewUserId =>
+        Ok(
+          createNewUserId(
+            CreateNewUserIdConfig(addParamsToUrl(
+              appConfig.ggRegistrationFrontendExternalUrl,
+              "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
+            ))))
 
       case _: GGUserIdNeeded =>
         Ok(

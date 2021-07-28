@@ -43,6 +43,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class WarmUp(clientType: ClientType, uid: String, arn: Arn, agentName: String, normalisedAgentName: String) extends State
 
+    case class CreateNewUserId(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
+
     case class WarmUpSessionRequired(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
     case class GGUserIdNeeded(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
@@ -52,7 +54,6 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     case class SubmitWhichTaxService(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
     case object SignUpToTaxService extends State
-    case object CreateNewUserId extends State
 
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
@@ -171,6 +172,13 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       getSuspensionStatus: GetSuspensionDetails)(client: Option[AuthorisedClient]) =
       transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(
         client)
+
+    def submitCreateNewUserId(agentSuspensionEnabled: Boolean)(
+      getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
+      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
+      transitionFromCreateNewUserId(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
+        getPendingInvitationIdsAndExpiryDates,
+        getSuspensionStatus)(client)
 
     def submitWarmUpSessionRequired(agentSuspensionEnabled: Boolean)(
       getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
@@ -299,6 +307,25 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           }
       }
     }
+
+    private def transitionFromCreateNewUserId(
+      agentSuspensionEnabled: Boolean,
+      idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
+      getInvitationDetails: GetInvitationDetails,
+      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
+      Transition {
+        case CreateNewUserId(clientType, uid, arn, agentName) =>
+          transitionFromWarmUpFunction(
+            client,
+            clientType,
+            agentName,
+            getInvitationDetails,
+            getSuspensionDetails,
+            uid,
+            agentSuspensionEnabled,
+            arn,
+            idealTargetState)
+      }
 
     private def determineStateForNonPending(
       invitationDetails: Seq[InvitationDetails],
@@ -462,7 +489,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       Transition {
         case WhichTaxService(clientType, uid, arn, name) =>
           if (confirmation.choice) {
-            goto(WarmUpSessionRequired(clientType, uid, arn, name))
+            goto(CreateNewUserId(clientType, uid, arn, name))
           } else {
             goto(WarmUpSessionRequired(clientType, uid, arn, name))
           }
