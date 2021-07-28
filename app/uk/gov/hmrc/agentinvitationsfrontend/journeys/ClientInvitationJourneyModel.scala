@@ -53,7 +53,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     case class SubmitWhichTaxService(clientType: ClientType, uid: String, arn: Arn, agentName: String) extends State
 
-    case object SignUpToTaxService extends State
+    case class SignUpToTaxService(uid: String) extends State
 
     case class ActionNeeded(clientType: ClientType) extends State with IsError
 
@@ -491,7 +491,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           if (confirmation.choice) {
             goto(CreateNewUserId(clientType, uid, arn, name))
           } else {
-            goto(WarmUpSessionRequired(clientType, uid, arn, name))
+            goto(SignUpToTaxService(uid))
           }
       }
   }

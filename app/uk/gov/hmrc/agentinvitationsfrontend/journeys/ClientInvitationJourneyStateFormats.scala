@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{CreateNewUserId, _}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
@@ -45,6 +45,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val WarmUpSessionRequiredFormat = Json.format[WarmUpSessionRequired]
   val WhichTaxServiceFormat = Json.format[WhichTaxService]
   val CreateNewUserId = Json.format[CreateNewUserId]
+  val SignUpToTaxService = Json.format[SignUpToTaxService]
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: WarmUp                               => WarmUpFormat.writes(s)
@@ -68,6 +69,7 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: WarmUpSessionRequired                => WarmUpSessionRequiredFormat.writes(s)
     case s: WhichTaxService                      => WhichTaxServiceFormat.writes(s)
     case s: CreateNewUserId                      => CreateNewUserId.writes(s)
+    case s: SignUpToTaxService                   => SignUpToTaxService.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -97,5 +99,6 @@ object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "WarmUpSessionRequired"                => WarmUpSessionRequiredFormat.reads(properties)
     case "WhichTaxService"                      => WhichTaxServiceFormat.reads(properties)
     case "CreateNewUserId"                      => CreateNewUserId.reads(properties)
+    case "SignUpToTaxService"                   => SignUpToTaxService.reads(properties)
   }
 }
