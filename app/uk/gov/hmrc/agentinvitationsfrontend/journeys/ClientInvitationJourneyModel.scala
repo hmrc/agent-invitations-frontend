@@ -314,65 +314,17 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
-        case CreateNewUserId(clientType, uid, arn, agentName) => {
-          client.enrolmentCoverage match {
-            case NoSupportedMTDEnrolments => {
-              logger.warn(s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
-              goto(CannotFindRequest(clientType, agentName))
-            }
-            case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
-              getInvitationDetails(uid).flatMap { invitationDetails =>
-                if (invitationDetails.isEmpty) {
-                  logger.warn(
-                    s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: [${tempEnrolLog(client.enrolments)}]")
-                  if (maybeAll == SomeSupportedMTDEnrolments) goto(CannotFindRequest(clientType, agentName))
-                  else goto(NoOutstandingRequests)
-                } else {
-                  getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
-                    case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
-                    case consents =>
-                      val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TAXABLETRUST))
-                      val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(NONTAXABLETRUST))
-                      val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TAXABLETRUST)
-                      val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == NONTAXABLETRUST)
-                      if (containsTrust && butNoTrustEnrolment) {
-                        logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
-                        goto(TrustNotClaimed)
-                      } else if (containsTrustNT && butNoTrustNtEnrolment) {
-                        logger.warn("client doesn't have the expected HMRC-TERSNT-ORG enrolment to accept/reject an invitation")
-                        goto(TrustNotClaimed)
-                      } else {
-                        consents match {
-                          case _ if consents.nonEmpty && agentSuspensionEnabled =>
-                            getSuspensionDetails(arn).flatMap { suspensionDetails =>
-                              val consentServices: Set[String] =
-                                consents.map(consent => consent.service).toSet
-                              val nonSuspendedConsents =
-                                consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
-                              if (suspensionDetails.isAgentSuspended(consentServices))
-                                goto(
-                                  SuspendedAgent(
-                                    clientType,
-                                    uid,
-                                    agentName,
-                                    arn,
-                                    suspensionDetails.getSuspendedRegimes(consentServices),
-                                    nonSuspendedConsents))
-                              else {
-                                goto(idealTargetState(clientType, uid, agentName, arn, nonSuspendedConsents))
-                              }
-                            }
-                          case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, arn, consents))
-                          case _ =>
-                            logger.warn(s"No pending invitations are found for uid: $uid")
-                            goto(NotFoundInvitation)
-                        }
-                      }
-                  }
-                }
-              }
-          }
-        }
+        case CreateNewUserId(clientType, uid, arn, agentName) =>
+          transitionFromWarmUpFunction(
+            client,
+            clientType,
+            agentName,
+            getInvitationDetails,
+            getSuspensionDetails,
+            uid,
+            agentSuspensionEnabled,
+            arn,
+            idealTargetState)
       }
 
     private def determineStateForNonPending(
