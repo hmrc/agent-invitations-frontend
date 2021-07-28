@@ -479,12 +479,12 @@ warm-up.p3.personal=Os ydych am awdurdodi asiant ar gyfer Troi Treth yn Ddigidol
 warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
 warm-up.link=Ni hoffwn benodi {0}
 
-# New GG Id
-new-gg-id.header=You need to create a new Government Gateway user ID
-new-gg-id.p1=Only create a new Government Gateway user ID if:
-new-gg-id.p2=Next we will ask for your details to set up your new Government Gateway user ID and to confirm your identity.
-new-gg-id.li1=your agent is requesting authorisation for Making Tax Digital for Income Tax or PAYE income record
-new-gg-id.li2=you do not have a Government Gateway user ID for personal tax affairs or VAT, for example, one that you use for your personal tax account or Self Assessment
+#GG User ID Needed
+gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax affairs or VAT?
+gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
+gg-user-id-needed.yes=Yes
+gg-user-id-needed.no=No
+error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
 
 # Which Service
 which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
