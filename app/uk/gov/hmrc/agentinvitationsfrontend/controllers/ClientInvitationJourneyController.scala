@@ -63,6 +63,7 @@ class ClientInvitationJourneyController @Inject()(
   warmupView: warm_up,
   createNewUserId: create_new_user_id,
   whichTaxServiceView: which_tax_service,
+  signUpToTaxServiceView: sign_up_to_tax_service,
   confirmTermsMultiView: confirm_terms_multi,
   checkAnswersView: check_answers,
   confirmDeclineView: confirm_decline,
@@ -172,6 +173,8 @@ class ClientInvitationJourneyController @Inject()(
   val submitWhichTaxService: Action[AnyContent] = actions
     .bindForm(whichTaxServiceForm)
     .apply(Transitions.submitWhichTaxService)
+
+  val showSignUpToTaxService: Action[AnyContent] = actions.show[SignUpToTaxService]
 
   val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
 
@@ -332,6 +335,7 @@ class ClientInvitationJourneyController @Inject()(
     case _: WhichTaxService =>
       routes.ClientInvitationJourneyController.showWhichTaxService()
     case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
+    case _: SignUpToTaxService    => routes.ClientInvitationJourneyController.showSignUpToTaxService()
     case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
     case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
     case NoOutstandingRequests    => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
@@ -400,6 +404,11 @@ class ClientInvitationJourneyController @Inject()(
             formWithErrors.or(whichTaxServiceForm),
             backLinkFor(breadcrumbs),
             routes.ClientInvitationJourneyController.submitWhichTaxService()))
+
+      case _: SignUpToTaxService =>
+        Ok(
+          signUpToTaxServiceView()
+        )
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
       case ActionNeeded(clientType) =>

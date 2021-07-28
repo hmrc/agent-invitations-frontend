@@ -498,6 +498,12 @@ new-gg-id.li1=your agent is requesting authorisation for Making Tax Digital for 
 new-gg-id.li2=you do not have a Government Gateway user ID for personal tax affairs or VAT, for example, one that you use for your personal tax account or Self Assessment
 new-gg-id.p4=Next we will ask for your details to set up your new Government Gateway user ID and to confirm your identity.
 
+# Tax Service
+tax-service.header=You need to sign up to the tax service your agent is requesting authorisation for
+tax-service.p1=To authorise an agent, you will need to:
+tax-service.l1=<a href="https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property.cy" id="signUpYourClient" target="_blank" rel="noopener">Create a Capital Gains Tax on a UK Property account</a>
+tax-service.l2=Sign up for Making Tax Digital for VAT
+
 # suspended agent
 suspended-agent.all.header=Ni allwch benodi’r asiant treth hwn
 suspended-agent.single.header=Ni allwch benodi’r asiant treth hwn ar gyfer gwasanaeth yr hoffai ddelio ag ef

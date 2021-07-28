@@ -1,7 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import java.util.UUID
 import org.joda.time.LocalDate
 import org.scalatest.Assertion
@@ -15,9 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
 
 class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
 
@@ -434,7 +430,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCreateNewUserId().url)
     }
 
-    "redirect to /warm-up/session-required when 'No' was selected" in {
+    "redirect to /invitations/sign-up-to-tax-service when 'No' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
 
       journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
@@ -442,7 +438,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSignUpToTaxService().url)
     }
   }
 
@@ -459,6 +455,22 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         "new-gg-id.header",
         "new-gg-id.li1",
         "new-gg-id.li2")
+    }
+  }
+
+  "GET /sign-up-to-tax-service" should {
+    "display the correct content" in {
+      def request() = requestWithJourneyIdInCookie("GET", "/sign-up-to-tax-service")
+      journeyState.set(SignUpToTaxService("uid"), Nil)
+      val result = controller.showSignUpToTaxService(request())
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "tax-service.header",
+        "tax-service.l1",
+        "tax-service.l2")
     }
   }
 
