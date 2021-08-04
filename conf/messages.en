@@ -311,7 +311,7 @@ cancel-authorisation.utr=Unique Taxpayer Reference: {0}
 cancel-authorisation.cgt.account-ref=Capital Gains Tax account reference: {0}
 
 cancel-authorisation.confirm-cancel.header=Are you sure you want to cancel this authorisation?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to manage their Income Tax for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to manage Income Tax for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=If you cancel this request, you will not be able to view the PAYE income record for this client.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisation, you will not be able to manage their VAT for {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
@@ -989,8 +989,8 @@ request-cancelled.track.link=Track your recent authorisation requests
 request-cancelled.p2=If you cancelled your authorisation request by mistake, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
 
 #Confirm cancel authorisation page
-confirm-authorisation-cancelled.header=Are you sure you want to cancel this client’s authorisation?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=You will no longer be able to manage their Income Tax. You will not be able to undo this action.
+confirm-authorisation-cancelled.header=Are you sure you want to cancel this authorisation?
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to manage income tax for {0}.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to manage their VAT. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
@@ -998,6 +998,16 @@ confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=You will no longer be able to
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage this client’s Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.yes=Yes
 confirm-authorisation-cancelled.radio.no=No
+confirm-authorisation-cancelled.radio.no.itsa=No - I need to start over again
+
+#Confirm cancel authorisation track page
+confirm-authorisation-cancelled.track.header=Are you sure you want to cancel this client’s authorisation?
+confirm-authorisation-cancelled.p1.track.HMRC-MTD-IT=You will no longer be able to manage their Income Tax. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=You will no longer be able to manage their VAT. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=You will no longer be able to manage this client’s Capital Gains Tax on UK property account. You will not be able to undo this action.
 
 #Authorisation cancelled page
 authorisation-cancelled.header=Authorisation cancelled
