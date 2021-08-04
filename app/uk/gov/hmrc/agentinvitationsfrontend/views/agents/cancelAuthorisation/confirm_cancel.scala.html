@@ -31,26 +31,29 @@
 
 @(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@no = @{if(config.service=="HMRC-MTD-IT") { Messages("confirm-authorisation-cancelled.radio.no.itsa") } else { Messages("cancel-authorisation.confirm-cancel.no") }}
+
 @mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
-@back_link(config.backLink)
+    @back_link(config.backLink)
 
-@if(choiceForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("cancel-authorisation.confirm-cancel"))
-}
+    @if(choiceForm.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("cancel-authorisation.confirm-cancel"))
+    }
 
-@uiFormHelper(action = config.submitCall, 'class -> "form js-form" ) {
+    @uiFormHelper(action = config.submitCall, 'class -> "form js-form" ) {
 
- @uiInputRadioGroupCustom(
-  choiceForm("accepted"),
-  Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> Messages("cancel-authorisation.confirm-cancel.no")),
-  '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
-  '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
-  '_horizontal -> true,
-  '_groupDivClass -> "form-group",
-  '_fieldsetAttributes -> Html("""id='accepted'""")
- )
+        @uiInputRadioGroupCustom(
+            choiceForm("accepted"),
+            Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> no),
+            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
+            '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
+            '_inputHintClass -> "hint-text",
+            '_horizontal -> true,
+            '_groupDivClass -> "form-group",
+            '_fieldsetAttributes -> Html("""id='accepted'""")
+        )
 
- <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
- }
+        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+    }
 }

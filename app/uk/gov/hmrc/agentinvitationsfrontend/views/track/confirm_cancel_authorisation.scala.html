@@ -46,8 +46,8 @@
       @uiInputRadioGroupCustom(
         confirmForm("confirmCancelAuthorisation"),
         Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
-        '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.header")}</h1>"""),
-        '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.$service"),
+        '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
+        '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.track.$service"),
         '_horizontal -> true,
         '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
       )

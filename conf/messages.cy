@@ -998,6 +998,16 @@ confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ym
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.radio.yes=Iawn
 confirm-authorisation-cancelled.radio.no=Na
+confirm-authorisation-cancelled.radio.no.itsa=Na - I need to start over again
+
+#Confirm cancel authorisation track page
+confirm-authorisation-cancelled.track.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
+confirm-authorisation-cancelled.p1.track.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli ei Dreth Incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 
 #Authorisation cancelled page
 authorisation-cancelled.header=Awdurdodiad wedi’i ganslo
