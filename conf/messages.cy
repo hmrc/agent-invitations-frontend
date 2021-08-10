@@ -501,7 +501,7 @@ new-gg-id.p4=Next we will ask for your details to set up your new Government Gat
 # Tax Service
 tax-service.header=You need to sign up to the tax service your agent is requesting authorisation for
 tax-service.p1=To authorise an agent, you will need to:
-tax-service.l1=<a href="https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property.cy" id="signUpYourClient" target="_blank" rel="noopener">Create a Capital Gains Tax on a UK Property account</a>
+tax-service.l1=Create a Capital Gains Tax on a UK Property account
 tax-service.l2=Sign up for Making Tax Digital for VAT
 
 # suspended agent

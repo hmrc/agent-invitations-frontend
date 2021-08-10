@@ -1,0 +1,22 @@
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+        mainTemplate: main_template
+)
+
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("tax-service.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+
+    <h1 class="heading-xlarge">@Messages("tax-service.header")</h1>
+
+    <p>@Messages("tax-service.p1")</p>
+
+    <ul class="list-bullets">
+        <li class="bullet"><a href="@externalUrls.guidanceCgtUkProperty">@Messages("tax-service.l1")</a></li>
+        <li><a href="@externalUrls.guidanceVatSignup">@Messages("tax-service.l2")</a></li>
+    </ul>
+
+}
