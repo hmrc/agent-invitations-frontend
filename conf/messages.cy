@@ -1019,6 +1019,12 @@ authorisation-cancelled.p1.HMRC-MTD-VAT=Nid ydych wedi’ch awdurdodi mwyach i r
 authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-CGT-PD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
+authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
+authorisation-cancelled.check-sa.l1=sign out of this agent services account
+authorisation-cancelled.check-sa.l2=sign in to your HMRC online services for agents account
+authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
+authorisation-cancelled.check-sa.l3=follow the instructions for deleting the client from your client list
 authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar am awdurdodiad
 
 #Cancel authorisation problem page

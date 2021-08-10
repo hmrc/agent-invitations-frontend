@@ -513,6 +513,11 @@ input[type="text"].autocomplete__input {
     }
 }
 
+// overriding the legacy turquoise colour with the newer dark green
+.transaction-banner--complete.with-govuk-success-colour {
+  background-color: #00703c;
+}
+
 .word-wrap {
     white-space: pre-line;
     word-wrap: break-word;
