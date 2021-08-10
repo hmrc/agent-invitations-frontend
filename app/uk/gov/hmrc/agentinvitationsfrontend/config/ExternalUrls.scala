@@ -72,4 +72,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
 
   def contactFrontendNonJsUrl(isAgent: Boolean): String =
     s"$contactFrontendUrl/contact/problem_reports_nonjs?service=${contactFrontendServiceId(isAgent)}"
+
+  val guidanceCgtUkProperty = "https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property"
+  val guidanceVatSignup = "https://www.gov.uk/vat-record-keeping/sign-up-for-making-tax-digital-for-vat"
 }

@@ -445,6 +445,11 @@ input[type="text"].autocomplete__input {
     cursor: default;
 }
 
+.list-bullets {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
 
 .govuk-warning-text__text {
     font-family: "GDS Transport", arial, sans-serif;
