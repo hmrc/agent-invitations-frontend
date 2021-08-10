@@ -1,6 +1,7 @@
 banner.agents.auth=Gofyn i gleient eich awdurdodi
 banner.agents.de-auth=Canslo awdurdodiad cleient
 banner.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
+banner.clients.named=Appoint {0} to deal with HMRC for you
 
 title.suffix.agents=Gofyn i gleient eich awdurdodi
 title.suffix.agents.de-auth=Canslo awdurdodiad cleient
@@ -490,6 +491,7 @@ error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
 which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
 which-service.radio.yes=Yes
 which-service.radio.no=No - my agent is requesting authorisation for a different tax service
+error.which-service.answer-required=Select Yes if your agent is requesting authorisation for Making Tax Digital for Income Tax or PAYE income record
 
 ## New GG ID
 new-gg-id.header=You need to create a new Government Gateway user ID

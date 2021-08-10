@@ -27,13 +27,16 @@
 )
 
 
-@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentName: String, confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(
+    bannerTitle = Messages("banner.clients.named", agentName),
     title = Messages("generic.title", Messages(s"which-service.header")),
     bodyClasses = None,
     isAgent = false
 ) {
+
+@back_link(backLinkUrl.url)
 
     <h1 class="heading-xlarge">@Messages("which-service.header")</h1>
 
