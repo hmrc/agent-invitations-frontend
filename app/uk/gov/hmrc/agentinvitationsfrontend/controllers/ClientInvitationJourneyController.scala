@@ -388,9 +388,10 @@ class ClientInvitationJourneyController @Inject()(
               "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
             ))))
 
-      case _: GGUserIdNeeded =>
+      case s: GGUserIdNeeded =>
         Ok(
           ggUserIdNeededView(
+            s.agentName,
             formWithErrors.or(confirmHasGGIdForm),
             backLinkFor(breadcrumbs),
             routes.ClientInvitationJourneyController.submitGGUserIdNeeded()))
@@ -398,10 +399,10 @@ class ClientInvitationJourneyController @Inject()(
       case _: WarmUpSessionRequired =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
 
-      case wts: WhichTaxService =>
+      case s: WhichTaxService =>
         Ok(
           whichTaxServiceView(
-            wts.agentName,
+            s.agentName,
             formWithErrors.or(whichTaxServiceForm),
             backLinkFor(breadcrumbs),
             routes.ClientInvitationJourneyController.submitWhichTaxService()

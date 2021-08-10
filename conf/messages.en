@@ -477,7 +477,7 @@ warm-up.p1=Use this service to allow {0} to manage your tax affairs.
 warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
 warm-up.p2.personal=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT.
 warm-up.p3.personal=If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one.
-warm-up.inset=If you appoint {0}, this will cancel any consent you gave to someone else to act for you for the same service.
+warm-up.inset=If you authorise {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to authorise {0}
 
 #GG User ID Needed

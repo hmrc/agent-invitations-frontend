@@ -477,7 +477,7 @@ warm-up.p1=Defnyddiwch y gwasanaeth i ganiatáu i {0} eich helpu i reoli’ch ma
 warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>.
 warm-up.p3.personal=Os ydych am awdurdodi asiant ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm, mewngofnodwch gyda Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth rydych yn ei ddefnyddio ar gyfer Hunanasesiad. Os nad oes un gennych, gallwch wneud y canlynol:
-warm-up.inset=Os byddwch yn penodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
+warm-up.inset=If you authorise {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=Ni hoffwn benodi {0}
 
 #GG User ID Needed

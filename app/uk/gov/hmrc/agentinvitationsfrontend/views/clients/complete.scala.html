@@ -48,7 +48,7 @@
 }
 
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), gaCalls = None, scriptElem = Some(gtmScript), mainDataAttributes = None) {
+@mainTemplate(bannerTitle = Messages("banner.clients.named", config.agencyName), title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), gaCalls = None, scriptElem = Some(gtmScript), mainDataAttributes = None) {
 
         <div class="transaction-banner--complete">
             <h1 class="transaction-banner__heading">@Messages("client-complete.multi.header")</h1>
