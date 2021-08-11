@@ -388,9 +388,10 @@ class ClientInvitationJourneyController @Inject()(
               "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
             ))))
 
-      case _: GGUserIdNeeded =>
+      case s: GGUserIdNeeded =>
         Ok(
           ggUserIdNeededView(
+            s.agentName,
             formWithErrors.or(confirmHasGGIdForm),
             backLinkFor(breadcrumbs),
             routes.ClientInvitationJourneyController.submitGGUserIdNeeded()))
@@ -398,12 +399,14 @@ class ClientInvitationJourneyController @Inject()(
       case _: WarmUpSessionRequired =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
 
-      case _: WhichTaxService =>
+      case s: WhichTaxService =>
         Ok(
           whichTaxServiceView(
+            s.agentName,
             formWithErrors.or(whichTaxServiceForm),
             backLinkFor(breadcrumbs),
-            routes.ClientInvitationJourneyController.submitWhichTaxService()))
+            routes.ClientInvitationJourneyController.submitWhichTaxService()
+          ))
 
       case _: SignUpToTaxService =>
         Ok(
@@ -566,5 +569,5 @@ object ClientInvitationJourneyController {
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 
-  val whichTaxServiceForm: Form[Confirmation] = confirmationForm("???")
+  val whichTaxServiceForm: Form[Confirmation] = confirmationForm("error.which-service.answer-required")
 }
