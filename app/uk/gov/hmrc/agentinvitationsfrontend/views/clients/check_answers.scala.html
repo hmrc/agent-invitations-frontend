@@ -28,7 +28,7 @@
 
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = Messages("banner.clients.named", pageConfig.agencyName), title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
+@mainTemplate(bannerTitle = Messages("banner.clients"), title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
     bodyClasses = None, isAgent = false, mainDataAttributes = None) {
 
     @back_link(pageConfig.backLink.url)
