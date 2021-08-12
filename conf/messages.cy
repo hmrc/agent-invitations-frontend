@@ -1,7 +1,6 @@
 banner.agents.auth=Gofyn i gleient eich awdurdodi
 banner.agents.de-auth=Canslo awdurdodiad cleient
 banner.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
-banner.clients.named=Appoint {0} to deal with HMRC for you
 
 title.suffix.agents=Gofyn i gleient eich awdurdodi
 title.suffix.agents.de-auth=Canslo awdurdodiad cleient
