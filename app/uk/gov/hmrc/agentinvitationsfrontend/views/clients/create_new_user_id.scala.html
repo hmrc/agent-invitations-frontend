@@ -27,7 +27,7 @@ uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 
-@(createNewUserIdConfig: CreateNewUserIdConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @gaCallsWithoutName(analyticsHost: String, token: String) = {
 var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
@@ -44,6 +44,8 @@ bannerTitle = "banner.clients",
 gaCalls = Some(gaCallsWithoutName _),
 hasTimeout = false
 ) {
+@back_link(backLinkUrl.url)
+
     <h1 class="heading-xlarge">@Messages("new-gg-id.header")</h1>
 
     <p>@Messages("new-gg-id.p1")</p>

@@ -6,9 +6,11 @@
         mainTemplate: main_template
 )
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("tax-service.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+
+@back_link(backLinkUrl.url)
 
     <h1 class="heading-xlarge">@Messages("tax-service.header")</h1>
 
