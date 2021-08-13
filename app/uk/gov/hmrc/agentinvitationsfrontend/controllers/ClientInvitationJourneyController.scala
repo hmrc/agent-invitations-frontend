@@ -383,10 +383,16 @@ class ClientInvitationJourneyController @Inject()(
       case _: CreateNewUserId =>
         Ok(
           createNewUserId(
-            CreateNewUserIdConfig(addParamsToUrl(
-              appConfig.ggRegistrationFrontendExternalUrl,
-              "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
-            ))))
+            CreateNewUserIdConfig(
+              addParamsToUrl(
+                appConfig.ggRegistrationFrontendExternalUrl,
+                "continue" -> Some(
+                  appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
+              )
+            ),
+            backLinkFor(breadcrumbs)
+          )
+        )
 
       case _: GGUserIdNeeded =>
         Ok(
@@ -408,7 +414,7 @@ class ClientInvitationJourneyController @Inject()(
 
       case _: SignUpToTaxService =>
         Ok(
-          signUpToTaxServiceView()
+          signUpToTaxServiceView(backLinkFor(breadcrumbs))
         )
 
       //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?

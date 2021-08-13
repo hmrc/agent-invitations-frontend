@@ -16,11 +16,11 @@
 )
 
 
-@(ggUserIdForm: Form[Confirmation], backLinUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(bannerTitle = Messages("banner.clients"), title = Messages("generic.title", Messages("gg-user-id-needed.h1"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
 
-    @back_link(backLinUrl.url)
+    @back_link(backLinkUrl.url)
 
     @if(ggUserIdForm.hasErrors) {
         @uiErrorSummary(Messages("error.summary.heading"), ggUserIdForm, Seq.empty, Some("client-type"))
