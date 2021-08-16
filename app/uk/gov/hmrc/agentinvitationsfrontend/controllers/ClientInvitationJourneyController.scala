@@ -168,7 +168,7 @@ class ClientInvitationJourneyController @Inject()(
       Transitions.submitWarmUpSessionRequired(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
-  val showWhichTaxService: Action[AnyContent] = actions.show[WhichTaxService]
+  val showWhichTaxService: Action[AnyContent] = actions.show[WhichTaxService].orRollback
 
   val submitWhichTaxService: Action[AnyContent] = actions
     .bindForm(whichTaxServiceForm)
