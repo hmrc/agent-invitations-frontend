@@ -30,7 +30,7 @@
 
 @mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
-     <div class="transaction-banner--complete">
+     <div class="transaction-banner--complete with-govuk-success-colour">
       <h1 class="transaction-banner__heading">@Messages("cancel-authorisation.cancelled.header")</h1>
          <p class="transaction-banner__heading">@displayDateForLang(Some(LocalDate.now()))</p>
      </div>
@@ -38,6 +38,19 @@
     <h2 class="heading-medium">@Messages("cancel-authorisation.cancelled.subheader")</h2>
     <p>@Html(Messages(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
 
+    @if(service=="HMRC-MTD-IT") {
+      <h2 class="heading-medium">@Messages("authorisation-cancelled.check-sa.subheader")</h2>
+      <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
+      <ul class="list list-bullet govuk-body">
+	<li>@Messages("authorisation-cancelled.check-sa.l1")</li>
+	<li>
+	  <a href="@Messages("authorisation-cancelled.check-sa.l2.link")">
+	    @Messages("authorisation-cancelled.check-sa.l2")
+	  </a>
+	</li>
+	<li>@Messages("authorisation-cancelled.check-sa.l3")</li>
+      </ul>
+    }  
     <p>
         <a href="javascript:window.print()" class="print-link">@Messages("cancel-authorisation.cancelled.print")</a>
     </p>

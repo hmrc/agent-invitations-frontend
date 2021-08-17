@@ -1019,6 +1019,12 @@ authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to m
 authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to maintain their trust or estate.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=You are no longer authorised by {0} to maintain their trust or estate.
 authorisation-cancelled.p1.HMRC-CGT-PD=You are no longer authorised by {0} to maintain their Capital Gains Tax on UK property account.
+authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
+authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
+authorisation-cancelled.check-sa.l1=sign out of this agent services account
+authorisation-cancelled.check-sa.l2=sign in to your HMRC online services for agents account
+authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
+authorisation-cancelled.check-sa.l3=follow the instructions for deleting the client from your client list
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
 #Cancel authorisation problem page

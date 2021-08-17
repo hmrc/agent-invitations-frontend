@@ -115,6 +115,12 @@ abstract class BaseISpec
     expectedSubstrings.foreach(s => bodyOf(result) should not include s)
   }
 
+  protected def checkHtmlResultWithoutBodyMsgs(result: Result, unexpectedMsgs: String*): Unit = {
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+    unexpectedMsgs.foreach(m => bodyOf(result) should not include (htmlEscapedMessage(m)))
+  }
+
   protected def checkIncludesText(result: Future[Result], expectedSubstrings: String*): Unit =
     expectedSubstrings.foreach { substring =>
       contentAsString(result) should include(substring.toString)

@@ -1074,6 +1074,38 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("cancel-authorisation.cancelled.p1.HMRC-MTD-IT", "Agent man", "client man")
       )
     }
+    "display the extra 'check self assessment' lines when cancelling MTD for Income Tax" in {
+      journeyState.set(AuthorisationCancelled(HMRCMTDIT, Some("client man"), "Agent man"), Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/cancelled")
+      val result = controller.showAuthorisationCancelled(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result,
+        "authorisation-cancelled.check-sa.subheader",
+        "authorisation-cancelled.check-sa.p1",
+        "authorisation-cancelled.check-sa.l1",
+        "authorisation-cancelled.check-sa.l2",
+        "authorisation-cancelled.check-sa.l3"
+      )
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("authorisation-cancelled.check-sa.l2.link")
+      )
+    }
+    "not display the extra 'check self assessment' lines when cancelling authorisations other than Income Tax" in {
+      journeyState.set(AuthorisationCancelled(HMRCMTDVAT, Some("client man"), "Agent man"), Nil)
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/cancelled")
+      val result = controller.showAuthorisationCancelled(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithoutBodyMsgs(
+        result,
+        "authorisation-cancelled.check-sa.subheader",
+        "authorisation-cancelled.check-sa.p1",
+        "authorisation-cancelled.check-sa.l1",
+        "authorisation-cancelled.check-sa.l2",
+        "authorisation-cancelled.check-sa.l3"
+      )
+    }
   }
   "GET /agents/cancel-authorisation/client-not-found" should {
     "display the known facts dont match page" in {
