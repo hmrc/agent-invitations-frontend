@@ -25,7 +25,7 @@
     uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 @(choiceForm: Form[String], submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
@@ -41,13 +41,14 @@
     @uiFormHelper(
         action = submitCall,
         'class -> "form js-form") {
-        @uiInputRadioGroup(
+        @uiInputRadioGroupCustom(
             choiceForm("accepted"),
             Seq("true"-> Messages("select-service.yes"), "false" -> Messages("select-service.no")),
             '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-20">"""+ Messages("cancel-authorisation.business-select-service.header") + """</h1>"""),
             '_groupDivClass -> "form-group soft--ends",
             '_fieldsetAttributes -> Html("""id='accepted'"""),
-            '_legendClass -> "margin-bottom-10"
+            '_legendClass -> "margin-bottom-10",
+            '_horizontal -> true
 
         )
 
