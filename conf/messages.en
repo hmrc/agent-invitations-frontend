@@ -118,8 +118,7 @@ select-service.header=What do you want the client to authorise you to do?
 
 ## Helper Text
 select-service.alternative=I need authorisation for something else
-select-service.alt-suggestion=You can use this service to ask a client to authorise you for the services listed here.
-select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Check the guidance (opens in new tab)</a> to find out how to set up a different type of authorisation to deal with HM Revenue &amp; Customs (HMRC).
+select-service.alt-suggestion=Find out more about <a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">asking a client to authorise you to deal with other tax services (opens in new tab)</a>.
 select-service.review-auth-link=Return to authorisation requests
 
 # single service selection headers and errors
@@ -230,7 +229,7 @@ invitation-sent.step1.business.trust=Check with your client that they have claim
 invitation-sent.link-text=Copy this authorisation request link and send it to your client:
 invitation-sent.select-link=Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID.
 invitation-sent.client-respond=Ask your client to respond by {0} or your authorisation request link will expire. We will email you at {1} to update you on the status of this request.
-invitation-sent.client-warning=Clients will not be able to authorise you if they do not use the Government Gateway user ID they used to sign up to the tax service you need authorisation for.
+invitation-sent.client-warning=To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service.
 invitation-sent.further-help.link-text.asa=go to your agents services account homepage
 invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authorising a tax agent for clients (opens in new tab)
 invitation-sent.further-help.heading=Further help
