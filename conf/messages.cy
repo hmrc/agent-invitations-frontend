@@ -118,8 +118,7 @@ select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
 
 ## Helper Text
 select-service.alternative=Mae angen awdurdodiad arnaf ar gyfer rhywbeth arall
-select-service.alt-suggestion=Gallwch ddefnyddio’r gwasanaeth hwn i ofyn i gleient eich awdurdodi ar gyfer y gwasanaethau a restrir yma.
-select-service.guidance=<a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">Gwiriwch yr arweiniad (yn agor ffenestr neu dab newydd)</a> er mwyn cael gwybod sut i drefnu gwahanol fath o awdurdodiad i ddelio â Chyllid a Thollau EM (CThEM).
+select-service.alt-suggestion=Find out more about <a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">asking a client to authorise you to deal with other tax services (opens in new tab)</a>.
 select-service.review-auth-link=Dychwelyd i’r ceisiadau am awdurdodiad
 
 # single service selection headers and errors
@@ -230,7 +229,7 @@ invitation-sent.step1.business.trust=Gwiriwch gyda’ch cleient ei fod wedi hawl
 invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a’i anfon at eich cleient:
 invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
 invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu bydd eich cysylltiad sy’n gais am awdurdodiad yn dod i ben. Byddwn yn anfon e-bost atoch yn {1} i’ch diweddaru ar statws y cais hwn.
-invitation-sent.client-warning=Ni fydd cleientiaid yn gallu eich awdurdodi os na fyddant yn defnyddio’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth y gwnaethant ei ddefnyddio i gofrestru ar gyfer y gwasanaeth treth y mae angen awdurdodiad ar ei gyfer arnoch.
+invitation-sent.client-warning=To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service.
 invitation-sent.further-help.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
 invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch sut i awdurdodi asiant treth ar gyfer cleientiaid (yn agor tab newydd)
 invitation-sent.further-help.heading=Help bellach
