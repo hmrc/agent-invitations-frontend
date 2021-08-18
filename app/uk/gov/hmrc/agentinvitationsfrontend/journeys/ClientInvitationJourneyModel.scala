@@ -153,10 +153,6 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         else goto(WhichTaxService(clientType, uid, arn, name))
     }
 
-    def transitionFromLaterState = Transition {
-      case MultiConsent(clientType, uid, agentName, arn, _) => goto(GGUserIdNeeded(clientType, uid, arn, agentName))
-    }
-
     private def getConsents(pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
       pendingInvitationDetails.map(
         invitation =>

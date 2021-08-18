@@ -480,11 +480,11 @@ warm-up.inset=If you authorise {0}, this will cancel any consent you gave to som
 warm-up.link=Ni hoffwn benodi {0}
 
 #GG User ID Needed
-gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax affairs or VAT?
-gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
-gg-user-id-needed.yes=Yes
-gg-user-id-needed.no=No
-error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
+gg-user-id-needed.h1=A oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW?
+gg-user-id-needed.p=Er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfrif treth personol neu’ch Hunanasesiad.
+gg-user-id-needed.yes=Iawn
+gg-user-id-needed.no=Na
+error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyddiwr ar gyfer Porth y Llywodraeth
 
 # Which Service
 which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
@@ -500,10 +500,10 @@ new-gg-id.li2=you do not have a Government Gateway user ID for personal tax affa
 new-gg-id.p4=Next we will ask for your details to set up your new Government Gateway user ID and to confirm your identity.
 
 # Tax Service
-tax-service.header=You need to sign up to the tax service your agent is requesting authorisation for
-tax-service.p1=To authorise an agent, you will need to:
-tax-service.l1=Create a Capital Gains Tax on a UK Property account
-tax-service.l2=Sign up for Making Tax Digital for VAT
+tax-service.header=Mae angen i chi gofrestru ar gyfer y gwasanaeth treth y mae’ch asiant yn gwneud cais am awdurdodiad ar ei gyfer
+tax-service.p1=I awdurdodi asiant, bydd angen i chi wneud y canlynol:
+tax-service.l1=Creu cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+tax-service.l2=Cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW
 
 # suspended agent
 suspended-agent.all.header=Ni allwch benodi’r asiant treth hwn

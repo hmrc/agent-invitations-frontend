@@ -48,12 +48,7 @@ trait ClientInvitationJourneyService extends PersistentJourneyService[HeaderCarr
       currentBreadcrumbs
     else if (currentBreadcrumbs.nonEmpty && currentBreadcrumbs.head.getClass() == newState.getClass())
       currentBreadcrumbs.tail
-    else {
-      currentState match {
-        case _: WarmUpSessionRequired => breadcrumbsRetentionStrategy(currentBreadcrumbs)
-        case _                        => currentState :: breadcrumbsRetentionStrategy(currentBreadcrumbs)
-      }
-    }
+    else currentState :: breadcrumbsRetentionStrategy(currentBreadcrumbs)
 }
 
 @Singleton
