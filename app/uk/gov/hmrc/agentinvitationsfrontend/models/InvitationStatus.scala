@@ -66,7 +66,7 @@ object InvitationStatus {
     case "cancelled"    => Cancelled
     case "expired"      => Expired
     case "deauthorised" => Deauthorised
-    case "Partialauth"  => Partialauth
+    case "partialauth"  => Partialauth
     case _              => Unknown(status)
   }
 

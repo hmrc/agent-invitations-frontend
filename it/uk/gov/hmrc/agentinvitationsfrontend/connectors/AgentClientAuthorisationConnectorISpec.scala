@@ -746,4 +746,13 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       result shouldBe Some(validNino)
     }
   }
+
+  "getAllClientInvitationDetailsForAgent" should {
+    "return List of InvitationDetails" in {
+      givenAllInvitationIdsByStatus("uid123", "Partialauth", true)
+      val result = await(connector.getAllClientInvitationDetailsForAgent("uid123"))
+      result.nonEmpty shouldBe true
+
+    }
+  }
 }

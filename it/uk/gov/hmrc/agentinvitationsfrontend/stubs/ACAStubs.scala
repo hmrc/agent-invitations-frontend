@@ -60,7 +60,7 @@ trait ACAStubs {
         .willReturn(aResponse()
           .withStatus(404)))
 
-  def givenAllInvitationIdsByStatus(uid: String, status: String): StubMapping =
+  def givenAllInvitationIdsByStatus(uid: String, status: String, isAltItsa: Boolean = false): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/clients/invitations/uid/$uid"))
         .willReturn(
@@ -81,7 +81,7 @@ trait ACAStubs {
                          |           "status" : "$status"
                          |        }
                          |    ],
-                         |    "isAltItsa":false
+                         |    "isAltItsa":$isAltItsa
                          |  },
                          |  {
                          |    "invitationId": {
@@ -96,7 +96,7 @@ trait ACAStubs {
                          |           "status": "$status"
                          |        }
                          |    ],
-                         |    "isAltItsa":false
+                         |    "isAltItsa":$isAltItsa
                          |  },
                          |  {
                          |    "invitationId": {
@@ -111,7 +111,7 @@ trait ACAStubs {
                          |            "status" : "$status"
                          |        }
                          |    ],
-                         |    "isAltItsa":false
+                         |    "isAltItsa":$isAltItsa
                          |  }
                          |]
                          |""".stripMargin)
