@@ -118,7 +118,7 @@ select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
 
 ## Helper Text
 select-service.alternative=Mae angen awdurdodiad arnaf ar gyfer rhywbeth arall
-select-service.alt-suggestion=Find out more about <a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">asking a client to authorise you to deal with other tax services (opens in new tab)</a>.
+select-service.alt-suggestion=Dysgwch ragor am <a id="guidanceLink" href="{0}" target="_blank" rel="noopener noreferrer">ofyn i gleient eich awdurdodi i ddelio â gwasanaethau treth eraill (yn agor tab newydd)</a>.
 select-service.review-auth-link=Dychwelyd i’r ceisiadau am awdurdodiad
 
 # single service selection headers and errors
@@ -229,7 +229,7 @@ invitation-sent.step1.business.trust=Gwiriwch gyda’ch cleient ei fod wedi hawl
 invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a’i anfon at eich cleient:
 invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
 invitation-sent.client-respond=Gofynnwch i’ch cleient ymateb erbyn {0} neu bydd eich cysylltiad sy’n gais am awdurdodiad yn dod i ben. Byddwn yn anfon e-bost atoch yn {1} i’ch diweddaru ar statws y cais hwn.
-invitation-sent.client-warning=To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service.
+invitation-sent.client-warning=I roi awdurdodiad i chi, bydd angen i gleientiaid ddefnyddio’r un Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth a ddefnyddiwyd ganddynt i gofrestru ar gyfer y gwasanaeth hwn.
 invitation-sent.further-help.link-text.asa=Mynd i’ch cyfrif gwasanaethau asiant
 invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch sut i awdurdodi asiant treth ar gyfer cleientiaid (yn agor tab newydd)
 invitation-sent.further-help.heading=Help bellach
@@ -470,13 +470,13 @@ landing-page.service.afi.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth i we
 landing-page.service.vat.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth os ydych am iddo reoli’ch TAW.
 
 # Warm up
-warm-up.header=Penodi {0} i ddelio â CThEM ar eich rhan
-warm-up.p1=Defnyddiwch y gwasanaeth i ganiatáu i {0} eich helpu i reoli’ch materion treth.
+warm-up.header=Awdurdodi {0} i ddelio â CThEM ar eich rhan
+warm-up.p1=Defnyddiwch y gwasanaeth hwn i ganiatáu i {0} reoli’ch materion treth.
 warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
-warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth personol</strong>.
-warm-up.p3.personal=Os ydych am awdurdodi asiant ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm, mewngofnodwch gyda Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth rydych yn ei ddefnyddio ar gyfer Hunanasesiad. Os nad oes un gennych, gallwch wneud y canlynol:
-warm-up.inset=If you authorise {0}, this will cancel any consent you gave to someone else to act for you for the same service.
-warm-up.link=Ni hoffwn benodi {0}
+warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich materion treth personol neu TAW.
+warm-up.p3.personal=Os nad oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer eich materion treth personol neu TAW, byddwch yn gallu creu un newydd.
+warm-up.inset=Os byddwch yn awdurdodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
+warm-up.link=Ni hoffwn awdurdodi {0}
 
 #GG User ID Needed
 gg-user-id-needed.h1=A oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW?
@@ -489,7 +489,7 @@ error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyd
 which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
 which-service.radio.yes=Yes
 which-service.radio.no=No - my agent is requesting authorisation for a different tax service
-error.which-service.answer-required=Select Yes if your agent is requesting authorisation for Making Tax Digital for Income Tax or PAYE income record
+error.which-service.answer-required=Dewiswch ‘Iawn’ os yw’ch asiant yn gofyn am awdurdodiad ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm neu gofnod incwm TWE
 
 ## New GG ID
 new-gg-id.header=You need to create a new Government Gateway user ID
@@ -1018,12 +1018,12 @@ authorisation-cancelled.p1.HMRC-MTD-VAT=Nid ydych wedi’ch awdurdodi mwyach i r
 authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-CGT-PD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
-authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
-authorisation-cancelled.check-sa.l1=sign out of this agent services account
-authorisation-cancelled.check-sa.l2=sign in to your HMRC online services for agents account
+authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfer Hunanasesiad
+authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
+authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
+authorisation-cancelled.check-sa.l2=mewngofnodi i’ch cyfrif gwasanaethau ar-lein CThEM ar gyfer asiantau
 authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
-authorisation-cancelled.check-sa.l3=follow the instructions for deleting the client from your client list
+authorisation-cancelled.check-sa.l3=dilyn y cyfarwyddiadau ar gyfer dileu’r cleient oddi ar eich rhestr o gleientiaid
 authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar am awdurdodiad
 
 #Cancel authorisation problem page
