@@ -483,7 +483,7 @@ gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax a
 gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
 gg-user-id-needed.yes=Yes
 gg-user-id-needed.no=No
-error.confirm-gg-id.required=Select Yes if you have a Government Gateway User ID
+error.confirm-gg-id.required=Select yes if you have a Government Gateway User ID
 
 # Which Service
 which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
