@@ -316,7 +316,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cai
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {0}.
-cancel-authorisation.confirm-cancel.yes=Iawn – hoffwn ganslo’r awdurdodiad hwn
+cancel-authorisation.confirm-cancel.yes=Iawn
 cancel-authorisation.confirm-cancel.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
 
