@@ -316,7 +316,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=If you cancel your authorisa
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisation, you will not be able to manage Capital Gains Tax on UK property account for {0}.
-cancel-authorisation.confirm-cancel.yes=Yes - I want to cancel this authorisation
+cancel-authorisation.confirm-cancel.yes=Yes
 cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
 
