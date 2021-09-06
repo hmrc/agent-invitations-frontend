@@ -23,7 +23,8 @@
 @this(
     mainTemplate: main_template,
     uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary
 )
 
 
@@ -37,6 +38,10 @@
 ) {
 
 @back_link(backLinkUrl.url)
+
+@if(confirmForm.hasErrors){
+    @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("whichService"))
+}
 
     <h1 class="heading-xlarge">@Messages("which-service.header")</h1>
 
