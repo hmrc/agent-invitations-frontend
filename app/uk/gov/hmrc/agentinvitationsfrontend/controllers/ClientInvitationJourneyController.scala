@@ -178,7 +178,7 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitSuspendedAgent: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitSuspension).redirect
 
-  val showConsent: Action[AnyContent] = actions.whenAuthorised(AsClient).show[MultiConsent]
+  val showConsent: Action[AnyContent] = actions.whenAuthorised(AsClient).show[MultiConsent].orRollback
 
   val showActionNeeded: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ActionNeeded]
 
@@ -203,7 +203,7 @@ class ClientInvitationJourneyController @Inject()(
   val submitChangeConsents: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm)(Transitions.submitChangeConsents)
 
-  val showCheckAnswers: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CheckAnswers]
+  val showCheckAnswers: Action[AnyContent] = actions.whenAuthorised(AsClient).show[CheckAnswers].orRollback
 
   val submitCheckAnswers: Action[AnyContent] =
     actions
