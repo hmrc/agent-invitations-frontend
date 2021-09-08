@@ -486,17 +486,17 @@ gg-user-id-needed.no=Na
 error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyddiwr ar gyfer Porth y Llywodraeth
 
 # Which Service
-which-service.header=Is your agent requesting authorisation for Making Tax Digital for Income Tax or PAYE income record?
-which-service.radio.yes=Yes
-which-service.radio.no=No - my agent is requesting authorisation for a different tax service
+which-service.header=A yw’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm TWE neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm?
+which-service.radio.yes=Iawn
+which-service.radio.no=Na – mae fy asiant yn gofyn am awdurdodiad ar gyfer gwasanaeth treth gwahanol
 error.which-service.answer-required=Dewiswch ‘Iawn’ os yw’ch asiant yn gofyn am awdurdodiad ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm neu gofnod incwm TWE
 
 ## New GG ID
-new-gg-id.header=You need to create a new Government Gateway user ID
-new-gg-id.p1=Only create a new Government Gateway user ID if:
-new-gg-id.li1=your agent is requesting authorisation for Making Tax Digital for Income Tax or PAYE income record
-new-gg-id.li2=you do not have a Government Gateway user ID for personal tax affairs or VAT, for example, one that you use for your personal tax account or Self Assessment
-new-gg-id.p4=Next we will ask for your details to set up your new Government Gateway user ID and to confirm your identity.
+new-gg-id.header=Mae angen i chi greu Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth
+new-gg-id.p1=Ewch ati i greu Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth dim ond os yw’r canlynol yn berthnasol:
+new-gg-id.li1=mae’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm TWE neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
+new-gg-id.li2=nid oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW, er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfrif treth personol neu’ch Hunanasesiad
+new-gg-id.p4=Nesaf, byddwn yn gofyn am eich manylion er mwyn creu’ch Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth ac er mwyn cadarnhau pwy ydych.
 
 # Tax Service
 tax-service.header=Mae angen i chi gofrestru ar gyfer y gwasanaeth treth y mae’ch asiant yn gwneud cais am awdurdodiad ar ei gyfer
@@ -998,7 +998,7 @@ confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ym
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.radio.yes=Iawn
 confirm-authorisation-cancelled.radio.no=Na
-confirm-authorisation-cancelled.radio.no.itsa=Na - I need to start over again
+confirm-authorisation-cancelled.radio.no.itsa=Na – mae angen i mi ddechrau eto
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
