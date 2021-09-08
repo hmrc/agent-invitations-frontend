@@ -144,7 +144,7 @@ class ClientInvitationJourneyController @Inject()(
       }
     }
 
-  val showGGUserIdNeeded: Action[AnyContent] = actions.show[GGUserIdNeeded].orRollback
+  val showGGUserIdNeeded: Action[AnyContent] = actions.show[GGUserIdNeeded].orApply(Transitions.transitionFromMultiConsent)
 
   val submitGGUserIdNeeded: Action[AnyContent] = actions.bindForm(confirmHasGGIdForm).apply(Transitions.submitConfirmGGUserId)
 
