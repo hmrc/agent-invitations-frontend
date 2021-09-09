@@ -196,9 +196,9 @@ class AgentInvitationJourneyController @Inject()(
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Identify]
+  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Identify].orRollback
 
-  val showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt]
+  val showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
   val submitConfirmCgtPostcode: Action[AnyContent] =
     actions
@@ -206,7 +206,7 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(PostcodeForm.form)
       .applyWithRequest(implicit request => Transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  val showConfirmCgtCountryCode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt]
+  val showConfirmCgtCountryCode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt].orRollback
 
   val submitConfirmCgtCountryCode: Action[AnyContent] =
     actions
@@ -252,7 +252,7 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(CgtClientForm.form())
       .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm].display
+  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm].orRollback
 
   val submitConfirmClient: Action[AnyContent] =
     actions
