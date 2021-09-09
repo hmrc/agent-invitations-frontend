@@ -103,7 +103,7 @@ class AgentLedDeauthJourneyController @Inject()(
   def submitClientType: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.deAuthorisationForm)(selectedClientType)
 
-  def showSelectService: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectService]
+  def showSelectService: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectService].orRollback
 
   def submitPersonalService: Action[AnyContent] =
     actions
@@ -124,7 +124,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 
-  def showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient]
+  def showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   def submitIdentifyItsaClient: Action[AnyContent] =
     actions
@@ -156,7 +156,7 @@ class AgentLedDeauthJourneyController @Inject()(
     .bindForm(CgtClientForm.form())
     .applyWithRequest(implicit request => submitIdentifyClientCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  def showPostcodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt]
+  def showPostcodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
   def submitConfirmCgtPostcode: Action[AnyContent] =
     actions
@@ -164,7 +164,7 @@ class AgentLedDeauthJourneyController @Inject()(
       .bindForm(PostcodeForm.form)
       .applyWithRequest(implicit request => confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  def showCountryCodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt]
+  def showCountryCodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt].orRollback
 
   def submitConfirmCgtCountryCode: Action[AnyContent] =
     actions
@@ -172,7 +172,7 @@ class AgentLedDeauthJourneyController @Inject()(
       .bindForm(CountrycodeForm.form(validCountryCodes))
       .applyWithRequest(implicit request => confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
-  def showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient]
+  def showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
   def submitConfirmClient: Action[AnyContent] =
     actions
@@ -180,7 +180,7 @@ class AgentLedDeauthJourneyController @Inject()(
       .bindForm(confirmCancelForm)
       .applyWithRequest(implicit request => clientConfirmed(hasActiveRelationshipFor)(hasPartialAuthorisationFor))
 
-  def showConfirmCancel: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCancel]
+  def showConfirmCancel: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCancel].orRollback
 
   def submitConfirmCancel: Action[AnyContent] =
     actions
