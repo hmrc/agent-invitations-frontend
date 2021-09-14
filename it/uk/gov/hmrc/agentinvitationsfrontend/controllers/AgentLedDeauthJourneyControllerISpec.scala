@@ -860,7 +860,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
   }
   "GET /agents/cancel-authorisation/confirm-cancel" should {
-    "display the confirm cancel page" in {
+    "display the confirm cancel page with additional panel content for ITSA" in {
       journeyState.set(
         ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value),
         List(ConfirmClientItsa(Some("Barry Block"), validNino)))
@@ -870,8 +870,26 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("cancel-authorisation.confirm-cancel.header"),
-        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block")
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block"),
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.itsa-panel")
       )
+      checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
+    }
+
+    "display the confirm cancel page without additional panel content when service is not ITSA" in {
+      journeyState.set(
+        ConfirmCancel(HMRCMTDVAT, Some("Barry Block"), validVrn.value),
+        List(ConfirmClientPersonalVat(Some("Barry Block"), validVrn)))
+      val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
+      val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.header"),
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT", "Barry Block")
+      )
+      checkHtmlResultWithoutBodyMsgs(result, "cancel-authorisation.confirm-cancel.itsa-panel")
+
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
 
@@ -885,7 +903,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("cancel-authorisation.confirm-cancel.header"),
-        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block")
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT", "Barry Block"),
+        htmlEscapedMessage("cancel-authorisation.confirm-cancel.itsa-panel")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/confirm-client")
     }
@@ -1074,24 +1093,26 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("cancel-authorisation.cancelled.p1.HMRC-MTD-IT", "Agent man", "client man")
       )
     }
+
     "display the extra 'check self assessment' lines when cancelling MTD for Income Tax" in {
       journeyState.set(AuthorisationCancelled(HMRCMTDIT, Some("client man"), "Agent man"), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/cancelled")
       val result = controller.showAuthorisationCancelled(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "authorisation-cancelled.check-sa.subheader",
-        "authorisation-cancelled.check-sa.p1",
-        "authorisation-cancelled.check-sa.l1",
-        "authorisation-cancelled.check-sa.l2",
-        "authorisation-cancelled.check-sa.l3"
-      )
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("authorisation-cancelled.check-sa.l2.link")
+        htmlEscapedMessage("cancel-authorisation.cancelled.header"),
+        htmlEscapedMessage("cancel-authorisation.cancelled.p1.HMRC-MTD-IT", "Agent man", "client man"),
+        htmlEscapedMessage("authorisation-cancelled.check-sa.subheader"),
+        htmlEscapedMessage("authorisation-cancelled.check-sa.p1"),
+        htmlEscapedMessage("authorisation-cancelled.check-sa.l1"),
+        htmlEscapedMessage("authorisation-cancelled.check-sa.l3"),
+        htmlEscapedMessage("cancel-authorisation.cancelled.print")
       )
+      checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", htmlEscapedMessage("authorisation-cancelled.check-sa.l2"))
+      checkResultContainsLink(result, s"http://localhost:$wireMockPort/agent-services-account/home", htmlEscapedMessage("cancel-authorisation.cancelled.return-to-account-services.button"), clazz = Some("button"), roleIsButton = true)
     }
+
     "not display the extra 'check self assessment' lines when cancelling authorisations other than Income Tax" in {
       journeyState.set(AuthorisationCancelled(HMRCMTDVAT, Some("client man"), "Agent man"), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/cancelled")

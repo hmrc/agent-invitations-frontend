@@ -32,6 +32,16 @@
 
 @(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
+@params = @{Seq(
+    '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
+    '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.track.$service"),
+    '_inputHintClass -> "margin-bottom-30",
+    '_horizontal -> true,
+    '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'"""))}
+
+    @itsaOnlyPanel = @{if(service=="HMRC-MTD-IT"){Seq('_panelText -> Messages("confirm-authorisation-cancelled.track.itsa-panel"))}else{Seq.empty}}
+
+
 @mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
 
   @back_link(backLinkUrl)
@@ -46,10 +56,7 @@
       @uiInputRadioGroupCustom(
         confirmForm("confirmCancelAuthorisation"),
         Seq(("true", Messages("confirm-authorisation-cancelled.radio.yes")),("false",Messages("confirm-authorisation-cancelled.radio.no"))),
-        '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
-        '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.track.$service"),
-        '_horizontal -> true,
-        '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'""")
+          params ++ itsaOnlyPanel: _*
       )
 
 

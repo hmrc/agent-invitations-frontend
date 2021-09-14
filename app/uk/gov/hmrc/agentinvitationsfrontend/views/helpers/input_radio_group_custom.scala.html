@@ -48,6 +48,11 @@
     </p>
 
     }
+    @if(elements.args.contains('_panelText)){
+        <p class="panel panel-border-wide margin-bottom-30" id="panel-text">
+            @elements.args.get('_panelText)
+        </p>
+    }
     @if(elements.args.contains('_fieldsetDiv)){
     <div @elements.args.get('_fieldsetDivClass).map { fieldsetDivClass => class='@fieldsetDivClass'}>
     @elements.args.get('_fieldsetDiv)

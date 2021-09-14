@@ -378,12 +378,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to manage their Income Tax.",
+        "If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.",
         "Yes",
         "No"
       )
     }
-
   }
 
   "POST /track/confirm-cancel" should {
@@ -564,7 +563,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to cancel this client’s authorisation?",
-        "You will no longer be able to manage their Income Tax.",
+        "You will no longer be able to manage their Making Tax Digital for Income Tax.",
         "You will not be able to undo this action.",
         "Yes",
         "No"
@@ -717,9 +716,14 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation cancelled",
         "What this means",
-        "You are no longer authorised by Buttercup Powerpuff to manage their Income Tax.",
-        "Return to track your recent authorisation requests"
+        "You are no longer authorised by Buttercup Powerpuff to manage their Making Tax Digital for Income Tax.",
+        "Check or cancel an authorisation for Self Assessment",
+        "You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:",
+        "sign out of this agent services account",
+        "follow the instructions for deleting the client from your client list"
       )
+      checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", "sign in to your HMRC online services for agents account")
+      checkResultContainsLink(result, "/invitations/track", "Return to track your recent authorisation requests", roleIsButton = true, clazz = Some("button"))
     }
 
     "render a authorisation cancelled page for IRV" in {

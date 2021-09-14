@@ -14,11 +14,13 @@
  * limitations under the License.
  *@
 
+@import java.time.LocalDate
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
 @this(
     mainTemplate: main_template
@@ -41,11 +43,24 @@
 
  <div class="transaction-banner--complete with-govuk-success-colour">
   <h1 class="transaction-banner__heading">@Messages("authorisation-cancelled.header")</h1>
+  <p class="transaction-banner__heading">@displayDateForLang(Some(LocalDate.now()))</p>
  </div>
 
     <h2 class="heading-medium">@Messages("authorisation-cancelled.subheader")</h2>
     <p>@Html(Messages(s"authorisation-cancelled.p1.$service", clientName))</p>
 
-    <a class="button" role="button" href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages(s"authorisation-cancelled.track.button")</a>
+ @if(service=="HMRC-MTD-IT") {
+  <h2 class="heading-medium">@Messages("authorisation-cancelled.check-sa.subheader")</h2>
+  <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
+  <ul class="list list-bullet govuk-body">
+   <li>@Messages("authorisation-cancelled.check-sa.l1")</li>
+   <li>
+    <a href="@Messages("authorisation-cancelled.check-sa.l2.link")">@Messages("authorisation-cancelled.check-sa.l2")</a>
+   </li>
+   <li>@Messages("authorisation-cancelled.check-sa.l3")</li>
+  </ul>
+ }
+
+ <a href="@routes.AgentsRequestTrackingController.showTrackRequests()" class="button" role="button">@Messages(s"authorisation-cancelled.track.button")</a>
 
     }
