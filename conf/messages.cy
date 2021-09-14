@@ -310,7 +310,7 @@ cancel-authorisation.utr=Cyfeirnod Unigryw y Trethdalwr: {0}
 cancel-authorisation.cgt.account-ref=Cyfeirnod cyfrif Treth Enillion Cyfalaf: {0}
 
 cancel-authorisation.confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r awdurdodiad hwn?
-cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Incwm ar gyfer {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=If you cancel your authorisation, you will not be able to manage Making Tax Digital for Income Tax for {0}.
 cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu gweld y cofnod incwm TWE ar gyfer y cleient hwn.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cyflwyno Ffurflenni TAW drwy feddalwedd ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
@@ -319,11 +319,12 @@ cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awd
 cancel-authorisation.confirm-cancel.yes=Iawn
 cancel-authorisation.confirm-cancel.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
+cancel-authorisation.confirm-cancel.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
 cancel-authorisation.cancelled.header=Awdurdodiad wedi’i ganslo
 cancel-authorisation.cancelled.subheader=Beth y mae hyn yn ei olygu
 cancel-authorisation.cancelled.return-to-account-services.button=Dychwelyd i gyfrif gwasanaethau asiant
-cancel-authorisation.cancelled.p1.HMRC-MTD-IT=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Incwm {1}.
+cancel-authorisation.cancelled.p1.HMRC-MTD-IT={0} is no longer authorised by {1} to manage their Making Tax Digital for Income Tax.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD=Nid yw {0} wedi’i awdurdodi mwyach i weld ei gofnod incwm TWE.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT=Nid yw {0} wedi’i awdurdodi mwyach i reoli TAW {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
@@ -964,7 +965,7 @@ resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
 
 #Confirm cancel page
 confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r cais am awdurdodiad hwn?
-confirm-cancel.subheader.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli Treth Incwm ar gyfer y cleient hwn.
+confirm-cancel.subheader.HMRC-MTD-IT=If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.
 confirm-cancel.subheader.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE.
 confirm-cancel.subheader.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli TAW ar gyfer y cleient hwn.
 confirm-cancel.subheader.HMRC-TERS-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
@@ -990,7 +991,7 @@ request-cancelled.p2=Os gwnaethoch ganslo’ch cais am awdurdodiad drwy ddamwain
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli ei Dreth Incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to manage Making Tax Digital for Income Tax for {0}.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
@@ -1002,17 +1003,18 @@ confirm-authorisation-cancelled.radio.no.itsa=Na – mae angen i mi ddechrau eto
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
-confirm-authorisation-cancelled.p1.track.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli ei Dreth Incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-MTD-IT=You will no longer be able to manage their Making Tax Digital for Income Tax. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.track.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
 #Authorisation cancelled page
 authorisation-cancelled.header=Awdurdodiad wedi’i ganslo
 authorisation-cancelled.subheader=Beth y mae hyn yn ei olygu
-authorisation-cancelled.p1.HMRC-MTD-IT=Nid ydych wedi’ch awdurdodi mwyach i reoli Treth Incwm {0}.
+authorisation-cancelled.p1.HMRC-MTD-IT=You are no longer authorised by {0} to manage their Making Tax Digital for Income Tax.
 authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i fwrw golwg dros ei gofnod incwm TWE.
 authorisation-cancelled.p1.HMRC-MTD-VAT=Nid ydych wedi’ch awdurdodi mwyach i reoli TAW {0}.
 authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.

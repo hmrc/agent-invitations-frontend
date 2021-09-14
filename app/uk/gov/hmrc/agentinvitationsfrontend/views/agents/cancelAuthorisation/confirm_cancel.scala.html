@@ -33,6 +33,14 @@
 
 @no = @{if(config.service=="HMRC-MTD-IT") { Messages("confirm-authorisation-cancelled.radio.no.itsa") } else { Messages("cancel-authorisation.confirm-cancel.no") }}
 
+    @params = @{Seq( '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
+        '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
+        '_inputHintClass -> "margin-bottom-30",
+        '_horizontal -> true,
+        '_groupDivClass -> "form-group",
+        '_fieldsetAttributes -> Html("""id='accepted'"""))}
+    @itsaOnlyParam = @{if(config.service=="HMRC-MTD-IT"){Seq('_panelText -> Messages("cancel-authorisation.confirm-cancel.itsa-panel"))}else{Seq.empty}}
+
 @mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
     @back_link(config.backLink)
@@ -46,12 +54,7 @@
         @uiInputRadioGroupCustom(
             choiceForm("accepted"),
             Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> no),
-            '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
-            '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
-            '_inputHintClass -> "hint-text",
-            '_horizontal -> true,
-            '_groupDivClass -> "form-group",
-            '_fieldsetAttributes -> Html("""id='accepted'""")
+            params ++ itsaOnlyParam: _*
         )
 
         <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
