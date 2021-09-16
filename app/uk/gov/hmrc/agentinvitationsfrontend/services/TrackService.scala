@@ -259,14 +259,14 @@ class TrackService @Inject()(
       case b: TrackInformationSorted => b
     }
 
-  private def logDiscrepancy(invalid: Seq[TrackInformationSorted], deauthorised: Seq[TrackInformationSorted]) =
+  def logDiscrepancy(invalid: Seq[TrackInformationSorted], deauthorised: Seq[TrackInformationSorted]) =
     invalid.length - deauthorised.length match {
-      case 0 => logger.warn(s"Deauthed statuses == Invalid statuses (${deauthorised.length} == ${invalid.length})")
+      case 0 => logger.warn(s"Deauthed statuses IS EQUAL TO Invalid statuses (${deauthorised.length} is equal to ${invalid.length})")
       case n if n > 0 =>
-        logger.warn(s"Deauthed statuses < Invalid statuses (${deauthorised.length} < ${invalid.length})")
+        logger.warn(s"Deauthed statuses IS LESS THAN Invalid statuses (${deauthorised.length} is less than ${invalid.length})")
         logDiscrepancyDetail(invalid, deauthorised)
       case n if n < 0 =>
-        logger.warn(s"Deauthed statuses > Invalid statuses (${deauthorised.length} > ${invalid.length})")
+        logger.warn(s"Deauthed statuses IS GREATER THAN Invalid statuses (${deauthorised.length} is more than ${invalid.length})")
         logDiscrepancyDetail(invalid, deauthorised)
     }
 
