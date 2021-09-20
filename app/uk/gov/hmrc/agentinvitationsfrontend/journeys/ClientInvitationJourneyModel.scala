@@ -154,7 +154,9 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     def transitionFromMultiConsent = Transition {
-      case MultiConsent(clientType, uid, agentName, arn, _) => goto(GGUserIdNeeded(clientType, uid, arn, agentName))
+      case MultiConsent(clientType, uid, agentName, arn, _)       => goto(GGUserIdNeeded(clientType, uid, arn, agentName))
+      case WarmUpSessionRequired(clientType, uid, arn, agentName) => goto(GGUserIdNeeded(clientType, uid, arn, agentName))
+      case WhichTaxService(clientType, uid, arn, agentName)       => goto(GGUserIdNeeded(clientType, uid, arn, agentName))
     }
 
     private def getConsents(pendingInvitationDetails: Seq[InvitationDetails])(agencyName: String, uid: String): Seq[ClientConsent] =
