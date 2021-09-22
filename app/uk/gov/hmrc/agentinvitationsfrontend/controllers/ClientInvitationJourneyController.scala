@@ -160,7 +160,7 @@ class ClientInvitationJourneyController @Inject()(
       Transitions.submitCreateNewUserId(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
-  val showCreateNewUserId: Action[AnyContent] = actions.show[CreateNewUserId]
+  val showCreateNewUserId: Action[AnyContent] = actions.show[CreateNewUserId].orRollback
 
   val submitWarmUpSessionRequired: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsClient)
