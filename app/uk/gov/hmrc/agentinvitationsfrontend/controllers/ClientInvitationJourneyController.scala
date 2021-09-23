@@ -383,13 +383,7 @@ class ClientInvitationJourneyController @Inject()(
       case _: CreateNewUserId =>
         Ok(
           createNewUserId(
-            CreateNewUserIdConfig(
-              addParamsToUrl(
-                appConfig.ggRegistrationFrontendExternalUrl,
-                "continue" -> Some(
-                  appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitCreateNewUserId().url)
-              )
-            ),
+            CreateNewUserIdConfig(constructBasGatewayCreateNewUserIdUrl()),
             backLinkFor(breadcrumbs)
           )
         )
@@ -546,6 +540,14 @@ class ClientInvitationJourneyController @Inject()(
 
   def fromSession(implicit request: Request[_]): String =
     request.session.get("clientService").getOrElse("service_is_missing")
+
+  private def continueUrlWithJourneyId()(implicit request: Request[_]): String = {
+    val url = s"${appConfig.agentInvitationsFrontendExternalUrl}${routes.ClientInvitationJourneyController.submitCreateNewUserId().url}"
+    journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
+  }
+
+  private def constructBasGatewayCreateNewUserIdUrl()(implicit request: Request[_]) =
+    s"${appConfig.basGatewayFrontendRegisterUrl}?origin=${appConfig.appName}&accountType=Individual&continueUrl=${continueUrlWithJourneyId()}"
 }
 
 object ClientInvitationJourneyController {
