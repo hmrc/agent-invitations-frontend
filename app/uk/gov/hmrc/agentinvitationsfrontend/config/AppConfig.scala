@@ -56,7 +56,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val btaExternalUrl: String = getConfString("business-tax-account.external-url")
   val asaFrontendExternalUrl: String = getConfString("agent-services-account-frontend.external-url")
   val ggRegistrationFrontendExternalUrl: String = s"${getConfString("government-gateway-registration-frontend.external-url")}$ssoRedirectUrl"
-  val basGatewayFrontendRegisterUrl: String = getConfString("bas-gateway.register.url")
+  val basGatewayFrontendRegisterUrl: String = getConfString("bas-gateway-frontend.register.url")
 
   val ptaExternalUrl: String = getConfString("personal-tax-account.external-url")
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")
