@@ -31,7 +31,7 @@ case object InsufficientEvidence extends IVResult { override val value = "Insuff
 case object FailedMatching extends IVResult { override val value = "FailedMatching" }
 case object TechnicalIssue extends IVResult { override val value = "TechnicalIssue" }
 case object UserAborted extends IVResult { override val value = "UserAborted" }
-case object TimedOut extends IVResult { override val value = "Timedout" }
+case object TimedOut extends IVResult { override val value = "Timeout" }
 case object FailedIV extends IVResult { override val value = "FailedIV" }
 case object FailedDirectorCheck extends IVResult { override val value = "FailedDirectorCheck" }
 
@@ -60,7 +60,7 @@ object IVResult {
     case FailedMatching       => Some("FailedMatching")
     case TechnicalIssue       => Some("TechnicalIssue")
     case UserAborted          => Some("UserAborted")
-    case TimedOut             => Some("Timedout")
+    case TimedOut             => Some("Timeout")
     case FailedIV             => Some("FailedIV")
     case FailedDirectorCheck  => Some("FailedDirectorCheck")
   }
