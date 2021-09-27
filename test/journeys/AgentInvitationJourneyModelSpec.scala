@@ -19,6 +19,7 @@ package journeys
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{mock, when}
 import play.api.http.Status
+import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{start => _, _}
@@ -29,7 +30,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 import scala.collection.immutable.Set
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -125,7 +126,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
     "at state SelectPersonalService" should {
 
-      def notSuspended() = SuspensionDetails(suspensionStatus = false, None)
+      def notSuspended() = Future.successful(SuspensionDetails(suspensionStatus = false, None))
 
       def selectedService(
         showItsaFlag: Boolean = true,
@@ -185,7 +186,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to AgentSuspended when agent is suspended for the selected service" in {
-        def suspendedForItsa() = SuspensionDetails(suspensionStatus = true, Some(Set("ITSA")))
+        def suspendedForItsa() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
         def selectedService(
           showItsaFlag: Boolean = true,
@@ -200,7 +201,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to IdentifyPersonalClient when agent is suspended for a service not selected" in {
-        def suspendedForItsa() = SuspensionDetails(suspensionStatus = true, Some(Set("ITSA")))
+        def suspendedForItsa() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
         def selectedService(
           showItsaFlag: Boolean = true,
@@ -253,7 +254,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     // *************************************************
 
     "at state SelectBusinessService" should {
-      def notSuspended() = SuspensionDetails(suspensionStatus = false, None)
+      def notSuspended() = Future.successful(SuspensionDetails(suspensionStatus = false, None))
 
       "transition to SelectClientType" in {
 
@@ -275,7 +276,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to AgentSuspended if agent is suspended for the chosen service" in {
-        def suspendedForVat() = SuspensionDetails(suspensionStatus = true, Some(Set("VATC")))
+        def suspendedForVat() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("VATC"))))
 
         given(SelectBusinessService) when
           selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, suspendedForVat)(authorisedAgent)(HMRCMTDVAT) should
@@ -283,7 +284,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to IdentifyBusinessClient if agent is suspended for a different service" in {
-        def suspendedForItsa() = SuspensionDetails(suspensionStatus = true, Some(Set("ITSA")))
+        def suspendedForItsa() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
         given(SelectBusinessService) when
           selectedBusinessService(showVatFlag = true, agentSuspensionEnabled = true, suspendedForItsa)(authorisedAgent)(HMRCMTDVAT) should
@@ -304,7 +305,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     // *************************************************
 
     "at state SelectTrustService" should {
-      def notSuspended() = SuspensionDetails(false, None)
+      def notSuspended() = Future.successful(SuspensionDetails(false, None))
 
       "transition to SelectClientType" in {
 
@@ -342,7 +343,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to AgentSuspended if the agent is suspended for the selected service" in {
-        def suspendedForTrust() = SuspensionDetails(suspensionStatus = true, Some(Set("TRS")))
+        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("TRS"))))
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
@@ -1235,8 +1236,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)((_, _, _, _) =>
+            Future.successful(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false)))(authorisedAgent)(
             Confirmation(false)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))
       }
@@ -1258,8 +1259,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))(authorisedAgent)(
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)((_, _, _, _) =>
+            Future.successful(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true)))(authorisedAgent)(
             Confirmation(false)) should
           thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
       }
@@ -1281,8 +1282,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)((_, _, _, _) =>
+            Future.successful(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false)))(authorisedAgent)(
             Confirmation(false)) should
           thenGo(AllAuthorisationsFailed(Set(authorisationRequestFailed)))
       }
@@ -1310,8 +1311,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             Set(authorisationRequestNew1, authorisationRequestNew2)
           )
         ) when
-          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
-            (_, _, _, _) => InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false))(authorisedAgent)(
+          authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)((_, _, _, _) =>
+            Future.successful(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = false)))(authorisedAgent)(
             Confirmation(false)) should
           thenGo(
             SomeAuthorisationsFailed(

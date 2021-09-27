@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.forms.TrustClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 import uk.gov.hmrc.agentmtdidentifiers.model.{Urn, Utr}
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class AgentInvitationIdentifyClientFormTrustSpec extends UnitSpec {
 

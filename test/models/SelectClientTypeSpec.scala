@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json.{JsString, Json, OFormat}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class SelectClientTypeSpec extends UnitSpec {
 

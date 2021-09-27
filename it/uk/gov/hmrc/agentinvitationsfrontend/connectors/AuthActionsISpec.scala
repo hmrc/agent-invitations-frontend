@@ -4,6 +4,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.Helpers
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, FeatureFlags}
@@ -56,7 +57,7 @@ class AuthActionsISpec extends BaseISpec {
 
     "redirect to /subscription when agent not enrolled for service" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = await(TestController.testWithAuthorisedAsAgent)
+      val result = Future.successful(TestController.testWithAuthorisedAsAgent)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
     }
@@ -71,7 +72,7 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin
       )
-      val result = await(TestController.testWithAuthorisedAsAgent)
+      val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 403
     }
   }

@@ -4,6 +4,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.TechnicalIssue
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.test.Helpers._
 
 class IdentityVerificationConnectorISpec extends BaseISpec {
 

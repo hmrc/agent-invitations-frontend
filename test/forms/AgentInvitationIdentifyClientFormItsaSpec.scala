@@ -20,7 +20,7 @@ import play.api.data.FormError
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ItsaClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ItsaClient
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 

@@ -4,6 +4,7 @@ import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.ACRStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
+import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -18,7 +18,7 @@ trait AuthBehaviours extends AuthStubs {
 
     "return 303 for an Agent with no enrolments and redirected to Login Page" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = await(action(authenticatedClient(request, "", Enrolment("", "", ""))))
+      val result = action(authenticatedClient(request, "", Enrolment("", "", "")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
       verifyAuthoriseAttempt()
@@ -26,7 +26,7 @@ trait AuthBehaviours extends AuthStubs {
 
     "return 303 for no Agent and redirected to Login Page" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = await(action(authenticatedClient(request, "", Enrolment("OtherEnrolment", "Key", "Value"))))
+      val result = action(authenticatedClient(request, "", Enrolment("OtherEnrolment", "Key", "Value")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
       verifyAuthoriseAttempt()
@@ -34,7 +34,7 @@ trait AuthBehaviours extends AuthStubs {
 
     "return 303 for not logged in user and redirected to Login Page" in {
       givenUnauthorisedWith("MissingBearerToken")
-      val result = await(action(request))
+      val result = action(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?continue_url=http://localhost:9448/track/&origin=agent-invitations-frontend")
       verifyAuthoriseAttempt()
@@ -48,7 +48,7 @@ trait AuthBehaviours extends AuthStubs {
     "redirect to Identity Verification when confidence level is below 200 for an Individual with a NINO" in {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
-      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50)))
+      val result = action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50))
       val failureUrl: String =
         URLEncoder.encode(
           routes.ClientInvitationJourneyController.showCannotConfirmIdentity(success = Some(request.uri)).url,
@@ -66,7 +66,7 @@ trait AuthBehaviours extends AuthStubs {
     "redirect to cannot confirm identity when the confidence level is below 200 on a post request" in {
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
-      val result = await(action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50)))
+      val result = action(authorisedAsIndividualClientWithSomeSupportedEnrolments(request, confidenceLevel = 50))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url)

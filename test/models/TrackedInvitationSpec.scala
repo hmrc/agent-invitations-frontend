@@ -21,7 +21,7 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{StoredInvitation, TrackedInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class TrackedInvitationSpec extends UnitSpec {
 

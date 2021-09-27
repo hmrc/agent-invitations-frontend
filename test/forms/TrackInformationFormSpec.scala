@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class TrackInformationFormSpec extends UnitSpec {
 
