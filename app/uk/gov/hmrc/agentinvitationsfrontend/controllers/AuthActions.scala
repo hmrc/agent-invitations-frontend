@@ -218,7 +218,7 @@ class AuthActionsImpl @Inject()(
 
   def handleFailure(isAgent: Boolean, journeyId: Option[String] = None)(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession ⇒
-      Redirect(s"$signInUrl?continue_url=${continueUrlWithJourneyId(journeyId)}&origin=${getString("appName")}")
+      Redirect(s"$signInUrl?origin=${getString("appName")}&continue_url=${continueUrlWithJourneyId(journeyId)}")
 
     case _: InsufficientEnrolments ⇒
       logger.warn(s"Logged in user does not have required enrolments")
