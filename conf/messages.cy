@@ -97,9 +97,6 @@ error.irv-date-of-birth-date.month-year=Mae’n rhaid i’r dyddiad geni gynnwys
 
 ### Selecting services
 
-select-service.yes=Iawn
-select-service.no=Na
-
 select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
@@ -281,8 +278,6 @@ review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar waredia
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
-review-authorisations.radio.yes=Iawn
-review-authorisations.radio.no=Na
 review-authorisations.different-names=Gall enw’r cleient fod wedi’i gofnodi’n wahanol ym mhob gwasanaeth.
 review-authorisations.no-client-name=Nid yw enw’r cleient ar gael
 error.review-authorisation.required=Dewiswch ‘Iawn’ os hoffech ychwanegu awdurdodiad arall ar gyfer y cleient hwn
@@ -365,8 +360,6 @@ delete.subheading.HMRC-MTD-VAT=Ni fyddwch yn anfon cais am awdurdodiad ato i reo
 delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-delete.radio-yes=Iawn
-delete.radio-no=Na
 delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 
@@ -481,8 +474,6 @@ warm-up.link=Ni hoffwn awdurdodi {0}
 #GG User ID Needed
 gg-user-id-needed.h1=A oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW?
 gg-user-id-needed.p=Er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfrif treth personol neu’ch Hunanasesiad.
-gg-user-id-needed.yes=Iawn
-gg-user-id-needed.no=Na
 error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyddiwr ar gyfer Porth y Llywodraeth
 
 # Which Service
@@ -548,8 +539,6 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-confirm-decline.radio1=Iawn
-confirm-decline.radio2=Na
 confirm-decline.button=Yn eich blaen
 
 # Confirm Terms
@@ -838,6 +827,8 @@ session-lost-client.description.3=Os oes gennych gwestiwn, defnyddiwch y cysyllt
 session-lost-client.manage-agents-link=Gallwch <a href="{0}">wirio pwy sy’n gallu delio â CThEM ar eich rhan</a>.
 
 # General Messages
+global.yes=Iawn
+global.no=Na
 # Error messages for digital services
 global.error.400.title=Cais annilys – 400
 global.error.400.heading=Cais annilys

@@ -97,9 +97,6 @@ error.irv-date-of-birth-date.month-year=Date of birth must include a month and y
 
 ### Selecting services
 
-select-service.yes=Yes
-select-service.no=No
-
 select-service.p1=You need to create a separate request for each type of authorisation
 service.type.invalid=Select what you want the client to authorise you to do
 
@@ -281,8 +278,6 @@ review-authorisations.table.HMRC-CGT-PD=Manage Capital Gains Tax on UK property 
 review-authorisations.table.remove=Remove
 review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=Do you need to add another authorisation for this client?
-review-authorisations.radio.yes=Yes
-review-authorisations.radio.no=No
 review-authorisations.different-names=The client’s name may be recorded differently in each service.
 review-authorisations.no-client-name=Client’s name is not available
 error.review-authorisation.required=Select yes if you want to add another authorisation for this client
@@ -366,8 +361,6 @@ delete.subheading.HMRC-MTD-VAT=You will not send an authorisation request to man
 delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-TERSNT-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-CGT-PD=You will not send them an authorisation request to manage Capital Gains Tax on UK property account.
-delete.radio-yes=Yes
-delete.radio-no=No
 delete.client=Your client
 error.delete.radio=Select yes if you want to remove the authorisation request for this client
 
@@ -482,8 +475,6 @@ warm-up.link=I do not want to authorise {0}
 #GG User ID Needed
 gg-user-id-needed.h1=Do you have a Government Gateway user ID for personal tax affairs or VAT?
 gg-user-id-needed.p=For example, one that you use for your personal tax account or Self Assessment.
-gg-user-id-needed.yes=Yes
-gg-user-id-needed.no=No
 error.confirm-gg-id.required=Select yes if you have a Government Gateway User ID
 
 # Which Service
@@ -549,8 +540,6 @@ confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
 confirm-decline.trustNT.service-name=maintain a trust or an estate
 confirm-decline.cgt.service-name=manage your Capital Gains Tax on UK property account.
-confirm-decline.radio1=Yes
-confirm-decline.radio2=No
 confirm-decline.button=Continue
 
 # Confirm Terms
@@ -867,6 +856,16 @@ global.error.500.sa_helpline.link-text=Call the HMRC Self Assessment online serv
 global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
 global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
 
+#Common
+global.yes=Yes
+global.no=No
+error.summary.heading=There is a problem
+error.confirmDecline.invalid=Select yes if you want to decline this request
+error.confirmTerms.invalid=You must accept the terms to continue
+error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
+error.prefix=Error:
+common.sign-out=Sign out
+
 #Relationships
 #Client ends relationship
 clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
@@ -881,14 +880,6 @@ clientCancelled.p1=You can remove their authorisation at any time.
 error.terminate.500.heading=Sorry, we’re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
-
-#Common
-error.summary.heading=There is a problem
-error.confirmDecline.invalid=Select yes if you want to decline this request
-error.confirmTerms.invalid=You must accept the terms to continue
-error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
-error.prefix=Error:
-common.sign-out=Sign out
 
 #Track invitation requests
 recent-invitations.header=Track your recent authorisation requests
@@ -972,8 +963,6 @@ confirm-cancel.subheader.HMRC-TERS-ORG=If you cancel this request, you will not 
 confirm-cancel.subheader.HMRC-TERSNT-ORG=If you cancel this request, you will not be able to maintain a trust or an estate.
 confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be able to manage their Capital Gains Tax on UK property account.
 
-confirm-cancel.radio.yes=Yes
-confirm-cancel.radio.no=No
 error.confirmCancel.invalid=Select yes if you want to cancel this authorisation request
 
 #Request cancelled page
@@ -997,8 +986,6 @@ confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to ma
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage this client’s Capital Gains Tax on UK property account. You will not be able to undo this action.
-confirm-authorisation-cancelled.radio.yes=Yes
-confirm-authorisation-cancelled.radio.no=No
 confirm-authorisation-cancelled.radio.no.itsa=No - I need to start over again
 
 #Confirm cancel authorisation track page
