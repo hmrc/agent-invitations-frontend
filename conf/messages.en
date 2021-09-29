@@ -160,7 +160,7 @@ agent-suspended.fastrack.p2.HMRC-MTD-IT=manage their Making Tax Digital for Inco
 agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage their VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
-agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account
+agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account.
 
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
