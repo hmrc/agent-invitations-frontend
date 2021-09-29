@@ -105,9 +105,8 @@ service.type.invalid=Select what you want the client to authorise you to do
 
 # multi-choice selections
 select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
-select-service.HMRC-MTD-IT.personal=Manage their Income Tax
+select-service.HMRC-MTD-IT.personal=Manage their Making Tax Digital for Income Tax
 select-service.HMRC-MTD-VAT.personal=Manage their VAT
-select-service.HMRC-MTD-VAT.business=Manage their VAT
 select-service.TRUST.business=Maintain a trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property account
@@ -147,7 +146,7 @@ select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manag
 agent-suspended.heading.multi=We could not create one of your requests
 agent-suspended.heading.single=We could not create your authorisation request
 agent-suspended.p1=You cannot ask a client to authorise you to {0} because your agent code is suspended.
-agent-suspended.p1.HMRC-MTD-IT=manage their Income Tax
+agent-suspended.p1.HMRC-MTD-IT=manage their Making Tax Digital for Income Tax
 agent-suspended.p1.HMRC-MTD-VAT=manage their VAT
 agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
 agent-suspended.p1.HMRC-TERSNT-ORG=maintain their trust or estate
@@ -160,7 +159,7 @@ agent-suspended.p2.multi=You can continue without this request, or <a href="{0}"
 agent-suspended.fastrack.heading=We have temporarily limited your use of this service
 agent-suspended.fastrack.p1=We did this because we have suspended your agent code. We sent you a letter to confirm this.
 agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
-agent-suspended.fastrack.p2.HMRC-MTD-IT=manage their Income Tax.
+agent-suspended.fastrack.p2.HMRC-MTD-IT=manage their Making Tax Digital for Income Tax.
 agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage a client’s VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
@@ -235,12 +234,12 @@ invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authoris
 invitation-sent.further-help.heading=Further help
 invitation-sent.further-help.p=Get help to complete another task, including:
 invitation-sent.all-steps=You must follow all steps.
-invitation-sent.four-months=You must sign them up within 4 months of them accepting your authorisation request.
-invitation-sent.mtd=Sign up your client for MTD for Income Tax (opens in new tab).
+invitation-sent.four-months=. You must sign them up within 4 months of them accepting your authorisation request.
+invitation-sent.mtd=Sign up your client for Making Tax Digital for Income Tax (opens in new tab)
 
 #Check Details
 check-details.heading=Check your client’s details before you continue
-check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to manage a client’s Income Tax.
+check-details.p.HMRC-MTD-IT=You are about to start a request for authorisation to manage a client’s Making Tax Digital for Income Tax.
 check-details.p.PERSONAL-INCOME-RECORD=You are about to start a request for authorisation to view a client’s PAYE income record.
 check-details.p.HMRC-MTD-VAT=You are about to start a request for authorisation to manage a client’s VAT.
 check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation to submit a client’s tax returns through software.
@@ -273,7 +272,7 @@ review-authorisations.heading=Check your authorisation requests
 review-authorisations.p=You have added {0}.
 review-authorisations.singular=authorisation request
 review-authorisations.plural=authorisation requests
-review-authorisations.table.HMRC-MTD-IT=Manage their Income Tax
+review-authorisations.table.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
 review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income record
 review-authorisations.table.HMRC-MTD-VAT=Manage their VAT
 review-authorisations.table.HMRC-TERS-ORG=Maintain a trust or an estate
@@ -295,8 +294,8 @@ error.cancel-authorisation.client-type.empty=Select the type of client you need 
 error.fast-track.client-type.empty=Select the type of client you need to cancel your authorisation for
 
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
-cancel-authorisation.select-service.itsa=Managing their Income Tax
-cancel-authorisation.select-service.vat=Managing their VAT
+cancel-authorisation.select-service.itsa=Manage their Making Tax Digital for Income Tax
+cancel-authorisation.select-service.vat=Manage their VAT
 cancel-authorisation.select-service.trust=Maintain a trust or an estate
 cancel-authorisation.select-service.cgt=Manage their Capital Gains tax details for UK property
 cancel-authorisation.select-service.hint=Select an option.
@@ -331,6 +330,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to m
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property account for {1}.
 cancel-authorisation.cancelled.print=Print this page
+
 cancel-authorisation.business-select-service.header=Do you want to cancel managing this client’s VAT?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel managing this client’s VAT
 
@@ -350,7 +350,7 @@ cancel-authorisation.response-failed.tryAgain=Try again
 
 #Not authorisation to de-auth
 not-authorised.h1=You have not been authorised
-not-authorised.HMRC-MTD-IT.p=This client has not authorised you to manage their Income Tax.
+not-authorised.HMRC-MTD-IT.p=This client has not authorised you to manage their Making Tax Digital for Income Tax.
 not-authorised.PERSONAL-INCOME-RECORD.p=This client has not authorised you to view their PAYE income record.
 not-authorised.HMRC-MTD-VAT.p=This client has not authorised you to manage their VAT.
 not-authorised.HMRC-TERS-ORG.p=This client has not authorised you to maintain a trust or an estate.
@@ -360,7 +360,7 @@ not-authorised.button=Start over
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
-delete.subheading.HMRC-MTD-IT=You will not send an authorisation request to manage their Income Tax.
+delete.subheading.HMRC-MTD-IT=You will not send an authorisation request to manage their Making Tax Digital for Income Tax.
 delete.subheading.PERSONAL-INCOME-RECORD=You will not send them an authorisation request to view their PAYE income record.
 delete.subheading.HMRC-MTD-VAT=You will not send an authorisation request to manage their VAT.
 delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request to maintain a trust or an estate.
@@ -436,7 +436,7 @@ cannot-create-request.start-again=Start a new request
 #Create authorisation failed
 create-auth-failed.header=Sorry, there is a problem with the service
 create-auth-failed.p1=We could not create the following authorisation {0}.
-create-auth-failed.HMRC-MTD-IT=Manage their Income Tax
+create-auth-failed.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
 create-auth-failed.PERSONAL-INCOME-RECORD=View their PAYE income record
 create-auth-failed.HMRC-MTD-VAT=Manage their VAT
 create-auth-failed.HMRC-TERS-ORG=Maintain a trust or an estate
@@ -453,7 +453,7 @@ create-auth-failed.HMRC-CGT-PD.label=Capital Gains Tax account reference:
 
 # Client Pages
 # Landing Page
-landing-page.itsa.header=Do you want to authorise your tax agent to manage your Income Tax?
+landing-page.itsa.header=Do you want to authorise your tax agent to manage your Making Tax Digital for Income Tax?
 landing-page.afi.header=Do you want to authorise your tax agent to view your income record?
 landing-page.vat.header=Do you want to authorise your tax agent to manage your VAT?
 landing-page.reminder=If you authorise this tax agent, this will cancel any previous tax agent’s authorisation for the same service.
@@ -463,10 +463,10 @@ landing-page.radio3=I want to decide later
 landing-page.subheading1=You will need a Government Gateway account to sign in so we can confirm who you are. You can create an account if you do not have one.
 landing-page.alternative=Why am I seeing this?
 landing-page.alt-suggestion=You may have asked this tax agent to deal with HM Revenue & Customs (HMRC) on your behalf.
-landing-page.itsa.guidance=You received this request because they need you to authorise them to manage your Income Tax. They cannot do this until you give your authorisation.
+landing-page.itsa.guidance=You received this request because they need you to authorise them to manage your Making Tax Digital for Income Tax. They cannot do this until you give your authorisation.
 landing-page.afi.guidance=You received this request because they need you to authorise them to view your income record. They cannot do this until you give your authorisation.
 landing-page.vat.guidance=You received this request because they need you to authorise them to manage your VAT. They cannot do this until you give your authorisation.
-landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to manage your Income Tax.
+landing-page.service.itsa.p1=You need to authorise your tax agent if you want them to manage your Making Tax Digital for Income Tax.
 landing-page.service.afi.p1=You need to authorise your tax agent to act on your behalf with HMRC.
 landing-page.service.vat.p1=You need to authorise your tax agent if you want them to manage your VAT.
 
@@ -511,7 +511,7 @@ suspended-agent.single.header=You cannot appoint this tax agent for a service th
 suspended-agent.multi.header=You cannot appoint this tax agent for some services they want to deal with
 suspended-agent.p1.single=This tax agent cannot {0} at this time.
 suspended-agent.p1.multi=This tax agent cannot act on your behalf for the following services at this time:
-suspended-agent.p1.ITSA=manage your Income Tax
+suspended-agent.p1.ITSA=manage your Making Tax Digital for Income Tax
 suspended-agent.p1.VATC=manage your VAT
 suspended-agent.p1.TRS=maintain a trust or an estate
 suspended-agent.p1.CGT=manage your Capital Gains Tax on UK property account
@@ -523,7 +523,7 @@ suspended-agent.finish=finish and sign out
 invitation-declined.header=You declined this request
 invitation-declined.sub-header=Made a mistake?
 invitation-declined.p3=If you meant to accept this request, contact the person who sent it.
-invitation-declined.multi.itsa.p1=You have not given permission to {0} to manage your Income Tax.
+invitation-declined.multi.itsa.p1=You have not given permission to {0} to manage your Making Tax Digital for Income Tax.
 invitation-declined.multi.afi.p1=You have not given permission to {0} to view your personal income records.
 invitation-declined.multi.vat.p1=You have not given permission to {0} to manage your VAT.
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
@@ -536,14 +536,14 @@ invitation-decline.sub-header=You have not given permission to {0} to:
 # Confirm Decline Invitation
 confirm-decline.title=Confirm Invitation - {0} - GOV.UK
 confirm-decline.heading=Are you sure you want to decline this request?
-confirm-decline.itsa.sub-header={0} will not be able to manage your Income Tax.
+confirm-decline.itsa.sub-header={0} will not be able to manage your Making Tax Digital for Income Tax.
 confirm-decline.afi.sub-header={0} will not be able to view your income record.
 confirm-decline.vat.sub-header={0} will not be able to manage your VAT.
 confirm-decline.trust.sub-header={0} will not be able to maintain a trust or an estate.
 confirm-decline.trustNT.sub-header={0} will not be able to maintain a trust or an estate.
 confirm-decline.cgt.sub-header={0} will not be able to manage your Capital Gains Tax on UK property account.
 confirm-decline.sub-header={0} will not be able to:
-confirm-decline.itsa.service-name=manage your Income Tax
+confirm-decline.itsa.service-name=manage your Making Tax Digital for Income Tax
 confirm-decline.afi.service-name=report your employer PAYE updates through software
 confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
@@ -668,7 +668,7 @@ confirm-terms-multi.cgt.business.p1.l9=amounts due and paid
 confirm-terms-multi.cgt.business.p1.l10=penalty details
 confirm-terms-multi.cgt.business.label=I consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account.
 
-confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Income Tax.
+confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Making Tax Digital for Income Tax.
 
 confirm-terms.vat.p1=This tax agent needs access to this information to manage your VAT.
 
@@ -698,7 +698,7 @@ client-complete.header=Approval complete
 client-complete.p.title=What this means
 client-complete.sub-header=What you can do next
 client-complete.afi.p1={0} is now confirmed as your authorised tax agent for viewing your income record.
-client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for managing your Income Tax.
+client-complete.itsa.p1={0} is now confirmed as your authorised tax agent for managing your Making Tax Digital for Income Tax.
 client-complete.vat.p1={0} is now confirmed as your authorised tax agent for managing your VAT.
 client-complete.trust.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
 client-complete.trustNT.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
@@ -712,7 +712,7 @@ client-complete.sign-out=Finish and sign out
 client-complete.multi.header=Approval complete
 client-complete.multi.header.p={0} can now deal with HMRC for you
 client-complete.multi.p1.head={0} is now confirmed as your authorised tax agent for:
-client-complete.multi.p1.itsa=managing your Income Tax
+client-complete.multi.p1.itsa=managing your Making Tax Digital for Income Tax
 client-complete.multi.p1.afi=viewing your income record
 client-complete.multi.p1.vat=managing your VAT
 client-complete.multi.p1.trust=maintaining a trust or an estate
@@ -725,7 +725,7 @@ client-problem.header=Your authorisation request is no longer valid
 
 # Not Signed Up
 not-signed-up.header=There is a problem
-not-signed-up.description=You have not signed up to manage your Income Tax.
+not-signed-up.description=You have not signed up to manage your Making Tax Digital for Income Tax.
 not-signed-up-vat.description=You have not signed up to Making Tax Digital for VAT.
 not-signed-up.p2=Contact the tax agent who sent you this request if you still want to authorise them.
 
@@ -800,13 +800,13 @@ locked-out.p3=If you need help with confirming your identity, use the ‘Get hel
 #Some Responses Failed
 some-responses-failed.header=Sorry, there is a problem with the service
 some-responses-failed.p1=We could not save your response for the following services:
-some-responses-failed.li.itsa=manage your Income Tax
+some-responses-failed.li.itsa=manage your Making Tax Digital for Income Tax
 some-responses-failed.li.afi=view your PAYE income record
 some-responses-failed.li.vat=manage your VAT
 some-responses-failed.li.trust=maintain a trust
 some-responses-failed.li.trustNT=maintain a trust
 some-responses-failed.li.cgt=manage your Capital Gains Tax on UK property account
-some-responses-failed.itsa=We could not save your response for managing your Income Tax.
+some-responses-failed.itsa=We could not save your response for managing your Making Tax Digital for Income Tax.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for managing your VAT
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
@@ -900,7 +900,7 @@ recent-invitations.table-row-header.clientNameUnknown=Unable to retrieve client 
 recent-invitations.table-row-header.service=Authorisation requested
 recent-invitations.table-row-header.status=Status
 recent-invitations.table-row-header.actions=Actions
-recent-invitations.invitation.service.HMRC-MTD-IT=Manage their Income Tax
+recent-invitations.invitation.service.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
 recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=View their PAYE income record
 recent-invitations.invitation.service.HMRC-MTD-VAT=Manage their VAT
 recent-invitations.invitation.service.HMRC-TERS-ORG=Maintain a trust or an estate
@@ -978,7 +978,7 @@ error.confirmCancel.invalid=Select yes if you want to cancel this authorisation 
 
 #Request cancelled page
 request-cancelled.header=Authorisation request cancelled
-request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to manage their Income Tax.
+request-cancelled.p1.HMRC-MTD-IT=You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax.
 request-cancelled.p1.PERSONAL-INCOME-RECORD=You have cancelled your authorisation request to view their PAYE income record.
 request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request to manage their VAT.
 request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
@@ -991,7 +991,7 @@ request-cancelled.p2=If you cancelled your authorisation request by mistake, you
 
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=Are you sure you want to cancel this authorisation?
-confirm-authorisation-cancelled.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to manage Making Tax Digital for Income Tax for {0}.
+confirm-authorisation-cancelled.p1.HMRC-MTD-IT=If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax for {0}.
 confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be able to view their PAYE income record. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to manage their VAT. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
@@ -1042,7 +1042,7 @@ pending-authorisation-exists.new-request.button=Start a new request
 
 #Active authorisation exists
 active-authorisation-exists.header=You are already authorised
-active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to manage their Income Tax.
+active-authorisation-exists.p1.HMRC-MTD-IT=This client has already authorised you to manage their Making Tax Digital for Income Tax.
 active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=This client has already authorised you to view their PAYE income record.
 active-authorisation-exists.p1.HMRC-MTD-VAT=This client has already authorised you to manage their VAT.
 active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised you to maintain a trust or an estate.
@@ -1053,7 +1053,7 @@ active-authorisation-exists.return=Return to your authorisation requests
 
 #Partial authorisation exists
 partial-authorisation-exists.header=You are already authorised
-partial-authorisation-exists.p1=This client has already authorised you to manage their Income Tax. This means that you can now <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax'> sign your client up for Making Tax Digital for Income Tax</a>.
+partial-authorisation-exists.p1=This client has already authorised you to manage their Making Tax Digital for Income Tax. This means that you can now <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax'> sign your client up for Making Tax Digital for Income Tax</a>.
 partial-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 partial-authorisation-exists.return=Return to your authorisation requests
 partial-authorisation-exists.new-request.button=Start a new request
