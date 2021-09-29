@@ -46,7 +46,7 @@
 
         @uiInputRadioGroupCustom(
             deleteForm("accepted"),
-            Seq(("true", Messages("delete.radio-yes")), ("false", Messages("delete.radio-no"))),
+            Seq(("true", Messages("global.yes")), ("false", Messages("global.no"))),
         '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-30">${Messages("delete.heading", config.clientDetail.clientName)}</h1>"""),
         '_inputHint -> Messages(s"delete.subheading.${config.clientDetail.invitation.service}"),
         '_inputHintClass -> "form-hint margin-bottom-10",

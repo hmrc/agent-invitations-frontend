@@ -48,7 +48,7 @@
 
         @uiInputRadioGroupCustom(
             confirmForm("confirmCancel"),
-            Seq(("true", Messages("confirm-cancel.radio.yes")),("false",Messages("confirm-cancel.radio.no"))),
+            Seq(("true", Messages("global.yes")),("false",Messages("global.no"))),
             '_legend -> Html(s"""<h1 class="heading-xlarge $marginTop">${Messages("confirm-cancel.header")}</h1>"""),
             '_inputHint -> Messages(s"confirm-cancel.subheader.$service"),
             '_horizontal -> true,
