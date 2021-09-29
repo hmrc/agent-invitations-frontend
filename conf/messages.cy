@@ -335,7 +335,6 @@ cancel-authorisation.start-over.button=Dechrau eto
 cancel-authorisation.response-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-authorisation.response-failed.description=Gallwch roi cynnig arall arni nawr, neu yn nes ymlaen.
 cancel-authorisation.response-failed.advice=Efallai nad ydym wedi cadw’ch atebion.
-cancel-authorisation.response-failed.tryAgain=Rhoi cynnig arall arni
 
 
 #Not authorisation to de-auth
@@ -400,7 +399,6 @@ not-enrolled.new.HMRC-MTD-VAT=Gofynnwch iddynt <a target=”_blank” href=”{0
 not-matched.header=Ni allem ddod o hyd i’ch cleient
 not-matched.description=Ni allem ddod o hyd i gleient yn ein cofnodion gan ddefnyddio’r manylion a roesoch i ni.
 not-matched.advice =Gwiriwch y manylion a rhowch gynnig arall arni.
-not-matched.button =Rhoi cynnig arall arni
 review-auths.link =Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Request cancelled
@@ -434,7 +432,6 @@ create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad new
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
 create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
 create-auth-failed.link-text.one=Gallwch fynd yn eich blaen heb y cais hwn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
-create-auth-failed.button.try=Rhoi cynnig arall arni
 create-auth-failed.button.continue=Yn eich blaen
 
 create-auth-failed.HMRC-CGT-PD.label=Cyfeirnod cyfrif Treth Enillion Cyfalaf:
@@ -773,7 +770,6 @@ incorrect-client-type.button=Allgofnodwch a rhowch gynnig arall arni
 cannot-confirm-identity.header=Nid oeddem yn gallu cadarnhau pwy ydych
 cannot-confirm-identity.p1=Nid yw’r wybodaeth yr ydych wedi’i nodi yn cyd-fynd â’n cofnodion.
 cannot-confirm-identity.p2=Os oes angen help arnoch i gadarnhau pwy ydych, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
-cannot-confirm-identity.button=Rhoi cynnig arall arni
 
 # Locked-out
 locked-out.header=Nid oeddem yn gallu cadarnhau pwy ydych
@@ -1009,7 +1005,6 @@ authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar
 #Cancel authorisation problem page
 cancel-auth-problem.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-auth-problem.p=Ni chafodd yr awdurdodiad ei ganslo. Rhowch gynnig arall arni.
-cancel-auth-problem.button=Rhoi cynnig arall arni
 
 #Pending authorisation already exists
 pending-authorisation-exists.header=Rydych eisoes wedi creu cais am awdurdodiad ar gyfer y gwasanaeth hwn.

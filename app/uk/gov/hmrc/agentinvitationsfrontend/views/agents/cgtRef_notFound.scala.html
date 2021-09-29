@@ -42,7 +42,7 @@
   </ol>
 
 
-<a id="tryAgainButton" href="@tryAgainCall" class="button" role="button">@Messages(s"not-matched.button")</a>
+<a id="tryAgainButton" href="@tryAgainCall" class="button" role="button">@Messages(s"try-again.button")</a>
 
   @if(hasJourneyCache) {
    <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@Messages("review-auths.link")</a></p>

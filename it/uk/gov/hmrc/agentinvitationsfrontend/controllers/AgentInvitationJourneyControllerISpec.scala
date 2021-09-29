@@ -1986,7 +1986,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "not-matched.header",
         "not-matched.description",
         "not-matched.advice",
-        "not-matched.button"
+        "try-again.button"
       )
     }
   }
@@ -2049,7 +2049,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result,
         "create-auth-failed.header",
-        "create-auth-failed.button.try",
+        "try-again.button",
         "create-auth-failed.HMRC-CGT-PD"
       )
     }
