@@ -213,7 +213,6 @@ class AuthActionsImpl @Inject()(
 
   private def continueUrlWithJourneyId(journeyId: Option[String])(implicit request: Request[_]): String = {
     val url = s"$continueUrl${request.uri}"
-    println(s">>>>>>>>>>>>>>>>>url is $url")
     journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
   }
 
