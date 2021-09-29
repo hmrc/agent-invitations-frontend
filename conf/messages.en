@@ -203,10 +203,6 @@ cgt-not-matched.p2=This does not match any registered Capital Gains Tax account 
 cgt-not-matched.advice=You can:
 cgt-not-matched.advice.l1=check the account reference is correct and try again
 cgt-not-matched.advice.l2=contact the client that gave you this account reference, as they may have given you incorrect details
-continue.button=Continue
-start-again.button=Start again
-button.back=Back
-finish.button=Finish and sign out
 
 # Confirm Client
 confirm-client.title=Is this the client you want authorisation from?
@@ -827,45 +823,6 @@ session-lost-client.description.2=We may not have saved your answers.
 session-lost-client.description.3=If you have any questions, use the ‘Get help with this page’ link.
 session-lost-client.manage-agents-link=You can <a href="{0}">check who can deal with HMRC for you</a>.
 
-# General Messages
-# Error messages.en for digital services
-global.error.400.title=Bad request - 400
-global.error.400.heading=Bad request
-global.error.400.message=Please check that you have entered the correct web address.
-global.error.403.title=Forbidden - 403
-global.error.403.heading=Sorry, you haven’t been authorised to proceed.
-global.error.403.message=
-global.error.passcode.title=Forbidden - 403
-global.error.passcode.heading=Sorry, you haven’t been authorised to proceed.
-global.error.passcode.message=
-global.error.404.title=Page not found - GOV.UK
-global.error.404.heading=Page not found
-global.error.404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
-global.error.pageNotFound404.title=Page not found - GOV.UK
-global.error.pageNotFound404.heading=Page not found
-global.error.pageNotFound404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
-
-global.error.500.title=Sorry, there is a problem with the service - 500
-global.error.500.heading=Sorry, there is a problem with the service
-global.error.500.message=Try again later.
-global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
-global.error.500.vat_helpline.link-text=Call the VAT online services helpline
-global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
-global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
-global.error.500.sa_helpline.link-text=Call the HMRC Self Assessment online services helpline
-global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
-global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
-
-#Common
-global.yes=Yes
-global.no=No
-error.summary.heading=There is a problem
-error.confirmDecline.invalid=Select yes if you want to decline this request
-error.confirmTerms.invalid=You must accept the terms to continue
-error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
-error.prefix=Error:
-common.sign-out=Sign out
-
 #Relationships
 #Client ends relationship
 clientEndsRelationship.title=Do you want to stop a tax agent viewing your income record?
@@ -1115,6 +1072,50 @@ error.authorisation-request-error-template.p4=<a href={0}>Sign in with the Gover
 error.authorisation-request-error-template.business=business tax affairs
 error.authorisation-request-error-template.personal=personal tax affairs
 error.authorisation-request-error-template.p5=make sure you have signed up to the tax service you need.
+
+# General Messages
+# Error messages.en for digital services
+global.error.400.title=Bad request - 400
+global.error.400.heading=Bad request
+global.error.400.message=Please check that you have entered the correct web address.
+global.error.403.title=Forbidden - 403
+global.error.403.heading=Sorry, you haven’t been authorised to proceed.
+global.error.403.message=
+global.error.passcode.title=Forbidden - 403
+global.error.passcode.heading=Sorry, you haven’t been authorised to proceed.
+global.error.passcode.message=
+global.error.404.title=Page not found - GOV.UK
+global.error.404.heading=Page not found
+global.error.404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
+global.error.pageNotFound404.title=Page not found - GOV.UK
+global.error.pageNotFound404.heading=Page not found
+global.error.pageNotFound404.message=<p>If you typed the web address, check it is correct.</p> <p>If you pasted the web address, check you copied the entire address.</p> <p>If the web address is correct or you selected a link or button, <a href="https://www.gov.uk/contact-hmrc">contact HMRC</a> if you need to speak to someone about asking a client to authorise you.</p>
+
+global.error.500.title=Sorry, there is a problem with the service - 500
+global.error.500.heading=Sorry, there is a problem with the service
+global.error.500.message=Try again later.
+global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
+global.error.500.vat_helpline.link-text=Call the VAT online services helpline
+global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
+global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
+global.error.500.sa_helpline.link-text=Call the HMRC Self Assessment online services helpline
+global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
+global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
+
+#Common
+global.yes=Yes
+global.no=No
+try-again.button=Try again
+continue.button=Continue
+start-again.button=Start again
+button.back=Back
+finish.button=Finish and sign out
+error.summary.heading=There is a problem
+error.confirmDecline.invalid=Select yes if you want to decline this request
+error.confirmTerms.invalid=You must accept the terms to continue
+error.confirmAuthorisation.invalid=Select yes if you want to authorise your tax agent
+error.prefix=Error:
+common.sign-out=Sign out
 
 #session time out
 timeout-dialog.title=You are about to be signed out

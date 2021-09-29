@@ -203,10 +203,6 @@ cgt-not-matched.p2=Nid yw hyn yn paru ag unrhyw gyfeirnod cyfrif Treth Enillion 
 cgt-not-matched.advice=Gallwch wneud y canlynol:
 cgt-not-matched.advice.l1=gwirio bod y cyfeirnod cyfrif yn gywir a rhoi cynnig arall arni
 cgt-not-matched.advice.l2=cysylltu â’r cleient a roddodd y cyfeirnod cyfrif hwn i chi, oherwydd efallai ei fod wedi rhoi manylion anghywir i chi
-continue.button=Yn eich blaen
-start-again.button=Dechrau eto
-button.back=Yn ôl
-finish.button=Gorffen ac allgofnodi
 
 # Confirm Client
 confirm-client.title=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
@@ -872,14 +868,6 @@ error.terminate.500.heading=Mae’n ddrwg gennym – rydym yn profi anawsterau t
 error.terminate.500.title=Mae’n ddrwg gennym – rydym yn profi anawsterau technegol
 error.terminate.500.message=Mae modd i asiantau treth weld eich cofnod incwm o hyd. Rhowch gynnig arall arni mewn ychydig o funudau.
 
-#Common
-error.summary.heading=Mae problem wedi codi
-error.confirmDecline.invalid=Dewiswch ‘Iawn’ os hoffech wrthod y cais hwn
-error.confirmTerms.invalid=Mae’n rhaid i chi dderbyn y telerau i fynd yn eich blaen
-error.confirmAuthorisation.invalid=Dewiswch ‘Iawn’ os hoffech awdurdodi’ch asiant treth
-error.prefix=Gwall:
-common.sign-out=Allgofnodi
-
 #Track invitation requests
 recent-invitations.header=Olrhain eich ceisiadau diweddar am awdurdodiad
 recent-invitations.description=Gwirio statws eich ceisiadau am awdurdodiad i gleientiaid yn ystod y {0} o ddiwrnodau diwethaf, neu ganslo ceisiadau ac awdurdodiadau nad oes eu hangen mwyach.
@@ -1118,6 +1106,50 @@ error.authorisation-request-error-template.p4=<a href={0}>Mewngofnodwch â’r D
 error.authorisation-request-error-template.business=materion treth busnes
 error.authorisation-request-error-template.personal=materion treth personol
 error.authorisation-request-error-template.p5=Gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch.
+
+# General Messages
+# Error messages for digital services
+global.error.400.title=Cais annilys – 400
+global.error.400.heading=Cais annilys
+global.error.400.message=Gwiriwch eich bod wedi nodi’r cyfeiriad gwe cywir.
+global.error.403.title=Gwaharddwyd – 403
+global.error.403.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
+global.error.403.message=
+global.error.passcode.title=Gwaharddwyd – 403
+global.error.passcode.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
+global.error.passcode.message=
+global.error.404.title=Heb ddod o hyd i’r dudalen – GOV.UK
+global.error.404.heading=Heb ddod o hyd i’r dudalen
+global.error.404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
+global.error.pageNotFound404.title=Heb ddod o hyd i’r dudalen – GOV.UK
+global.error.pageNotFound404.heading=Heb ddod o hyd i’r dudalen
+global.error.pageNotFound404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
+
+global.error.500.title=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth – 500
+global.error.500.heading=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
+global.error.500.message=Rhowch gynnig arall arni yn nes ymlaen.
+global.error.500.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
+global.error.500.vat_helpline.link-text=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
+global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
+global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+global.error.500.sa_helpline.link-text=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
+global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
+global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
+
+#Common
+global.yes=Iawn
+global.no=Na
+try-again.button=Rhoi cynnig arall arni
+continue.button=Yn eich blaen
+start-again.button=Dechrau eto
+button.back=Yn ôl
+finish.button=Gorffen ac allgofnodi
+error.summary.heading=Mae problem wedi codi
+error.confirmDecline.invalid=Dewiswch ‘Iawn’ os hoffech wrthod y cais hwn
+error.confirmTerms.invalid=Mae’n rhaid i chi dderbyn y telerau i fynd yn eich blaen
+error.confirmAuthorisation.invalid=Dewiswch ‘Iawn’ os hoffech awdurdodi’ch asiant treth
+error.prefix=Gwall:
+common.sign-out=Allgofnodi
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
