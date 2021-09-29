@@ -107,7 +107,7 @@ select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.TRUST.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
-select-service.HMRC-CGT-PD.personal=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer cleient
+select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
@@ -134,10 +134,10 @@ select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ 
 select-single-service.HMRC-MTD-IT.personal.header=A ydych am reoli Treth Incwm y cleient hwn?
 select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am reoli Treth Incwm y cleient hwn
 
-select-single-service.HMRC-CGT-PD.personal.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
-select-single-service.HMRC-CGT-PD.business.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
-select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
-select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
+select-single-service.HMRC-CGT-PD.personal.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.business.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 
 # Agent suspended
 agent-suspended.heading.multi=Nid oeddem yn gallu creu un o’ch ceisiadau
@@ -147,7 +147,7 @@ agent-suspended.p1.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwe
 agent-suspended.p1.HMRC-MTD-VAT=cyflwyno ei Ffurflenni TAW drwy feddalwedd
 agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
-agent-suspended.p1.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
+agent-suspended.p1.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
 
@@ -157,10 +157,10 @@ agent-suspended.fastrack.heading=Rydym wedi cyfyngu ar eich defnydd o’r gwasan
 agent-suspended.fastrack.p1=Gwnaethom hyn oherwydd ein bod wedi gohirio eich cod asiant. Rydym wedi anfon llythyr atoch yn cadarnhau hyn. 
 agent-suspended.fastrack.p2=Mae hyn yn golygu na fyddwch yn gallu defnyddio’r gwasanaeth hwn i ofyn am awdurdodiad er mwyn {0}.
 agent-suspended.fastrack.p2.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwedd.
-agent-suspended.fastrack.p2.HMRC-MTD-VAT=cyflwyno Ffurflenni TAW cleient drwy ddefnyddio meddalwedd.
+agent-suspended.fastrack.p2.HMRC-MTD-VAT=rheoli ei TAW.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
-agent-suspended.fastrack.p2.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
@@ -270,7 +270,7 @@ review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod inc
 review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
-review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+review-authorisations.table.HMRC-CGT-PD=Rheoli ei Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?

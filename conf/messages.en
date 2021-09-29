@@ -107,7 +107,7 @@ select-service.HMRC-MTD-VAT.personal=Manage their VAT
 select-service.TRUST.business=Maintain a trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage a trust’s Capital Gains Tax on UK property account
-select-service.HMRC-CGT-PD.personal=Manage a client’s Capital Gains Tax on UK property account
+select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -134,10 +134,10 @@ select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you wa
 select-single-service.HMRC-MTD-IT.personal.header=Do you want to manage this client’s Income Tax?
 select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to manage this client’s Income Tax
 
-select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage this client’s Capital Gains Tax on UK property account?
-select-single-service.HMRC-CGT-PD.business.header=Do you want to manage this client’s Capital Gains Tax on UK property account?
-select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property account
-select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage this client’s Capital Gains Tax on UK property account
+select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage their Capital Gains Tax on UK property account?
+select-single-service.HMRC-CGT-PD.business.header=Do you want to manage their Capital Gains Tax on UK property account?
+select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage their Capital Gains Tax on UK property account
+select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage their Capital Gains Tax on UK property account
 
 # Agent suspended
 agent-suspended.heading.multi=We could not create one of your requests
@@ -157,10 +157,10 @@ agent-suspended.fastrack.heading=We have temporarily limited your use of this se
 agent-suspended.fastrack.p1=We did this because we have suspended your agent code. We sent you a letter to confirm this.
 agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
 agent-suspended.fastrack.p2.HMRC-MTD-IT=manage their Making Tax Digital for Income Tax.
-agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage a client’s VAT.
+agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage their VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
-agent-suspended.fastrack.p2.HMRC-CGT-PD=maintain their Capital Gains Tax on UK property account.
+agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account
 
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
@@ -270,7 +270,7 @@ review-authorisations.table.PERSONAL-INCOME-RECORD=Viewing their PAYE income rec
 review-authorisations.table.HMRC-MTD-VAT=Manage their VAT
 review-authorisations.table.HMRC-TERS-ORG=Maintain a trust or an estate
 review-authorisations.table.HMRC-TERSNT-ORG=Maintain a trust or an estate
-review-authorisations.table.HMRC-CGT-PD=Manage Capital Gains Tax on UK property account
+review-authorisations.table.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
 review-authorisations.table.remove=Remove
 review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=Do you need to add another authorisation for this client?
@@ -288,7 +288,7 @@ cancel-authorisation.select-service.header=Which authorisation do you want to ca
 cancel-authorisation.select-service.itsa=Manage their Making Tax Digital for Income Tax
 cancel-authorisation.select-service.vat=Manage their VAT
 cancel-authorisation.select-service.trust=Maintain a trust or an estate
-cancel-authorisation.select-service.cgt=Manage their Capital Gains tax details for UK property
+cancel-authorisation.select-service.cgt=Manage their Capital Gains Tax on UK property account
 cancel-authorisation.select-service.hint=Select an option.
 
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
@@ -416,7 +416,7 @@ new-request.button=Start a new request
 
 #Cannot Create Request
 cannot-create-request.header=You cannot ask this client to authorise you yet
-cannot-create-request.p1=We are processing this client’s sign-up to Making Tax Digital for VAT.
+cannot-create-request.p1=We are processing this client’s sign-up to VAT.
 cannot-create-request.p2=Once this is done, you can ask the client to authorise you for this service.
 cannot-create-request.p3=This may take up to 72 hours, so try again later.
 cannot-create-request.review-auth=Return to your authorisation requests
@@ -942,7 +942,7 @@ confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You will no longer be 
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=You will no longer be able to manage their VAT. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
-confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage this client’s Capital Gains Tax on UK property account. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage their Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.no.itsa=No - I need to start over again
 
 #Confirm cancel authorisation track page
@@ -952,7 +952,7 @@ confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=You will no long
 confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=You will no longer be able to manage their VAT. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
-confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=You will no longer be able to manage this client’s Capital Gains Tax on UK property account. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=You will no longer be able to manage their Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.track.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
 #Authorisation cancelled page
@@ -963,7 +963,7 @@ authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=You are no longer authorised b
 authorisation-cancelled.p1.HMRC-MTD-VAT=You are no longer authorised by {0} to manage their VAT.
 authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to maintain their trust or estate.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=You are no longer authorised by {0} to maintain their trust or estate.
-authorisation-cancelled.p1.HMRC-CGT-PD=You are no longer authorised by {0} to maintain their Capital Gains Tax on UK property account.
+authorisation-cancelled.p1.HMRC-CGT-PD=You are no longer authorised by {0} to manage their Capital Gains Tax on UK property account.
 authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
 authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
 authorisation-cancelled.check-sa.l1=sign out of this agent services account
