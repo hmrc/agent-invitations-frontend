@@ -135,8 +135,8 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
           htmlEscapedMessage("title.suffix.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
-        hasMessage("select-service.yes"),
-        hasMessage("select-service.no")
+        hasMessage("global.yes"),
+        hasMessage("global.no")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
