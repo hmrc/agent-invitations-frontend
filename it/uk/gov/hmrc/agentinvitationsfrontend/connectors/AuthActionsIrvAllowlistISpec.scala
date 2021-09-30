@@ -24,7 +24,7 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
         val result =
           authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
         status(result) shouldBe SEE_OTHER
-        redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?continue_url=http://localhost:9448/&origin=agent-invitations-frontend")
+        redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/")
       }
 
       "redirect to agent subscription when the user does not have a HMRC-AS-AGENT enrolment" in {
