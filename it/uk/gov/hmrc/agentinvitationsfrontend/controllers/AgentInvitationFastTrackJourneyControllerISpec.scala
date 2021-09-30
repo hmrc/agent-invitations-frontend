@@ -1511,14 +1511,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
-      val inferredDate = controller.inferredExpiryDate
-      //not sure whys its coded like this in the views
-      val expiryDate =
-        if(inferredDate.getDayOfMonth < 10) {
-          inferredDate.toString("d MMMM yyyy")
-        } else {
-          inferredDate.toString("dd MMMM yyyy")
-        }
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1528,7 +1520,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       "invitation-sent.select-link",
       "invitation-sent.client-warning")
 
-      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
       "Check with your client that they have a Government Gateway user ID for their personal tax affairs.",
       "Check with your client that they have signed up to Making Tax Digital for VAT.")
     }
@@ -1544,14 +1536,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
-      val inferredDate = controller.inferredExpiryDate
-      //not sure whys its coded like this in the views
-      val expiryDate =
-        if(inferredDate.getDayOfMonth < 10) {
-          inferredDate.toString("d MMMM yyyy")
-        } else {
-          inferredDate.toString("dd MMMM yyyy")
-        }
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
@@ -1577,30 +1561,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
-      val inferredDate = controller.inferredExpiryDate
-      //not sure whys its coded like this in the views
-      val expiryDate =
-        if(inferredDate.getDayOfMonth < 10) {
-          inferredDate.toString("d MMMM yyyy")
-        } else {
-          inferredDate.toString("dd MMMM yyyy")
-        }
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
+      checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
     }
 
     "show the invitation sent page for a business service" in {
       journeyState.set(InvitationSentBusiness("invitation/sent/url", None, "abc@xyz.com"), List())
-
-      val inferredDate = controller.inferredExpiryDate
-      //not sure whys its coded like this in the views
-      val expiryDate =
-        if(inferredDate.getDayOfMonth < 10) {
-          inferredDate.toString("d MMMM yyyy")
-        } else {
-          inferredDate.toString("dd MMMM yyyy")
-        }
 
       val result = controller.showInvitationSent(authorisedAsValidAgent(request, arn.value))
 
@@ -1613,7 +1580,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "invitation-sent.select-link",
         "invitation-sent.client-warning")
 
-      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
         "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
     }
   }
@@ -1719,6 +1686,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "show the already copied across warning page when there is a legacy mapping" in {
       val request = FakeRequest("GET", "/agents/track/already-copied-across-itsa")
+      //ignore unused warning
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         AlreadyCopiedAcrossItsa,

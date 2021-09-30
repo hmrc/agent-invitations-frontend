@@ -198,8 +198,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
-        htmlEscapedMessage("select-service.no"),
-        htmlEscapedMessage("select-service.yes"),
+        htmlEscapedMessage("global.no"),
+        htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("select-service.alternative")
       )
       journeyState.get shouldBe Some((SelectBusinessService, List(SelectClientType(emptyBasket))))
@@ -213,8 +213,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyText(
         result,
         htmlEscapedMessage("select-single-service.TRUST.business.header"),
-        htmlEscapedMessage("select-service.yes"),
-        htmlEscapedMessage("select-service.no")
+        htmlEscapedMessage("global.yes"),
+        htmlEscapedMessage("global.no")
       )
       journeyState.get shouldBe Some((SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket))))
     }
@@ -1591,7 +1591,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result,
         "Check your authorisation requests",
         "You have added 1 authorisation request.",
-        "Manage their Income Tax",
+        "Manage their Making Tax Digital for Income Tax",
         "James Client",
         "Do you need to add another authorisation for this client?"
       )
@@ -1748,7 +1748,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
       val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
+      checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkInviteSentPageContainsSurveyLink(result, true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
     }
@@ -1768,7 +1768,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
       val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result,"Sign up your client for MTD for Income Tax")
+      checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
       checkInviteSentPageContainsSurveyLink(result, true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true))
@@ -1776,6 +1776,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the already copied across warning page when there is a legacy mapping" in {
       val request = FakeRequest("GET", "/agents/already-copied-across-itsa")
+      //ignore unused warning
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
         AlreadyCopiedAcrossItsa,
@@ -1814,7 +1815,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
 
       journeyState.get should have[State](InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)))
     }
@@ -1845,7 +1846,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyText(
         result,
         "Are you sure you want to remove your authorisation request for Sylvia Plath?",
-        "You will not send an authorisation request to manage their Income Tax."
+        "You will not send an authorisation request to manage their Making Tax Digital for Income Tax."
       )
 
       journeyState.get should have[State](
