@@ -1523,7 +1523,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       "invitation-sent.select-link",
       "invitation-sent.client-warning")
 
-      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
+      checkHtmlResultWithNotBodyText(result.futureValue, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
       "Check with your client that they have a Government Gateway user ID for their personal tax affairs.",
       "Check with your client that they have signed up to Making Tax Digital for VAT.")
     }
@@ -1584,7 +1584,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "invitation-sent.select-link",
         "invitation-sent.client-warning")
 
-      checkHtmlResultWithNotBodyText(result, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
+      checkHtmlResultWithNotBodyText(result.futureValue, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.",
         "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
     }
   }
