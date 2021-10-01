@@ -223,7 +223,7 @@ class ClientInvitationJourneyController @Inject()(
         Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
       .redirect
 
-  val showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline]
+  val showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline].orRollback
 
   val submitConfirmDecline: Action[AnyContent] =
     actions

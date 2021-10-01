@@ -102,7 +102,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
-       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Income Tax")
+       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Making Tax Digital for Income Tax")
 
      val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
       status(resultPageTwo) shouldBe 200
@@ -116,7 +116,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val parseHtmlPageTwo = Jsoup.parse(Helpers.contentAsString(resultPageTwo))
 
       parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Bbb Itsa Trader")
-      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Manage their Income Tax")
+      parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Manage their Making Tax Digital for Income Tax")
 
     }
 
@@ -494,7 +494,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Authorisation request cancelled",
-        "You have cancelled your authorisation request to manage their Income Tax.",
+        "You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax.",
         "Joe Volcano can no longer respond to this request.",
         hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
       )

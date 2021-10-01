@@ -377,8 +377,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         result,
         "gg-user-id-needed.h1",
         "gg-user-id-needed.p",
-        "gg-user-id-needed.yes",
-        "gg-user-id-needed.no")
+        "global.yes",
+        "global.no")
     }
   }
 
@@ -417,8 +417,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyMsgs(
         result,
         "which-service.header",
-        "which-service.radio.yes",
-        "which-service.radio.no")
+        "global.yes",
+        "global.no")
     }
   }
 

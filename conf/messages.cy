@@ -97,9 +97,6 @@ error.irv-date-of-birth-date.month-year=Mae’n rhaid i’r dyddiad geni gynnwys
 
 ### Selecting services
 
-select-service.yes=Iawn
-select-service.no=Na
-
 select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
@@ -107,11 +104,10 @@ service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’
 select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
 select-service.HMRC-MTD-IT.personal=Rheoli ei Dreth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
-select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.TRUST.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
-select-service.HMRC-CGT-PD.personal=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer cleient
+select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
@@ -138,10 +134,10 @@ select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ 
 select-single-service.HMRC-MTD-IT.personal.header=A ydych am reoli Treth Incwm y cleient hwn?
 select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am reoli Treth Incwm y cleient hwn
 
-select-single-service.HMRC-CGT-PD.personal.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
-select-single-service.HMRC-CGT-PD.business.header=A hoffech reoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU y cleient hwn?
-select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
-select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech reoli Treth Enillion Cyfalaf y cleient hwn ar warediadau eiddo yn y DU
+select-single-service.HMRC-CGT-PD.personal.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.business.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 
 # Agent suspended
 agent-suspended.heading.multi=Nid oeddem yn gallu creu un o’ch ceisiadau
@@ -151,7 +147,7 @@ agent-suspended.p1.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwe
 agent-suspended.p1.HMRC-MTD-VAT=cyflwyno ei Ffurflenni TAW drwy feddalwedd
 agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
-agent-suspended.p1.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU
+agent-suspended.p1.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
 
@@ -161,10 +157,10 @@ agent-suspended.fastrack.heading=Rydym wedi cyfyngu ar eich defnydd o’r gwasan
 agent-suspended.fastrack.p1=Gwnaethom hyn oherwydd ein bod wedi gohirio eich cod asiant. Rydym wedi anfon llythyr atoch yn cadarnhau hyn. 
 agent-suspended.fastrack.p2=Mae hyn yn golygu na fyddwch yn gallu defnyddio’r gwasanaeth hwn i ofyn am awdurdodiad er mwyn {0}.
 agent-suspended.fastrack.p2.HMRC-MTD-IT=anfon ei ddiweddariadau Treth Incwm drwy feddalwedd.
-agent-suspended.fastrack.p2.HMRC-MTD-VAT=cyflwyno Ffurflenni TAW cleient drwy ddefnyddio meddalwedd.
+agent-suspended.fastrack.p2.HMRC-MTD-VAT=rheoli ei TAW.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
-agent-suspended.fastrack.p2.HMRC-CGT-PD=cynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
@@ -207,10 +203,6 @@ cgt-not-matched.p2=Nid yw hyn yn paru ag unrhyw gyfeirnod cyfrif Treth Enillion 
 cgt-not-matched.advice=Gallwch wneud y canlynol:
 cgt-not-matched.advice.l1=gwirio bod y cyfeirnod cyfrif yn gywir a rhoi cynnig arall arni
 cgt-not-matched.advice.l2=cysylltu â’r cleient a roddodd y cyfeirnod cyfrif hwn i chi, oherwydd efallai ei fod wedi rhoi manylion anghywir i chi
-continue.button=Yn eich blaen
-start-again.button=Dechrau eto
-button.back=Yn ôl
-finish.button=Gorffen ac allgofnodi
 
 # Confirm Client
 confirm-client.title=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
@@ -278,12 +270,10 @@ review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod inc
 review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
-review-authorisations.table.HMRC-CGT-PD=Rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+review-authorisations.table.HMRC-CGT-PD=Rheoli ei Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
-review-authorisations.radio.yes=Iawn
-review-authorisations.radio.no=Na
 review-authorisations.different-names=Gall enw’r cleient fod wedi’i gofnodi’n wahanol ym mhob gwasanaeth.
 review-authorisations.no-client-name=Nid yw enw’r cleient ar gael
 error.review-authorisation.required=Dewiswch ‘Iawn’ os hoffech ychwanegu awdurdodiad arall ar gyfer y cleient hwn
@@ -345,7 +335,6 @@ cancel-authorisation.start-over.button=Dechrau eto
 cancel-authorisation.response-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-authorisation.response-failed.description=Gallwch roi cynnig arall arni nawr, neu yn nes ymlaen.
 cancel-authorisation.response-failed.advice=Efallai nad ydym wedi cadw’ch atebion.
-cancel-authorisation.response-failed.tryAgain=Rhoi cynnig arall arni
 
 
 #Not authorisation to de-auth
@@ -366,8 +355,6 @@ delete.subheading.HMRC-MTD-VAT=Ni fyddwch yn anfon cais am awdurdodiad ato i reo
 delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-delete.radio-yes=Iawn
-delete.radio-no=Na
 delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 
@@ -412,7 +399,6 @@ not-enrolled.new.HMRC-MTD-VAT=Gofynnwch iddynt <a target=”_blank” href=”{0
 not-matched.header=Ni allem ddod o hyd i’ch cleient
 not-matched.description=Ni allem ddod o hyd i gleient yn ein cofnodion gan ddefnyddio’r manylion a roesoch i ni.
 not-matched.advice =Gwiriwch y manylion a rhowch gynnig arall arni.
-not-matched.button =Rhoi cynnig arall arni
 review-auths.link =Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Request cancelled
@@ -446,7 +432,6 @@ create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad new
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
 create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
 create-auth-failed.link-text.one=Gallwch fynd yn eich blaen heb y cais hwn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
-create-auth-failed.button.try=Rhoi cynnig arall arni
 create-auth-failed.button.continue=Yn eich blaen
 
 create-auth-failed.HMRC-CGT-PD.label=Cyfeirnod cyfrif Treth Enillion Cyfalaf:
@@ -482,8 +467,6 @@ warm-up.link=Ni hoffwn awdurdodi {0}
 #GG User ID Needed
 gg-user-id-needed.h1=A oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW?
 gg-user-id-needed.p=Er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfrif treth personol neu’ch Hunanasesiad.
-gg-user-id-needed.yes=Iawn
-gg-user-id-needed.no=Na
 error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyddiwr ar gyfer Porth y Llywodraeth
 
 # Which Service
@@ -549,8 +532,6 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-confirm-decline.radio1=Iawn
-confirm-decline.radio2=Na
 confirm-decline.button=Yn eich blaen
 
 # Confirm Terms
@@ -789,7 +770,6 @@ incorrect-client-type.button=Allgofnodwch a rhowch gynnig arall arni
 cannot-confirm-identity.header=Nid oeddem yn gallu cadarnhau pwy ydych
 cannot-confirm-identity.p1=Nid yw’r wybodaeth yr ydych wedi’i nodi yn cyd-fynd â’n cofnodion.
 cannot-confirm-identity.p2=Os oes angen help arnoch i gadarnhau pwy ydych, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
-cannot-confirm-identity.button=Rhoi cynnig arall arni
 
 # Locked-out
 locked-out.header=Nid oeddem yn gallu cadarnhau pwy ydych
@@ -839,6 +819,8 @@ session-lost-client.description.3=Os oes gennych gwestiwn, defnyddiwch y cysyllt
 session-lost-client.manage-agents-link=Gallwch <a href="{0}">wirio pwy sy’n gallu delio â CThEM ar eich rhan</a>.
 
 # General Messages
+global.yes=Iawn
+global.no=Na
 # Error messages for digital services
 global.error.400.title=Cais annilys – 400
 global.error.400.heading=Cais annilys
@@ -881,14 +863,6 @@ clientCancelled.p1=Gallwch dynnu ei awdurdodiad ar unrhyw adeg.
 error.terminate.500.heading=Mae’n ddrwg gennym – rydym yn profi anawsterau technegol
 error.terminate.500.title=Mae’n ddrwg gennym – rydym yn profi anawsterau technegol
 error.terminate.500.message=Mae modd i asiantau treth weld eich cofnod incwm o hyd. Rhowch gynnig arall arni mewn ychydig o funudau.
-
-#Common
-error.summary.heading=Mae problem wedi codi
-error.confirmDecline.invalid=Dewiswch ‘Iawn’ os hoffech wrthod y cais hwn
-error.confirmTerms.invalid=Mae’n rhaid i chi dderbyn y telerau i fynd yn eich blaen
-error.confirmAuthorisation.invalid=Dewiswch ‘Iawn’ os hoffech awdurdodi’ch asiant treth
-error.prefix=Gwall:
-common.sign-out=Allgofnodi
 
 #Track invitation requests
 recent-invitations.header=Olrhain eich ceisiadau diweddar am awdurdodiad
@@ -1031,7 +1005,6 @@ authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar
 #Cancel authorisation problem page
 cancel-auth-problem.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-auth-problem.p=Ni chafodd yr awdurdodiad ei ganslo. Rhowch gynnig arall arni.
-cancel-auth-problem.button=Rhoi cynnig arall arni
 
 #Pending authorisation already exists
 pending-authorisation-exists.header=Rydych eisoes wedi creu cais am awdurdodiad ar gyfer y gwasanaeth hwn.
@@ -1128,6 +1101,50 @@ error.authorisation-request-error-template.p4=<a href={0}>Mewngofnodwch â’r D
 error.authorisation-request-error-template.business=materion treth busnes
 error.authorisation-request-error-template.personal=materion treth personol
 error.authorisation-request-error-template.p5=Gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch.
+
+# General Messages
+# Error messages for digital services
+global.error.400.title=Cais annilys – 400
+global.error.400.heading=Cais annilys
+global.error.400.message=Gwiriwch eich bod wedi nodi’r cyfeiriad gwe cywir.
+global.error.403.title=Gwaharddwyd – 403
+global.error.403.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
+global.error.403.message=
+global.error.passcode.title=Gwaharddwyd – 403
+global.error.passcode.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
+global.error.passcode.message=
+global.error.404.title=Heb ddod o hyd i’r dudalen – GOV.UK
+global.error.404.heading=Heb ddod o hyd i’r dudalen
+global.error.404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
+global.error.pageNotFound404.title=Heb ddod o hyd i’r dudalen – GOV.UK
+global.error.pageNotFound404.heading=Heb ddod o hyd i’r dudalen
+global.error.pageNotFound404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
+
+global.error.500.title=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth – 500
+global.error.500.heading=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
+global.error.500.message=Rhowch gynnig arall arni yn nes ymlaen.
+global.error.500.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
+global.error.500.vat_helpline.link-text=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
+global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
+global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+global.error.500.sa_helpline.link-text=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
+global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
+global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
+
+#Common
+global.yes=Iawn
+global.no=Na
+try-again.button=Rhoi cynnig arall arni
+continue.button=Yn eich blaen
+start-again.button=Dechrau eto
+button.back=Yn ôl
+finish.button=Gorffen ac allgofnodi
+error.summary.heading=Mae problem wedi codi
+error.confirmDecline.invalid=Dewiswch ‘Iawn’ os hoffech wrthod y cais hwn
+error.confirmTerms.invalid=Mae’n rhaid i chi dderbyn y telerau i fynd yn eich blaen
+error.confirmAuthorisation.invalid=Dewiswch ‘Iawn’ os hoffech awdurdodi’ch asiant treth
+error.prefix=Gwall:
+common.sign-out=Allgofnodi
 
 #session time out
 timeout-dialog.title=Rydych ar fin cael eich allgofnodi
