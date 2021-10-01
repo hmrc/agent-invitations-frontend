@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 

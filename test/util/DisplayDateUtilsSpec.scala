@@ -16,7 +16,7 @@
 
 package util
 
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 import java.time.LocalDate
 
 import play.api.mvc.Cookie

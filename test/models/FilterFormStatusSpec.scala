@@ -19,7 +19,7 @@ package models
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, TrackInformationSorted}
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class FilterFormStatusSpec extends UnitSpec {
 

@@ -15,12 +15,11 @@
  */
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger.logger
 import play.api.http.HeaderNames
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Logger, Logging}
 import play.twirl.api.Html
 import uk.gov.hmrc.agentinvitationsfrontend.binders.ErrorConstants
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
@@ -46,7 +45,9 @@ class ErrorHandler @Inject()(
   externalUrls: ExternalUrls,
   appConfig: AppConfig,
   val messagesApi: MessagesApi)
-    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames {
+    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames with Logging {
+
+  def theLogger: Logger = logger // exposing the logger for testing
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     auditClientError(request, statusCode, message)

@@ -30,7 +30,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, _}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
+import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -85,7 +86,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
 
   "AgentInvitationFastTrackJourneyService" when {
 
-    val notSuspended: GetSuspensionDetails = () => SuspensionDetails(false, None)
+    val notSuspended: GetSuspensionDetails = () => Future.successful(SuspensionDetails(false, None))
 
     "at state Prologue" should {
       "transition to CheckDetailsCompleteItsa when all required fields are present for itsa service" in {
@@ -139,7 +140,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest =
           AgentFastTrackRequest(None, HMRCMTDIT, "ni", nino, None)
 
-        def suspendedForIT() = SuspensionDetails(true, Some(Set("ITSA")))
+        def suspendedForIT() = Future.successful(SuspensionDetails(true, Some(Set("ITSA"))))
 
         given(Prologue(None, None)) when start(true, suspendedForIT)(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
           thenGo(
@@ -208,7 +209,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest =
           AgentFastTrackRequest(None, HMRCMTDVAT, "ni", nino, None)
 
-        def suspendedForVat() = SuspensionDetails(true, Some(Set("VATC")))
+        def suspendedForVat() = Future.successful(SuspensionDetails(true, Some(Set("VATC"))))
 
         given(Prologue(None, None)) when start(true, suspendedForVat)(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
           thenGo(
@@ -258,7 +259,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest =
           AgentFastTrackRequest(Some(ClientType.business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
 
-        def suspendedForTrust() = SuspensionDetails(true, Some(Set("CGT")))
+        def suspendedForTrust() = Future.successful(SuspensionDetails(true, Some(Set("CGT"))))
 
         given(Prologue(None, None)) when start(true, suspendedForTrust)(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
           thenGo(

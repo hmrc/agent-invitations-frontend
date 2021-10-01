@@ -20,7 +20,7 @@ import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.CancelAuthorisationForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController._
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class CancelAuthorisationFormSpec extends UnitSpec {
 

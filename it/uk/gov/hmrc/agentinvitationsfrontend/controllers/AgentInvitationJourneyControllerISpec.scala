@@ -6,7 +6,8 @@ import play.api.Application
 import play.api.libs.json.Json
 import play.api.mvc.Flash
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{redirectLocation, _}
+import play.api.test.Helpers._
+import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -17,6 +18,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
 class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
@@ -35,6 +37,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   private val availableTrustServices = Set(TRUST, HMRCCGTPD)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
+  implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
+
   before {
     journeyState.clear
   }
@@ -46,7 +50,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.clear
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
       journeyState.get shouldBe None
     }
 
@@ -54,7 +58,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(SelectClientType(emptyBasket), Nil)
       val result = controller.agentsRoot()(request)
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
       journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
     }
   }
@@ -101,7 +105,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         status(result) shouldBe 200
 
         checkHtmlResultWithBodyText(
-          result,
+          result.futureValue,
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("client-type.header"),
@@ -126,7 +130,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "personal"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
       journeyState.get shouldBe Some(
         (SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket))))
     }
@@ -139,7 +143,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "business"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
       journeyState.get should have[State](SelectBusinessService, List(SelectClientType(emptyBasket)))
     }
 
@@ -151,7 +155,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> "trust"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
       journeyState.get should have[State](SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
     }
 
@@ -162,7 +166,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         controller.submitClientType()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
       flash(result) shouldBe Flash(Map("dummy" -> "")) // "dummy" comes from a workaround introduced in https://github.com/hmrc/play-fsm/releases/tag/v0.20.0
 
       journeyState.get should have[State](SelectClientType(emptyBasket), Nil)
@@ -178,7 +182,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
@@ -197,7 +201,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
-        result,
+
+        result.futureValue,
         htmlEscapedMessage("global.no"),
         htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("select-service.alternative")
@@ -211,7 +216,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         htmlEscapedMessage("select-single-service.TRUST.business.header"),
         htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("global.no")
@@ -228,7 +233,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
@@ -254,7 +259,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](
         IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
@@ -269,7 +274,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
 
       journeyState.get should have[State](
         AgentSuspended(HMRCMTDIT, emptyBasket),
@@ -288,7 +293,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](
         IdentifyBusinessClient,
@@ -303,7 +308,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
 
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
@@ -323,7 +328,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
      journeyState.get should have[State](IdentifyTrustClient(TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
@@ -338,7 +343,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientType().url)
 
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
@@ -353,7 +358,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
     }
   }
 
@@ -377,7 +382,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-client.header",
         "identify-client.itsa.p1",
         "identify-client.nino.label",
@@ -400,7 +405,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-client.header",
         "identify-client.vat.p1",
         "identify-client.vrn.label",
@@ -421,7 +426,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-client.header",
         "identify-client.vat.p1",
         "identify-client.vrn.label",
@@ -447,7 +452,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-trust-client.header.true",
         "identify-trust-client.p1",
         "identify-trust-client.p2.true",
@@ -455,7 +460,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "identify-trust.suggestion",
         "continue.button"
       )
-      checkHtmlResultWithBodyText(result, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
+      checkHtmlResultWithBodyText(result.futureValue, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
 
       journeyState.get should have[State](
         IdentifyTrustClient(TRUST, emptyBasket),
@@ -476,7 +481,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-cgt-client.header",
         "identify-cgt-client.p1",
         "identify-cgt-client.hint",
@@ -502,7 +507,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "identify-cgt-client.header",
         "identify-cgt-client.p1",
         "identify-cgt-client.hint",
@@ -527,7 +532,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
     }
   }
 
@@ -561,7 +566,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
         journeyState.get should havePattern[State](
           {
@@ -597,7 +602,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
@@ -619,7 +624,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientNotRegistered().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientNotRegistered().url)
     }
   }
 
@@ -645,7 +650,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {
@@ -681,7 +686,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {
@@ -714,7 +719,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
@@ -742,7 +747,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showCannotCreateRequest().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showCannotCreateRequest().url)
 
     }
   }
@@ -765,7 +770,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value
         ))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {
@@ -792,7 +797,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value
         ))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {
@@ -816,7 +821,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
     }
 
     "handle invalid Urn passed in by the user and redirect back to previous /identify-client page " in {
@@ -830,7 +835,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
     }
 
     "redirect to /agents/not-found when utr passed in does not match to any trust" in {
@@ -848,7 +853,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
@@ -873,7 +878,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
@@ -899,7 +904,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
@@ -926,7 +931,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
@@ -957,7 +962,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmCgtPostcode().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmCgtPostcode().url)
 
       journeyState.get should havePattern[State](
         {
@@ -981,7 +986,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
     }
 
     "redirect to /agents/not-matched when cgtRef passed in does not match to any cgt client" in {
@@ -999,7 +1004,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         CgtRefNotFound(cgtRef, emptyBasket),
@@ -1027,7 +1032,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "confirm-postcode-cgt.header",
         "confirm-postcode-cgt.p1",
         "confirm-postcode-cgt.hint",
@@ -1060,7 +1065,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
@@ -1084,7 +1089,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
     }
   }
 
@@ -1105,7 +1110,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "confirm-countryCode-cgt.header",
         "confirm-countryCode-cgt.p1",
         "confirm-countryCode-cgt.hint",
@@ -1138,7 +1143,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
         {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
@@ -1162,7 +1167,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
     }
   }
 
@@ -1198,7 +1203,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             arn.value))
 
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
         journeyState.get should havePattern[State](
           { case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty => },
@@ -1227,7 +1232,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
 
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
@@ -1258,7 +1263,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?","Is Sylvia Plath the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?","Is Sylvia Plath the client you want authorisation from?")
 
       journeyState.get should havePattern[State](
         {
@@ -1288,7 +1293,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?","Is GDT the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?","Is GDT the client you want authorisation from?")
 
       journeyState.get should havePattern[State](
         {
@@ -1318,7 +1323,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
 
       journeyState.get should havePattern[State](
         {
@@ -1346,7 +1351,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?", "Is Nelson James Trust the client you want authorisation from?")
 
       journeyState.get should havePattern[State](
         {
@@ -1370,7 +1375,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is GDT the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?", "Is GDT the client you want authorisation from?")
 
       journeyState.get should havePattern[State](
         {
@@ -1395,7 +1400,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result, "Is this the client you want authorisation from?", "Is CGT_NAME the client you want authorisation from?")
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?", "Is CGT_NAME the client you want authorisation from?")
     }
   }
 
@@ -1420,7 +1425,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
     }
 
     "redirect to invitation sent for business" in {
@@ -1444,7 +1449,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
     }
 
     "redirect to the identify-client page when no is selected" in {
@@ -1462,7 +1467,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
     }
@@ -1481,7 +1486,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(
+      Helpers.redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showPendingAuthorisationExists().url)
     }
 
@@ -1498,7 +1503,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(
+      Helpers.redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
 
@@ -1517,7 +1522,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(
+      Helpers.redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
 
@@ -1536,7 +1541,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(
+      Helpers.redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
 
@@ -1557,7 +1562,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(
+      Helpers.redirectLocation(result) shouldBe Some(
         routes.AgentInvitationJourneyController.showActiveAuthorisationExists().url)
     }
   }
@@ -1588,7 +1593,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         "Check your authorisation requests",
         "You have added 1 authorisation request.",
         "Manage their Making Tax Digital for Income Tax",
@@ -1624,7 +1629,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
       journeyState.get should have[State](
         InvitationSentPersonal("/invitations/personal/AB123456A/99-with-flake", None, "abc@xyz.com", Set.empty, isAltItsa = false))
@@ -1647,7 +1652,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
 
       journeyState.get should have[State](SelectPersonalService(availableServices, emptyBasket))
     }
@@ -1672,7 +1677,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed().url)
     }
 
     "redirect to all authorisation failed when all of the invitation creations fail" in {
@@ -1693,7 +1698,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsFailed().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsFailed().url)
     }
   }
 
@@ -1718,7 +1723,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
@@ -1748,6 +1753,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
       val result = controller.showInvitationSent()(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
+
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkInviteSentPageContainsSurveyLink(result, true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
@@ -1786,7 +1792,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showAlreadyCopiedAcrossItsa(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "already-copied.header")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "already-copied.header")
     }
 
     "show the invitation sent page for a business service" in {
@@ -1805,7 +1811,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
@@ -1844,7 +1850,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(
-        result,
+        result.futureValue,
         "Are you sure you want to remove your authorisation request for Sylvia Plath?",
         "You will not send an authorisation request to manage their Making Tax Digital for Income Tax."
       )
@@ -1884,7 +1890,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
       journeyState.get should have[State](ReviewAuthorisationsPersonal(
         availableServices,
@@ -1911,7 +1917,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved().url)
 
       journeyState.get should have[State](AllAuthorisationsRemoved)
     }
@@ -1936,7 +1942,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
       journeyState.get should have[State](ReviewAuthorisationsPersonal(
         availableServices,
@@ -1964,7 +1970,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.submitSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set.empty, isAltItsa = false))
     }
@@ -1983,7 +1989,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "not-matched.header",
         "not-matched.description",
         "not-matched.advice",
@@ -2005,7 +2011,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "cannot-create-request.header",
         "cannot-create-request.p1",
         "cannot-create-request.p2",
@@ -2027,7 +2033,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "create-auth-failed.header",
         "create-auth-failed.button.continue",
         "create-auth-failed.HMRC-CGT-PD"
@@ -2048,7 +2054,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "create-auth-failed.header",
         "try-again.button",
         "create-auth-failed.HMRC-CGT-PD"
@@ -2073,7 +2079,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         val serviceKey = if(service == "HMRC-CGT-PD") "active-authorisation-exists.p1.HMRC-CGT-PD" else s"active-authorisation-exists.p1.$service"
 
         checkHtmlResultWithBodyMsgs(
-          result,
+          result.futureValue,
           "active-authorisation-exists.header",
           serviceKey,
           "active-authorisation-exists.p2"
@@ -2095,7 +2101,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "pending-authorisation-exists.header",
         "pending-authorisation-exists.p",
         "pending-authorisation-exists.new-request.button"
@@ -2115,9 +2121,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.p", "signed up."))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
+      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
+      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
+      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
 
@@ -2137,7 +2143,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "client-not-registered.header",
         "client-not-registered.p1",
         "client-not-registered.h2"
@@ -2159,7 +2165,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyMsgs(
-        result,
+        result.futureValue,
         "all-authorisations-removed.header",
         "all-authorisations-removed.p",
         "new-request.button"
@@ -2175,7 +2181,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.showAgentSuspended(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")
     }
   }
 }

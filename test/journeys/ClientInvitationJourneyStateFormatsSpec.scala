@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStat
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
 

@@ -19,7 +19,7 @@ package models
 import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class ClientConsentsJourneyStateSpec extends UnitSpec {
 

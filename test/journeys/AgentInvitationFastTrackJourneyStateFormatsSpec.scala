@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TAXABLETRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
 

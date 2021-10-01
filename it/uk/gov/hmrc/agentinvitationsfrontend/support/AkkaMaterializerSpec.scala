@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import uk.gov.hmrc.play.test.UnitSpec
+import play.api.test.Helpers._
 
 /**
   * Provides an implicit Materializer for use in tests. Note that if your test

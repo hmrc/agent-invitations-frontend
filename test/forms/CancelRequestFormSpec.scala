@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.CancelRequestForm
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class CancelRequestFormSpec extends UnitSpec {
 

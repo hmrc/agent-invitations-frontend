@@ -22,6 +22,7 @@ import org.jsoup.Jsoup
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
@@ -98,7 +99,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "recent-invitations.invitation.service.PERSONAL-INCOME-RECORD"
       )
 
-      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
+      val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
        parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Making Tax Digital for Income Tax")
@@ -112,7 +113,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "You cancelled this request"
         )
 
-      val parseHtmlPageTwo = Jsoup.parse(contentAsString(resultPageTwo))
+      val parseHtmlPageTwo = Jsoup.parse(Helpers.contentAsString(resultPageTwo))
 
       parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Bbb Itsa Trader")
       parseHtmlPageTwo.getElementsByAttributeValue("id", "row-1").toString should include("Manage their Making Tax Digital for Income Tax")
@@ -148,7 +149,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
         status(resultPageOne) shouldBe 200
 
-      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
+      val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
       parseHtml.getElementsByAttributeValue("id", "row-1").toString should include("Ddd Itsa Trader")
@@ -169,7 +170,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(resultPageOne) shouldBe 200
 
-      val parseHtml = Jsoup.parse(contentAsString(resultPageOne))
+      val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
     }

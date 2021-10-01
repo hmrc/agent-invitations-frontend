@@ -19,7 +19,7 @@ package forms
 import play.api.data.FormError
 import uk.gov.hmrc.agentinvitationsfrontend.forms.IrvClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
-import uk.gov.hmrc.play.test.UnitSpec
+import support.UnitSpec
 
 class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 

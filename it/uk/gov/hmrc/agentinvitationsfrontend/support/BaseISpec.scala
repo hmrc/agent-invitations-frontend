@@ -13,7 +13,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentType, _}
+import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentClientInvitationResponse
@@ -22,7 +22,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
@@ -109,6 +108,9 @@ abstract class BaseISpec
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
 
+  protected def checkHtmlResultWithBodyText(result: Future[Result], expectedSubstrings: String*): Unit =
+    checkHtmlResultWithBodyText(result.futureValue, expectedSubstrings: _*)
+
   protected def checkHtmlResultWithNotBodyText(result: Result, expectedSubstrings: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
@@ -121,9 +123,14 @@ abstract class BaseISpec
     unexpectedMsgs.foreach(m => bodyOf(result) should not include (htmlEscapedMessage(m)))
   }
 
-  protected def checkIncludesText(result: Future[Result], expectedSubstrings: String*): Unit =
+  protected def checkIncludesText(result: Result, expectedSubstrings: String*): Unit =
     expectedSubstrings.foreach { substring =>
       contentAsString(result) should include(substring.toString)
+    }
+
+  protected def checkIncludesText(result: Future[Result], expectedSubstrings: String*): Unit =
+    expectedSubstrings.foreach { substring =>
+      contentAsString(result.futureValue) should include(substring.toString)
     }
 
   protected def checkHtmlResultWithBodyMsgs(result: Result, expectedMessageKeys: String*): Unit = {
@@ -137,6 +144,9 @@ abstract class BaseISpec
 
     expectedSubstrings.foreach(s => bodyOf(result) should include(s))
   }
+
+  protected def checkHtmlResultWithBodyMsgs(result: Future[Result], expectedMessageKeys: String*): Unit =
+    checkHtmlResultWithBodyMsgs(result.futureValue, expectedMessageKeys: _*)
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -165,9 +175,9 @@ abstract class BaseISpec
     HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
   def checkInviteSentPageContainsSurveyLink(result: Future[Result], isAgent: Boolean): Unit = {
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("common.sign-out"))
     val service = if(isAgent) "INVITAGENT" else "INVITCLIENT"
-    checkHtmlResultWithBodyText(result, s"http://localhost:9025/gg/sign-out?continue=http%3A%2F%2Flocalhost%3A9514%2Ffeedback%2F$service")
+    checkHtmlResultWithBodyText(result.futureValue, s"http://localhost:9025/gg/sign-out?continue=http%3A%2F%2Flocalhost%3A9514%2Ffeedback%2F$service")
   }
 
   def checkResultContainsLink(
@@ -188,25 +198,25 @@ abstract class BaseISpec
     } else {
       s"""$a href="$linkUrl">$linkText</a>"""
     }
-    checkHtmlResultWithBodyText(result, element)
+    checkHtmlResultWithBodyText(result.futureValue, element)
   }
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String): Unit = {
     val element = s"""<a id="backLink" href="$backLinkUrl" class="link-back">Back</a>"""
-    checkHtmlResultWithBodyText(result, element)
+    checkHtmlResultWithBodyText(result.futureValue, element)
   }
 
   def checkResultBodyContainsTitle(result: Future[Result], title: String): Unit = {
     val element = s"""<title>$title</title>"""
-    checkHtmlResultWithBodyText(result, element)
+    checkHtmlResultWithBodyText(result.futureValue, element)
   }
 
   def checkHasAgentSignOutLink(result: Future[Result]): Unit = {
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("common.sign-out"))
     val asAcHomepageExternalUrl = wireMockBaseUrlAsString
     val continueUrl =
       URLEncoder.encode(s"$asAcHomepageExternalUrl/agent-services-account", StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+    checkHtmlResultWithBodyText(result.futureValue, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
   def verifyAgentInvitationResponseEvent(
@@ -236,9 +246,9 @@ abstract class BaseISpec
     )
 
   def checkHasClientSignOutUrl(result: Future[Result]): Unit = {
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("common.sign-out"))
+    checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("common.sign-out"))
     val continueUrl = URLEncoder.encode(s"$businessTaxAccountUrl/business-account", StandardCharsets.UTF_8.name())
-    checkHtmlResultWithBodyText(result, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
+    checkHtmlResultWithBodyText(result.futureValue, s"$companyAuthUrl$companyAuthSignOutPath?continue=$continueUrl")
   }
 
   def verifyAgentClientInvitationSubmittedEvent(
