@@ -227,7 +227,6 @@ invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch
 invitation-sent.further-help.heading=Help bellach
 invitation-sent.further-help.p=Mae help ar gael i chi gwblhau tasgau eraill, gan gynnwys:
 invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
-invitation-sent.four-months=Mae’n rhaid i chi ei gofrestru cyn pen 4 mis ar ôl iddo dderbyn eich cais am awdurdodiad.
 invitation-sent.mtd=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
 
 #Check Details
@@ -564,7 +563,6 @@ confirm-terms.legend.single=Dewiswch a ydych yn rhoi’ch caniatâd i CThEM rann
 
 confirm-terms-multi.itsa.heading=Rheoli fy Nhreth Incwm
 confirm-terms-multi.itsa.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch Treth Incwm, mae hyn yn golygu y gall {0} wneud y canlynol:
-confirm-terms-multi.itsa.p2=Os nad ydych wedi cofrestru am y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cyn pen 4 mis, bydd yr awdurdodiad yn cael ei ganslo.
 confirm-terms-multi.itsa.list.item1=trafod eich Ffurflenni Treth cyfredol a blaenorol gyda CThEM
 confirm-terms-multi.itsa.list.item2=bwrw golwg dros a newid eich manylion, megis ffynonellau incwm
 confirm-terms-multi.itsa.list.item3=rhoi manylion banc i CThEM ar gyfer ad-daliadau pan fo ad-daliad yn ddyledus
@@ -898,7 +896,7 @@ recent-invitations.invitations.actions.acceptedthencancelledbyagent=Dechrau cais
 recent-invitations.invitations.actions.aria-text=Dechrau cais newydd ar gyfer {0} i {1}
 recent-invitations.invitations.actions.acceptedthencancelledbyclient=Dechrau cais newydd
 recent-invitations.invitations.actions.acceptedthencancelledbyhmrc=Dechrau cais newydd
-recent-invitations.invitations.actions.partialauth.signup=Cofrestru’r cleient erbyn {0} (yn agor tab newydd)
+recent-invitations.invitations.actions.partialauth.signup=Sign client up (opens in a new tab)
 recent-invitations.invitations.actions.partialauth.cancel=Canslo’r cais hwn
 recent-invitations.invitations.actions.partialauth.cancel.aria-text=Canslo’r cais hwn ar gyfer {0} i {1}
 recent-invitations.invitations.actions.pending=Ailanfon cais at y cleient
