@@ -1404,7 +1404,39 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
-  "POST /agents/confirm-client" should {
+  "POST /agents/confirm-client" when {
+
+    "yes is selected and it is an ITSA request" should {
+      val request = FakeRequest("POST", "/agents/confirm-client")
+
+      // TODO add check & change here
+      "check to see if the client has a legacy SA agent relationship" in {
+
+      }
+
+      "redirect to the authorisation detected page if legacy relationship exists" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, mtdItId.toString, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+      }
+
+      "redirect to the review authorisations page if legacy relationship does not exist" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, mtdItId.toString, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+      }
+    }
+  }
+
+    "POST /agents/confirm-client" should {
     val request = FakeRequest("POST", "/agents/confirm-client")
 
     "redirect to the review authorisations page when yes is selected" in {
@@ -1733,7 +1765,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false))
     }
@@ -1755,7 +1787,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
     }
 
@@ -1776,7 +1808,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true))
     }
 
@@ -2059,6 +2091,26 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "try-again.button",
         "create-auth-failed.HMRC-CGT-PD"
       )
+    }
+  }
+
+  // TODO - new page
+  "GET /agents/authorisation-detected" should {
+    val request = FakeRequest("GET", "/agents/authorisation-detected")
+
+    "display the legacy authorisation detected page" in {
+
+    }
+  }
+
+  "POST /agents/authorisation-detected" should {
+
+    "redirect to /agent-mapping/start when yes" in {
+
+    }
+
+    "redirect to /invitations/agents/review-authorisations when no" in {
+
     }
   }
 

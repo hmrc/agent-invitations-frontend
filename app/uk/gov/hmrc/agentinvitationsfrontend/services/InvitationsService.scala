@@ -263,15 +263,18 @@ class InvitationsService @Inject()(
           .headOption)
   }
 
-  def hasLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    relationshipsConnector.getHasLegacyRelationships(arn, nino)
+  def hasLegacyMappingFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    relationshipsConnector.getHasLegacyRelationshipsFor(arn, nino)
+
+  // additional check if hasLegacyMappingFor has failed
+  def hasOtherLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    relationshipsConnector.getHasOtherLegacyRelationships(arn, nino)
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     getActiveInvitationFor(arn, clientId, service).flatMap {
       case Some(id) => acaConnector.setRelationshipEnded(id)
-      case None => {
+      case None =>
         logger.warn(s"no invitation found to set relationship ended")
         Future successful None
-      }
     }
 }

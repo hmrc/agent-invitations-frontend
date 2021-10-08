@@ -71,7 +71,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
-  private def hasLegacyRelationshipUrl(arn: Arn, nino: String): String =
+  private def hasLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
     s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
 
   private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
@@ -93,15 +93,29 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  def getHasLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
+  def getHasLegacyRelationshipsFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedApi-Get-HasLegacyRelationshipsFor-GET") {
       http
-        .GET[HttpResponse](hasLegacyRelationshipUrl(arn, nino))
+        .GET[HttpResponse](hasLegacyRelationshipUrlFor(arn, nino))
         .map { r =>
           r.status match {
             case NO_CONTENT => true
             case NOT_FOUND  => false
-            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasLegacyRelationships'")
+            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasLegacyRelationshipsFor'")
+          }
+        }
+    }
+
+  // TODO update to match new check
+  def getHasOtherLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
+      http
+        .GET[HttpResponse](hasOtherLegacyRelationshipUrl(arn, nino))
+        .map { r =>
+          r.status match {
+            case NO_CONTENT => true
+            case NOT_FOUND  => false
+            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasOtherLegacyRelationships'")
           }
         }
     }
