@@ -53,6 +53,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   trait AuthorisationExists extends State
   case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
   case class PartialAuthorisationExists(basket: Basket) extends AuthorisationExists
+// TODO check if LegacyAuthorisationDetected should go here?
 
   trait NotFound extends State
   case class KnownFactNotMatched(basket: Basket) extends NotFound
@@ -96,6 +97,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State
   case object AlreadyCopiedAcrossItsa extends State
+  case object LegacyAuthorisationDetected extends State
 
   type Basket = Set[AuthorisationRequest]
 
@@ -118,7 +120,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type HasLegacyMapping = (Arn, String) => Future[Boolean]
 
-    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+    def selectedClientType(agent: AuthorisedAgent)(clientType: String): Transition = Transition {
       case SelectClientType(basket) =>
         clientType match {
           case "personal" => goto(SelectPersonalService(agent.personalServices, basket))
@@ -154,7 +156,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       showVatFlag: Boolean,
       showCgtFlag: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
+      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String): Transition = Transition {
 
       case SelectPersonalService(services, basket) =>
         if (service.isEmpty) { // user selected "no" to final service
@@ -178,7 +180,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     def selectedBusinessService(showVatFlag: Boolean, agentSuspensionEnabled: Boolean, getSuspensionDetails: GetSuspensionDetails)(
-      agent: AuthorisedAgent)(service: String) = Transition {
+      agent: AuthorisedAgent)(service: String): Transition = Transition {
       case SelectBusinessService =>
         if (service.nonEmpty) {
           gotoIdentify(
@@ -198,7 +200,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       showTrustsFlag: Boolean,
       showCgtFlag: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
+      getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String): Transition =
       Transition {
         case SelectTrustService(services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
@@ -223,12 +225,12 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           } else goto(SelectTrustService(services, basket))
       }
 
-    def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient): Transition =
       Transition {
         case IdentifyTrustClient(TRUST, basket) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
-              case Right(TrustName(name)) => {
+              case Right(TrustName(name)) =>
                 trustClient.taxId match {
                   case Utr(_) =>
                     goto(
@@ -240,7 +242,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                     )
                 }
 
-              }
               case Left(invalidTrust) =>
                 logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound(basket))
@@ -284,7 +285,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(postcode: Postcode): Transition =
       Transition {
-        case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) => {
+        case ConfirmPostcodeCgt(cgtRef, clientType, basket, postcodeFromDes, name) =>
           val userPostcodeWithoutSpace = removeSpaceFromPostcode(postcode.value)
           val desPostcodeWithoutSpace = removeSpaceFromPostcode(postcodeFromDes.getOrElse("no_des_postcode"))
 
@@ -295,7 +296,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               .getOrElse("not found")} and user entered ${postcode.value}")
             goto(KnownFactNotMatched(basket))
           }
-        }
       }
 
     def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(countryCode: CountryCode): Transition =
@@ -318,7 +318,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                             (getAgencyEmail: GetAgencyEmail)
                             (appConfig: AppConfig)
                             (agent: AuthorisedAgent)
-                            (itsaClient: ItsaClient) = Transition {
+                            (itsaClient: ItsaClient): Transition = Transition {
       // format: on
       case IdentifyPersonalClient(HMRCMTDIT, basket) =>
         for {
@@ -346,7 +346,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            (getAgentLink: GetAgentLink)
                            (getAgencyEmail: GetAgencyEmail)
                            (agent: AuthorisedAgent)
-                           (vatClient: VatClient) = Transition {
+                           (vatClient: VatClient): Transition = Transition {
       // format: on
       case IdentifyPersonalClient(HMRCMTDVAT, basket) =>
         for {
@@ -395,10 +395,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            (createMultipleInvitations: CreateMultipleInvitations)
                            (getAgentLink: GetAgentLink)
                            (getAgencyEmail: GetAgencyEmail)
-                           (hasLegacyMapping: HasLegacyMapping)
+                           (hasLegacyMappingFor: HasLegacyMapping)
+                           (hasOtherLegacyMapping: HasLegacyMapping)
                            (appConfig: AppConfig)
                            (agent: AuthorisedAgent)
-                           (irvClient: IrvClient) = Transition {
+                           (irvClient: IrvClient): Transition = Transition {
       // format: on
       case IdentifyPersonalClient(HMRCPIR, basket) =>
         for {
@@ -416,7 +417,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                agent.arn,
                                request.invitation.clientId,
                                HMRCPIR,
-                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations, hasLegacyMapping, appConfig)
+                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations, hasLegacyMappingFor, hasOtherLegacyMapping, appConfig)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
@@ -446,7 +447,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship,
       hasPartialAuthorisationFor: HasPartialAuthorisation,
-      hasLegacyMapping: HasLegacyMapping,
+      hasLegacyMappingFor: HasLegacyMapping,
+      hasOtherLegacyMapping: HasLegacyMapping,
       appConfig: AppConfig
     ): Future[State] =
       for {
@@ -465,9 +467,12 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                          case true =>
                            goto(PartialAuthorisationExists(basket))
                          case false =>
-                           if (appConfig.featuresAltItsa) hasLegacyMapping(arn, clientIdentifier).map { legacy =>
-                             if (legacy) AlreadyCopiedAcrossItsa
-                             else successState
+                           if (appConfig.featuresAltItsa) hasLegacyMappingFor(arn, clientIdentifier).map { knownLegacy =>
+                             if (knownLegacy) AlreadyCopiedAcrossItsa
+                             else hasOtherLegacyMapping(arn, clientIdentifier).map { otherLegacy =>
+                               if (otherLegacy) LegacyAuthorisationDetected
+                               else successState
+                             }
                            } else goto(successState)
                        } else goto(successState)
                    }
@@ -487,10 +492,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        (hasPendingInvitationsFor: HasPendingInvitations)
                        (hasActiveRelationshipFor: HasActiveRelationship)
                        (hasPartialAuthorisationFor: HasPartialAuthorisation)
-                       (hasLegacyMapping: HasLegacyMapping)
+                       (hasLegacyMappingFor: HasLegacyMapping)
+                       (hasOtherLegacyMapping: HasLegacyMapping)
                        (appConfig: AppConfig)
                        (authorisedAgent: AuthorisedAgent)
-                       (confirmation: Confirmation) =
+                       (confirmation: Confirmation): Transition =
     // format: on
     Transition {
 
@@ -501,10 +507,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDIT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMappingFor, hasOtherLegacyMapping, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
 
-      case ConfirmClientCgt(request, basket) => {
+      case ConfirmClientCgt(request, basket) =>
         val (reviewAuthState, state, clientType) = request.invitation.clientType match {
           case Some(`business`) =>
             (ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request), IdentifyTrustClient(HMRCCGTPD, basket), business)
@@ -518,10 +524,10 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             hasPendingInvitationsFor,
             hasActiveRelationshipFor,
             hasPartialAuthorisationFor,
-            hasLegacyMapping,
+            hasLegacyMappingFor,
+            hasOtherLegacyMapping,
             appConfig)
         } else goto(state)
-      }
 
       case ConfirmClientPersonalVat(request, basket) =>
         if (confirmation.choice) {
@@ -530,7 +536,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request.invitation.clientId,
             HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMappingFor, hasOtherLegacyMapping, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
 
       case ConfirmClientBusinessVat(request) =>
@@ -570,7 +576,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request.invitation.clientId,
               request.invitation.service,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMappingFor, hasOtherLegacyMapping, appConfig)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
@@ -600,7 +606,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         } else goto(IdentifyTrustClient(TRUST, basket))
     }
 
-    def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
+    def continueSomeResponsesFailed(agent: AuthorisedAgent): Transition = Transition {
       case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>
         val services = basket.filter(_.state == AuthorisationRequest.CREATED).map(_.invitation.service)
         goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services, isAltItsa = false))
@@ -612,7 +618,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                               (getAgencyEmail: GetAgencyEmail)
                               (createInvitationSent: CreateInvitationSent)
                               (agent: AuthorisedAgent)
-                              (confirmation: Confirmation) =
+                              (confirmation: Confirmation): Transition =
       // format: on
     Transition {
       case ReviewAuthorisationsTrust(_, basket) =>
@@ -655,7 +661,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
     }
 
-    def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent) = {
+    def deleteAuthorisationRequest(itemId: String)(authorisedAgent: AuthorisedAgent): Transition = {
       def findItem(basket: Basket): AuthorisationRequest =
         basket.find(_.itemId == itemId).getOrElse(throw new Exception("No Item to delete"))
       Transition {
@@ -666,7 +672,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation) =
+    def confirmDeleteAuthorisationRequest(authorisedAgent: AuthorisedAgent)(confirmation: Confirmation): Transition =
       Transition {
 
         case DeleteAuthorisationRequestPersonal(authorisationRequest, basket) =>
