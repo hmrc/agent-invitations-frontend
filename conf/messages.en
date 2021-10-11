@@ -1038,8 +1038,8 @@ already-copied.header=This client has already authorised you to manage their Mak
 already-copied.p1=This means that you have an authorisation in place for Making Tax Digital for Income Tax for this client.
 already-copied.header2=What to do next
 already-copied.p2=You need to do one of the following:
-already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax">sign your client up to Making Tax Digital for Income Tax</a>
-already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax">ask your client to sign up for Making Tax Digital for Income Tax</a>
+already-copied.link1=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener noreferrer" href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax">sign your client up to Making Tax Digital for Income Tax</a>
+already-copied.link2=<a class="govuk-link govuk-link--no-visited-state" target="_blank" rel="noopener noreferrer" href="https://www.gov.uk/guidance/sign-up-your-business-for-making-tax-digital-for-income-tax">ask your client to sign up for Making Tax Digital for Income Tax</a>
 
 #Cannot find request
 cannot-find-request.header=We cannot find this authorisation request
