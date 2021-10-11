@@ -54,6 +54,9 @@ GET         /agents/invitation-sent                                     uk.gov.h
 GET         /agents/delete                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showDeleteAuthorisation(itemId: String)
 POST        /agents/delete                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitDeleteAuthorisation
 
+GET         /agents/authorisation-detected                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showLegacyAuthorisationDetected
+POST        /agents/authorisation-detected                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitLegacyAuthorisationDetected
+
 #Error Agent Endpoints
 GET         /agents/not-signed-up                                       uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientNotSignedUp
 GET         /agents/client-not-registered                               uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientNotRegistered
