@@ -69,6 +69,7 @@ class AgentInvitationJourneyController @Inject()(
   selectSingleServiceView: select_single_service,
   reviewAuthView: review_authorisations,
   alreadyCopiedAcrossView: already_copied_across_itsa,
+  legacyAuthorisationDetectedView: legacy_authorisation_detected,
   deleteView: delete,
   notSignedupView: not_signed_up,
   cannotCreateRequestView: cannot_create_request,
@@ -238,7 +239,7 @@ class AgentInvitationJourneyController @Inject()(
         implicit request =>
           Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
             hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            hasLegacyMapping)(appConfig))
+            hasLegacyMappingFor)(hasOtherLegacyMapping)(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
@@ -260,7 +261,7 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(ConfirmClientForm)
       .applyWithRequest(implicit request =>
         Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-          hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMapping)(appConfig))
+          hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMappingFor)(hasOtherLegacyMapping)(appConfig))
 
   // TODO review whether we only need one state/page here?
   def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -306,6 +307,8 @@ class AgentInvitationJourneyController @Inject()(
   val showAgentSuspended: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AgentSuspended]
 
   val showAlreadyCopiedAcrossItsa: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AlreadyCopiedAcrossItsa.type]
+
+  val showLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[LegacyAuthorisationDetected.type]
 
   private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
@@ -362,6 +365,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: AgentSuspended             => routes.AgentInvitationJourneyController.showAgentSuspended()
     case _: ClientNotRegistered        => routes.AgentInvitationJourneyController.showClientNotRegistered()
     case AlreadyCopiedAcrossItsa       => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
+    case LegacyAuthorisationDetected   => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected()
     case _                             => throw new Exception(s"Link not found for $state")
   }
 
@@ -712,6 +716,8 @@ class AgentInvitationJourneyController @Inject()(
         Ok(agentSuspendedView(basket, suspendedService, backLinkFor(breadcrumbs).url))
 
       case AlreadyCopiedAcrossItsa => Ok(alreadyCopiedAcrossView())
+
+      case LegacyAuthorisationDetected => Ok(legacyAuthorisationDetectedView())
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }
