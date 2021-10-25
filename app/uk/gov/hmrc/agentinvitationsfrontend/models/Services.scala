@@ -71,7 +71,7 @@ object Services {
       case "cgt"     => HMRCCGTPD
     }
 
-  def clientIdType(service: String) =
+  def clientIdType(service: String): String =
     service match {
       case HMRCMTDIT       => "ni"
       case HMRCMTDVAT      => "vrn"

@@ -71,6 +71,10 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
+  // TODO DES call?
+  private def hasOtherLegacyRelationshipUrl(nino: String):String =
+    s"$baseUrl/registration/relationship/nino/$nino"
+
   private def hasLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
     s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
 
