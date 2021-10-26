@@ -27,34 +27,32 @@
     uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(
+    choiceForm: Form[Confirmation],
+    submitCall: Call
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@clientIdentifierText = @{clientIdType match {
-                          case "utr"      => s"${Messages("cancel-authorisation.utr", clientIdentifier)}"
-                          case "CGTPDRef" => s"${Messages("cancel-authorisation.cgt.account-ref", clientIdentifier)}"
-                          case _      => ""
-                          }
-                         }
+@mainTemplate(
+title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("title.suffix.agents")),
+bodyClasses = None,
+isAgent = true
+) {
 
-@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", Messages("confirm-client.title"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+    @if(choiceForm.hasErrors) {
+      @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("legacy-auth-detected"))
+    }
 
-@back_link(backLinkUrl)
+    @uiFormHelper(action = submitCall, 'class -> "form js-form") {
 
-@if(choiceForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
-}
+        @uiInputRadioGroupCustom(
+            choiceForm("accepted"),
+            Seq("true" -> Messages("legacy-auth-detected.yes"), "false" -> Messages("legacy-auth-detected.no")),
+        '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("legacy-auth-detected.header")}</h1>"""),
+        '_groupDivClass -> "form-group",
+        '_horizontal -> true,
+        '_fieldsetAttributes -> Html("""id='accepted'""")
+        )
 
-
-@uiFormHelper(action = submitCall, 'class -> "form js-form") {
-
-    @uiInputRadioGroupCustom(
-        choiceForm("accepted"),
-        Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
-    '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("confirm-client.header", clientName)}</h1>"""),
-    '_groupDivClass -> "form-group",
-    '_horizontal -> true,
-    '_fieldsetAttributes -> Html("""id='accepted'""")
-    )
-<button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
-}
+        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+    }
 }

@@ -53,7 +53,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   trait AuthorisationExists extends State
   case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
   case class PartialAuthorisationExists(basket: Basket) extends AuthorisationExists
-// TODO check if LegacyAuthorisationDetected should go here?
+  case class LegacyAuthorisationDetected(basket: Basket) extends State
 
   trait NotFound extends State
   case class KnownFactNotMatched(basket: Basket) extends NotFound
@@ -97,7 +97,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State
   case object AlreadyCopiedAcrossItsa extends State
-  case object LegacyAuthorisationDetected extends State
+  case object LegacyAuthorisationMappingRedirect extends State
 
   type Basket = Set[AuthorisationRequest]
 
@@ -470,7 +470,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            if (appConfig.featuresAltItsa) hasLegacyMappingFor(arn, clientIdentifier).map { knownLegacy =>
                              if (knownLegacy) AlreadyCopiedAcrossItsa
                              else hasOtherLegacyMapping(arn, clientIdentifier).map { otherLegacy =>
-                               if (otherLegacy) LegacyAuthorisationDetected
+                               if (otherLegacy) goto(LegacyAuthorisationDetected(basket))
                                else successState
                              }
                            } else goto(successState)
@@ -605,6 +605,34 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             } yield result
         } else goto(IdentifyTrustClient(TRUST, basket))
     }
+
+    /** User confirms that they have legacy authorisation with the client.
+      *  This transition may go to agent-mapping
+      *  Or review authorisations as if from confirm client
+      * TODO
+      * */
+    private def confirmedLegacyAuthorisation(mappingRedirect: State)
+                                            (createMultipleInvitations: CreateMultipleInvitations)
+                                            (getAgentLink: GetAgentLink)
+                                            (getAgencyEmail: GetAgencyEmail)
+                                            (hasPendingInvitationsFor: HasPendingInvitations)
+                                            (hasActiveRelationshipFor: HasActiveRelationship)
+                                            (hasPartialAuthorisationFor: HasPartialAuthorisation)
+                                            (hasLegacyMappingFor: HasLegacyMapping)
+                                            (hasOtherLegacyMapping: HasLegacyMapping)
+                                            (appConfig: AppConfig)
+                                            (authorisedAgent: AuthorisedAgent)
+                                            (confirmation: Confirmation): Transition = Transition {
+
+      case confirmLegacyAuthorisation(request, basket) =>
+        if (confirmation.choice) {
+          goto(mappingRedirect)
+        } else {
+          goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket))
+          //add business case?
+        }
+    }
+
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent): Transition = Transition {
       case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>

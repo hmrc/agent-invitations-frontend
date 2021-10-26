@@ -1040,6 +1040,16 @@ client-not-registered.p3=Wedyn, gallwch <a href="{0}">greu cais am awdurdodiad i
 client-not-registered.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 client-not-registered.new-request.button=Dechrau cais newydd
 
+#Legacy authorisation detected
+legacy-auth-detected.title=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.header=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.details-header=Why am I being asked this question?
+legacy-auth-detected.details-text1=There is already an authorisation in place for this client to manage their Self Assessment. The authorisation could be for you or for another agent. If this client authorised you through your
+legacy-auth-detected.details-link=HMRC online services for agents account (opens in a new tab)
+legacy-auth-detected.details-text2=, copy the authorisation across to your agent services account. If you copy it across, you do not need to create a new authorisation request link. If they authorised a different agent, create a new authorisation request link.
+legacy-auth-detected.yes=Yes - copy across the client to your agent services account
+legacy-auth-detected.no=No - create a new authorisation request link
+
 #Error Cannot View Request
 error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
 error.cannot-view-request.header=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
