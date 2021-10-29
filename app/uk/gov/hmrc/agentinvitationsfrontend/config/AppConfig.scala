@@ -39,6 +39,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   //BaseUrls
   val authBaseUrl: String = baseUrl("auth")
   val agentClientAuthorisationBaseUrl: String = baseUrl("agent-client-authorisation")
+  val agentMappingBaseUrl: String = baseUrl("agent-mapping-frontend")
   val afiBaseUrl: String = baseUrl("agent-fi-relationship")
   val ssoBaseUrl: String = baseUrl("sso")
   val cidBaseUrl: String = baseUrl("citizen-details")
@@ -61,6 +62,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val ptaExternalUrl: String = getConfString("personal-tax-account.external-url")
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")
   val agentSubscriptionFrontendExternalUrl: String = getConfString("agent-subscription-frontend.external-url")
+  val agentMappingExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
