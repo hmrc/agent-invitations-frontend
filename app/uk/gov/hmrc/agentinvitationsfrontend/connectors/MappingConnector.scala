@@ -42,8 +42,6 @@ class MappingConnector @Inject()(http: HttpClient)(implicit val appConfig: AppCo
   private[connectors] def getMappingUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-mapping/mappings/$arn")
 
-  private def mappingUrl(arn: String) = new URL(baseUrl, arn)
-
   private val originHeader = Seq("Origin" -> "agent-invitations-frontend")
 
   def getMapping(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacyAgentId] =
