@@ -1047,6 +1047,7 @@ legacy-auth-detected.details-link=HMRC online services for agents account (opens
 legacy-auth-detected.details-text2=, copy the authorisation across to your agent services account. If you copy it across, you do not need to create a new authorisation request link. If they authorised a different agent, create a new authorisation request link.
 legacy-auth-detected.yes=Yes - copy across the client to your agent services account
 legacy-auth-detected.no=No - create a new authorisation request link
+error.legacy-euth-detected=Select yes to copy across the client to your agent services account
 
 #Error Cannot View Request
 error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn

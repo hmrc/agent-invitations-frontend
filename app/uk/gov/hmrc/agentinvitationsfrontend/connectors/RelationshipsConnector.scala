@@ -71,9 +71,14 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
-  // TODO DES call?
-  private def hasOtherLegacyRelationshipUrl(nino: String):String =
+  // APB-5202 DES call - check for MTDITSA
+  private def hasItsaEnrollmentUrl(nino: String):String =
     s"$baseUrl/registration/relationship/nino/$nino"
+
+  // APB-5202 DES call - check for other legacy relationships
+  private def getOtherLegacyRelationshipsUrl(nino: String):String =
+    s"$baseUrl/registration/relationship/nino/$nino"
+
 
   private def hasLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
     s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
@@ -110,11 +115,11 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  // TODO update to match new check
+  // TODO APB-5202 update to add MTDITSA check first?
   def getHasOtherLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
       http
-        .GET[HttpResponse](hasOtherLegacyRelationshipUrl(arn, nino))
+        .GET[HttpResponse](getOtherLegacyRelationshipsUrl(nino))
         .map { r =>
           r.status match {
             case NO_CONTENT => true
