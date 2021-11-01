@@ -1,0 +1,85 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.models.PptClient
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+    mainTemplate: main_template,
+    errorPrefix: error_prefix,
+    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
+    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    uiDateFields: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.date_input
+)
+
+@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
+@banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
+
+@agentInvitationsDateForm = @{
+    pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
+}
+
+@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+
+    @back_link(backLinkUrl)
+
+    @if(pptClientForm.hasErrors) {
+        @uiErrorSummary(Messages("error.summary.heading"), pptClientForm, Seq.empty, Some("identify-ppt-client"))
+    }
+
+ @uiFormHelper(
+  action = submitFormCall, 'class -> "form js-form") {
+
+     <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
+
+     <p class="hint-text">@Messages("identify-client.vat.p1")</p>
+
+     <div class="form-group @if(pptClientForm.error("pptRef").isDefined) {form-field--error soft--ends}">
+         <label class="form-label" for="clientIdentifier">@Messages("identify-ppt-client.label")</label>
+         <span class="hint-text" id="pptref-hint">@Messages("identify-ppt-client.hint")</span>
+         @pptClientForm.error("pptRef").map { formError =>
+             <span class="error-notification" data-journey="search-page:error:pptref" id="pptref-error">
+                 <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
+         }
+         <input
+         type="text"
+         class="form-control"
+         id="pptRef"
+         name="pptRef"
+         spellcheck="false"
+         aria-describedby="pptref-hint @if(pptClientForm.hasErrors) { pptref-error}"
+             @pptClientForm.data.get("pptRef").map { v => value="@v"}
+         >
+     </div>
+
+     <div @if(pptClientForm.error("registrationDate").isDefined){class="nojs-date-fields-error"}>
+     @uiDateFields(agentInvitationsDateForm, "registrationDate",
+         '_legend -> Messages("identify-ppt-client.registration-date.label"),
+         '_inputHint -> Messages("identify-ppt-client.registration-date.hint"),
+         '_legendSpanClass -> "form-label",
+         '_legendClass -> "flush--ends",
+         '_errorPrefix -> Messages("error.prefix")
+     )
+     </div>
+
+     <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+
+ }
+ }

@@ -33,8 +33,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   import journeyState.model._
 
-  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD)
+  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
@@ -1637,13 +1637,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to select-service when yes is selected" in {
       journeyState.set(
-        ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+        ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
         List(
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1881,7 +1881,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1933,7 +1933,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )

@@ -62,6 +62,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         Set(
           Enrolment("HMRC-MTD-IT"),
           Enrolment("HMRC-CGT-PD"),
+          Enrolment("HMRC-PPT-ORG"),
           Enrolment("HMRC-MTD-VAT"),
           Enrolment("HMRC-NI")
         )
@@ -421,13 +422,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = false)
             )
           )) when
-          submitConsents(authorisedIndividualClient)(ConfirmedTerms(
-            itsaConsent = true,
-            afiConsent = true,
-            vatConsent = true,
-            trustConsent = true,
-            trustNTConsent = true,
-            cgtConsent = true)) should
+          submitConsents(authorisedIndividualClient)(
+            ConfirmedTerms(
+              itsaConsent = true,
+              afiConsent = true,
+              vatConsent = true,
+              trustConsent = true,
+              trustNTConsent = true,
+              cgtConsent = true,
+              pptConsent = true)) should
           thenGo(
             CheckAnswers(
               personal,
@@ -457,7 +460,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               )
             )) when
             submitConsents(authorisedIndividualClient)(
-              ConfirmedTerms(itsaConsent = true, afiConsent = true, vatConsent = true, trustConsent = true, trustNTConsent = true, cgtConsent = true))
+              ConfirmedTerms(
+                itsaConsent = true,
+                afiConsent = true,
+                vatConsent = true,
+                trustConsent = true,
+                trustNTConsent = true,
+                cgtConsent = true,
+                pptConsent = true))
         }.getMessage shouldBe "the service key was not supported"
       }
     }
@@ -474,13 +484,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             )
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = true,
-          afiConsent = false,
-          vatConsent = false,
-          trustConsent = true,
-          trustNTConsent = true,
-          cgtConsent = false)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = true,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = true,
+            trustNTConsent = true,
+            cgtConsent = true,
+            pptConsent = false)) should thenGo(
           CheckAnswers(
             personal,
             uid,
@@ -508,7 +520,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             vatConsent = false,
             trustConsent = false,
             trustNTConsent = false,
-            cgtConsent = false)) should thenGo(
+            cgtConsent = false,
+            pptConsent = true
+          )) should thenGo(
           CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true)))
         )
       }
@@ -527,7 +541,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             vatConsent = true,
             trustConsent = false,
             trustNTConsent = false,
-            cgtConsent = false)) should thenGo(
+            cgtConsent = false,
+            pptConsent = true,
+          )) should thenGo(
           CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)))
         )
       }
@@ -539,13 +555,16 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
             Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(ConfirmedTerms(
-          itsaConsent = false,
-          afiConsent = false,
-          vatConsent = false,
-          trustConsent = true,
-          trustNTConsent = true,
-          cgtConsent = false)) should thenGo(
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = true,
+            trustNTConsent = true,
+            cgtConsent = false,
+            pptConsent = true
+          )) should thenGo(
           CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
         )
       }
@@ -565,7 +584,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             vatConsent = false,
             trustConsent = false,
             trustNTConsent = false,
-            cgtConsent = true)) should thenGo(
+            cgtConsent = true,
+            pptConsent = true
+          )) should thenGo(
           CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
         )
       }

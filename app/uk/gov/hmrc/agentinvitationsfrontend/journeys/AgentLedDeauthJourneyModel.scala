@@ -71,6 +71,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     case class ResponseFailed(service: String, clientName: Option[String], clientId: String) extends State
     case object TrustNotFound extends ErrorState
     case class CgtRefNotFound(cgtRef: CgtRef) extends ErrorState
+    case class PptRefNotFound(cgtRef: CgtRef) extends ErrorState
   }
 
   object Transitions {
@@ -93,17 +94,17 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           case "personal" =>
             val enabledPersonalServices =
               if (agent.isWhitelisted)
-                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
               else
-                Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+                Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
             goto(SelectServicePersonal(enabledPersonalServices))
           case "business" => goto(SelectServiceBusiness)
           case "trust"    => goto(SelectServiceTrust(agent.trustServices))
         }
     }
 
-    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean)(agent: AuthorisedAgent)(
-      service: String) = Transition {
+    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean, showPptFlag: Boolean)(
+      agent: AuthorisedAgent)(service: String) = Transition {
       case SelectServicePersonal(enabledServices) =>
         if (enabledServices.contains(service)) {
           service match {
@@ -121,6 +122,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
             case HMRCCGTPD =>
               if (showCgtFlag) goto(IdentifyClientPersonal(service))
+              else fail(new Exception(s"Service: $service feature flag is switched off"))
+
+            case HMRCPPTORG =>
+              if (showPptFlag) goto(IdentifyClientPersonal(service))
               else fail(new Exception(s"Service: $service feature flag is switched off"))
           }
         } else goto(SelectServicePersonal(enabledServices))

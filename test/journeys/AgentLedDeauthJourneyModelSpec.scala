@@ -47,8 +47,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
   val nonWhitelistedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val nino = "AB123456A"
   val postCode = "BN114AW"
   val vrn = "123456"
@@ -86,7 +86,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to SelectServiceTrust with only whitelisted services" in {
-        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(SelectServiceTrust(Set(TRUST, HMRCCGTPD)))
+        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(
+          SelectServiceTrust(Set(TRUST, HMRCCGTPD, HMRCPPTORG)))
       }
     }
     "at state SelectServicePersonal" should {
@@ -95,7 +96,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
-          showCgtFlag = true)(authorisedAgent)(HMRCMTDIT) should thenGo(
+          showCgtFlag = true,
+          showPptFlag = true
+        )(authorisedAgent)(HMRCMTDIT) should thenGo(
           IdentifyClientPersonal(HMRCMTDIT)
         )
       }
@@ -104,7 +107,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
-          showCgtFlag = true)(authorisedAgent)("foo") should thenGo(
+          showCgtFlag = true,
+          showPptFlag = true
+        )(authorisedAgent)("foo") should thenGo(
           SelectServicePersonal(availableServices)
         )
       }
@@ -114,7 +119,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             showItsaFlag = false,
             showPirFlag = true,
             showVatFlag = true,
-            showCgtFlag = true)(authorisedAgent)(HMRCMTDIT)
+            showCgtFlag = true,
+            showPptFlag = true
+          )(authorisedAgent)(HMRCMTDIT)
         }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is PIR and feature flag is on" in {
@@ -122,7 +129,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
-          showCgtFlag = true)(authorisedAgent)(HMRCPIR) should thenGo(
+          showCgtFlag = true,
+          showPptFlag = true
+        )(authorisedAgent)(HMRCPIR) should thenGo(
           IdentifyClientPersonal(HMRCPIR)
         )
       }
@@ -132,7 +141,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             showItsaFlag = true,
             showPirFlag = false,
             showVatFlag = true,
-            showCgtFlag = true)(authorisedAgent)(HMRCPIR)
+            showCgtFlag = true,
+            showPptFlag = true
+          )(authorisedAgent)(HMRCPIR)
         }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is VAT and feature flag is on" in {
@@ -140,7 +151,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
-          showCgtFlag = true)(authorisedAgent)(HMRCMTDVAT) should thenGo(
+          showCgtFlag = true,
+          showPptFlag = true
+        )(authorisedAgent)(HMRCMTDVAT) should thenGo(
           IdentifyClientPersonal(HMRCMTDVAT)
         )
       }
@@ -150,7 +163,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             showItsaFlag = true,
             showPirFlag = true,
             showVatFlag = false,
-            showCgtFlag = true)(authorisedAgent)(HMRCMTDVAT)
+            showCgtFlag = true,
+            showPptFlag = true
+          )(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
 
@@ -159,7 +174,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
-          showCgtFlag = true)(authorisedAgent)(HMRCCGTPD) should thenGo(
+          showCgtFlag = true,
+          showPptFlag = true
+        )(authorisedAgent)(HMRCCGTPD) should thenGo(
           IdentifyClientPersonal(HMRCCGTPD)
         )
       }
@@ -169,8 +186,21 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
             showItsaFlag = true,
             showPirFlag = true,
             showVatFlag = false,
-            showCgtFlag = false)(authorisedAgent)(HMRCCGTPD)
+            showCgtFlag = false,
+            showPptFlag = false
+          )(authorisedAgent)(HMRCCGTPD)
         }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
+      }
+      "throw an exception when service is PPT and the show ppt flag is switched off" in {
+        intercept[Exception] {
+          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+            showItsaFlag = true,
+            showPirFlag = true,
+            showVatFlag = false,
+            showCgtFlag = false,
+            showPptFlag = false
+          )(authorisedAgent)(HMRCPPTORG)
+        }.getMessage shouldBe "Service: HMRC-PPT-ORG feature flag is switched off"
       }
     }
     "at state SelectServiceBusiness" should {

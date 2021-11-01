@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 sealed trait Invitation {
@@ -41,6 +41,7 @@ object Invitation {
       case Services.TAXABLETRUST    => TrustInvitation(Utr(clientIdentifier))
       case Services.NONTAXABLETRUST => TrustNTInvitation(Urn(clientIdentifier))
       case Services.HMRCCGTPD       => CgtInvitation(CgtRef(clientIdentifier), clientType)
+      case Services.HMRCPPTORG      => PptInvitation(PptRef(clientIdentifier), clientType)
     }
 
   implicit val format: Format[Invitation] = new Format[Invitation] {
@@ -54,6 +55,7 @@ object Invitation {
         case "TrustInvitation"   => JsSuccess((json \ "data").as[TrustInvitation])
         case "TrustNTInvitation" => JsSuccess((json \ "data").as[TrustNTInvitation])
         case "CgtInvitation"     => JsSuccess((json \ "data").as[CgtInvitation])
+        case "PptInvitation"     => JsSuccess((json \ "data").as[PptInvitation])
         case _                   => JsError(s"invalid json type for parsing invitation object, type=$t")
       }
     }
@@ -137,4 +139,15 @@ case class CgtInvitation(
 
 object CgtInvitation {
   implicit val format: Format[CgtInvitation] = Json.format
+}
+
+case class PptInvitation(
+  clientIdentifier: PptRef,
+  clientType: Option[ClientType],
+  service: String = Services.HMRCPPTORG,
+  clientIdentifierType: String = "PPTReference")
+    extends Invitation
+
+object PptInvitation {
+  implicit val format: Format[PptInvitation] = Json.format
 }

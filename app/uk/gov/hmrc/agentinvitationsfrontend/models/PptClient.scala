@@ -15,13 +15,8 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class AuthorisedAgent(arn: Arn, isWhitelisted: Boolean) {
+import org.joda.time.LocalDate
+import uk.gov.hmrc.agentmtdidentifiers.model.PptRef
 
-  val personalServices: Set[String] =
-    if (isWhitelisted) Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG) else Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
-
-  val trustServices: Set[String] = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
-}
+case class PptClient(pptRef: PptRef, registrationDate: String)

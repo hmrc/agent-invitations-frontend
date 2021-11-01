@@ -50,9 +50,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val emptyBasket: Basket = Set.empty
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
   val authorisedAgentNotWhitelisted = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
-  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD)
-  private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
+  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
+  private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val mockAppConfig = mock(classOf[AppConfig])
 
   def makeBasket(services: Set[String]) = services.map {
@@ -133,8 +133,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         showPirFlag: Boolean = true,
         showVatFlag: Boolean = true,
         showCgtFlag: Boolean = true,
+        showPptFlag: Boolean = true,
         agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
-        selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, agentSuspensionEnabled, notSuspended)(authorisedAgent)
+        selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, showPptFlag, agentSuspensionEnabled, notSuspended)(
+          authorisedAgent)
 
       "transition to SelectClientType" in {
 
@@ -193,8 +195,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           showPirFlag: Boolean = true,
           showVatFlag: Boolean = true,
           showCgtFlag: Boolean = true,
+          showPptFlag: Boolean = true,
           agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
-          selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, agentSuspensionEnabled, suspendedForItsa)(authorisedAgent)
+          selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, showPptFlag, agentSuspensionEnabled, suspendedForItsa)(
+            authorisedAgent)
 
         given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDIT) should thenGo(
           AgentSuspended(HMRCMTDIT, emptyBasket))
@@ -208,8 +212,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           showPirFlag: Boolean = true,
           showVatFlag: Boolean = true,
           showCgtFlag: Boolean = true,
+          showPptFlag: Boolean = true,
           agentSuspensionEnabled: Boolean = true): String => AgentInvitationJourneyModel.Transition =
-          selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, agentSuspensionEnabled, suspendedForItsa)(authorisedAgent)
+          selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, showPptFlag, agentSuspensionEnabled, suspendedForItsa)(
+            authorisedAgent)
 
         given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDVAT) should thenGo(
           IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
@@ -317,28 +323,28 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
+          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
         val basket = makeBasket(Set(HMRCCGTPD))
         given(SelectTrustService(availableTrustServices, basket)) when
-          selectedTrustService(true, true, true, notSuspended)(agent = authorisedAgent)("") should
+          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(ReviewAuthorisationsTrust(availableTrustServices, basket))
       }
 
@@ -346,7 +352,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("TRS"))))
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
+          selectedTrustService(true, true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
           thenGo(AgentSuspended(TRUST, emptyBasket))
       }
     }

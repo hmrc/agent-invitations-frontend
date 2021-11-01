@@ -172,6 +172,12 @@ trait AuthStubs extends AfiRelationshipStub {
                         |      "identifiers": [
                         |         {"key":"CGTPDRef", "value": "XMCGTP485579071"}
                         |      ]
+                        |     },
+                        |     {
+                        |      "key": "HMRC-PPT-ORG",
+                        |      "identifiers": [
+                        |         {"key":"PPTReference", "value": "XAPPT0000012345"}
+                        |      ]
                         |     }
                         |  ]
                         |  $ninoRetrieval
