@@ -145,7 +145,7 @@ case class PptInvitation(
   clientIdentifier: PptRef,
   clientType: Option[ClientType],
   service: String = Services.HMRCPPTORG,
-  clientIdentifierType: String = "PPTReference")
+  clientIdentifierType: String = "EtmpRegistrationNumber")
     extends Invitation
 
 object PptInvitation {

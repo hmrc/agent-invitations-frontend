@@ -58,7 +58,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-TERS-ORG"   -> "SAUTR",
     "HMRC-TERSNT-ORG" -> "URN",
     "HMRC-CGT-PD"     -> "CGTPDRef",
-    "HMRC-PPT-ORG"    -> "PPTReference"
+    "HMRC-PPT-ORG"    -> "EtmpRegistrationNumber"
   )
 
   def isServiceEnabled(service: String): Boolean = service match {

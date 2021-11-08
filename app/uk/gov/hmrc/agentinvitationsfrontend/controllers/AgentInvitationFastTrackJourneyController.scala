@@ -754,7 +754,7 @@ object AgentInvitationFastTrackJourneyController {
         case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)    => Valid
         case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern) => Valid
         case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)      => Valid
-        case AgentFastTrackRequest(_, HMRCPPTORG, "PPTReference", clientId, _) if PptRef.isValid(clientId) => Valid
+        case AgentFastTrackRequest(_, HMRCPPTORG, "EtmpRegistrationNumber", clientId, _) if PptRef.isValid(clientId) => Valid
         case _                                                                                             => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }

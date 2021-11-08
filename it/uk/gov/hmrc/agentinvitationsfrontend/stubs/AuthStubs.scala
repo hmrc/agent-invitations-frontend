@@ -176,7 +176,7 @@ trait AuthStubs extends AfiRelationshipStub {
                         |     {
                         |      "key": "HMRC-PPT-ORG",
                         |      "identifiers": [
-                        |         {"key":"PPTReference", "value": "XAPPT0000012345"}
+                        |         {"key":"EtmpRegistrationNumber", "value": "XAPPT0000012345"}
                         |      ]
                         |     }
                         |  ]
