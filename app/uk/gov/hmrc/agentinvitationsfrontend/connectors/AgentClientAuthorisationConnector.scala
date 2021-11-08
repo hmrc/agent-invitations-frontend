@@ -410,7 +410,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   def acceptPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
       val url =
-        new URL(baseUrl, s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/accept").toString
+        new URL(
+          baseUrl,
+          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/accept").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
@@ -421,7 +423,9 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   def rejectPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
       val url =
-        new URL(baseUrl, s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/reject").toString
+        new URL(
+          baseUrl,
+          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/reject").toString
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>

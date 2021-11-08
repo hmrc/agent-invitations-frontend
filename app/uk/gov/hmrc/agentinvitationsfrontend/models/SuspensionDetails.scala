@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, OFormat}
 case class SuspensionDetails(suspensionStatus: Boolean, regimes: Option[Set[String]]) {
 
   //PERSONAL-INCOME-RECORD service has no enrolment / regime so cannot be suspended
-  private val validSuspensionRegimes = Set("ITSA", "VATC", "TRS", "CGT")
+  private val validSuspensionRegimes = Set("ITSA", "VATC", "TRS", "CGT", "PPT")
 
   val suspendedRegimes: Set[String] =
     this.regimes.fold(Set.empty[String])(rs => if (rs.contains("ALL")) validSuspensionRegimes else rs)
@@ -34,6 +34,7 @@ case class SuspensionDetails(suspensionStatus: Boolean, regimes: Option[Set[Stri
       "HMRC-TERS-ORG"          -> "TRS",
       "HMRC-TERSNT-ORG"        -> "TRS",
       "HMRC-CGT-PD"            -> "CGT",
+      "HMRC-PPT-ORG"           -> "PPT",
       "PERSONAL-INCOME-RECORD" -> "PIR"
     )
 

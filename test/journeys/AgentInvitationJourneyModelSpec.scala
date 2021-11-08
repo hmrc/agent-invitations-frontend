@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
@@ -62,6 +62,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       AuthorisationRequest("client", VatInvitation(Some(personal), Vrn(vrn)), AuthorisationRequest.NEW, "item-vat")
     case `HMRCMTDIT` =>
       AuthorisationRequest("client", ItsaInvitation(Nino(nino)), AuthorisationRequest.NEW, "item-itsa")
+    case `HMRCPPTORG` =>
+      AuthorisationRequest("client", PptInvitation(PptRef(pptRef), Some(personal)), AuthorisationRequest.NEW, "item-ppt")
   }
 
   val nino = "AB123456A"
@@ -69,6 +71,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val vrn = "123456"
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
+  val pptRef = "XAPPT000012345"
+  val pptRegDate = new LocalDate(2021, 1, 1)
+  val pptRegDateStr = pptRegDate.toString("yyyy-MM-dd")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -86,6 +91,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
     CgtRef => Future(Some(cgtSubscription(countryCode)))
+
+  def getPptSubscription(registrationDate: LocalDate = pptRegDate): GetPptSubscription =
+    PptRef => Future(Some(PptSubscription("PPT Client", registrationDate, None)))
 
   "AgentInvitationJourneyService" when {
 
@@ -173,6 +181,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
       }
 
+      "transition to IdentifyPersonalClient for PPT service" in {
+
+        given(SelectPersonalService(availableServices, emptyBasket)) when
+          selectedService()(HMRCPPTORG) should
+          thenGo(IdentifyPersonalClient(HMRCPPTORG, emptyBasket))
+      }
+
       "transition to ReviewPersonalService when last service selected and user does not confirm" in {
 
         given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
@@ -253,6 +268,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
       }
 
+      "throw an exception when the show ppt feature flag is off" in {
+
+        intercept[Exception] {
+          given(SelectPersonalService(availableServices, emptyBasket)) when
+            selectedService(showPptFlag = false)(HMRCPPTORG)
+        }.getMessage shouldBe "Service: HMRC-PPT-ORG feature flag is switched off"
+      }
     }
 
     // *************************************************
@@ -298,7 +320,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "throw an exception when the show vat feature flag is off" in {
-
         intercept[Exception] {
           given(SelectBusinessService) when
             selectedBusinessService(showVatFlag = false, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)(HMRCMTDVAT)
@@ -465,6 +486,45 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           identifyCgtClient(cgtRef => Future.successful(None))(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
           matchPattern {
             case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
+          }
+      }
+
+      "transition to ConfirmClientPpt for personal PPT clients" in {
+        given(IdentifyPersonalClient(HMRCPPTORG, emptyBasket)) when
+          identifyPptClient(pptClient => Future.successful(true), pptRef => Future.successful(Some("PPT Client")))(authorisedAgent)(
+            PptClient(PptRef(pptRef), pptRegDateStr)) should
+          matchPattern {
+            case (
+                ConfirmClientPpt(AuthorisationRequest("PPT Client", PptInvitation(PptRef(pptRef), Some(personal), _, _), _, _), `emptyBasket`),
+                _) =>
+          }
+      }
+
+      "transition to ConfirmClientPpt for trust PPT clients" in {
+        given(IdentifyTrustClient(HMRCPPTORG, emptyBasket)) when
+          identifyPptClient(pptClient => Future.successful(true), pptRef => Future.successful(Some("PPT Client")))(authorisedAgent)(
+            PptClient(PptRef(pptRef), pptRegDateStr)) should
+          matchPattern {
+            case (
+                ConfirmClientPpt(AuthorisationRequest("PPT Client", PptInvitation(PptRef(pptRef), Some(business), _, _), _, _), `emptyBasket`),
+                _) =>
+          }
+      }
+      "transition to PptRefNotFound when known fact check fails" in {
+        given(IdentifyPersonalClient(HMRCPPTORG, emptyBasket)) when
+          identifyPptClient(pptClient => Future.successful(false), pptRef => Future.successful(Some("PPT Client")))(authorisedAgent)(
+            PptClient(PptRef(pptRef), pptRegDateStr)) should
+          matchPattern {
+            case (PptRefNotFound(PptRef(pptRef), _), _) =>
+          }
+      }
+
+      "transition to PptRefNotFound when PPT client cannot be looked up" in {
+        given(IdentifyPersonalClient(HMRCPPTORG, emptyBasket)) when
+          identifyPptClient(pptClient => Future.successful(true), pptRef => Future.successful(None))(authorisedAgent)(
+            PptClient(PptRef(pptRef), pptRegDateStr)) should
+          matchPattern {
+            case (PptRefNotFound(PptRef(pptRef), _), _) =>
           }
       }
 

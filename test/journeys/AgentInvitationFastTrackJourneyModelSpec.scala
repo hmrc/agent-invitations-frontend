@@ -48,7 +48,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   }
 
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG)
   val nino = "AB123456A"
   val postCode = Some("BN114AW")
   val vrn = "123456"
@@ -56,6 +56,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   val dob = Some("1990-10-10")
   val utr = Utr("1977030537")
   val urn = Urn("XXTRUST10010010")
+  val pptRef = PptRef("XAPPT000012345")
   val TRUSTNT = "HMRC-TERSNT-ORG"
   val TRUST = "HMRC-TERS-ORG"
   val cgtRef = CgtRef("XMCGTP123456789")
@@ -260,6 +261,19 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             ))
       }
 
+      "transition to CheckDetailsCompletePpt when there are all the required fields are present for a PPT service" in {
+        val fastTrackRequest =
+          AgentFastTrackRequest(Some(ClientType.business), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(Prologue(None, None)) when start(true, notSuspended)(None)(authorisedAgent)(fastTrackRequest) should
+          thenGo(
+            CheckDetailsCompletePpt(
+              originalFastTrackRequest = fastTrackRequest,
+              fastTrackRequest = fastTrackRequest,
+              None
+            ))
+      }
+
       "transition to AgentSuspended when there are all the required fields are present for Trust service but the agent has been suspended" +
         "for this service" in {
         val fastTrackRequest =
@@ -270,6 +284,19 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         given(Prologue(None, None)) when start(true, suspendedForTrust)(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
           thenGo(
             SuspendedAgent(HMRCCGTPD, Some("continue/url"))
+          )
+      }
+
+      "transition to AgentSuspended when there are all the required fields are present for PPT service but the agent has been suspended" +
+        "for this service" in {
+        val fastTrackRequest =
+          AgentFastTrackRequest(Some(ClientType.business), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        def suspendedForTrust() = Future.successful(SuspensionDetails(true, Some(Set("PPT"))))
+
+        given(Prologue(None, None)) when start(true, suspendedForTrust)(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
+          thenGo(
+            SuspendedAgent(HMRCPPTORG, Some("continue/url"))
           )
       }
     }
@@ -436,6 +463,122 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           submitConfirmClientCgt(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
             hasNoPartialAuthorisation)(isNotAltItsa)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
           thenGo(IdentifyCgtClient(originalFastTrackRequest, fastTrackRequest, None))
+      }
+    }
+
+    "at CheckDetailsCompletePpt" should {
+      "transition to ConfirmRegDatePpt" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+        val regDate = new LocalDate(2021, 1, 1)
+        given(CheckDetailsCompletePpt(fastTrackRequest, fastTrackRequest, None)) when Transitions
+          .checkedDetailsNoKnownFact(getCgtSubscription(), getPptSubscription(regDate))(authorisedAgent) should
+          thenGo(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "PPT"))
+      }
+
+      "transition to PptRefNotFound if there is no ppt subscription found" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(CheckDetailsCompletePpt(fastTrackRequest, fastTrackRequest, None)) when checkedDetailsNoKnownFact(
+          pptRef => Future.successful(None),
+          pptRef => Future.successful(None))(authorisedAgent) should
+          thenGo(PptRefNotFound(pptRef))
+      }
+    }
+
+    "at SelectClientTypePpt" should {
+      val regDate = new LocalDate(2021, 1, 1)
+
+      def getPptSubscription(regDate: LocalDate = regDate): GetPptSubscription =
+        PptRef => Future(Some(pptSubscription(regDate)))
+
+      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future successful (false)
+
+      def createInvitation(arn: Arn, invitation: Invitation): Future[InvitationId] =
+        Future(InvitationId("ABBTAKTMFKWU8"))
+      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
+      def getAgencyEmail() = Future("abc@xyz.com")
+
+      "transition to ConfirmRegDatePpt" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(SelectClientTypePpt(fastTrackRequest, fastTrackRequest, None)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(isNotAltItsa)(hasNoLegacyMapping)(
+            getCgtSubscription(),
+            getPptSubscription())(mockAppConfig)(authorisedAgent)("personal") should
+          thenGo(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "PPT"))
+      }
+
+      "transition to IdentifyPptClient when changing is true" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(SelectClientTypePpt(fastTrackRequest, fastTrackRequest, None, isChanging = true)) when
+          selectedClientType(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(isNotAltItsa)(hasNoLegacyMapping)(
+            getCgtSubscription("FR"),
+            getPptSubscription())(mockAppConfig)(authorisedAgent)("personal") should
+          thenGo(IdentifyPptClient(fastTrackRequest, fastTrackRequest, None))
+      }
+    }
+
+    "at ConfirmRegDatePpt" should {
+      val regDate = new LocalDate(2021, 1, 1)
+
+      "transition to ConfirmClientPpt when country codes are matched" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "some-ppt-name")) when
+          confirmRegDatePpt(authorisedAgent)(regDate) should
+          thenGo(ConfirmClientPpt(fastTrackRequest, fastTrackRequest, None, "some-ppt-name"))
+      }
+
+      "transition to KnownFactNotMatched when country codes are not matched" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "some-ppt-name")) when
+          confirmRegDatePpt(authorisedAgent)(regDate.plusDays(1)) should
+          thenGo(KnownFactNotMatched(fastTrackRequest, fastTrackRequest, None))
+      }
+    }
+
+    "at ConfirmClientPpt" should {
+
+      def hasNoPendingInvitation(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
+        Future.successful(false)
+      def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
+        Future.successful(false)
+      def createInvitation(arn: Arn, invitation: Invitation): Future[InvitationId] =
+        Future(InvitationId("ABBTAKTMFKWU8"))
+      def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
+      def getAgencyEmail() = Future("abc@xyz.com")
+
+      "transition to InvitationSentPersonal" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+
+        given(ConfirmClientPpt(fastTrackRequest, fastTrackRequest, None, "some-ppt-name")) when
+          submitConfirmClientPpt(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
+            hasNoPartialAuthorisation)(isNotAltItsa)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          thenGo(InvitationSentPersonal("invitation/link", None, "abc@xyz.com", HMRCPPTORG, isAltItsa = false))
+      }
+
+      "transition to IdentifyPptClient when the form is false for PPT" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(personal), HMRCPIR, "ni", nino, dob)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
+
+        given(ConfirmClientPpt(originalFastTrackRequest, fastTrackRequest, None, "some-ppt-name")) when
+          submitConfirmClientPpt(createInvitation)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasNoActiveRelationship)(
+            hasNoPartialAuthorisation)(isNotAltItsa)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+          thenGo(IdentifyPptClient(originalFastTrackRequest, fastTrackRequest, None))
       }
     }
 

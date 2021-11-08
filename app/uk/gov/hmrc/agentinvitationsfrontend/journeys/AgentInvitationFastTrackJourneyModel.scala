@@ -462,6 +462,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
       }
 
+    def confirmRegDatePpt(agent: AuthorisedAgent)(regDate: LocalDate): Transition =
+      Transition {
+        case ConfirmRegDatePpt(originalFastTrackRequest, fastTrackRequest, continueUrl, actualRegDate, name) =>
+          if (actualRegDate.equals(regDate)) {
+            goto(ConfirmClientPpt(originalFastTrackRequest, fastTrackRequest, continueUrl, name))
+          } else {
+            goto(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, continueUrl))
+          }
+      }
+
     def identifyPptClient(checkKnownFact: PptClient => Future[Boolean], getPptCustomerName: PptRef => Future[Option[String]])(agent: AuthorisedAgent)(
       pptClient: PptClient): Transition =
       Transition {

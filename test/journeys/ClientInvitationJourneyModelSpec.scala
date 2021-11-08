@@ -89,6 +89,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdTrust = InvitationId("D1BEOZEO7MNO6")
   val invitationIdTrustNT = InvitationId("F1BEOZO7MN06")
   val invitationIdCgt = InvitationId("E1BEOZEO7MNO6")
+  val invitationIdPpt = InvitationId("E1BEOZEO7MNO6")
   val expiryDate = LocalDate.parse("2010-01-01")
   val invitationStatus = Pending
 
@@ -588,6 +589,28 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             pptConsent = true
           )) should thenGo(
           CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
+        )
+      }
+
+      "transition to CheckAnswers with changed ppt consent" in {
+        given(
+          SingleConsent(
+            personal,
+            uid,
+            "agent name",
+            ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = false),
+            Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = false))
+          )) when submitChangeConsents(authorisedIndividualClient)(
+          ConfirmedTerms(
+            itsaConsent = false,
+            afiConsent = false,
+            vatConsent = false,
+            trustConsent = false,
+            trustNTConsent = false,
+            cgtConsent = true,
+            pptConsent = true
+          )) should thenGo(
+          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = true)))
         )
       }
     }
