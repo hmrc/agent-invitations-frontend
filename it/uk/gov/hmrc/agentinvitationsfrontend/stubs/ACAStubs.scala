@@ -871,6 +871,14 @@ trait ACAStubs {
           .withStatus(responseStatus)
           .withBody(body)))
 
+  def givenGetPptSubscriptionReturns(pptRef: PptRef, responseStatus: Int, body: String) =
+    stubFor(
+      get(urlEqualTo(
+        s"/agent-client-authorisation/ppt/subscriptions/${pptRef.value}"))
+        .willReturn(aResponse()
+          .withStatus(responseStatus)
+          .withBody(body)))
+
   def givenMatchingCitizenRecord(nino: Nino, dob: LocalDate) =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/known-facts/individuals/${nino.value}/dob/${dob.toString}"))

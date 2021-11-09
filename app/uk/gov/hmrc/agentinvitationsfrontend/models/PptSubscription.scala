@@ -26,23 +26,20 @@ object PptSubscription {
 
   implicit val jodaReads = JodaReads.DefaultJodaLocalDateReads
 
-  implicit def reads(json: JsValue): JsResult[PptSubscription] = {
-    val dateOfApplication = (json \ "legalEntityDetails" \ "dateOfApplication").as[LocalDate]
-    val deregistrationDate = (json \ "changeOfCircumstanceDetails" \ "deregistrationDetails" \ "deregistrationDate").asOpt[LocalDate]
-    (json \ "legalEntityDetails" \ "customerDetails" \ "customerType").as[String] match {
-      case "Individual" =>
-        val firstName = (json \ "legalEntityDetails" \ "customerDetails" \ "individualDetails" \ "firstName").as[String]
-        val lastName = (json \ "legalEntityDetails" \ "customerDetails" \ "individualDetails" \ "lastName").as[String]
-
-        JsSuccess(PptSubscription(s"$firstName $lastName", dateOfApplication, deregistrationDate))
-
-      case "Organisation" =>
-        val organisationName = (json \ "legalEntityDetails" \ "customerDetails" \ "organisationDetails" \ "organisationName").as[String]
-        JsSuccess(PptSubscription(organisationName, dateOfApplication, deregistrationDate))
-
-      case e => JsError(s"unknown customerType $e")
+  implicit val reads: Reads[PptSubscription] = new Reads[PptSubscription] {
+    override def reads(json: JsValue): JsResult[PptSubscription] = {
+      val dateOfApplication = (json \ "legalEntityDetails" \ "dateOfApplication").as[LocalDate]
+      val deregistrationDate = (json \ "changeOfCircumstanceDetails" \ "deregistrationDetails" \ "deregistrationDate").asOpt[LocalDate]
+      (json \ "legalEntityDetails" \ "customerDetails" \ "customerType").as[String] match {
+        case "Individual" =>
+          val firstName = (json \ "legalEntityDetails" \ "customerDetails" \ "individualDetails" \ "firstName").as[String]
+          val lastName = (json \ "legalEntityDetails" \ "customerDetails" \ "individualDetails" \ "lastName").as[String]
+          JsSuccess(PptSubscription(s"$firstName $lastName", dateOfApplication, deregistrationDate))
+        case "Organisation" =>
+          val organisationName = (json \ "legalEntityDetails" \ "customerDetails" \ "organisationDetails" \ "organisationName").as[String]
+          JsSuccess(PptSubscription(organisationName, dateOfApplication, deregistrationDate))
+        case e => JsError(s"unknown customerType $e")
+      }
     }
   }
-
-  implicit val reads1: Reads[PptSubscription] = Reads(reads)
 }
