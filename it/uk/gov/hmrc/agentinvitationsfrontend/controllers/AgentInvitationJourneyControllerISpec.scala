@@ -33,8 +33,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   import journeyState.model._
 
-  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD)
+  private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
@@ -516,6 +516,58 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
+
+    "show the identify client page for Personal PPT service" in {
+
+      journeyState.set(
+        IdentifyPersonalClient(HMRCPPTORG, emptyBasket),
+        List(
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "identify-ppt-client.header",
+        "identify-ppt-client.p1",
+        "identify-ppt-client.hint",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](
+        IdentifyPersonalClient(HMRCPPTORG, emptyBasket),
+        List(
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+    }
+
+    "show the identify client page for Trust PPT service" in {
+
+      journeyState.set(
+        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        List(
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "identify-ppt-client.header",
+        "identify-ppt-client.p1",
+        "identify-ppt-client.hint",
+        "continue.button"
+      )
+
+      journeyState.get should have[State](
+        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -1014,6 +1066,51 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
     }
   }
+
+  "POST /agents/identify-ppt-client" should {
+
+    val request = FakeRequest("POST", "/agents/identify-ppt-client")
+
+    "handle invalid PptRef passed in by the user and redirect back to previous /identify-client page " in {
+
+      journeyState.set(IdentifyTrustClient(HMRCPPTORG, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyTrustClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("pptRef" -> "12345", "pptRef" -> pptRef.value, "registrationDate.year" -> "2021", "registrationDate.month" -> "1", "registrationDate.day" -> "1"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
+    }
+
+    "redirect to /agents/not-matched when pptRef passed in does not match to any ppt client" in {
+      givenGetPptSubscriptionReturns(pptRef, 404, pptNotFoundJson)
+
+      journeyState.set(
+        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        List(SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket)))
+
+      val result = controller.submitIdentifyPptClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody("pptRef" -> pptRef.value, "registrationDate.year" -> "2021", "registrationDate.month" -> "1", "registrationDate.day" -> "1"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showNotMatched().url)
+
+      journeyState.get should have[State](
+        PptRefNotFound(pptRef, emptyBasket),
+        List(IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+          SelectTrustService(availableTrustServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+    }
+  }
+
 
   "GET /agents/client-postcode" should {
 
@@ -1637,13 +1734,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to select-service when yes is selected" in {
       journeyState.set(
-        ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+        ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
         List(
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1881,7 +1978,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1933,7 +2030,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
-          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
+          SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
       )

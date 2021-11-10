@@ -351,6 +351,7 @@ class AgentsRequestTrackingController @Inject()(
       case "HMRC-TERS-ORG"          => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
       case "HMRC-TERSNT-ORG"        => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
       case "HMRC-CGT-PD"            => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
+      case "HMRC-PPT-ORG"           => relationshipsConnector.deleteRelationshipPpt(arn, PptRef(clientId))
       case _                        => throw new Error("Service not supported")
     }
 

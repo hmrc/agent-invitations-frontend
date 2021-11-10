@@ -22,4 +22,5 @@ case class ConfirmedTerms(
   vatConsent: Boolean,
   trustConsent: Boolean,
   cgtConsent: Boolean,
-  trustNTConsent: Boolean)
+  trustNTConsent: Boolean,
+  pptConsent: Boolean)

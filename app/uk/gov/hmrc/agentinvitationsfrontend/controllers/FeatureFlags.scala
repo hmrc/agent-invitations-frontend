@@ -27,6 +27,7 @@ case class FeatureFlags @Inject()(appConfig: AppConfig) {
   val showHmrcMtdVat = appConfig.featuresMtdVat
   val showHmrcTrust = appConfig.featuresTrust
   val showHmrcCgt = appConfig.featuresCgt
+  val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val agentSuspensionEnabled = appConfig.featuresAgentSuspension

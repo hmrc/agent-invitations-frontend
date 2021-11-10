@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, TrustTaxIdentifier, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -58,6 +58,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class KnownFactNotMatched(basket: Basket) extends NotFound
   case class TrustNotFound(basket: Basket) extends NotFound
   case class CgtRefNotFound(cgtRef: CgtRef, basket: Basket) extends NotFound
+  case class PptRefNotFound(pptRef: PptRef, basket: Basket) extends NotFound
 
   case class CannotCreateRequest(basket: Basket) extends State
 
@@ -68,6 +69,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends Confirm
   case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends Confirm
   case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmClientPpt(request: AuthorisationRequest, basket: Basket) extends Confirm
   case class ConfirmPostcodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, postcode: Option[String], clientName: String) extends Confirm
   case class ConfirmCountryCodeCgt(cgtRef: CgtRef, clientType: ClientType, basket: Basket, countryCode: String, clientName: String) extends Confirm
 
@@ -115,6 +117,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type GetAgencyEmail = () => Future[String]
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
+    type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type HasLegacyMapping = (Arn, String) => Future[Boolean]
 
@@ -153,6 +156,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       showPirFlag: Boolean,
       showVatFlag: Boolean,
       showCgtFlag: Boolean,
+      showPptFlag: Boolean,
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
 
@@ -165,6 +169,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             case HMRCPIR    => showPirFlag
             case HMRCMTDVAT => showVatFlag
             case HMRCCGTPD  => showCgtFlag
+            case HMRCPPTORG => showPptFlag
           }
           gotoIdentify(
             flag,
@@ -197,6 +202,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def selectedTrustService(
       showTrustsFlag: Boolean,
       showCgtFlag: Boolean,
+      showPptFlag: Boolean,
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
       Transition {
@@ -209,8 +215,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
           } else if (services.contains(service)) {
             val flag = service match {
-              case TRUST     => showTrustsFlag
-              case HMRCCGTPD => showCgtFlag
+              case TRUST      => showTrustsFlag
+              case HMRCCGTPD  => showCgtFlag
+              case HMRCPPTORG => showPptFlag
             }
             gotoIdentify(
               flag,
@@ -274,6 +281,34 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           handle(
             cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.postCode, cgtSubscription.name),
             cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, personal, basket, cgtSubscription.countryCode, cgtSubscription.name),
+            basket
+          )
+      }
+    }
+
+    def identifyPptClient(checkKnownFact: PptClient => Future[Boolean], getPptCustomerName: PptRef => Future[Option[String]])(agent: AuthorisedAgent)(
+      pptClient: PptClient): AgentInvitationJourneyModel.Transition = {
+      def handle(mkState: String => State, basket: Basket) =
+        for {
+          isCheckOK     <- checkKnownFact(pptClient)
+          mCustomerName <- if (isCheckOK) getPptCustomerName(pptClient.pptRef) else Future.successful(None)
+        } yield {
+          mCustomerName match {
+            case Some(customerName) => mkState(customerName)
+            case None               => PptRefNotFound(pptClient.pptRef, basket)
+          }
+        }
+
+      Transition {
+        case IdentifyTrustClient(HMRCPPTORG, basket) =>
+          handle(
+            customerName => ConfirmClientPpt(AuthorisationRequest(customerName, PptInvitation(pptClient.pptRef, Some(business))), basket),
+            basket
+          )
+
+        case IdentifyPersonalClient(HMRCPPTORG, basket) =>
+          handle(
+            customerName => ConfirmClientPpt(AuthorisationRequest(customerName, PptInvitation(pptClient.pptRef, Some(personal))), basket),
             basket
           )
       }
@@ -598,6 +633,26 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        }
             } yield result
         } else goto(IdentifyTrustClient(TRUST, basket))
+
+      case ConfirmClientPpt(request, basket) => {
+        val (reviewAuthState, state, clientType) = request.invitation.clientType match {
+          case Some(`business`) =>
+            (ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request), IdentifyTrustClient(HMRCPPTORG, basket), business)
+          case Some(`personal`) =>
+            (ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request), IdentifyPersonalClient(HMRCPPTORG, basket), personal)
+          case None => throw new RuntimeException("unexpected clientType in the AuthorisationRequest")
+        }
+
+        if (confirmation.choice) {
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCPPTORG, basket)(
+            hasPendingInvitationsFor,
+            hasActiveRelationshipFor,
+            hasPartialAuthorisationFor,
+            hasLegacyMapping,
+            appConfig)
+        } else goto(state)
+      }
+
     }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {

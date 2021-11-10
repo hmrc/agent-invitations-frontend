@@ -46,6 +46,9 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
   protected def showServiceHmrcMtdIt: Boolean =
     featureFlags.showHmrcMtdIt && serviceAvailableForSelection(HMRCMTDIT)
 
+  protected def showServicePlasticPackagingTax: Boolean =
+    featureFlags.showPlasticPackagingTax && serviceAvailableForSelection(HMRCPPTORG)
+
   protected def serviceAvailableForSelection(service: String): Boolean =
     if (service == TRUST) {
       services.contains(service) && (!basket.exists(_.invitation.service == TAXABLETRUST) && !basket.exists(_.invitation.service == NONTAXABLETRUST))
@@ -68,6 +71,9 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
 
     if (showServiceCgt)
       seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.business"))
+
+    if (showServicePlasticPackagingTax)
+      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.trust"))
 
     seq
   }
@@ -94,6 +100,9 @@ class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFl
 
     if (showServiceCgt)
       seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.personal"))
+
+    if (showServicePlasticPackagingTax)
+      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.personal"))
 
     seq
   }
