@@ -29,7 +29,8 @@
 
 @(
     choiceForm: Form[Confirmation],
-    submitCall: Call
+    submitCall: Call,
+        backlink: String
 )(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(
@@ -37,6 +38,8 @@ title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-aut
 bodyClasses = None,
 isAgent = true
 ) {
+
+    @back_link(backlink)
 
     @if(choiceForm.hasErrors) {
       @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("legacy-auth-detected"))

@@ -57,6 +57,7 @@ The following are the supported services and relevant fields required to create 
 |personal|HMRC-MTD-IT|ni|Valid Nino|Postcode|
 |personal|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
 |personal or business|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
+|personal or business|HMRC-CGT-PD|CGTPDRef|Valid CGT-PD reference number|Postcode|
 
 Note: Client Type and Known Fact are optional. If either of those are missing you will be redirected to the appropriate page. However, if any other information is missing / invalid / unsupported, you will be given an error url.
 

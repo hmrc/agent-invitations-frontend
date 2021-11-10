@@ -1409,14 +1409,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "yes is selected and it is an ITSA request" should {
       val request = FakeRequest("POST", "/agents/confirm-client")
 
-      // TODO add check & change here
-      "check to see if the client has a legacy SA agent relationship" in {
-
-      }
-
       "redirect to the authorisation detected page if legacy relationship exists" in {
-        givenGetAllPendingInvitationsReturnsEmpty(arn, mtdItId.toString, serviceITSA)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
         givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
 
         journeyState.set(
           ConfirmClientItsa(
@@ -1427,11 +1424,58 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket))
         )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/authorisation-detected")
+      }
+
+      "redirect to already mapped page if legacy relationship exists and is copied across" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/already-copied-across-itsa")
       }
 
       "redirect to the review authorisations page if legacy relationship does not exist" in {
-        givenGetAllPendingInvitationsReturnsEmpty(arn, mtdItId.toString, serviceITSA)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
         givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/review-authorisations")
       }
     }
   }
@@ -1814,8 +1858,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the already copied across warning page when there is a legacy mapping" in {
       val request = FakeRequest("GET", "/agents/already-copied-across-itsa")
-      //ignore unused warning
-      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+
       journeyState.set(
         AlreadyCopiedAcrossItsa,
         Nil
@@ -2094,7 +2137,6 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
-  // TODO - new page
   "GET /agents/authorisation-detected" should {
     val request = FakeRequest("GET", "/agents/authorisation-detected")
 

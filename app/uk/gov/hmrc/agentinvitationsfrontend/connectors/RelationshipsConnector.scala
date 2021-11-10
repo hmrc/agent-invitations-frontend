@@ -16,22 +16,21 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
 
+import java.net.URL
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -71,17 +70,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
-  // APB-5202 DES call - check for MTDITSA
-  private def hasItsaEnrollmentUrl(nino: String):String =
-    s"$baseUrl/registration/relationship/nino/$nino"
-
-  // APB-5202 DES call - check for other legacy relationships
-  private def getOtherLegacyRelationshipsUrl(nino: String):String =
-    s"$baseUrl/registration/relationship/nino/$nino"
-
-
-  private def hasLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
-    s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
+  private def hasMappedLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
+    s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"
 
   private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
     new URL(
@@ -102,29 +92,16 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  def getHasLegacyRelationshipsFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedApi-Get-HasLegacyRelationshipsFor-GET") {
+  def getLegacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
+    monitor(s"ConsumedApi-Get-getLegacyRelationshipStatusFor-GET") {
       http
-        .GET[HttpResponse](hasLegacyRelationshipUrlFor(arn, nino))
+        .GET[HttpResponse](hasMappedLegacyRelationshipUrlFor(arn, nino))
         .map { r =>
           r.status match {
-            case NO_CONTENT => true
-            case NOT_FOUND  => false
-            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasLegacyRelationshipsFor'")
-          }
-        }
-    }
-
-  // TODO APB-5202 update to add MTDITSA check first?
-  def getHasOtherLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
-      http
-        .GET[HttpResponse](getOtherLegacyRelationshipsUrl(nino))
-        .map { r =>
-          r.status match {
-            case NO_CONTENT => true
-            case NOT_FOUND  => false
-            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasOtherLegacyRelationships'")
+            case NO_CONTENT => LegacySaRelationshipFoundAndMapped
+            case OK         => LegacySaRelationshipFoundNotMapped
+            case NOT_FOUND  => LegacySaRelationshipNotFound
+            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getLegacySaRelationshipStatusFor'")
           }
         }
     }

@@ -39,7 +39,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   //BaseUrls
   val authBaseUrl: String = baseUrl("auth")
   val agentClientAuthorisationBaseUrl: String = baseUrl("agent-client-authorisation")
-  val agentMappingBaseUrl: String = baseUrl("agent-mapping-frontend")
   val afiBaseUrl: String = baseUrl("agent-fi-relationship")
   val ssoBaseUrl: String = baseUrl("sso")
   val cidBaseUrl: String = baseUrl("citizen-details")

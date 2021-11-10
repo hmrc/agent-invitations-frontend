@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
-import play.api.Configuration
+import play.api.{Configuration, Mode}
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{confirm_client, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
@@ -38,6 +39,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
+import java.net.URI
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -52,7 +54,6 @@ class AgentInvitationJourneyController @Inject()(
   clientTypeView: client_type,
   cgtRefNotFoundView: cgtRef_notFound,
   activeAuthExistsView: active_authorisation_exists,
-  knownFactsView: known_fact,
   identifyClientItsaView: identify_client_itsa,
   identifyClientIrvView: identify_client_irv,
   identifyClientVatView: identify_client_vat,
@@ -239,7 +240,7 @@ class AgentInvitationJourneyController @Inject()(
         implicit request =>
           Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
             hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            hasLegacyMappingFor)(hasOtherLegacyMapping)(appConfig))
+            legacySaRelationshipStatusFor)(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
@@ -259,9 +260,11 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ConfirmClientForm)
-      .applyWithRequest(implicit request =>
-        Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-          hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMappingFor)(hasOtherLegacyMapping)(appConfig))
+      .applyWithRequest(
+        implicit request =>
+          Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(
+            appConfig))
 
   // TODO review whether we only need one state/page here?
   def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -308,13 +311,33 @@ class AgentInvitationJourneyController @Inject()(
 
   val showAlreadyCopiedAcrossItsa: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AlreadyCopiedAcrossItsa.type]
 
-  val showLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[LegacyAuthorisationDetected]
+  val showLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[LegacyAuthorisationDetected].orRollback
 
-  val submitLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)
-    .bindForm(LegacyAuthorisationForm)
-    .applyWithRequest(implicit request =>
-      Transitions.confirmedLegacyAuthorisation(LegacyAuthorisationMappingRedirect)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-        hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(hasLegacyMappingFor)(hasOtherLegacyMapping)(appConfig))
+  val submitLegacyAuthorisationDetected: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { agent =>
+      LegacyAuthorisationForm.bindFromRequest
+        .fold(
+          { hasErrors =>
+            Future successful Ok(
+              legacyAuthorisationDetectedView(
+                hasErrors,
+                routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(),
+                routes.AgentInvitationJourneyController.showConfirmClient().url))
+          }, { valid =>
+            if (valid.choice)
+              Future successful Redirect(externalUrls.agentMappingFrontendUrl)
+                .addingToSession(toReturnFromMapping)
+            else
+              helpers.apply(Transitions.confirmedLegacyAuthorisation(agent), helpers.display)
+          }
+        )
+    }
+  }
+
+  private def toReturnFromMapping()(implicit request: Request[AnyContent]) = {
+    val sessionKeyUsedInMappingService = "OriginForMapping"
+    sessionKeyUsedInMappingService -> localFriendlyUrl(env)(request.path, request.host)
+  }
 
   private def signOutUrl(implicit request: Request[AnyContent]): Future[String] =
     journeyService.initialState
@@ -355,24 +378,24 @@ class AgentInvitationJourneyController @Inject()(
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case DeleteAuthorisationRequestTrust(authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case _: InvitationSentPersonal       => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentBusiness       => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: KnownFactNotMatched          => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: TrustNotFound                => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CgtRefNotFound               => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CannotCreateRequest          => routes.AgentInvitationJourneyController.showCannotCreateRequest()
-    case _: SomeAuthorisationsFailed     => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
-    case _: AllAuthorisationsFailed      => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
-    case _: ClientNotSignedUp            => routes.AgentInvitationJourneyController.showClientNotSignedUp()
-    case _: PendingInvitationExists      => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
-    case _: ActiveAuthorisationExists    => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case _: PartialAuthorisationExists   => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case AllAuthorisationsRemoved        => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
-    case _: AgentSuspended               => routes.AgentInvitationJourneyController.showAgentSuspended()
-    case _: ClientNotRegistered          => routes.AgentInvitationJourneyController.showClientNotRegistered()
-    case AlreadyCopiedAcrossItsa         => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
-    case _: LegacyAuthorisationDetected  => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected()
-    case _                               => throw new Exception(s"Link not found for $state")
+    case _: InvitationSentPersonal      => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: InvitationSentBusiness      => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: KnownFactNotMatched         => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: TrustNotFound               => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CgtRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
+    case _: CannotCreateRequest         => routes.AgentInvitationJourneyController.showCannotCreateRequest()
+    case _: SomeAuthorisationsFailed    => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
+    case _: AllAuthorisationsFailed     => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
+    case _: ClientNotSignedUp           => routes.AgentInvitationJourneyController.showClientNotSignedUp()
+    case _: PendingInvitationExists     => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
+    case _: ActiveAuthorisationExists   => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case _: PartialAuthorisationExists  => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
+    case AllAuthorisationsRemoved       => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
+    case _: AgentSuspended              => routes.AgentInvitationJourneyController.showAgentSuspended()
+    case _: ClientNotRegistered         => routes.AgentInvitationJourneyController.showClientNotRegistered()
+    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
+    case _: LegacyAuthorisationDetected => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected()
+    case _                              => throw new Exception(s"Link not found for $state")
   }
 
   /* Here we decide what to render after state transition */
@@ -723,8 +746,13 @@ class AgentInvitationJourneyController @Inject()(
 
       case AlreadyCopiedAcrossItsa => Ok(alreadyCopiedAcrossView())
 
-      //TODO resolve
-      case LegacyAuthorisationDetected(basket) => Ok(legacyAuthorisationDetectedView(basket.nonEmpty, routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(showReviewAuthorisations)))
+      case LegacyAuthorisationDetected(_) =>
+        Ok(
+          legacyAuthorisationDetectedView(
+            formWithErrors.or(LegacyAuthorisationForm),
+            routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(),
+            backLinkFor(breadcrumbs).url
+          ))
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }
@@ -736,7 +764,7 @@ object AgentInvitationJourneyController {
 
   val ConfirmClientForm: Form[Confirmation] = confirmationForm("error.confirm-client.required")
 
-  val LegacyAuthorisationForm: Form[Confirmation] = confirmationForm("error.legacy-authorisation-detected.required")
+  val LegacyAuthorisationForm: Form[Confirmation] = confirmationForm("error.legacy-auth-detected.required")
 
   val ReviewAuthorisationsForm: Form[Confirmation] = confirmationForm("error.review-authorisation.required")
 

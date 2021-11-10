@@ -5,6 +5,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.stubs.ACRStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{LegacySaRelationshipFoundAndMapped, LegacySaRelationshipFoundNotMapped, LegacySaRelationshipNotFound}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,6 +44,24 @@ class RelationshipsConnectorISpec extends BaseISpec with ACRStubs {
       givenInactiveRelationshipsNotFound
       val result = await(connector.getInactiveRelationships)
       result shouldBe Seq.empty
+    }
+  }
+
+  "GetLegacySaRelationshipStatusFor" should {
+    "return LegacySaRelationshipFoundAndMapped" in {
+      givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      result shouldBe LegacySaRelationshipFoundAndMapped
+    }
+    "return LegacySaRelationshipFoundNotMapped" in {
+      givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      result shouldBe LegacySaRelationshipFoundNotMapped
+    }
+    "return LegacySaRelationshipNotFound" in {
+      givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      result shouldBe LegacySaRelationshipNotFound
     }
   }
 }
