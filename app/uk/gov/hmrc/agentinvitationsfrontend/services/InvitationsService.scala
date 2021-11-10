@@ -191,6 +191,11 @@ class InvitationsService @Inject()(
                    if (response == "Accepted")
                      acaConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)
                    else acaConnector.rejectCgtInvitation(CgtRef(si.clientId), invitationId)
+
+                 case "ppt" =>
+                   if (response == "Accepted")
+                     acaConnector.acceptPptInvitation(PptRef(si.clientId), invitationId)
+                   else acaConnector.rejectPptInvitation(PptRef(si.clientId), invitationId)
                }
 
       _ <- auditService.sendAgentInvitationResponse(invitationId.value, si.arn, response, si.clientIdType, si.clientId, si.service, agentName)

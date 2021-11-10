@@ -631,7 +631,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.heading"))
       checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.itsa.p1", "My Agency"))
-      checkHtmlResultWithBodyText(result, hasMessage("confirm-terms-multi.itsa.p2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item2"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item3"))

@@ -140,6 +140,35 @@
    }
 }
 
+@pptTerms = {
+
+  @if(pageConfig.clientType == "personal") {
+    <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.ppt.personal.p1", pageConfig.agencyName)</span>
+    <ul class="list list-bullet">
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l1")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l2")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l3")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l4")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l5")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l6")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l7")</li>
+        <li>@Messages("confirm-terms-multi.ppt.personal.p1.l8")</li>
+    </ul>
+  } else {
+    <span class="checkbox-heading margin-bottom-20">@Messages("confirm-terms-multi.ppt.business.p1", pageConfig.agencyName)</span>
+    <ul class="list list-bullet">
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l1")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l2")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l3")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l4")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l5")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l6")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l7")</li>
+        <li>@Messages("confirm-terms-multi.ppt.business.p1.l8")</li>
+    </ul>
+  }
+}
+
 @suitableTerms(serviceKey: String, expiryDate: String, isAltItsa: Boolean) = {
     @if(isAltItsa) {
         <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
@@ -151,12 +180,10 @@
         case "trust" => trustTerms
         case "trustNT" => trustNTTerms
         case "cgt" => cgtTerms
+        case "ppt" => pptTerms
     }}
     @if(!isAltItsa) {
         <p>@Messages("confirm-terms-multi.expires.p2", expiryDate)</p>
-    }
-    @if(isAltItsa) {
-        <p>@Messages("confirm-terms-multi.itsa.p2")</p>
     }
 }
 
@@ -203,7 +230,7 @@
 
                     @if(pageConfig.isPending(consent)) {
 
-                        <h2 class="margin-top-0 heading-medium margin-bottom-20 margin-top-20">@Messages(s"confirm-terms-multi.${if(consent.serviceKey == "cgt") "cgt." + pageConfig.clientType else consent.serviceKey}.heading")</h2>
+                        <h2 class="margin-top-0 heading-medium margin-bottom-20 margin-top-20">@Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading")</h2>
 
                         @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                             @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)

@@ -46,7 +46,6 @@
 
 @signupInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
   @if(invitation.lastUpdated.isDefined) {
-    @Messages("recent-invitations.invitations.actions.partialauth.signup",
-      displayDateForLangWithLeadingZero(invitation.lastUpdated.get.toLocalDate.plusDays(appConfig.altItsaSignupDays)))
+    @Messages("recent-invitations.invitations.actions.partialauth.signup")
   }
 }

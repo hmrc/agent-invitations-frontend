@@ -16,14 +16,18 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
+import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
+import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -47,7 +51,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-MTD-VAT"    -> "VAT",
     "HMRC-TERS-ORG"   -> "Trust",
     "HMRC-TERSNT-ORG" -> "TrustNT",
-    "HMRC-CGT-PD"     -> "Cgt"
+    "HMRC-CGT-PD"     -> "Cgt",
+    "HMRC-PPT-ORG"    -> "Ppt"
   )
 
   private val serviceIdentifierTypes = Map(
@@ -55,7 +60,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     "HMRC-MTD-VAT"    -> "VRN",
     "HMRC-TERS-ORG"   -> "SAUTR",
     "HMRC-TERSNT-ORG" -> "URN",
-    "HMRC-CGT-PD"     -> "CGTPDRef"
+    "HMRC-CGT-PD"     -> "CGTPDRef",
+    "HMRC-PPT-ORG"    -> "EtmpRegistrationNumber"
   )
 
   def isServiceEnabled(service: String): Boolean = service match {
@@ -64,6 +70,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     case "HMRC-TERS-ORG"          => featureFlags.showHmrcTrust
     case "HMRC-TERSNT-ORG"        => featureFlags.showHmrcTrust
     case "HMRC-CGT-PD"            => featureFlags.showHmrcCgt
+    case "HMRC-PPT-ORG"           => featureFlags.showPlasticPackagingTax
     case "PERSONAL-INCOME-RECORD" => featureFlags.showPersonalIncome
     case _                        => false // unknown service
   }
@@ -140,6 +147,9 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
   def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     deleteRelationshipForService("HMRC-CGT-PD", arn, ref)
 
+  def deleteRelationshipPpt(arn: Arn, ref: PptRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+    deleteRelationshipForService("HMRC-PPT-ORG", arn, ref)
+
   private def checkRelationship(service: String, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
@@ -174,5 +184,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     checkRelationship("HMRC-CGT-PD", arn, ref)
+
+  def checkPptRelationship(arn: Arn, ref: PptRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    checkRelationship("HMRC-PPT-ORG", arn, ref)
 
 }

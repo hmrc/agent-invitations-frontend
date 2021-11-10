@@ -407,6 +407,32 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         false
     }
 
+  def acceptPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
+      val url =
+        new URL(
+          baseUrl,
+          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/accept").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        logger.error(s"Create PPT Relationship Failed: ${e.getMessage}")
+        false
+    }
+
+  def rejectPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
+      val url =
+        new URL(
+          baseUrl,
+          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/reject").toString
+      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
+    }.recover {
+      case e =>
+        logger.error(s"Reject PPT Invitation Failed: ${e.getMessage}")
+        false
+    }
+
   def cancelInvitation(arn: Arn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Cancel-Invitation-PUT") {
       http.PUT[String, HttpResponse](cancelInvitationUrl(arn, invitationId).toString, "").map { r =>
@@ -511,6 +537,67 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
             case BAD_REQUEST =>
               logger.warn(s"BadRequest response when getting CgtSubscription for given cgtRef: ${cgtRef.value}")
               None
+          }
+        }
+    }
+  }
+
+  def getPptSubscription(pptRef: PptRef)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[PptSubscription]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/ppt/subscriptions/${pptRef.value}").toString
+    monitor(s"ConsumedAPI-PPTSubscription-GET") {
+      http
+        .GET[HttpResponse](url)
+        .map { response =>
+          response.status match {
+            case OK => Some(response.json.as[PptSubscription])
+            case NOT_FOUND =>
+              logger.warn(s"PPT Subscription not found for given pptRef: ${pptRef.value}")
+              None
+            case BAD_REQUEST =>
+              logger.warn(s"BadRequest response when getting PptSubscription for given pptRef: ${pptRef.value}")
+              None
+          }
+        }
+    }
+  }
+
+  def getPptCustomerName(pptRef: PptRef)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/client/ppt-customer-name/pptref/${pptRef.value}").toString
+    monitor(s"ConsumedAPI-GetPPTCustomerName-GET") {
+      http
+        .GET[HttpResponse](url)
+        .map { response =>
+          response.status match {
+            case OK if (response.json \ "customerName").isDefined =>
+              val customerNameField = (response.json \ "customerName")
+              if (customerNameField.isEmpty) logger.warn(s"Malformed JSON received when getting customer name for pptRef: ${pptRef.value}")
+              customerNameField.asOpt[String]
+            case NOT_FOUND =>
+              logger.warn(s"PPT Subscription not found for pptRef: ${pptRef.value}")
+              None
+            case BAD_REQUEST =>
+              logger.warn(s"BadRequest response when getting customer name for pptRef: ${pptRef.value}")
+              None
+          }
+        }
+    }
+  }
+
+  def checkKnownFactPPT(pptClient: PptClient)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/ppt/${pptClient.pptRef.value}/${pptClient.registrationDate}").toString
+    monitor(s"ConsumedAPI-Get-PPT-KnownFacts-GET") {
+      http
+        .GET[HttpResponse](url)
+        .map { response =>
+          response.status match {
+            case OK | NO_CONTENT => true
+            case NOT_FOUND | FORBIDDEN =>
+              logger.warn(s"PPT known fact check failed for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
+              false
+            case BAD_REQUEST =>
+              logger.warn(
+                s"BadRequest response for PPT known fact check for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
+              false
           }
         }
     }

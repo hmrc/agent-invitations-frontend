@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -59,6 +59,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   countryNamesLoader: CountryNamesLoader,
   clientTypeView: client_type,
   cgtRefNotFoundView: cgtRef_notFound,
+  pptRefNotFoundView: pptRef_notFound,
   activeAuthExistsView: active_authorisation_exists,
   checkDetailsView: check_details,
   knownFactsView: known_fact,
@@ -67,6 +68,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   identifyClientVatView: identify_client_vat,
   identifyClientTrustView: identify_client_trust,
   identifyClientCgtView: identify_client_cgt,
+  identifyClientPptView: identify_client_ppt,
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
@@ -188,10 +190,17 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .bindForm(CgtClientForm.form())
       .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
+  val submitIdentifyPptClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(PptClientForm.form)
+      .applyWithRequest(implicit request => Transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
+
   val progressToKnownFact: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .applyWithRequest(implicit request => Transitions.checkedDetailsNoKnownFact(acaConnector.getCgtSubscription(_))) // TODO: (redirect)
+      .applyWithRequest(implicit request =>
+        Transitions.checkedDetailsNoKnownFact(acaConnector.getCgtSubscription(_), acaConnector.getPptSubscription(_))) // TODO: (redirect)
 
   val showConfirmTrustClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).showCurrentState
 
@@ -237,6 +246,16 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
             hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
+  val submitKnownFactPpt: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(agentFastTrackPptRegDateForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.moreDetailsPpt(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+
   val progressToClientType
     : Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)(Transitions.checkedDetailsNoClientType) //.apply(helpers.redirect)
 
@@ -250,8 +269,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(acaConnector.getCgtSubscription(_))(
-            appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            acaConnector.getCgtSubscription(_),
+            acaConnector.getPptSubscription(_))(appConfig))
 
   val submitClientTypeCgt: Action[AnyContent] =
     actions
@@ -261,8 +281,21 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(acaConnector.getCgtSubscription(_))(
-            appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            acaConnector.getCgtSubscription(_),
+            acaConnector.getPptSubscription(_))(appConfig))
+
+  val submitClientTypePpt: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(ClientTypeForm.pptClientTypeForm)
+      .applyWithRequest(
+        implicit request =>
+          Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            acaConnector.getCgtSubscription(_),
+            acaConnector.getPptSubscription(_))(appConfig))
 
   val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent]
 
@@ -283,12 +316,22 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   def showConfirmClientCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientCgt]
 
+  def showConfirmClientPpt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientPpt]
+
   def submitConfirmCgtClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(checkDetailsForm)
       .applyWithRequest(implicit request =>
         Transitions.submitConfirmClientCgt(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+
+  def submitConfirmPptClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(checkDetailsForm)
+      .applyWithRequest(implicit request =>
+        Transitions.submitConfirmClientPpt(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
           hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val showClientNotSignedUp: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientNotSignedUp]
@@ -351,6 +394,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: CheckDetailsCompleteBusinessVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsCompleteTrust       => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsCompleteCgt         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsCompletePpt         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoPostcode          => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoDob               => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
     case _: CheckDetailsNoVatRegDate        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
@@ -364,6 +408,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: ConfirmPostcodeCgt              => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
     case _: ConfirmCountryCodeCgt           => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode()
     case _: ConfirmClientCgt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt()
+    case _: ConfirmClientPpt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt()
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
     case _: KnownFactNotMatched             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
@@ -378,6 +423,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: ClientNotRegistered         => routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered()
     case _: TrustNotFound               => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
     case _: CgtRefNotFound              => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _: PptRefNotFound              => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
     case _: SuspendedAgent              => routes.AgentInvitationFastTrackJourneyController.showSuspended()
     case AlreadyCopiedAcrossItsa        => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa()
     case _: LegacyAuthorisationDetected => routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected()
@@ -428,6 +474,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
       case CheckDetailsCompleteCgt(_, ftr, _) =>
+        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
+
+      case CheckDetailsCompletePpt(_, ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
       case CheckDetailsNoPostcode(_, ftr, _) =>
@@ -661,6 +710,15 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             cgtRef.value
           ))
 
+      case PptRefNotFound(pptRef) =>
+        Ok(
+          pptRefNotFoundView(
+            false,
+            routes.AgentInvitationFastTrackJourneyController.showIdentifyClient(),
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+            pptRef.value
+          ))
+
       case ActiveAuthorisationExists(agentFastTrackRequest, _) =>
         Ok(
           activeAuthExistsView(
@@ -736,11 +794,12 @@ object AgentInvitationFastTrackJourneyController {
           Valid
         case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)             => Valid
-        case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)    => Valid
-        case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern) => Valid
-        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)      => Valid
-        case _                                                                                             => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)                       => Valid
+        case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)              => Valid
+        case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern)           => Valid
+        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)                => Valid
+        case AgentFastTrackRequest(_, HMRCPPTORG, "EtmpRegistrationNumber", clientId, _) if PptRef.isValid(clientId) => Valid
+        case _                                                                                                       => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -811,11 +870,15 @@ object AgentInvitationFastTrackJourneyController {
   def agentFastTrackVatRegDateForm: Form[String] =
     knownFactsForm(DateFieldHelper.dateFieldsMapping("vat-registration"))
 
+  def agentFastTrackPptRegDateForm: Form[String] =
+    knownFactsForm(DateFieldHelper.dateFieldsMapping("ppt-registration"))
+
   private def getKnownFactFormForService(service: String) =
     service match {
       case HMRCMTDIT  => agentFastTrackPostcodeForm
       case HMRCPIR    => agentFastTrackDateOfBirthForm
       case HMRCMTDVAT => agentFastTrackVatRegDateForm
+      case HMRCPPTORG => agentFastTrackPptRegDateForm
       case p          => throw new Exception(s"invalid service in the cache during fast track journey: $p")
     }
 
@@ -824,6 +887,7 @@ object AgentInvitationFastTrackJourneyController {
       case HMRCMTDIT  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactItsa()
       case HMRCPIR    => routes.AgentInvitationFastTrackJourneyController.submitKnownFactIrv()
       case HMRCMTDVAT => routes.AgentInvitationFastTrackJourneyController.submitKnownFactVat()
+      case HMRCPPTORG => routes.AgentInvitationFastTrackJourneyController.submitKnownFactPpt()
     }
 
 }

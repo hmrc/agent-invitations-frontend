@@ -19,7 +19,7 @@ package models
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
+import uk.gov.hmrc.agentmtdidentifiers.model.{PptRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import support.UnitSpec
 
@@ -55,6 +55,16 @@ class InvitationSpec extends UnitSpec {
 
       Invitation.format.writes(vatInvitation) shouldBe jsValue
       Invitation.format.reads(jsValue) shouldBe JsSuccess(vatInvitation)
+    }
+
+    "read and write PptInvitation as expected" in {
+
+      val pptInvitation = PptInvitation(PptRef("XAPPT000012345"), Some(personal))
+      val jsValue = Json.parse(
+        """{"type":"PptInvitation","data":{"clientType":"personal","service":"HMRC-PPT-ORG","clientIdentifier":"XAPPT000012345","clientIdentifierType":"EtmpRegistrationNumber"}}""")
+
+      Invitation.format.writes(pptInvitation) shouldBe jsValue
+      Invitation.format.reads(jsValue) shouldBe JsSuccess(pptInvitation)
     }
   }
 

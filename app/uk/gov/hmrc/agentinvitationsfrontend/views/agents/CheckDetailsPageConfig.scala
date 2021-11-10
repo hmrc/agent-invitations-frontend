@@ -37,6 +37,7 @@ case class CheckDetailsPageConfig(
       case "HMRC-TERS-ORG"          => "trust"
       case "HMRC-TERSNT-ORG"        => "trust"
       case "HMRC-CGT-PD"            => "cgt"
+      case "HMRC-PPT-ORG"           => "ppt"
     }
   }
 
