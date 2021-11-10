@@ -113,6 +113,8 @@ GET         /agents/select-client-type                                  uk.gov.h
 POST        /agents/select-client-type                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientType
 POST        /agents/select-client-type-cgt                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypeCgt
 GET         /agents/sent-invitation                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showInvitationSent
+GET         /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected
+POST        /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected
 
 #Error Fast Track Endpoints
 GET         /agents/client-not-signed-up                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientNotSignedUp

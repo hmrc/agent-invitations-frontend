@@ -16,13 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{JsPath, Reads}
+sealed trait LegacySaRelationshipResult
 
-case class LegacyAgentId(agentId: String)
-
-case class LegacyAgentIdNotFound(message: String) extends Exception(message)
-
-object LegacyAgentId {
-  implicit val emailReads: Reads[LegacyAgentId] =
-    (JsPath \ "agentId").read[String].map(LegacyAgentId(_))
-}
+case object LegacySaRelationshipFoundAndMapped extends LegacySaRelationshipResult
+case object LegacySaRelationshipFoundNotMapped extends LegacySaRelationshipResult
+case object LegacySaRelationshipNotFound extends LegacySaRelationshipResult

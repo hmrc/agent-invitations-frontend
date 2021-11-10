@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logging
 import play.api.mvc.Request
@@ -29,6 +28,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -263,14 +263,8 @@ class InvitationsService @Inject()(
           .headOption)
   }
 
-  def hasLegacyMappingFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    relationshipsConnector.getHasLegacyRelationshipsFor(arn, nino)
-
-  // TODO additional check if hasLegacyMappingFor has failed
-  def hasOtherLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    relationshipsConnector.getHasOtherLegacyRelationships(arn, nino)
-    mappingConnector.getMapping(arn)
-  }
+  def legacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
+    relationshipsConnector.getLegacySaRelationshipStatusFor(arn, nino)
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     getActiveInvitationFor(arn, clientId, service).flatMap {

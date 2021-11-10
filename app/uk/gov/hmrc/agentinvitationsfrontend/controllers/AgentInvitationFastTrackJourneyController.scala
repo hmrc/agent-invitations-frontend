@@ -25,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.ConfirmClientForm
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.{ConfirmClientForm, LegacyAuthorisationForm}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
+import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
@@ -44,7 +45,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AgentInvitationFastTrackJourneyController @Inject()(
@@ -76,7 +77,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   suspendedView: agent_suspended_fastrack,
   partialAuthExistsView: partial_auth_exists,
   clientNotRegisteredView: client_not_registered,
-  alreadyCopiedAcrossView: already_copied_across_itsa)(
+  alreadyCopiedAcrossView: already_copied_across_itsa,
+  legacyAuthorisationDetectedView: legacy_authorisation_detected)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -132,7 +134,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val progressToIdentifyClient: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.checkedDetailsChangeInformation).redirect
@@ -151,7 +153,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.identifiedClientItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig)
+            hasActiveRelationshipFor)(isAltItsa)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(appConfig)
       )
 
   val submitIdentifyIrvClient: Action[AnyContent] =
@@ -162,7 +164,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.identifiedClientIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitIdentifyVatClient: Action[AnyContent] =
     actions
@@ -172,7 +174,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.identifiedClientVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
@@ -199,7 +201,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .bindForm(checkDetailsForm)
       .applyWithRequest(implicit request =>
         Transitions.submitConfirmTrustClient(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val knownFactRedirect: Action[AnyContent] = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
 
@@ -213,7 +215,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.moreDetailsItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitKnownFactIrv: Action[AnyContent] =
     actions
@@ -222,8 +224,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.moreDetailsIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(hasLegacyMapping)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(appConfig))
+            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitKnownFactVat: Action[AnyContent] =
     actions
@@ -233,7 +235,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.moreDetailsVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val progressToClientType
     : Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)(Transitions.checkedDetailsNoClientType) //.apply(helpers.redirect)
@@ -248,7 +250,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(acaConnector.getCgtSubscription(_))(
+            appConfig))
 
   val submitClientTypeCgt: Action[AnyContent] =
     actions
@@ -258,7 +261,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
             invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(acaConnector.getCgtSubscription(_))(appConfig))
+            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(acaConnector.getCgtSubscription(_))(
+            appConfig))
 
   val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent]
 
@@ -285,7 +289,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .bindForm(checkDetailsForm)
       .applyWithRequest(implicit request =>
         Transitions.submitConfirmClientCgt(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
-          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(hasLegacyMapping)(appConfig))
+          hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val showClientNotSignedUp: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientNotSignedUp]
   val showPendingAuthorisationExists: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[PendingInvitationExists]
@@ -294,6 +298,39 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val showClientNotRegistered: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientNotRegistered]
 
   val showAlreadyCopiedAcrossItsa: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AlreadyCopiedAcrossItsa.type]
+
+  val showLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[LegacyAuthorisationDetected]
+
+  val submitLegacyAuthorisationDetected: Action[AnyContent] = Action.async { implicit request =>
+    withAuthorisedAsAgent { agent =>
+      LegacyAuthorisationForm.bindFromRequest
+        .fold(
+          { hasErrors =>
+            Future successful Ok(
+              legacyAuthorisationDetectedView(
+                hasErrors,
+                routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected(),
+                routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url
+              ))
+          }, { valid =>
+            if (valid.choice)
+              Future successful Redirect(externalUrls.agentMappingFrontendUrl)
+                .addingToSession(toReturnFromMapping)
+            else
+              helpers.apply(
+                Transitions
+                  .confirmedLegacyAuthorisation(isAltItsa, invitationsService.createInvitation, invitationsService.createAgentLink, getAgencyEmail),
+                helpers.redirect
+              )
+          }
+        )
+    }
+  }
+
+  private def toReturnFromMapping()(implicit request: Request[AnyContent]) = {
+    val sessionKeyUsedInMappingService = "OriginForMapping"
+    sessionKeyUsedInMappingService -> localFriendlyUrl(env)(request.path, request.host)
+  }
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
@@ -338,12 +375,13 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
     case _: PartialAuthorisationExists =>
       routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
-    case _: ClientNotRegistered  => routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered()
-    case _: TrustNotFound        => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
-    case _: CgtRefNotFound       => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
-    case _: SuspendedAgent       => routes.AgentInvitationFastTrackJourneyController.showSuspended()
-    case AlreadyCopiedAcrossItsa => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa()
-    case _                       => throw new Exception(s"Link not found for $state")
+    case _: ClientNotRegistered         => routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered()
+    case _: TrustNotFound               => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _: CgtRefNotFound              => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case _: SuspendedAgent              => routes.AgentInvitationFastTrackJourneyController.showSuspended()
+    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa()
+    case _: LegacyAuthorisationDetected => routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected()
+    case _                              => throw new Exception(s"Link not found for $state")
   }
 
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(implicit request: Request[_]): Result = {
@@ -676,6 +714,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case SuspendedAgent(service, continueUrl) => Ok(suspendedView(service, continueUrl))
 
       case AlreadyCopiedAcrossItsa => Ok(alreadyCopiedAcrossView())
+
+      case LegacyAuthorisationDetected(_, _, _, _) =>
+        Ok(
+          legacyAuthorisationDetectedView(
+            formWithErrors.or(LegacyAuthorisationForm),
+            routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected(),
+            routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url
+          ))
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }
