@@ -78,12 +78,13 @@
                     case "utr" => Messages("check-details.utr")
                     case "urn" => Messages("check-details.urn")
                     case "CGTPDRef" => Messages("check-details.cgt")
+                    case "EtmpRegistrationNumber" => Messages("check-details.ppt")
                     case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
                 }}
             </dt>
             <dd class="cya-answer" id="client-identifier">
                 @{config.fastTrackRequest.service match {
-                    case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" => config.fastTrackRequest.clientIdentifier
+                    case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" | "HMRC-PPT-ORG" => config.fastTrackRequest.clientIdentifier
                     case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
                 }}
             </dd>
@@ -98,6 +99,7 @@
                         case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
                         case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
                         case "HMRC-CGT-PD" => Messages("check-details.cgtRef")
+                        case "HMRC-PPT-ORG" => Messages("check-details.ppt-reg-date")
                     }
                 }
                 </dt>

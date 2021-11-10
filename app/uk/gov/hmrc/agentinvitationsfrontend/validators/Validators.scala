@@ -23,7 +23,7 @@ import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
@@ -169,6 +169,16 @@ object Validators {
   def validCgtRef(): Constraint[String] =
     patternConstraint(CgtRef.cgtRegex, s"error.cgt.required", s"enter-cgt.invalid-format")
 
+  val validPptRef: Constraint[String] =
+    Constraint[String] { fieldValue: String =>
+      val formattedField = fieldValue.replace(" ", "").trim
+      Constraints.nonEmpty.apply(formattedField) match {
+        case _: Invalid                          => Invalid(ValidationError("error.pptref.required"))
+        case _ if PptRef.isValid(formattedField) => Valid
+        case _                                   => Invalid("error.pptref.invalid-format")
+      }
+    }
+
   private def validateTrustTaxIdentifier(nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>
       val formattedField = fieldValue.replace(" ", "").trim
@@ -200,6 +210,7 @@ object Validators {
       case clientId if clientId.nonEmpty && clientId.matches(utrPattern)                        => Valid
       case clientId if clientId.nonEmpty && clientId.matches(urnPattern)                        => Valid
       case clientId if clientId.nonEmpty && CgtRef.isValid(clientId)                            => Valid
+      case clientId if clientId.nonEmpty && PptRef.isValid(clientId)                            => Valid
       case _ =>
         Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
 

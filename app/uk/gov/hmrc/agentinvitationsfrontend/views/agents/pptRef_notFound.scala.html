@@ -1,0 +1,51 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+
+@this(
+ mainTemplate: main_template
+)
+
+@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call], pptRef: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+
+@mainTemplate(title = Messages("generic.title", Messages(s"ppt-not-matched.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+
+  @back_link(tryAgainCall.url)
+
+  <h1 id="notMatchedHeader" class="heading-xlarge margin-bottom-20">@Messages(s"ppt-not-matched.header")</h1>
+
+  <p id="enteredPptRef">@Messages(s"ppt-not-matched.p1", pptRef)</p>
+
+  <p id="notMatched">@Messages(s"ppt-not-matched.p2")</p>
+
+  <p id="notMatchedAdvice">@Messages(s"ppt-not-matched.advice")</p>
+  <ol class="list list-bullet margin-left-0">
+      <li>@Messages("ppt-not-matched.advice.l1")</li>
+      <li>@Messages("ppt-not-matched.advice.l2")</li>
+  </ol>
+
+
+<a id="tryAgainButton" href="@tryAgainCall" class="button" role="button">@Messages(s"try-again.button")</a>
+
+  @if(hasJourneyCache) {
+   <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations)>@Messages("review-auths.link")</a></p>
+  }
+
+}

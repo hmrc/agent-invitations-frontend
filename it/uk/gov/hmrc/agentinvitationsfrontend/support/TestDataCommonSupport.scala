@@ -61,6 +61,7 @@ trait TestDataCommonSupport {
     """{"code": "INVALID_TRUST_STATE","reason": "The remote endpoint has indicated that the Trust/Estate is Closed and playback is not possible"}"""
 
   val cgtRef = CgtRef("XMCGTP123456789")
+  val pptRef = PptRef("XAPPT0000012345")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -71,4 +72,8 @@ trait TestDataCommonSupport {
 
   val cgtNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 
+  val pptDefaultRegDate: LocalDate = new LocalDate(2021, 1, 1)
+  def pptSubscription(regDate: LocalDate = pptDefaultRegDate) = PptSubscription("PPT", regDate, None)
+
+  val pptNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 }

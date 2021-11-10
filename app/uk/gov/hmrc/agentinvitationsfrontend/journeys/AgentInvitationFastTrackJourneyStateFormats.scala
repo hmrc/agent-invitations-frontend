@@ -30,6 +30,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val CheckDetailsCompleteBusinessVatFormat = Json.format[CheckDetailsCompleteBusinessVat]
   val CheckDetailsCompleteTrustFormat = Json.format[CheckDetailsCompleteTrust]
   val CheckDetailsCompleteCgtFormat = Json.format[CheckDetailsCompleteCgt]
+  val CheckDetailsCompletePptFormat = Json.format[CheckDetailsCompletePpt]
   val CheckDetailsNoPostcodeFormat = Json.format[CheckDetailsNoPostcode]
   val CheckDetailsNoDobFormat = Json.format[CheckDetailsNoDob]
   val CheckDetailsNoVatRegDateFormat = Json.format[CheckDetailsNoVatRegDate]
@@ -58,6 +59,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val ClientNotSignedUpFormat = Json.format[ClientNotSignedUp]
   val TrustNotFoundFormat = Json.format[TrustNotFound]
   val CgtRefNotFoundFormat = Json.format[CgtRefNotFound]
+  val PptRefNotFoundFormat = Json.format[PptRefNotFound]
   val SuspendedAgentFormat = Json.format[SuspendedAgent]
 
   val ConfirmClientCgtFormat: OFormat[ConfirmClientCgt] = Json.format
@@ -72,6 +74,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: CheckDetailsCompleteBusinessVat => CheckDetailsCompleteBusinessVatFormat.writes(s)
     case s: CheckDetailsCompleteTrust       => CheckDetailsCompleteTrustFormat.writes(s)
     case s: CheckDetailsCompleteCgt         => CheckDetailsCompleteCgtFormat.writes(s)
+    case s: CheckDetailsCompletePpt         => CheckDetailsCompletePptFormat.writes(s)
     case s: CheckDetailsNoPostcode          => CheckDetailsNoPostcodeFormat.writes(s)
     case s: CheckDetailsNoDob               => CheckDetailsNoDobFormat.writes(s)
     case s: CheckDetailsNoVatRegDate        => CheckDetailsNoVatRegDateFormat.writes(s)
@@ -95,6 +98,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: ActiveAuthorisationExists       => ActiveAuthorisationExistsFormat.writes(s)
     case s: TrustNotFound                   => TrustNotFoundFormat.writes(s)
     case s: CgtRefNotFound                  => CgtRefNotFoundFormat.writes(s)
+    case s: PptRefNotFound                  => PptRefNotFoundFormat.writes(s)
     case s: ConfirmClientCgt                => ConfirmClientCgtFormat.writes(s)
     case s: ConfirmPostcodeCgt              => ConfirmCgtPostcodeFormat.writes(s)
     case s: ConfirmCountryCodeCgt           => ConfirmCgtCountryCodeFormat.writes(s)
@@ -112,6 +116,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "CheckDetailsCompleteBusinessVat" => CheckDetailsCompleteBusinessVatFormat.reads(properties)
     case "CheckDetailsCompleteTrust"       => CheckDetailsCompleteTrustFormat.reads(properties)
     case "CheckDetailsCompleteCgt"         => CheckDetailsCompleteCgtFormat.reads(properties)
+    case "CheckDetailsCompletePpt"         => CheckDetailsCompletePptFormat.reads(properties)
     case "CheckDetailsNoPostcode"          => CheckDetailsNoPostcodeFormat.reads(properties)
     case "CheckDetailsNoDob"               => CheckDetailsNoDobFormat.reads(properties)
     case "CheckDetailsNoVatRegDate"        => CheckDetailsNoVatRegDateFormat.reads(properties)
@@ -136,6 +141,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "ActiveAuthorisationExists"       => ActiveAuthorisationExistsFormat.reads(properties)
     case "TrustNotFound"                   => TrustNotFoundFormat.reads(properties)
     case "CgtRefNotFound"                  => CgtRefNotFoundFormat.reads(properties)
+    case "PptRefNotFound"                  => PptRefNotFoundFormat.reads(properties)
     case "ConfirmClientCgt"                => ConfirmClientCgtFormat.reads(properties)
     case "ConfirmPostcodeCgt"              => ConfirmCgtPostcodeFormat.reads(properties)
     case "ConfirmCountryCodeCgt"           => ConfirmCgtCountryCodeFormat.reads(properties)

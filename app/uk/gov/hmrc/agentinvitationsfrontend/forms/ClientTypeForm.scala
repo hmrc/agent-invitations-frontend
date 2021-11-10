@@ -36,6 +36,8 @@ object ClientTypeForm {
 
   val supportedClientTypesForCgt: Set[String] = Set("personal", "trust")
 
+  val supportedClientTypesForPpt: Set[String] = Set("personal", "trust")
+
   lazy val authorisationForm: Form[String] = form("error.client-type.empty", supportedClientTypes)
 
   lazy val deAuthorisationForm: Form[String] =
@@ -44,4 +46,6 @@ object ClientTypeForm {
   lazy val fastTrackForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesFastTrack)
 
   lazy val cgtClientTypeForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesForCgt)
+
+  lazy val pptClientTypeForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesForPpt)
 }

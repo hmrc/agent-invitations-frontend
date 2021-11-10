@@ -31,14 +31,15 @@ object Services {
   val HMRCCGTPD = "HMRC-CGT-PD"
   val HMRCNI = "HMRC-NI"
   val TRUST = "TRUST"
+  val HMRCPPTORG = "HMRC-PPT-ORG"
 
-  val supportedServicesWithAnyTrust = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD)
-  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
-  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn")
+  val supportedServicesWithAnyTrust = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD, HMRCPPTORG)
+  val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
+  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn", "EtmpRegistrationNumber")
   val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)
-  val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI)
-  val allSupportedEnrolmentKeysForBusiness = Set(HMRCMTDVAT)
-  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TAXABLETRUST, NONTAXABLETRUST)
+  val allSupportedEnrolmentKeysForIndividual = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCNI, HMRCPPTORG)
+  val allSupportedEnrolmentKeysForBusiness = Set(HMRCMTDVAT, HMRCPPTORG)
+  val allSupportedEnrolmentKeysForTrustOrEstate = Set(HMRCCGTPD, TAXABLETRUST, NONTAXABLETRUST, HMRCPPTORG)
 
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {
@@ -48,7 +49,8 @@ object Services {
       case 'D' => "trust"
       case 'E' => "cgt"
       case 'F' => "trustNT"
-      case _   => "Service is missing"
+      case 'G' => "ppt"
+      case x   => "Service is missing: " + x
     }
 
   def determineServiceMessageKeyFromService(service: String): String =
@@ -59,6 +61,7 @@ object Services {
       case TAXABLETRUST    => "trust"
       case NONTAXABLETRUST => "trustNT"
       case HMRCCGTPD       => "cgt"
+      case HMRCPPTORG      => "ppt"
     }
 
   def determineServiceFromServiceMessageKey(serviceMessageKey: String): String =
@@ -69,6 +72,7 @@ object Services {
       case "trust"   => TAXABLETRUST
       case "trustNT" => NONTAXABLETRUST
       case "cgt"     => HMRCCGTPD
+      case "ppt"     => HMRCPPTORG
     }
 
   def clientIdType(service: String): String =
@@ -79,5 +83,6 @@ object Services {
       case TAXABLETRUST    => "utr"
       case NONTAXABLETRUST => "urn"
       case HMRCPIR         => "ni"
+      case HMRCPPTORG      => "EtmpRegistrationNumber"
     }
 }

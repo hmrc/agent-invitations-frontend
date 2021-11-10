@@ -40,6 +40,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val AuthorisationCancelledFormats: OFormat[AuthorisationCancelled] = Json.format
   val ResponseFailedFormats: OFormat[ResponseFailed] = Json.format
   val CgtRefNotFoundFormats: OFormat[CgtRefNotFound] = Json.format
+  val PptRefNotFoundFormats: OFormat[PptRefNotFound] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectServicePersonal    => SelectServicePersonalFormats.writes(s)
@@ -54,6 +55,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case s: ConfirmClientTrust       => ConfirmClientTrustFormats.writes(s)
     case s: ConfirmClientTrustNT     => ConfirmClientTrustNTFormats.writes(s)
     case s: CgtRefNotFound           => CgtRefNotFoundFormats.writes(s)
+    case s: PptRefNotFound           => PptRefNotFoundFormats.writes(s)
     case s: ConfirmClientCgt         => ConfirmClientCgtFormats.writes(s)
     case s: NotSignedUp              => NotSignedUpFormats.writes(s)
     case s: ConfirmCancel            => ConfirmCancelFormats.writes(s)

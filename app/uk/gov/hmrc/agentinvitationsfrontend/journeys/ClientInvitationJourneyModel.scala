@@ -406,6 +406,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           case "trust"   => oldConsent.copy(consent = formTerms.trustConsent)
           case "trustNT" => oldConsent.copy(consent = formTerms.trustNTConsent)
           case "cgt"     => oldConsent.copy(consent = formTerms.cgtConsent)
+          case "ppt"     => oldConsent.copy(consent = formTerms.pptConsent)
           case _         => throw new IllegalStateException("the service key was not supported")
         }
       }
@@ -424,6 +425,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         case "trust"   => changedConsent.copy(consent = formTerms.trustConsent)
         case "trustNT" => changedConsent.copy(consent = formTerms.trustNTConsent)
         case "cgt"     => changedConsent.copy(consent = formTerms.cgtConsent)
+        case "ppt"     => changedConsent.copy(consent = formTerms.pptConsent)
         case _         => throw new IllegalStateException("the service key was not supported")
       }
       oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
