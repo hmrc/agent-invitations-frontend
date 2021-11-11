@@ -77,7 +77,7 @@ object Invitation {
 
 case class ItsaInvitation(
   clientIdentifier: Nino,
-  clientType: Option[ClientType] = Some(ClientType.personal),
+  clientType: Option[ClientType] = Some(ClientType.Personal),
   service: String = Services.HMRCMTDIT,
   clientIdentifierType: String = "ni")
     extends Invitation
@@ -88,7 +88,7 @@ object ItsaInvitation {
 
 case class PirInvitation(
   clientIdentifier: Nino,
-  clientType: Option[ClientType] = Some(ClientType.personal),
+  clientType: Option[ClientType] = Some(ClientType.Personal),
   service: String = Services.HMRCPIR,
   clientIdentifierType: String = "ni")
     extends Invitation
@@ -110,7 +110,7 @@ object VatInvitation {
 
 case class TrustInvitation(
   clientIdentifier: Utr,
-  clientType: Option[ClientType] = Some(ClientType.business),
+  clientType: Option[ClientType] = Some(ClientType.Trust),
   service: String = Services.TAXABLETRUST,
   clientIdentifierType: String = "utr")
     extends Invitation
@@ -121,7 +121,7 @@ object TrustInvitation {
 
 case class TrustNTInvitation(
   clientIdentifier: Urn,
-  clientType: Option[ClientType] = Some(ClientType.business),
+  clientType: Option[ClientType] = Some(ClientType.Trust),
   service: String = Services.NONTAXABLETRUST,
   clientIdentifierType: String = "urn")
     extends Invitation

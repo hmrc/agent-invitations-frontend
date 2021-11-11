@@ -63,8 +63,9 @@
             </dt>
             <dd class="cya-answer" id="client-type">
                 @{config.fastTrackRequest.clientType match {
-                    case Some(ClientType.personal) => Messages("check-details.client-type.personal")
-                    case Some(ClientType.business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
+                    case Some(ClientType.Personal) => Messages("check-details.client-type.personal")
+                    case Some(ClientType.Business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
+                    case Some(ClientType.Business) => Messages(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
                     case _ => throw new IllegalArgumentException("client type not found")
                 }}
             </dd>

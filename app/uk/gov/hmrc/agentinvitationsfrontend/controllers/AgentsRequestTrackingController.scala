@@ -27,7 +27,7 @@ import play.api.{Configuration, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
@@ -183,7 +183,7 @@ class AgentsRequestTrackingController @Inject()(
               agentLink   <- invitationsService.createAgentLink(agent.arn, data.clientType)
               agencyEmail <- acaConnector.getAgencyEmail()
             } yield {
-              val service = if (data.clientType.contains(personal)) "personal" else data.service
+              val service = if (data.clientType.contains(Personal)) "personal" else data.service
               Redirect(routes.AgentsRequestTrackingController.showResendLink()).addingToSession(
                 "agentLink"   -> agentLink,
                 "clientType"  -> data.clientType.map(ClientType.fromEnum).getOrElse(""),
@@ -220,7 +220,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       request.session.get("service") match {
         case Some(service) => {
-          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
           Future successful Ok(
             confirmCancelView(service, clientType, confirmCancelForm, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
         }
@@ -237,7 +237,7 @@ class AgentsRequestTrackingController @Inject()(
           val invitationId = InvitationId(id)
           request.session.get("service") match {
             case Some(service) => {
-              val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+              val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
               confirmCancelForm
                 .bindFromRequest()
                 .fold(
@@ -299,7 +299,7 @@ class AgentsRequestTrackingController @Inject()(
   def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
-      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       Future successful Ok(
         confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
     }
@@ -309,7 +309,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { agent =>
       val clientId = request.session.get("clientId").getOrElse("")
       val service = request.session.get("service").getOrElse("")
-      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
       confirmCancelAuthorisationForm
         .bindFromRequest()
@@ -337,7 +337,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { _ =>
       val service = request.session.get("service").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(personal)
+      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       val clientId = request.session.get("clientId").getOrElse("")
       Future successful Ok(authorisationCancelledView(service, clientId, clientName, clientType))
     }

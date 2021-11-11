@@ -107,3 +107,22 @@ class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFl
     seq
   }
 }
+
+class BusinessInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
+    extends InvitationsBasket(services, basket, featureFlags) {
+
+  /** Available service selections for personal clients - based on what is configured and already in basket
+    * */
+  def availableServices(implicit messages: Messages): Seq[(String, String)] = {
+
+    val seq = collection.mutable.ArrayBuffer[(String, String)]()
+
+    if (showServiceMtdVat)
+      seq.append(HMRCMTDVAT -> Messages("select-service.HMRC-MTD-VAT.business"))
+
+    if (showServicePlasticPackagingTax)
+      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.business"))
+
+    seq
+  }
+}

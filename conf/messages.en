@@ -130,6 +130,9 @@ select-single-service.HMRC-MTD-VAT.business.error=Select yes if you want to subm
 select-single-service.HMRC-MTD-VAT.personal.header=Do you want to manage this client’s VAT?
 select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to submit this client’s VAT
 
+select-single-service.HMRC-MTD-VAT.trust.header=Do you want to manage this client’s VAT?
+select-single-service.HMRC-MTD-VAT.trust.error=Select yes if you want to submit this client’s VAT
+
 # Note: trusts are internally treated as "business" client type
 select-single-service.TRUST.business.header=Do you want to maintain a trust or an estate for this client?
 select-single-service.TRUST.business.error=Select yes if you want to maintain a trust or an estate for this client
@@ -142,8 +145,19 @@ select-single-service.HMRC-MTD-IT.personal.error=Select yes if you want to manag
 
 select-single-service.HMRC-CGT-PD.personal.header=Do you want to manage their Capital Gains Tax on UK property account?
 select-single-service.HMRC-CGT-PD.business.header=Do you want to manage their Capital Gains Tax on UK property account?
+select-single-service.HMRC-CGT-PD.trust.header=Do you want to manage their Capital Gains Tax on UK property account?
+
 select-single-service.HMRC-CGT-PD.personal.error=Select yes if you want to manage their Capital Gains Tax on UK property account
 select-single-service.HMRC-CGT-PD.business.error=Select yes if you want to manage their Capital Gains Tax on UK property account
+select-single-service.HMRC-CGT-PD.trust.error=Select yes if you want to manage their Capital Gains Tax on UK property account
+
+select-single-service.HMRC-PPT-ORG.personal.header=Do you want to manage their Plastic Packaging Tax?
+select-single-service.HMRC-PPT-ORG.business.header=Do you want to manage their Plastic Packaging Tax?
+select-single-service.HMRC-PPT-ORG.trust.header=Do you want to manage their Plastic Packaging Tax?
+
+select-single-service.HMRC-PPT-ORG.personal.error=Select yes if you want to manage their Plastic Packaging Tax
+select-single-service.HMRC-PPT-ORG.business.error=Select yes if you want to manage their Plastic Packaging Tax
+select-single-service.HMRC-PPT-ORG.trust.error=Select yes if you want to manage their Plastic Packaging Tax
 
 # Agent suspended
 agent-suspended.heading.multi=We could not create one of your requests
@@ -498,8 +512,9 @@ landing-page.service.vat.p1=You need to authorise your tax agent if you want the
 # Warm up
 warm-up.header=Authorise {0} to deal with HMRC for you
 warm-up.p1=Use this service to allow {0} to manage your tax affairs.
-warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
 warm-up.p2.personal=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT.
+warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
+warm-up.p2.trust=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
 warm-up.p3.personal=If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one.
 warm-up.inset=If you authorise {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to authorise {0}
@@ -689,7 +704,8 @@ confirm-terms-multi.cgt.business.p1.l10=penalty details
 confirm-terms-multi.cgt.business.label=I consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account.
 
 confirm-terms-multi.ppt.personal.heading=Manage my Plastic Packaging Tax
-confirm-terms-multi.ppt.business.heading=Manage a trust’s Plastic Packaging Tax
+confirm-terms-multi.ppt.business.heading=Manage my Plastic Packaging Tax
+confirm-terms-multi.ppt.trust.heading=Manage a trust’s Plastic Packaging Tax
 confirm-terms-multi.ppt.personal.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax (PPT), this means {0} can:
 confirm-terms-multi.ppt.personal.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.personal.p1.l2=submit your PPT returns
@@ -701,7 +717,7 @@ confirm-terms-multi.ppt.personal.p1.l7=view your calculations and amounts owed a
 confirm-terms-multi.ppt.personal.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax details.
 
-confirm-terms-multi.ppt.business.p1=If you consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax, this means {0} can:
+confirm-terms-multi.ppt.business.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax, this means {0} can:
 confirm-terms-multi.ppt.business.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.business.p1.l2=submit your PPT returns
 confirm-terms-multi.ppt.business.p1.l3=adjust your PPT returns
@@ -710,7 +726,18 @@ confirm-terms-multi.ppt.business.p1.l5=provide repayment bank details to HMRC wh
 confirm-terms-multi.ppt.business.p1.l6=finalise your overall tax position
 confirm-terms-multi.ppt.business.p1.l7=view your calculations and amounts owed and paid
 confirm-terms-multi.ppt.business.p1.l8=manage your PPT using software
-confirm-terms-multi.ppt.business.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
+confirm-terms-multi.ppt.business.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax.
+
+confirm-terms-multi.ppt.trust.p1=If you consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax, this means {0} can:
+confirm-terms-multi.ppt.trust.p1.l1=view your PPT returns
+confirm-terms-multi.ppt.trust.p1.l2=submit your PPT returns
+confirm-terms-multi.ppt.trust.p1.l3=adjust your PPT returns
+confirm-terms-multi.ppt.trust.p1.l4=speak to HMRC about your returns
+confirm-terms-multi.ppt.trust.p1.l5=provide repayment bank details to HMRC when repayment is due
+confirm-terms-multi.ppt.trust.p1.l6=finalise your overall tax position
+confirm-terms-multi.ppt.trust.p1.l7=view your calculations and amounts owed and paid
+confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
+confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
 
 confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Making Tax Digital for Income Tax.
 
@@ -764,6 +791,7 @@ client-complete.multi.p1.vat=managing your VAT
 client-complete.multi.p1.trust=maintaining a trust or an estate
 client-complete.multi.p1.trustNT=maintaining a trust or an estate
 client-complete.multi.p1.cgt=managing your Capital Gains Tax on UK property account
+client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
 
 # Generic Issue Title

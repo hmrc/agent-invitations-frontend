@@ -105,12 +105,12 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         "the affinity group does match the client type" in {
           given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
-            thenGo(WarmUp(personal, uid, arn, agentName, normalisedAgentName))
+            thenGo(WarmUp(Personal, uid, arn, agentName, normalisedAgentName))
         }
 
         "the affinity group does not match the client type" in {
           given(MissingJourneyHistory) when start("personal", uid, normalisedAgentName)(getAgentReferenceRecord)(getAgencyName) should
-            thenGo(WarmUp(personal, uid, arn, agentName, normalisedAgentName))
+            thenGo(WarmUp(Personal, uid, arn, agentName, normalisedAgentName))
         }
       }
       "transition to NotFoundInvitation" when {
@@ -142,17 +142,17 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedIndividualClient)) should
-            thenGo(MultiConsent(personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
         "transition to GGUserIdNeeded when the ClientType is personal and there is no active session" in {
           def getInvitationDetails(uid: String) =
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(None) should
-            thenGo(GGUserIdNeeded(personal, uid, arn, agentName))
+            thenGo(GGUserIdNeeded(Personal, uid, arn, agentName))
         }
 
         "transition to WarmUpSessionRequired when the ClientType is business and there is no active session" in {
@@ -160,9 +160,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Business, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(None) should
-            thenGo(WarmUpSessionRequired(business, uid, arn, agentName))
+            thenGo(WarmUpSessionRequired(Business, uid, arn, agentName))
         }
 
         "transition to AuthorisationRequestAlreadyResponded when the invitation has a status of Accepted and " +
@@ -171,9 +171,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(AuthorisationRequestAlreadyResponded(dateString(now), personal))
+            thenGo(AuthorisationRequestAlreadyResponded(dateString(now), Personal))
         }
 
         "transition to AlreadyRespondedToRequest when the invitation has a status of Accepted and " +
@@ -182,7 +182,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Accepted, false, List(StatusChangeEvent(now, Accepted)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithAllSupportedEnrolments) should
             thenGo(AlreadyRespondedToRequest(dateString(now)))
@@ -194,9 +194,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Cancelled, false, List(StatusChangeEvent(DateTime.now(), Cancelled)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(AuthorisationRequestCancelled(dateString(now), personal))
+            thenGo(AuthorisationRequestCancelled(dateString(now), Personal))
         }
 
         "transition to AgentCancelledRequest when the invitation has a status of Cancelled and " +
@@ -205,7 +205,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Cancelled, false, List(StatusChangeEvent(now, Cancelled)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithAllSupportedEnrolments) should
             thenGo(AgentCancelledRequest(dateString(now)))
@@ -217,9 +217,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Expired, false, List(StatusChangeEvent(DateTime.now(), Expired)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(AuthorisationRequestExpired(dateString(now), personal))
+            thenGo(AuthorisationRequestExpired(dateString(now), Personal))
         }
 
         "transition to RequestExpired when the invitation has a status of Expired and " +
@@ -228,7 +228,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Expired, false, List(StatusChangeEvent(now, Expired)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithAllSupportedEnrolments) should
             thenGo(RequestExpired(dateString(now)))
@@ -244,9 +244,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(AuthorisationRequestExpired(dateString(now), personal))
+            thenGo(AuthorisationRequestExpired(dateString(now), Personal))
         }
 
         "transition to AlreadyRespondedToRequest when there are several authorisation requests and " +
@@ -261,7 +261,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithAllSupportedEnrolments) should
             thenGo(AlreadyRespondedToRequest(dateString(now)))
@@ -278,7 +278,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               authorisedIndividualClientWithAllSupportedEnrolments) should
             thenGo(RequestExpired(dateString(now)))
@@ -289,7 +289,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdTrust, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Business, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedTrustOrEstateClient)) should
             thenGo(TrustNotClaimed)
         }
@@ -298,20 +298,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               Some(authorisedIndividualClientWithoutRelevantEnrolments)) should
-            thenGo(CannotFindRequest(personal, agentName))
+            thenGo(CannotFindRequest(Personal, agentName))
         }
 
         "transition to CannotFindRequest when the client has AffinityGroup Organisation and no relevant enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
-          given(WarmUp(business, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Business, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               Some(authorisedOrganisationClientWithoutRelevantEnrolments)) should
-            thenGo(CannotFindRequest(business, agentName))
+            thenGo(CannotFindRequest(Business, agentName))
         }
 
         "transition to CannotFindRequest when the client has AffinityGroup Individual and some " +
@@ -319,9 +319,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedIndividualClient)) should
-            thenGo(CannotFindRequest(personal, agentName))
+            thenGo(CannotFindRequest(Personal, agentName))
         }
 
         "transition to NoOutstandingRequests when the client has AffinityGroup Individual and all " +
@@ -329,7 +329,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               Some(authorisedIndividualClientWithAllSupportedEnrolments)) should
             thenGo(NoOutstandingRequests)
@@ -340,21 +340,21 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getSuspendedForItsa(arn: Arn) = Future(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getSuspendedForItsa)(Some(authorisedIndividualClient)) should
-            thenGo(SuspendedAgent(personal, uid, agentName, arn, Set("ITSA"), Seq()))
+            thenGo(SuspendedAgent(Personal, uid, agentName, arn, Set("ITSA"), Seq()))
         }
       }
       "submitting from suspension" should {
         "transition to MultiConsent with the nonsuspended consents" in {
           given(SuspendedAgent(
-            personal,
+            Personal,
             uid,
             agentName,
             arn,
             Set(HMRCMTDVAT),
             Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))) when submitSuspension(authorisedIndividualClient) should
-            thenGo(MultiConsent(personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
       }
       "submitting intent to decline" should {
@@ -363,9 +363,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(ConfirmDecline(personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+            thenGo(ConfirmDecline(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
 
         "transition to AuthorisationRequestAlreadyResponded when the invitation status is Rejected" in {
@@ -373,9 +373,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq(InvitationDetails(invitationIdItsa, expiryDate, Rejected, false, List(StatusChangeEvent(DateTime.now(), Rejected)))))
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
-          given(WarmUp(personal, uid, arn, agentName, normalisedAgentName)) when
+          given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(AuthorisationRequestAlreadyResponded(dateString(DateTime.now()), personal))
+            thenGo(AuthorisationRequestAlreadyResponded(dateString(DateTime.now()), Personal))
         }
       }
     }
@@ -384,25 +384,25 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "transition to WarmUpSessionRequired when Yes selected" in {
         given(
           GGUserIdNeeded(
-            personal,
+            Personal,
             "uid",
             arn,
             "agentName"
           )) when
           submitConfirmGGUserId(Confirmation(true)) should
-          thenGo(WarmUpSessionRequired(personal, "uid", arn, "agentName"))
+          thenGo(WarmUpSessionRequired(Personal, "uid", arn, "agentName"))
       }
 
       "transition to WhichTaxService when No selected" in {
         given(
           GGUserIdNeeded(
-            personal,
+            Personal,
             "uid",
             arn,
             "agentName"
           )) when
           submitConfirmGGUserId(Confirmation(false)) should
-          thenGo(WhichTaxService(personal, "uid", arn, "agentName"))
+          thenGo(WhichTaxService(Personal, "uid", arn, "agentName"))
       }
     }
 
@@ -410,7 +410,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "transition to CheckAnswers when all consents are given" in {
         given(
           MultiConsent(
-            personal,
+            Personal,
             "uid",
             "agent name",
             arn,
@@ -434,7 +434,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               pptConsent = true)) should
           thenGo(
             CheckAnswers(
-              personal,
+              Personal,
               "uid",
               "agent name",
               Seq(
@@ -452,7 +452,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         intercept[IllegalStateException] {
           given(
             MultiConsent(
-              personal,
+              Personal,
               "uid",
               "agent name",
               arn,
@@ -476,7 +476,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "transition to CheckAnswers with changed itsa consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
@@ -495,7 +495,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = true,
             pptConsent = false)) should thenGo(
           CheckAnswers(
-            personal,
+            Personal,
             uid,
             "agent name",
             Seq(
@@ -509,7 +509,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       "transition to CheckAnswers with changed irv consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
@@ -524,13 +524,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true)))
         )
       }
       "transition to CheckAnswers with changed vat consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
@@ -545,13 +545,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true,
           )) should thenGo(
-          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)))
         )
       }
       "transition to CheckAnswers with changed trust consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
@@ -566,14 +566,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
         )
       }
 
       "transition to CheckAnswers with changed cgt consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false),
@@ -588,14 +588,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = true,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
         )
       }
 
       "transition to CheckAnswers with changed ppt consent" in {
         given(
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "agent name",
             ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = false),
@@ -610,7 +610,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = true,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = true)))
         )
       }
     }
@@ -621,7 +621,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           CheckAnswers(
-            personal,
+            Personal,
             uid,
             "agent name",
             Seq(
@@ -637,7 +637,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
             ),
-            personal
+            Personal
           ))
       }
       "transition to InvitationsDeclined if all invitations are successfully declined" in {
@@ -646,7 +646,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           CheckAnswers(
-            personal,
+            Personal,
             uid,
             "agent name",
             Seq(
@@ -664,7 +664,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
               ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
             ),
-            personal
+            Personal
           ))
       }
       "transition to SomeResponsesFailed if some of the invitation acceptances fail" in {
@@ -674,7 +674,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           CheckAnswers(
-            personal,
+            Personal,
             uid,
             "agent name",
             Seq(
@@ -692,7 +692,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = true, processed = true)
             ),
-            personal
+            Personal
           ))
       }
       "transition to AllResponsesFailed if all of the invitation acceptances fail" in {
@@ -701,7 +701,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           CheckAnswers(
-            personal,
+            Personal,
             uid,
             "agent name",
             Seq(
@@ -715,10 +715,10 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
     "at state CheckAnswers" should {
       "transition to SingleConsent " in {
-        given(CheckAnswers(personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
+        given(CheckAnswers(Personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
           submitCheckAnswersChange("itsa")(authorisedIndividualClient) should thenGo(
           SingleConsent(
-            personal,
+            Personal,
             "uid",
             "agent name",
             ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
@@ -727,7 +727,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       }
       "throw an exception when the key for the consent is not found" in {
         intercept[IllegalStateException] {
-          given(CheckAnswers(personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
+          given(CheckAnswers(Personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
             submitCheckAnswersChange("foo")(authorisedIndividualClient)
         }.getMessage shouldBe "the key for this consent was not found"
       }
@@ -739,7 +739,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           ConfirmDecline(
-            personal,
+            Personal,
             uid,
             "agent pearson",
             arn,
@@ -757,7 +757,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
               ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
             ),
-            personal
+            Personal
           )
         )
       }
@@ -767,7 +767,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
         given(
           ConfirmDecline(
-            personal,
+            Personal,
             uid,
             "agent pearson",
             arn,
@@ -779,7 +779,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           )) when
           submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(false)) should thenGo(
           MultiConsent(
-            personal,
+            Personal,
             uid,
             "agent pearson",
             arn,
@@ -800,12 +800,12 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "Mr agent",
             Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)),
             Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true)),
-            personal
+            Personal
           )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "Mr agent",
             Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true)),
-            personal))
+            Personal))
       }
     }
   }

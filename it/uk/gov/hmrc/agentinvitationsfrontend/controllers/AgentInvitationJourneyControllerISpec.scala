@@ -9,7 +9,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -34,6 +34,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   import journeyState.model._
 
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
@@ -144,7 +145,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
-      journeyState.get should have[State](SelectBusinessService, List(SelectClientType(emptyBasket)))
+      journeyState.get should have [State](SelectBusinessService(availableBusinessServices, emptyBasket), List(SelectClientType(emptyBasket)))
     }
 
     "redirect to /agents/select-service after selecting trust client type" in {
@@ -195,8 +196,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         (SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket))))
     }
 
-    "show the select service page for a business service" in {
-      journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
+    "show the yes/no select service page for a business service when only one service is available" in {
+      journeyState.set(SelectBusinessService(Set(HMRCMTDVAT), emptyBasket), List(SelectClientType(emptyBasket)))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -207,7 +208,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("select-service.alternative")
       )
-      journeyState.get shouldBe Some((SelectBusinessService, List(SelectClientType(emptyBasket))))
+      journeyState.get shouldBe Some((SelectBusinessService(Set(HMRCMTDVAT), emptyBasket), List(SelectClientType(emptyBasket))))
     }
 
     "show the correct service page content for trust clients" in {
@@ -226,7 +227,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "go back to the select service page" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket))
       )
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
@@ -262,7 +263,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
@@ -285,26 +286,26 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   "POST /agents/select-business-service" should {
     val request = FakeRequest("POST", "/agents/select-business-service")
 
-    "redirect to identify-client when yes is selected" in {
+    "redirect to identify-client when only one service is available and yes is selected" in {
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
-      journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
+      journeyState.set(SelectBusinessService(Set(HMRCMTDVAT), emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitBusinessSelectService(
+      val result = controller.submitBusinessSelectSingle(HMRCMTDVAT)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
       journeyState.get should have[State](
-        IdentifyBusinessClient,
-        List(SelectBusinessService, SelectClientType(emptyBasket)))
+        IdentifyClient(Business, HMRCMTDVAT, emptyBasket),
+        List(SelectBusinessService(Set(HMRCMTDVAT), emptyBasket), SelectClientType(emptyBasket)))
     }
 
-    "redirect to select-client-type when no is selected" in {
+    "redirect to select-client-type when only one service is available and no is selected" in {
 
-      journeyState.set(SelectBusinessService, List(SelectClientType(emptyBasket)))
+      journeyState.set(SelectBusinessService(Set(HMRCMTDVAT), Set.empty), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitBusinessSelectService(
+      val result = controller.submitBusinessSelectSingle(HMRCMTDVAT)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -330,7 +331,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
-     journeyState.get should have[State](IdentifyTrustClient(TRUST, emptyBasket),
+     journeyState.get should have[State](IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -367,7 +368,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show identify client page" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
@@ -375,7 +376,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show identify client page for IRV service" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCPIR, emptyBasket),
+        IdentifyClient(Personal, HMRCPIR, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
@@ -392,13 +393,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCPIR, emptyBasket),
+        IdentifyClient(Personal, HMRCPIR, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
     "show identify client page for personal VAT service" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
@@ -415,12 +416,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
     "show the identify client page for business VAT service" in {
-      journeyState.set(IdentifyBusinessClient, List(SelectBusinessService, SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyClient(Business, HMRCMTDVAT, emptyBasket), List(SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.showIdentifyClient()(authorisedAsValidAgent(request, arn.value))
 
@@ -436,14 +437,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyBusinessClient,
-        List(SelectBusinessService, SelectClientType(emptyBasket)))
+        IdentifyClient(Business, HMRCMTDVAT, emptyBasket),
+        List(SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
     "show the identify client page for TRUST service" in {
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -463,7 +464,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyText(result.futureValue, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
 
       journeyState.get should have[State](
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -472,7 +473,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for Personal CGT service" in {
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
         List(
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -489,7 +490,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
         List(
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -498,7 +499,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for Trust CGT service" in {
 
       journeyState.set(
-        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -515,7 +516,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -524,7 +525,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for Personal PPT service" in {
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCPPTORG, emptyBasket),
+        IdentifyClient(Personal, HMRCPPTORG, emptyBasket),
         List(
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -541,7 +542,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyPersonalClient(HMRCPPTORG, emptyBasket),
+        IdentifyClient(Personal, HMRCPPTORG, emptyBasket),
         List(
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -550,7 +551,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for Trust PPT service" in {
 
       journeyState.set(
-        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        IdentifyClient(Trust, HMRCPPTORG, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -567,7 +568,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        IdentifyClient(Trust, HMRCPPTORG, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -578,7 +579,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("GET", "/agents/identify-itsa-client")
     "redirect to the identify client page" in {
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
@@ -606,7 +607,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         givenTradingName(nino, "Sylvia Plath")
 
         journeyState.set(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
         val result = controller.submitIdentifyItsaClient(
@@ -633,7 +634,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 ) =>
           },
           List(
-            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket)
           )
@@ -645,7 +646,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenNonMatchingClientIdAndPostcode(Nino(nino), "BN114AW")
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyItsaClient(
@@ -659,7 +660,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
         List(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -668,7 +669,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to client not registered when the client is not signed up for the service and no SAUTR was found on CiD record" in {
       givenNotEnrolledClientITSA(Nino(nino), "BN114AW")
 
-      journeyState.set(IdentifyPersonalClient(HMRCMTDIT, emptyBasket), List())
+      journeyState.set(IdentifyClient(Personal, HMRCMTDIT, emptyBasket), List())
 
       val result = controller.submitIdentifyItsaClient(
         authorisedAsValidAgent(
@@ -688,7 +689,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenClientDetails(Vrn("202949960"))
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyVatClient(
@@ -709,13 +710,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientPersonalVat(
               AuthorisationRequest(
                 "GDT",
-                VatInvitation(Some(`personal`), Vrn("202949960"), _, _),
+                VatInvitation(Some(Personal), Vrn("202949960"), _, _),
                 _,
                 _),
               `emptyBasket`) =>
         },
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -725,7 +726,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 204)
       givenClientDetails(Vrn("202949960"))
 
-      journeyState.set(IdentifyBusinessClient, List())
+      journeyState.set(IdentifyClient(Business, HMRCMTDVAT, emptyBasket), List())
 
       val result = controller.submitIdentifyVatClient(
         authorisedAsValidAgent(
@@ -745,11 +746,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientBusinessVat(
               AuthorisationRequest(
                 "GDT",
-                VatInvitation(Some(`business`), Vrn("202949960"), _, _),
+                VatInvitation(Some(Business), Vrn("202949960"), _, _),
                 _,
-                _)) =>
+                _), _) =>
         },
-        List(IdentifyBusinessClient)
+        List(IdentifyClient(Business, HMRCMTDVAT, emptyBasket))
       )
     }
 
@@ -757,7 +758,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 403)
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyVatClient(
@@ -776,7 +777,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -785,7 +786,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenVatRegisteredClientReturns(Vrn("202949960"), LocalDate.parse("2010-10-10"), 423)
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+        IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyVatClient(
@@ -812,7 +813,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -829,7 +830,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -839,7 +840,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -856,7 +857,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustNTInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -864,7 +865,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "handle invalid Utr passed in by the user and redirect back to previous /identify-client page " in {
 
-      journeyState.set(IdentifyTrustClient(TAXABLETRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyClient(Trust, TAXABLETRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
@@ -878,7 +879,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "handle invalid Urn passed in by the user and redirect back to previous /identify-client page " in {
 
-      journeyState.set(IdentifyTrustClient(NONTAXABLETRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyClient(Trust, NONTAXABLETRUST, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
@@ -894,7 +895,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -909,7 +910,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
-        List(IdentifyTrustClient(TRUST, emptyBasket),
+        List(IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -919,7 +920,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -934,7 +935,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
-        List(IdentifyTrustClient(TRUST, emptyBasket),
+        List(IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -945,7 +946,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, invalidTrustJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -961,7 +962,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -972,7 +973,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, invalidTrustJson)
 
       journeyState.set(
-        IdentifyTrustClient(TRUST, emptyBasket),
+        IdentifyClient(Trust, TRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -988,7 +989,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
         List(
-          IdentifyTrustClient(TRUST, emptyBasket),
+          IdentifyClient(Trust, TRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1003,7 +1004,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
 
       journeyState.set(
-        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1021,7 +1022,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, _, _) =>
         },
         List(
-          IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1029,7 +1030,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "handle invalid CgtRef passed in by the user and redirect back to previous /identify-client page " in {
 
-      journeyState.set(IdentifyTrustClient(HMRCCGTPD, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyClient(Trust, HMRCCGTPD, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
@@ -1045,7 +1046,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetCgtSubscriptionReturns(cgtRef, 404, cgtNotFoundJson)
 
       journeyState.set(
-        IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1060,7 +1061,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         CgtRefNotFound(cgtRef, emptyBasket),
-        List(IdentifyTrustClient(HMRCCGTPD, emptyBasket),
+        List(IdentifyClient(Trust, HMRCCGTPD, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1073,7 +1074,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "handle invalid PptRef passed in by the user and redirect back to previous /identify-client page " in {
 
-      journeyState.set(IdentifyTrustClient(HMRCPPTORG, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
+      journeyState.set(IdentifyClient(Trust, HMRCPPTORG, emptyBasket), List(SelectTrustService(availableTrustServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyTrustClient(
         authorisedAsValidAgent(
@@ -1089,7 +1090,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetPptSubscriptionReturns(pptRef, 404, pptNotFoundJson)
 
       journeyState.set(
-        IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        IdentifyClient(Trust, HMRCPPTORG, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1104,7 +1105,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         PptRefNotFound(pptRef, emptyBasket),
-        List(IdentifyTrustClient(HMRCPPTORG, emptyBasket),
+        List(IdentifyClient(Trust, HMRCPPTORG, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1119,9 +1120,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "display the page as expected" in {
 
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
+        ConfirmPostcodeCgt(cgtRef, Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1137,9 +1138,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
+        ConfirmPostcodeCgt(cgtRef, Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -1152,9 +1153,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to /confirm-client if postcode matches for a UK client" in {
 
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
+        ConfirmPostcodeCgt(cgtRef, Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1165,10 +1166,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
-        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(Personal), _, _), _, _), emptyBasket) => },
         List(
-          ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          ConfirmPostcodeCgt(cgtRef, Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -1176,9 +1177,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to /not-matched if postcode does not matche for a UK client" in {
 
       journeyState.set(
-        ConfirmPostcodeCgt(cgtRef, personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
+        ConfirmPostcodeCgt(cgtRef, Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1197,9 +1198,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "display the page as expected" in {
 
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
+        ConfirmCountryCodeCgt(cgtRef, Personal, emptyBasket, "FR", "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1215,9 +1216,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
+        ConfirmCountryCodeCgt(cgtRef, Personal, emptyBasket, "FR", "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -1230,9 +1231,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to /confirm-client if country code matches for a non UK client" in {
 
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
+        ConfirmCountryCodeCgt(cgtRef, Personal, emptyBasket, "FR", "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1243,10 +1244,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient().url)
 
       journeyState.get should havePattern[State](
-        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(personal), _, _), _, _), emptyBasket) => },
+        {case ConfirmClientCgt(AuthorisationRequest("firstName lastName", CgtInvitation(cgtRef, Some(Personal), _, _), _, _), emptyBasket) => },
         List(
-          ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          ConfirmCountryCodeCgt(cgtRef, Personal, emptyBasket, "FR", "firstName lastName"),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -1254,9 +1255,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to /not-matched if country code does not match for a non UK client" in {
 
       journeyState.set(
-        ConfirmCountryCodeCgt(cgtRef, personal, emptyBasket, "FR", "firstName lastName"),
+        ConfirmCountryCodeCgt(cgtRef, Personal, emptyBasket, "FR", "firstName lastName"),
         List(
-          IdentifyPersonalClient(HMRCCGTPD, emptyBasket),
+          IdentifyClient(Personal, HMRCCGTPD, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1287,7 +1288,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
 
         journeyState.set(
-          IdentifyPersonalClient(HMRCPIR, emptyBasket),
+          IdentifyClient(Personal, HMRCPIR, emptyBasket),
           List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
         val result = controller.submitIdentifyIrvClient(
@@ -1303,9 +1304,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
         journeyState.get should havePattern[State](
-          { case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty => },
+          { case ReviewAuthorisations(Personal, _, basket) if basket.nonEmpty => },
           List(
-            IdentifyPersonalClient(HMRCPIR, emptyBasket),
+            IdentifyClient(Personal, HMRCPIR, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket))
         )
@@ -1316,7 +1317,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenNonMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
 
       journeyState.set(
-        IdentifyPersonalClient(HMRCPIR, emptyBasket),
+        IdentifyClient(Personal, HMRCPIR, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
 
       val result = controller.submitIdentifyIrvClient(
@@ -1334,7 +1335,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         KnownFactNotMatched(emptyBasket),
         List(
-          IdentifyPersonalClient(HMRCPIR, emptyBasket),
+          IdentifyClient(Personal, HMRCPIR, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1352,7 +1353,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
           emptyBasket),
         List(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1369,7 +1370,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
               `emptyBasket`) =>
         },
         List(
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1379,10 +1380,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenClientDetails(Vrn("202949960"))
       journeyState.set(
         ConfirmClientPersonalVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(business), Vrn(vrn))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Business), Vrn(vrn))),
           emptyBasket),
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1399,7 +1400,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
               _) =>
         },
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1412,7 +1413,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(validUtr)), emptyBasket),
         List(
-          IdentifyTrustClient(TAXABLETRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1427,7 +1428,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(TAXABLETRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1440,7 +1441,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustNTInvitation(validUrn)), emptyBasket),
         List(
-          IdentifyTrustClient(NONTAXABLETRUST, emptyBasket),
+          IdentifyClient(Trust, NONTAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1455,7 +1456,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("Nelson James Trust", TrustNTInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyTrustClient(NONTAXABLETRUST, emptyBasket),
+          IdentifyClient(Trust, NONTAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1465,8 +1466,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenClientDetails(Vrn("202949960"))
       journeyState.set(
         ConfirmClientBusinessVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(business), Vrn(vrn)))),
-        List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
+          AuthorisationRequest("GDT", VatInvitation(Some(Business), Vrn(vrn))), emptyBasket),
+        List(IdentifyClient(Business, HMRCMTDVAT, emptyBasket), SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket))
       )
 
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
@@ -1481,17 +1482,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 "GDT",
                 VatInvitation(Some(_), Vrn(_), _, _),
                 _,
-                _)) =>
+                _), _) =>
         },
-        List(IdentifyBusinessClient, SelectBusinessService, SelectClientType(emptyBasket))
+        List(IdentifyClient(Business, HMRCMTDVAT, emptyBasket), SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket))
       )
     }
 
     "show the confirm client page for CGT clients" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
       journeyState.set(
-        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business))), emptyBasket),
-        List(ConfirmCountryCodeCgt(cgtRef, business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService, SelectClientType(emptyBasket))
+        ConfirmClientCgt(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(Business))), emptyBasket),
+        List(ConfirmCountryCodeCgt(cgtRef, Business, emptyBasket, "FR", "firstName lastName"), SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket))
       )
 
       val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
@@ -1517,7 +1518,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           List(
-            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket))
         )
@@ -1540,7 +1541,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           List(
-            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket))
         )
@@ -1563,7 +1564,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
           List(
-            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
             SelectPersonalService(availableServices, emptyBasket),
             SelectClientType(emptyBasket))
         )
@@ -1585,10 +1586,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
       journeyState.set(
         ConfirmClientPersonalVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
           `emptyBasket`),
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1601,19 +1602,19 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
     }
 
-    "redirect to invitation sent for business" in {
+    "redirect to review authorisations for business journeys also" in {
       givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
-      givenInvitationCreationSucceeds(arn, Some(business), vrn, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
+      givenInvitationCreationSucceeds(arn, Some(Business), vrn, invitationIdVAT, vrn, "vrn", HMRCMTDVAT, "VRN")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, business)
+      givenAgentReference(arn, nino, Business)
       givenGetAgencyEmailAgentStub
       journeyState.set(
         ConfirmClientBusinessVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(business), Vrn(vrn)))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Business), Vrn(vrn))), emptyBasket),
         List(
-          IdentifyBusinessClient,
-          SelectBusinessService,
+          IdentifyClient(Business, HMRCMTDVAT, emptyBasket),
+          SelectBusinessService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1622,16 +1623,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showInvitationSent().url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
     }
 
     "redirect to the identify-client page when no is selected" in {
       journeyState.set(
         ConfirmClientPersonalVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
           `emptyBasket`),
         List(
-          IdentifyPersonalClient(HMRCMTDVAT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1642,7 +1643,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
-      journeyState.get should have[State](IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
+      journeyState.get should have[State](IdentifyClient(Personal, HMRCMTDVAT, emptyBasket))
     }
 
     "redirect to pending invitation exists when a pending invitation already exists for this service" in {
@@ -1650,7 +1651,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
       journeyState.set(
         ConfirmClientPersonalVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
           `emptyBasket`),
         List()
       )
@@ -1668,7 +1669,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenCheckRelationshipVatWithStatus(arn, vrn, 200)
       journeyState.set(
         ConfirmClientPersonalVat(
-          AuthorisationRequest("GDT", VatInvitation(Some(personal), Vrn(vrn))),
+          AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
           `emptyBasket`),
         List())
 
@@ -1684,11 +1685,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, TAXABLETRUST)
       givenCheckRelationshipTrustWithStatus(arn, validUtr, 200)
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, business)
+      givenAgentReference(arn, nino, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
-        ConfirmClientTrust(AuthorisationRequest("GDT", TrustInvitation(validUtr, Some(business))), emptyBasket),
+        ConfirmClientTrust(AuthorisationRequest("GDT", TrustInvitation(validUtr, Some(Business))), emptyBasket),
         List())
 
       val result = controller.submitConfirmClient(
@@ -1703,11 +1704,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetAllPendingInvitationsReturnsEmpty(arn, validUrn.value, NONTAXABLETRUST)
       givenCheckRelationshipTrustWithStatus(arn, validUrn, 200)
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, business)
+      givenAgentReference(arn, nino, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
-        ConfirmClientTrust(AuthorisationRequest("GDT", TrustNTInvitation(validUrn, Some(business))), emptyBasket),
+        ConfirmClientTrust(AuthorisationRequest("GDT", TrustNTInvitation(validUrn, Some(Business))), emptyBasket),
         List())
 
       val result = controller.submitConfirmClient(
@@ -1724,11 +1725,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenPartialAuthorisationExists(arn, nino)
 
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, business)
+      givenAgentReference(arn, nino, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
-        ConfirmClientItsa(AuthorisationRequest("GDT", ItsaInvitation(Nino(nino), Some(personal))), emptyBasket),
+        ConfirmClientItsa(AuthorisationRequest("GDT", ItsaInvitation(Nino(nino), Some(Personal))), emptyBasket),
         List())
 
       val result = controller.submitConfirmClient(
@@ -1740,22 +1741,22 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
-  "GET /agents/review-authorisations" should {
+  "GET /agents/review-authorisations (personal)" should {
     val fullBasket = Set(
       AuthorisationRequest(
         "James Client",
-        Invitation(Some(ClientType.personal), HMRCMTDIT, nino, "BN114AW"),
+        Invitation(Some(ClientType.Personal), HMRCMTDIT, nino, "BN114AW"),
         itemId = "ABC"))
     val request = FakeRequest("GET", "/agents/review-authorisations")
 
     "show the review authorisations page" in {
       journeyState.set(
-        ReviewAuthorisationsPersonal(availableServices, fullBasket),
+        ReviewAuthorisations(Personal, availableServices, fullBasket),
         List(
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             fullBasket),
-          IdentifyPersonalClient(HMRCMTDIT, fullBasket),
+          IdentifyClient(Personal, HMRCMTDIT, fullBasket),
           SelectPersonalService(availableServices, fullBasket),
           SelectClientType(fullBasket)
         )
@@ -1774,7 +1775,83 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         "Do you need to add another authorisation for this client?"
       )
 
-      journeyState.get should have[State](ReviewAuthorisationsPersonal(availableServices, fullBasket))
+      journeyState.get should have[State](ReviewAuthorisations(Personal, availableServices, fullBasket))
+    }
+  }
+
+  "GET /agents/review-authorisations (business)" should {
+    val fullBasket = Set(
+      AuthorisationRequest(
+        "Client Biz",
+        Invitation(Some(ClientType.Business), HMRCMTDVAT, vrn, "BN114AW"),
+        itemId = "ABC"))
+    val request = FakeRequest("GET", "/agents/review-authorisations")
+
+    "show the review authorisations page" in {
+      journeyState.set(
+        ReviewAuthorisations(Business, availableBusinessServices, fullBasket),
+        List(
+          ConfirmClientBusinessVat(
+            AuthorisationRequest("Sylvia Plath", VatInvitation(Some(Business), Vrn(vrn))),
+            fullBasket),
+          IdentifyClient(Business, HMRCMTDVAT, fullBasket),
+          SelectPersonalService(availableBusinessServices, fullBasket),
+          SelectClientType(fullBasket)
+        )
+      )
+
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result.futureValue,
+        "Check your authorisation requests",
+        "You have added 1 authorisation request.",
+        "Manage their VAT",
+        "Client Biz",
+        "Do you need to add another authorisation for this client?"
+      )
+
+      journeyState.get should have[State](ReviewAuthorisations(Business, availableBusinessServices, fullBasket))
+    }
+  }
+
+  "GET /agents/review-authorisations (trust)" should {
+    val fullBasket = Set(
+      AuthorisationRequest(
+        "Client Trust",
+        Invitation(Some(ClientType.Trust), HMRCCGTPD, nino, "BN114AW"),
+        itemId = "ABC"))
+    val request = FakeRequest("GET", "/agents/review-authorisations")
+
+    "show the review authorisations page" in {
+      journeyState.set(
+        ReviewAuthorisations(Trust, availableTrustServices, fullBasket),
+        List(
+          ConfirmClientCgt(
+            AuthorisationRequest("Sylvia Plath", CgtInvitation(cgtRef, Some(Trust))),
+            fullBasket),
+          IdentifyClient(Trust, HMRCCGTPD, fullBasket),
+          SelectPersonalService(availableTrustServices, fullBasket),
+          SelectClientType(fullBasket)
+        )
+      )
+
+      val result = controller.showReviewAuthorisations()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+
+      checkHtmlResultWithBodyText(
+        result.futureValue,
+        "Check your authorisation requests",
+        "You have added 1 authorisation request.",
+        "Manage their Capital Gains Tax",
+        "Client Trust",
+        "Do you need to add another authorisation for this client?"
+      )
+
+      journeyState.get should have[State](ReviewAuthorisations(Trust, availableTrustServices, fullBasket))
     }
   }
 
@@ -1782,17 +1859,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/review-authorisations")
 
     "redirect to invitation-sent page for a personal service when no is selected" in {
-      givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
+      givenInvitationCreationSucceeds(arn, Some(Personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, personal)
+      givenAgentReference(arn, nino, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
-        ReviewAuthorisationsPersonal(availableServices, emptyBasket),
+        ReviewAuthorisations(Personal, availableServices, emptyBasket),
         List(
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1810,12 +1887,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to select-service when yes is selected" in {
       journeyState.set(
-        ReviewAuthorisationsPersonal(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
+        ReviewAuthorisations(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
         List(
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1831,17 +1908,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to some authorisations failed when some of the invitation creations fail" in {
-      givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
-      givenInvitationCreationFailsForService(arn, Some(personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
+      givenInvitationCreationSucceeds(arn, Some(Personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
+      givenInvitationCreationFailsForService(arn, Some(Personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, personal)
+      givenAgentReference(arn, nino, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
-        ReviewAuthorisationsPersonal(
+        ReviewAuthorisations(Personal, 
           availableServices,
           Set(
-            AuthorisationRequest("client name", Invitation(Some(personal), HMRCMTDIT, nino, validPostcode)),
-            AuthorisationRequest("client name", Invitation(Some(personal), HMRCPIR, nino, dateOfBirth))
+            AuthorisationRequest("client name", Invitation(Some(Personal), HMRCMTDIT, nino, validPostcode)),
+            AuthorisationRequest("client name", Invitation(Some(Personal), HMRCPIR, nino, dateOfBirth))
           )),
         List()
       )
@@ -1854,15 +1931,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to all authorisation failed when all of the invitation creations fail" in {
-      givenInvitationCreationFailsForService(arn, Some(personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
+      givenInvitationCreationFailsForService(arn, Some(Personal), nino, invitationIdPIR, nino, "ni", HMRCPIR, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, personal)
+      givenAgentReference(arn, nino, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
-        ReviewAuthorisationsPersonal(
+        ReviewAuthorisations(Personal, 
           availableServices,
           Set(
-            AuthorisationRequest("client name", Invitation(Some(personal), HMRCPIR, nino, dateOfBirth))
+            AuthorisationRequest("client name", Invitation(Some(Personal), HMRCPIR, nino, dateOfBirth))
           )),
         List()
       )
@@ -1882,11 +1959,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCMTDIT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1915,11 +1992,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCMTDIT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1936,11 +2013,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.set(
         InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCMTDIT, HMRCMTDVAT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -1972,9 +2049,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(HMRCMTDVAT)),
         List(
           ConfirmClientBusinessVat(
-            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)))),
-          IdentifyBusinessClient,
-          SelectBusinessService,
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))), emptyBasket),
+          IdentifyClient(Business, HMRCMTDVAT, emptyBasket),
+          SelectBusinessService(availableServices, emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -2004,15 +2081,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the delete page" in {
       journeyState.set(
-        DeleteAuthorisationRequestPersonal(
+        DeleteAuthorisationRequest(Personal, 
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "itemId"),
           Set.empty),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -2028,7 +2105,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       )
 
       journeyState.get should have[State](
-        DeleteAuthorisationRequestPersonal(
+        DeleteAuthorisationRequest(Personal, 
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "itemId"),
           Set.empty))
     }
@@ -2039,12 +2116,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to review-authorisations when yes is selected and there is something left in the basket" in {
       journeyState.set(
-        DeleteAuthorisationRequestPersonal(
+        DeleteAuthorisationRequest(Personal, 
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
           Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "itemId"))
         ),
         List(
-          ReviewAuthorisationsPersonal(
+          ReviewAuthorisations(Personal, 
             availableServices,
             Set(
               AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "itemId")
@@ -2052,7 +2129,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -2064,22 +2141,22 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
-      journeyState.get should have[State](ReviewAuthorisationsPersonal(
+      journeyState.get should have[State](ReviewAuthorisations(Personal, 
         availableServices,
         Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "itemId"))))
     }
     "redirect to all-authorisations-removed when yes is selected and there is nothing left in the basket" in {
       journeyState.set(
-        DeleteAuthorisationRequestPersonal(
+        DeleteAuthorisationRequest(Personal, 
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "ABC123"),
           Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "ABC123"))
         ),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -2095,16 +2172,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
     "redirect to review-authorisations when no is selected and keep basket the same" in {
       journeyState.set(
-        DeleteAuthorisationRequestPersonal(
+        DeleteAuthorisationRequest(Personal, 
           AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "ABC123"),
           Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "ABC123"))
         ),
         List(
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -2116,7 +2193,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
 
-      journeyState.get should have[State](ReviewAuthorisationsPersonal(
+      journeyState.get should have[State](ReviewAuthorisations(Personal, 
         availableServices,
         Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino)), itemId = "ABC123"))))
     }
@@ -2129,11 +2206,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty),
         List(
           SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty),
-          ReviewAuthorisationsPersonal(availableServices, Set.empty),
+          ReviewAuthorisations(Personal, availableServices, Set.empty),
           ConfirmClientItsa(
             AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
             emptyBasket),
-          IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+          IdentifyClient(Personal, HMRCMTDIT, emptyBasket),
           SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), emptyBasket),
           SelectClientType(emptyBasket)
         )
@@ -2197,7 +2274,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the some create authorisations failed" in {
       journeyState.set(
-        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
+        SomeAuthorisationsFailed("/invitation/link", None, "abc@xyz.com", Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(Business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showSomeAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -2218,7 +2295,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the all create authorisations failed page" in {
       journeyState.set(
-        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(business)), AuthorisationRequest.FAILED))),
+        AllAuthorisationsFailed(Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(Business)), AuthorisationRequest.FAILED))),
         List()
       )
       val result = controller.showAllAuthorisationsFailed(authorisedAsValidAgent(request, arn.value))
@@ -2241,7 +2318,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       supportedServices.foreach { service =>
         journeyState.set(
-          ActiveAuthorisationExists(personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(personal))))),
+          ActiveAuthorisationExists(Personal, service, Set(AuthorisationRequest("CGT_NAME", CgtInvitation(cgtRef, Some(Personal))))),
           List()
         )
         val result = controller.showActiveAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -2331,7 +2408,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation pending page" in {
       journeyState.set(
-        PendingInvitationExists(personal, emptyBasket),
+        PendingInvitationExists(Personal, emptyBasket),
         List()
       )
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))

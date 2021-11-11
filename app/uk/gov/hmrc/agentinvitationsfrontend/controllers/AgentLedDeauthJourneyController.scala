@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.{IrvClientForm, ItsaClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.{IdentifyClientTrust, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
@@ -121,7 +121,7 @@ class AgentLedDeauthJourneyController @Inject()(
   def submitBusinessService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business))(chosenBusinessService(featureFlags.showHmrcMtdVat))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, Business))(chosenBusinessService(featureFlags.showHmrcMtdVat))
 
   def submitTrustService: Action[AnyContent] =
     actions
@@ -261,7 +261,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case SelectServiceBusiness =>
       Ok(
         businessSelectServiceView(
-          formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, business)),
+          formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, Business)),
           routes.AgentLedDeauthJourneyController.submitBusinessService(),
           backLinkFor(breadcrumbs).url
         )
@@ -415,7 +415,7 @@ class AgentLedDeauthJourneyController @Inject()(
     case _: ConfirmCountryCodeCgt =>
       Ok(
         confirmCountryCodeCgtView(
-          personal,
+          Personal,
           countries,
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
           backLinkFor(breadcrumbs).url,
@@ -423,7 +423,7 @@ class AgentLedDeauthJourneyController @Inject()(
           isDeAuth = true))
 
     case _: ConfirmPostcodeCgt =>
-      Ok(confirmPostcodeCgtView(personal, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, fromFastTrack = false, isDeAuth = true))
+      Ok(confirmPostcodeCgtView(Personal, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, fromFastTrack = false, isDeAuth = true))
 
     case ConfirmClientCgt(cgtRef, clientName) =>
       Ok(

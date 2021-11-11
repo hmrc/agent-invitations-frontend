@@ -29,13 +29,13 @@ class SelectClientTypeSpec extends UnitSpec {
 
   "ClientType" should {
     "serialize to json string" in {
-      Json.toJson(ClientType.personal: ClientType) shouldBe JsString("personal")
-      Json.toJson(ClientType.business: ClientType) shouldBe JsString("business")
+      Json.toJson(ClientType.Personal: ClientType) shouldBe JsString("personal")
+      Json.toJson(ClientType.Business: ClientType) shouldBe JsString("business")
     }
 
     "deserialize from json string" in {
-      Json.parse("""{"clientType":"personal"}""").as[ClientTypeTest].clientType shouldBe ClientType.personal
-      Json.parse("""{"clientType":"business"}""").as[ClientTypeTest].clientType shouldBe ClientType.business
+      Json.parse("""{"clientType":"personal"}""").as[ClientTypeTest].clientType shouldBe ClientType.Personal
+      Json.parse("""{"clientType":"business"}""").as[ClientTypeTest].clientType shouldBe ClientType.Business
     }
 
   }

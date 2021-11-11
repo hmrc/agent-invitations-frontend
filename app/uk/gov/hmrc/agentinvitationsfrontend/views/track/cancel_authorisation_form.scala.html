@@ -16,7 +16,7 @@
 
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
 
@@ -36,7 +36,7 @@
     <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientId" id="clientId-@{index}" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
-    <input type="hidden" name="clientType" id="clientType-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(personal)}">
+    <input type="hidden" name="clientType" id="clientType-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId.getOrElse("")}">
     <button class="button--link-style" type="submit" id="resendRequest-@{index}" onclick="">
         <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
