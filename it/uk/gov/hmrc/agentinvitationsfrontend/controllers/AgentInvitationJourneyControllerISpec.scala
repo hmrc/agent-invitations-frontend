@@ -1501,6 +1501,82 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
+  "POST /agents/confirm-client" when {
+
+    "yes is selected and it is an ITSA request" should {
+      val request = FakeRequest("POST", "/agents/confirm-client")
+
+      "redirect to the authorisation detected page if legacy relationship exists" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/authorisation-detected")
+      }
+
+      "redirect to already mapped page if legacy relationship exists and is copied across" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/already-copied-across-itsa")
+      }
+
+      "redirect to the review authorisations page if legacy relationship does not exist" in {
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, serviceITSA)
+        givenCheckRelationshipItsaWithStatus(arn, nino,404)
+        givenPartialAuthNotExists(arn, nino)
+        givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
+
+        journeyState.set(
+          ConfirmClientItsa(
+            AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))),
+            emptyBasket),
+          List(
+            IdentifyPersonalClient(HMRCMTDIT, emptyBasket),
+            SelectPersonalService(availableServices, emptyBasket),
+            SelectClientType(emptyBasket))
+        )
+
+        val result = controller.submitConfirmClient(
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+        status(result.futureValue) shouldBe 303
+        redirectLocation(result) shouldBe Some("/invitations/agents/review-authorisations")
+      }
+    }
+  }
+
   "POST /agents/confirm-client" should {
     val request = FakeRequest("POST", "/agents/confirm-client")
 
@@ -1879,8 +1955,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "show the already copied across warning page when there is a legacy mapping" in {
       val request = FakeRequest("GET", "/agents/already-copied-across-itsa")
-      //ignore unused warning
-      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+
       journeyState.set(
         AlreadyCopiedAcrossItsa,
         Nil
@@ -2182,6 +2257,72 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           "active-authorisation-exists.p2"
         )
       }
+    }
+  }
+
+  "GET /agents/authorisation-detected" should {
+
+    val request = FakeRequest("GET", "/agents/authorisation-detected")
+
+    "display the legacy authorisation detected page" in {
+      journeyState.set(
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))))),
+        List()
+      )
+      val result = controller.showLegacyAuthorisationDetected(
+        authorisedAsValidAgent(request, arn.value))
+
+      status(result.futureValue) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(result,
+      "legacy-auth-detected.header",
+      "legacy-auth-detected.yes",
+      "legacy-auth-detected.no")
+    }
+  }
+
+  "POST /agents/authorisation-detected" should {
+
+    val request = FakeRequest("POST", "/agents/authorisation-detected")
+
+    "display the page with errors when input invalid" in {
+      journeyState.set(
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))))),
+        List()
+      )
+      val result = controller.submitLegacyAuthorisationDetected(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "INVALID"), arn.value))
+
+      status(result.futureValue) shouldBe 200
+
+      checkHtmlResultWithBodyMsgs(result,"error.legacy-auth-detected.required")
+    }
+
+    "redirect to /agent-mapping/start when yes" in {
+      journeyState.set(
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))))),
+        List()
+      )
+      val result = controller.submitLegacyAuthorisationDetected(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result.futureValue) shouldBe 303
+
+      redirectLocation(result) shouldBe Some("http://localhost:9438/agent-mapping/start")
+
+    }
+
+    "redirect to /invitations/agents/review-authorisations when no" in {
+      journeyState.set(
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", ItsaInvitation(Nino(nino))))),
+        List()
+      )
+      val result = controller.submitLegacyAuthorisationDetected(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result.futureValue) shouldBe 303
+
+      redirectLocation(result) shouldBe Some("/invitations/agents/review-authorisations")
     }
   }
 

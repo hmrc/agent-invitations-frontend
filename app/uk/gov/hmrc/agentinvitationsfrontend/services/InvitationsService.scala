@@ -268,8 +268,8 @@ class InvitationsService @Inject()(
           .headOption)
   }
 
-  def hasLegacyMapping(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    relationshipsConnector.getHasLegacyRelationships(arn, nino)
+  def legacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
+    relationshipsConnector.getLegacySaRelationshipStatusFor(arn, nino)
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     getActiveInvitationFor(arn, clientId, service).flatMap {

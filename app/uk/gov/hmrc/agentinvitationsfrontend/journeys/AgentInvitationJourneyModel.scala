@@ -53,6 +53,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   trait AuthorisationExists extends State
   case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
   case class PartialAuthorisationExists(basket: Basket) extends AuthorisationExists
+  case class LegacyAuthorisationDetected(basket: Basket) extends State
 
   trait NotFound extends State
   case class KnownFactNotMatched(basket: Basket) extends NotFound
@@ -119,9 +120,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
-    type HasLegacyMapping = (Arn, String) => Future[Boolean]
+    type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
 
-    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+    def selectedClientType(agent: AuthorisedAgent)(clientType: String): Transition = Transition {
       case SelectClientType(basket) =>
         clientType match {
           case "personal" => goto(SelectPersonalService(agent.personalServices, basket))
@@ -430,7 +431,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            (createMultipleInvitations: CreateMultipleInvitations)
                            (getAgentLink: GetAgentLink)
                            (getAgencyEmail: GetAgencyEmail)
-                           (hasLegacyMapping: HasLegacyMapping)
+                           (legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)
                            (appConfig: AppConfig)
                            (agent: AuthorisedAgent)
                            (irvClient: IrvClient) = Transition {
@@ -449,9 +450,14 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                              checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(agent.personalServices, basket + request))(
                                personal,
                                agent.arn,
-                               request.invitation.clientId,
+                               request,
                                HMRCPIR,
-                               basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasAltItsaInvitations, hasLegacyMapping, appConfig)
+                               basket)(
+                               hasPendingInvitationsFor,
+                               hasActiveRelationshipFor,
+                               hasAltItsaInvitations,
+                               legacySaRelationshipStatusFor,
+                               appConfig)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
@@ -477,32 +483,35 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       } yield result
 
     private def checkIfPendingOrActiveAndGoto(
-      successState: State)(clientType: ClientType, arn: Arn, clientIdentifier: String, service: String, basket: Basket)(
+      successState: State)(clientType: ClientType, arn: Arn, request: AuthorisationRequest, service: String, basket: Basket)(
       hasPendingInvitationsFor: HasPendingInvitations,
       hasActiveRelationshipFor: HasActiveRelationship,
       hasPartialAuthorisationFor: HasPartialAuthorisation,
-      hasLegacyMapping: HasLegacyMapping,
+      legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
       appConfig: AppConfig
     ): Future[State] =
       for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
-                                     basket.exists(_.invitation.clientId == clientIdentifier))
+                                     basket.exists(_.invitation.clientId == request.invitation.clientId))
                                   Future.successful(true)
                                 else
-                                  hasPendingInvitationsFor(arn, clientIdentifier, service)
+                                  hasPendingInvitationsFor(arn, request.invitation.clientId, service)
         result <- if (hasPendingInvitations) {
                    goto(PendingInvitationExists(clientType, basket))
                  } else {
-                   hasActiveRelationshipFor(arn, clientIdentifier, service).flatMap {
+                   hasActiveRelationshipFor(arn, request.invitation.clientId, service).flatMap {
                      case true => goto(ActiveAuthorisationExists(clientType, service, basket))
                      case false =>
-                       if (service == HMRCMTDIT) hasPartialAuthorisationFor(arn, clientIdentifier).flatMap {
+                       if (service == HMRCMTDIT) hasPartialAuthorisationFor(arn, request.invitation.clientId).flatMap {
                          case true =>
                            goto(PartialAuthorisationExists(basket))
                          case false =>
-                           if (appConfig.featuresAltItsa) hasLegacyMapping(arn, clientIdentifier).map { legacy =>
-                             if (legacy) AlreadyCopiedAcrossItsa
-                             else successState
+                           if (appConfig.featuresAltItsa) {
+                             legacySaRelationshipStatusFor(arn, request.invitation.clientId).flatMap {
+                               case LegacySaRelationshipFoundAndMapped => goto(AlreadyCopiedAcrossItsa)
+                               case LegacySaRelationshipFoundNotMapped => goto(LegacyAuthorisationDetected(basket + request))
+                               case LegacySaRelationshipNotFound       => goto(successState)
+                             }
                            } else goto(successState)
                        } else goto(successState)
                    }
@@ -522,7 +531,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                        (hasPendingInvitationsFor: HasPendingInvitations)
                        (hasActiveRelationshipFor: HasActiveRelationship)
                        (hasPartialAuthorisationFor: HasPartialAuthorisation)
-                       (hasLegacyMapping: HasLegacyMapping)
+                       (legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)
                        (appConfig: AppConfig)
                        (authorisedAgent: AuthorisedAgent)
                        (confirmation: Confirmation) =
@@ -534,9 +543,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
             personal,
             authorisedAgent.arn,
-            request.invitation.clientId,
+            request,
             HMRCMTDIT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDIT, basket))
 
       case ConfirmClientCgt(request, basket) => {
@@ -549,11 +558,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCCGTPD, basket)(
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, HMRCCGTPD, basket)(
             hasPendingInvitationsFor,
             hasActiveRelationshipFor,
             hasPartialAuthorisationFor,
-            hasLegacyMapping,
+            legacySaRelationshipStatusFor,
             appConfig)
         } else goto(state)
       }
@@ -563,9 +572,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           checkIfPendingOrActiveAndGoto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket + request))(
             personal,
             authorisedAgent.arn,
-            request.invitation.clientId,
+            request,
             HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
         } else goto(IdentifyPersonalClient(HMRCMTDVAT, basket))
 
       case ConfirmClientBusinessVat(request) =>
@@ -603,9 +612,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             checkIfPendingOrActiveAndGoto(ReviewAuthorisationsTrust(authorisedAgent.trustServices, basket + request))(
               business,
               authorisedAgent.arn,
-              request.invitation.clientId,
+              request,
               request.invitation.service,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, hasLegacyMapping, appConfig)
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
@@ -644,16 +653,26 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request.invitation.clientId, HMRCPPTORG, basket)(
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, HMRCPPTORG, basket)(
             hasPendingInvitationsFor,
             hasActiveRelationshipFor,
             hasPartialAuthorisationFor,
-            hasLegacyMapping,
+            legacySaRelationshipStatusFor,
             appConfig)
         } else goto(state)
       }
 
     }
+
+    /** User confirms that they have legacy authorisation with the client.
+      *  This transition may go to agent-mapping
+      *  Or review authorisations as if from confirm client
+      * */
+    def confirmedLegacyAuthorisation(authorisedAgent: AuthorisedAgent): Transition =
+      Transition {
+        case LegacyAuthorisationDetected(basket) =>
+          goto(ReviewAuthorisationsPersonal(authorisedAgent.personalServices, basket))
+      }
 
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
       case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>

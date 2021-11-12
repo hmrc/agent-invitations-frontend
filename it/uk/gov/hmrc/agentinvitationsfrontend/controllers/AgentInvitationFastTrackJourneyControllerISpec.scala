@@ -645,6 +645,37 @@ class AgentInvitationFastTrackJourneyControllerISpec
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
     }
 
+    "redirect to /already-copied-across-itsa" in new ItsaHappyScenario {
+      givenGetAgencyEmailAgentStub
+      givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
+      journeyState.set(
+        CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
+        List(Prologue(None, None)))
+
+      val result = controller.submitCheckDetails(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa().url)
+    }
+
+    "redirect to /authorisation-detected" in new ItsaHappyScenario {
+      givenGetAgencyEmailAgentStub
+      givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
+      journeyState.set(
+        CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
+        List(Prologue(None, None)))
+
+      val result = controller.submitCheckDetails(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected().url)
+    }
+
+
     "redirect to client-identify for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", nino, Some("BN114AW"))
       journeyState.set(
@@ -1720,6 +1751,66 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "GET /agents/track/authorisation-detected" should {
+    val request = FakeRequest("GET", "/agents/track/authorisation-detected")
+    "display the content" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.showLegacyAuthorisationDetected(authorisedAsValidAgent(request, arn.value)).futureValue
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result, "legacy-auth-detected.title", "legacy-auth-detected.yes", "legacy-auth-detected.no")
+    }
+  }
+
+  "POST /agents/track/authorisation-detected" should {
+    val request = FakeRequest("POST", "/agents/track/authorisation-detected")
+    "redirect to mapping when agent selects 'yes' (agent has a legacy SA relationship with the client)" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result.futureValue) shouldBe 303
+      redirectLocation(result) shouldBe Some("http://localhost:9438/agent-mapping/start")
+    }
+
+    "redirect to /invitation-sent when agent selects 'no' (agent does not have a legacy SA relationship with the client)" in {
+      val ftr = AgentFastTrackRequest(Some(personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      journeyState.set(
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        List(
+          CheckDetailsCompleteItsa(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
+      givenInvitationCreationSucceeds(arn, Some(personal), nino, invitationIdITSA, nino, "ni", HMRCMTDIT, "NI")
+      givenAgentReference(arn, "uid", personal)
+      givenGetAgencyEmailAgentStub
+
+      val result = controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      println(bodyOf(result.futureValue))
+      status(result.futureValue) shouldBe 303
+      redirectLocation(result) shouldBe Some("/invitations/agents/sent-invitation")
+    }
+  }
+
   class ItsaHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
     givenCheckRelationshipItsaWithStatus(arn, nino, 404)
@@ -1729,6 +1820,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", personal)
     givenGetAgencyEmailAgentStub
+    givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
+    givenPartialAuthNotExists(arn, nino)
+    givenGetAllPendingInvitationsReturnsEmpty(arn, nino, HMRCMTDIT)
   }
 
   class ItsaNotMatchedScenario {

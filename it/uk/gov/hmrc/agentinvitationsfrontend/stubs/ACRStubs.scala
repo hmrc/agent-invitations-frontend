@@ -189,4 +189,14 @@ trait ACRStubs {
         )
     )
   }
+
+  def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: String, status: Int) = {
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+  }
 }

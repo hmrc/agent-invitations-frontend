@@ -61,6 +61,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val ptaExternalUrl: String = getConfString("personal-tax-account.external-url")
   val agentInvitationsFrontendExternalUrl: String = getConfString("agent-invitations-frontend.external-url")
   val agentSubscriptionFrontendExternalUrl: String = getConfString("agent-subscription-frontend.external-url")
+  val agentMappingExternalUrl: String = getConfString("agent-mapping-frontend.external-url")
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
