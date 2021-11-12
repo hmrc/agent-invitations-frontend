@@ -66,6 +66,9 @@ enter-cgt.invalid-format=Nodwch gyfeirnod cyfrif Treth Enillion Cyfalaf y cleien
 error.vrn.required=Nodwch rif cofrestru TAW eich cleient
 enter-vrn.regex-failure=Rhaid i’r rhif TAW fod yn 9 rhif
 
+error.pptref.required=Enter your client’s Plastic Packaging Tax reference
+error.pptref.invalid-format=Enter the client’s Plastic Packaging Tax reference in the correct format
+
 # Vat registration date
 identify-client.vat-registration-date.label=Dyddiad cofrestru TAW
 identify-client.vat-registration-date.hint=Er enghraifft, 31 8 2015
@@ -108,6 +111,9 @@ select-service.TRUST.business=Cynnal ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+select-service.HMRC-PPT-ORG.personal=Manage their Plastic Packaging Tax
+select-service.HMRC-PPT-ORG.business=Manage their Plastic Packaging Tax
+select-service.HMRC-PPT-ORG.trust=Manage a trust’s Plastic Packaging Tax
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
@@ -204,6 +210,35 @@ cgt-not-matched.advice=Gallwch wneud y canlynol:
 cgt-not-matched.advice.l1=gwirio bod y cyfeirnod cyfrif yn gywir a rhoi cynnig arall arni
 cgt-not-matched.advice.l2=cysylltu â’r cleient a roddodd y cyfeirnod cyfrif hwn i chi, oherwydd efallai ei fod wedi rhoi manylion anghywir i chi
 
+## Identify PPT Client
+identify-ppt-client.header=Enter your client’s details
+identify-ppt-client.p1=This will help us match their details against information we hold.
+identify-ppt-client.p3=Plastic Packaging Tax reference
+identify-ppt-client.label=Plastic Packaging Tax reference
+identify-ppt-client.hint=This is 15 characters, for example XMPPT0000000001. Your client received this when they registered for Plastic Packaging Tax.
+identify-ppt-client.registration-date.label=Plastic Packaging Tax registration date
+identify-ppt-client.registration-date.hint=For example, 21 8 2021
+enter-ppt-registration-date.invalid-format=Enter a valid Plastic Packaging Tax registration date
+error.ppt-registration-date.required=Enter your client’s Plastic Packaging Tax registration date
+error.day.invalid-format=Day must only include numbers
+error.month.invalid-format=Month must only include numbers
+error.year.invalid-format=Year must only include numbers
+error.ppt-registration-date.day=Plastic Packaging Tax registration date must include a day
+error.ppt-registration-date.month=Plastic Packaging Tax registration date must include a month
+error.ppt-registration-date.year=Plastic Packaging Tax registration date must include a year
+error.ppt-registration-date.day-month=Plastic Packaging Tax registration date must include a day and month
+error.ppt-registration-date.day-year=Plastic Packaging Tax registration date must include a day and year
+error.ppt-registration-date.month-year=Plastic Packaging Tax registration date must include a month and year
+
+## PPT Not Matched
+ppt-not-matched.header=Plastic Packaging Tax reference is not valid
+ppt-not-matched.p1=You entered {0}.
+ppt-not-matched.p2=This does not match any registered Plastic Packaging Tax reference.
+ppt-not-matched.advice=You can:
+ppt-not-matched.advice.l1=check the reference is correct and try again
+ppt-not-matched.advice.l2=contact the client that gave you this reference, as they may have given you incorrect details
+
+
 # Confirm Client
 confirm-client.title=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
 confirm-client.header=Ai {0} yw’r cleient rydych am awdurdodiad ganddo?
@@ -237,6 +272,7 @@ check-details.p.HMRC-MTD-VAT=Rydych ar fin dechrau cais am awdurdodiad i reoli T
 check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
+check-details.p.HMRC-PPT-ORG=You are about to start a request for authorisation to manage a client’s Plastic Packaging Tax.
 check-details.table.heading=Manylion y cleient
 check-details.client-type=Math o gleient
 check-details.client-type.personal=Unigolyn neu unig fasnachwr
@@ -244,14 +280,17 @@ check-details.client-type.business.HMRC-MTD-VAT=Cwmni neu bartneriaeth
 check-details.client-type.business.HMRC-TERS-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-TERSNT-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
+check-details.client-type.business.HMRC-PPT-ORG=A trust or an estate
 check-details.nino=Rhif Yswiriant Gwladol
 check-details.vrn=Rhif cofrestru TAW
+check-details.ppt-reg-date=Plastic Packaging Tax registration date
 check-details.postcode=Cod post
 check-details.dob=Dyddiad geni
 check-details.vat-reg-date=Dyddiad cofrestru TAW
 check-details.utr=Cyfeirnod Unigryw y Trethdalwr
 check-details.urn=Cyfeirnod Unigryw
 check-details.cgt=Cyfeirnod cyfrif Treth Enillion Cyfalaf
+check-details.ppt=Plastic Packaging Tax reference
 check-details.change.link=Newid yr wybodaeth hon
 check-details.change.p1=Mae angen ychydig yn fwy o fanylion arnom am y cleient hwn fel y gallwn greu’ch cais am awdurdodiad.
 confirm-details.sub-header=A yw’r manylion hyn yn gywir?
@@ -270,6 +309,7 @@ review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-CGT-PD=Rheoli ei Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+review-authorisations.table.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
@@ -427,6 +467,7 @@ create-auth-failed.HMRC-MTD-VAT=Rheoli ei TAW
 create-auth-failed.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 create-auth-failed.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 create-auth-failed.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+create-auth-failed.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad newydd</a>, neu roi cynnig arall arni.
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
 create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
@@ -647,6 +688,30 @@ confirm-terms-multi.cgt.business.p1.l9=y symiau sy’n ddyledus a’r symiau syd
 confirm-terms-multi.cgt.business.p1.l10=manylion cosbau’r ymddiriedolaeth
 confirm-terms-multi.cgt.business.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli manylion cyfrif Treth Enillion Cyfalaf ymddiriedolaeth ar eiddo yn y DU.
 
+confirm-terms-multi.ppt.personal.heading=Manage my Plastic Packaging Tax
+confirm-terms-multi.ppt.business.heading=Manage a trust’s Plastic Packaging Tax
+confirm-terms-multi.ppt.personal.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax (PPT), this means {0} can:
+confirm-terms-multi.ppt.personal.p1.l1=view your PPT returns
+confirm-terms-multi.ppt.personal.p1.l2=submit your PPT returns
+confirm-terms-multi.ppt.personal.p1.l3=adjust your PPT returns
+confirm-terms-multi.ppt.personal.p1.l4=speak to HMRC about your returns
+confirm-terms-multi.ppt.personal.p1.l5=provide repayment bank details to HMRC when repayment is due
+confirm-terms-multi.ppt.personal.p1.l6=finalise your overall tax position
+confirm-terms-multi.ppt.personal.p1.l7=view your calculations and amounts owed and paid
+confirm-terms-multi.ppt.personal.p1.l8=manage your PPT using software
+confirm-terms-multi.ppt.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax details.
+
+confirm-terms-multi.ppt.business.p1=If you consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax, this means {0} can:
+confirm-terms-multi.ppt.business.p1.l1=view your PPT returns
+confirm-terms-multi.ppt.business.p1.l2=submit your PPT returns
+confirm-terms-multi.ppt.business.p1.l3=adjust your PPT returns
+confirm-terms-multi.ppt.business.p1.l4=speak to HMRC about your returns
+confirm-terms-multi.ppt.business.p1.l5=provide repayment bank details to HMRC when repayment is due
+confirm-terms-multi.ppt.business.p1.l6=finalise your overall tax position
+confirm-terms-multi.ppt.business.p1.l7=view your calculations and amounts owed and paid
+confirm-terms-multi.ppt.business.p1.l8=manage your PPT using software
+confirm-terms-multi.ppt.business.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
+
 confirm-terms.itsa.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
 confirm-terms.vat.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch TAW.
@@ -660,6 +725,7 @@ check-answers.service.vat =Cyflwyno’ch Ffurflenni TAW drwy feddalwedd
 check-answers.service.trust=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.trustNT=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.cgt=Rheoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+check-answers.service.ppt=Manage your Plastic Packaging Tax
 check-answers.consent.true =Iawn
 check-answers.consent.false =Na
 check-answers.change-link=Newid
@@ -682,6 +748,7 @@ client-complete.vat.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedi
 client-complete.trust.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran cynnal ymddiriedolaeth neu ystâd
 client-complete.trustNT.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran cynnal ymddiriedolaeth neu ystâd
 client-complete.cgt.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+client-complete.ppt.p1={0} is now confirmed as your authorised tax agent for managing your Plastic Packaging Tax.
 client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’n gallu delio â CThEM ar eich rhan</a> er mwyn:
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
@@ -816,37 +883,6 @@ session-lost-client.description.2=Efallai nad ydym wedi cadw’ch atebion.
 session-lost-client.description.3=Os oes gennych gwestiwn, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
 session-lost-client.manage-agents-link=Gallwch <a href="{0}">wirio pwy sy’n gallu delio â CThEM ar eich rhan</a>.
 
-# General Messages
-global.yes=Iawn
-global.no=Na
-# Error messages for digital services
-global.error.400.title=Cais annilys – 400
-global.error.400.heading=Cais annilys
-global.error.400.message=Gwiriwch eich bod wedi nodi’r cyfeiriad gwe cywir.
-global.error.403.title=Gwaharddwyd – 403
-global.error.403.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
-global.error.403.message=
-global.error.passcode.title=Gwaharddwyd – 403
-global.error.passcode.heading=Mae’n ddrwg gennym – nid ydych wedi’ch awdurdodi i fynd yn eich blaen.
-global.error.passcode.message=
-global.error.404.title=Heb ddod o hyd i’r dudalen – GOV.UK
-global.error.404.heading=Heb ddod o hyd i’r dudalen
-global.error.404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
-global.error.pageNotFound404.title=Heb ddod o hyd i’r dudalen – GOV.UK
-global.error.pageNotFound404.heading=Heb ddod o hyd i’r dudalen
-global.error.pageNotFound404.message=<p>Os gwnaethoch deipio’r cyfeiriad gwe, gwiriwch ei fod yn gywir.</p> <p>Os gwnaethoch ludo’r cyfeiriad gwe, gwiriwch eich bod wedi copïo’r cyfeiriad yn llawn.</p> <p>Os yw’r cyfeiriad gwe yn gywir, neu’ch bod wedi dewis cysylltiad neu fotwm, <a href="https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines">cysylltwch â CThEM</a> os oes angen i chi siarad â rhywun am ofyn i gleient eich awdurdodi.</p>
-
-global.error.500.title=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth – 500
-global.error.500.heading=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
-global.error.500.message=Rhowch gynnig arall arni yn nes ymlaen.
-global.error.500.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
-global.error.500.vat_helpline.link-text=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
-global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
-global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
-global.error.500.sa_helpline.link-text=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
-global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
-global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
-
 #Relationships
 #Client ends relationship
 clientEndsRelationship.title=A hoffech atal asiant treth rhag bwrw golwg dros eich cofnod incwm?
@@ -878,6 +914,7 @@ recent-invitations.invitation.service.HMRC-MTD-VAT=Rheoli ei TAW
 recent-invitations.invitation.service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 recent-invitations.invitation.service.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+recent-invitations.invitation.service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
 recent-invitations.invitation.identifier.vrn=Rhif cofrestru TAW:
 recent-invitations.invitation.identifier.MTDITID=Dynodydd Troi Treth yn Ddigidol ar gyfer Treth Incwm
@@ -943,9 +980,8 @@ confirm-cancel.subheader.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fydd
 confirm-cancel.subheader.HMRC-TERS-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-cancel.subheader.HMRC-TERSNT-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-cancel.subheader.HMRC-CGT-PD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+confirm-cancel.subheader.HMRC-PPT-ORG=If you cancel this request, you will not be able to manage their Plastic Packaging Tax.
 
-confirm-cancel.radio.yes=Iawn
-confirm-cancel.radio.no=Na
 error.confirmCancel.invalid=Mae angen llenwi’r maes hwn
 
 #Request cancelled page
@@ -956,6 +992,7 @@ request-cancelled.p1.HMRC-MTD-VAT=Rydych wedi canslo’ch cais am awdurdodiad i 
 request-cancelled.p1.HMRC-TERS-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-TERSNT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-CGT-PD=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+request-cancelled.p1.HMRC-CGT-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
 request-cancelled.panel=Ni all {0} ymateb i’r cais hwn mwyach.
 request-cancelled.track.link=Olrhain eich ceisiadau diweddar am awdurdodiad
 
@@ -969,8 +1006,7 @@ confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TA
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
-confirm-authorisation-cancelled.radio.yes=Iawn
-confirm-authorisation-cancelled.radio.no=Na
+confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
 confirm-authorisation-cancelled.radio.no.itsa=Na – mae angen i mi ddechrau eto
 
 #Confirm cancel authorisation track page
@@ -981,6 +1017,7 @@ confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli
 confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
 confirm-authorisation-cancelled.track.itsa-panel=Ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm dros y person hwn mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 
 #Authorisation cancelled page
@@ -992,6 +1029,7 @@ authorisation-cancelled.p1.HMRC-MTD-VAT=Nid ydych wedi’ch awdurdodi mwyach i r
 authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-CGT-PD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+authorisation-cancelled.p1.HMRC-PPT-ORG=You are no longer authorised by {0} to manage their Plastic Packaging Tax.
 authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfer Hunanasesiad
 authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
@@ -1019,6 +1057,7 @@ active-authorisation-exists.p1.HMRC-MTD-VAT=Mae’r cleient hwn eisoes wedi’ch
 active-authorisation-exists.p1.HMRC-TERS-ORG.false=Mae’r cleient hwn eisoes wedi’ch awdurdodi i gynnal ymddiriedolaeth neu ystâd.
 active-authorisation-exists.p1.HMRC-TERSNT-ORG.true=Mae’r cleient hwn eisoes wedi’ch awdurdodi i gynnal ymddiriedolaeth neu ystâd.
 active-authorisation-exists.p1.HMRC-CGT-PD=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+active-authorisation-exists.p1.HMRC-PPT-ORG=This client has already authorised you to manage their Plastic Packaging Tax.
 active-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
@@ -1037,6 +1076,17 @@ client-not-registered.p2=Gofynnwch i’ch cleient <a href="{0}">gofrestru ar gyf
 client-not-registered.p3=Wedyn, gallwch <a href="{0}">greu cais am awdurdodiad i’w anfon ato</a>.
 client-not-registered.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 client-not-registered.new-request.button=Dechrau cais newydd
+
+#Legacy authorisation detected
+legacy-auth-detected.title=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.header=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.details-header=Why am I being asked this question?
+legacy-auth-detected.details-text1=There is already an authorisation in place for this client to manage their Self Assessment. The authorisation could be for you or for another agent. If this client authorised you through your
+legacy-auth-detected.details-link=HMRC online services for agents account (opens in a new tab)
+legacy-auth-detected.details-text2=, copy the authorisation across to your agent services account. If you copy it across, you do not need to create a new authorisation request link. If they authorised a different agent, create a new authorisation request link.
+legacy-auth-detected.yes=Yes - copy across the client to your agent services account
+legacy-auth-detected.no=No - create a new authorisation request link
+error.legacy-euth-detected=Select yes to copy across the client to your agent services account
 
 #Error Cannot View Request
 error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn

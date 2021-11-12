@@ -49,10 +49,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   val emptyBasket: Basket = Set.empty
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
-  val authorisedAgentNotWhitelisted = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
+  val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
-  private val nonWhitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  private val nonAllowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val mockAppConfig = mock(classOf[AppConfig])
 
   def makeBasket(services: Set[String]) = services.map {
@@ -87,7 +87,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
   def createInvitationSentMock: CreateInvitationSent = (_: String, _: String, _: Arn, _: Basket) => Future(???)
 
-  def hasNoLegacyMapping: HasLegacyMapping = (_: Arn, _: String) => Future(false)
+  def legacySaRelationshipStatusMapped(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+    Future.successful(LegacySaRelationshipFoundAndMapped)
+
+  def legacySaRelationshipStatusNotMapped(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+    Future.successful(LegacySaRelationshipFoundNotMapped)
+
+  def legacySaRelationshipStatusNotFound(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+    Future.successful(LegacySaRelationshipNotFound)
 
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
     CgtRef => Future(Some(cgtSubscription(countryCode)))
@@ -116,8 +123,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to SelectPersonalService with fewer services when agent is not whitelisted" in {
 
         given(SelectClientType(emptyBasket)) when
-          selectedClientType(authorisedAgentNotWhitelisted)("personal") should
-          thenGo(SelectPersonalService(nonWhitelistedServices, emptyBasket))
+          selectedClientType(authorisedAgentNotAllowlisted)("personal") should
+          thenGo(SelectPersonalService(nonAllowlistedServices, emptyBasket))
       }
 
       "transition to SelectBusinessService" in {
@@ -568,7 +575,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when
           identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(clientName)(
-            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(
             IrvClient("AB123456A", "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
@@ -579,7 +586,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyPersonalClient(HMRCPIR, emptyBasket)) when
           identifiedIrvClient(checkDobMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(clientName)(
-            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(
+            createMultipleInvitations)(getAgentLink)(getAgencyEmail)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(
             IrvClient("AB123456A", "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
@@ -777,11 +784,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
 
-      def hasLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-        Future.successful(true)
+      def legacySaRelationshipStatusNotFound(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+        Future.successful(LegacySaRelationshipNotFound)
 
-      def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-        Future.successful(false)
+      def legacySaRelationshipStatusNotMapped(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+        Future.successful(LegacySaRelationshipFoundNotMapped)
+
+      def legacySaRelationshipStatusMapped(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+        Future.successful(LegacySaRelationshipFoundAndMapped)
 
       "transition to SelectClientType" in {
 
@@ -794,7 +804,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenMatch {
             case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty =>
           }
@@ -804,7 +815,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDIT, emptyBasket))
       }
 
@@ -822,7 +834,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenMatch {
             case PendingInvitationExists(_, basket) if basket.nonEmpty =>
           }
@@ -832,7 +845,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenMatch {
             case PartialAuthorisationExists(_) =>
           }
@@ -842,9 +855,20 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         when(mockAppConfig.featuresAltItsa).thenReturn(true)
         given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusMapped)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenMatch {
             case AlreadyCopiedAcrossItsa =>
+          }
+      }
+
+      "transition to LegacyAuthorisationDetected when there is an other Legacy Mapping" in {
+        when(mockAppConfig.featuresAltItsa).thenReturn(true)
+        given(ConfirmClientItsa(authorisationRequest, emptyBasket)) when
+          clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotMapped)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
+          thenMatch {
+            case LegacyAuthorisationDetected(_) =>
           }
       }
     }
@@ -865,8 +889,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
         Future.successful(false)
 
-      def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-        Future.successful(false)
+      def legacySaRelationshipStatusNotFound(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+        Future.successful(LegacySaRelationshipNotFound)
 
       "transition to Start" in {
 
@@ -901,7 +925,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenMatch {
             case ReviewAuthorisationsPersonal(_, basket) if basket.nonEmpty =>
           }
@@ -922,7 +947,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyPersonalClient(HMRCMTDVAT, emptyBasket))
       }
     }
@@ -949,9 +975,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
         Future.successful(false)
 
-      def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-        Future.successful(false)
-
       "after start transition to Start" in {
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when start should thenGo(
@@ -963,7 +986,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenGo(InvitationSentBusiness("invitation/link", None, "abc@xyz.com", Set(authorisationRequest.invitation.service)))
       }
 
@@ -971,7 +995,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyBusinessClient)
       }
 
@@ -981,7 +1006,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientBusinessVat(authorisationRequest)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenGo(PendingInvitationExists(business, emptyBasket))
       }
 
@@ -994,7 +1020,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           showCgtFlag = false
         )(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(
           hasNoPendingInvitation
-        )(hasActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+        )(hasActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(business, HMRCMTDVAT, emptyBasket))
       }
     }
@@ -1019,12 +1045,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
           Future.successful(false)
 
-        def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-          Future.successful(false)
-
         given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyPersonalClient(HMRCCGTPD, emptyBasket))
 
       }
@@ -1051,12 +1075,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
           Future.successful(false)
 
-        def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-          Future.successful(false)
+        def legacySaRelationshipStatusNotFound(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+          Future.successful(LegacySaRelationshipNotFound)
 
         given(ConfirmClientCgt(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = true)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyTrustClient(HMRCCGTPD, emptyBasket))
 
       }
@@ -1083,14 +1108,15 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
         Future.successful(false)
 
-      def hasNoLegacyMapping(arn: Arn, clientId: String): Future[Boolean] =
-        Future.successful(false)
+      def legacySaRelationshipStatusNotFound(arn: Arn, clientId: String): Future[LegacySaRelationshipResult] =
+        Future.successful(LegacySaRelationshipNotFound)
 
       "transition to IdentifyTrustClient if NO is selected" in {
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(false)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            false)) should
           thenGo(IdentifyTrustClient(TRUST, emptyBasket))
       }
 
@@ -1098,7 +1124,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenGo(
             InvitationSentBusiness(
               "invitation/link",
@@ -1114,7 +1141,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
-            hasNoActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
           thenGo(PendingInvitationExists(business, emptyBasket))
       }
 
@@ -1124,9 +1152,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           Future.successful(true)
 
         given(ConfirmClientTrust(authorisationRequest, emptyBasket)) when
-          clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
-            hasActiveRelationship)(hasNoPartialAuthorisation)(hasNoLegacyMapping)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(hasActiveRelationship)(
+            hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(ActiveAuthorisationExists(business, Services.TAXABLETRUST, emptyBasket))
+
       }
     }
 

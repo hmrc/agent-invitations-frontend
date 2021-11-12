@@ -27,7 +27,7 @@ import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
@@ -74,14 +74,14 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
-  private def hasLegacyRelationshipUrl(arn: Arn, nino: String): String =
-    s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/haslegacymapping"
-
   private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
     new URL(
       baseUrl,
       s"/agent-client-relationships/agent/${arn.value}/service" +
         s"/$service/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
+
+  private def hasMappedLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
+    s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"
 
   def getInactiveRelationships(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveTrackRelationship]] =
     monitor(s"ConsumedApi-Get-InactiveRelationships-GET") {
@@ -96,15 +96,16 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  def getHasLegacyRelationships(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedApi-Get-HasLegacyRelationships-GET") {
+  def getLegacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
+    monitor(s"ConsumedApi-Get-getLegacyRelationshipStatusFor-GET") {
       http
-        .GET[HttpResponse](hasLegacyRelationshipUrl(arn, nino))
+        .GET[HttpResponse](hasMappedLegacyRelationshipUrlFor(arn, nino))
         .map { r =>
           r.status match {
-            case NO_CONTENT => true
-            case NOT_FOUND  => false
-            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getHasLegacyRelationships'")
+            case NO_CONTENT => LegacySaRelationshipFoundAndMapped
+            case OK         => LegacySaRelationshipFoundNotMapped
+            case NOT_FOUND  => LegacySaRelationshipNotFound
+            case other      => throw new RuntimeException(s"unexpected $other error when calling 'getLegacySaRelationshipStatusFor'")
           }
         }
     }

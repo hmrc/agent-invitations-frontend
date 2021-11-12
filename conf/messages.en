@@ -360,7 +360,6 @@ cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to m
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property account for {1}.
 cancel-authorisation.cancelled.print=Print this page
-
 cancel-authorisation.business-select-service.header=Do you want to cancel managing this client’s VAT?
 cancel-authorisation.error.business-service.required=Select yes if you want to cancel managing this client’s VAT
 
@@ -1078,6 +1077,17 @@ client-not-registered.p3=Then you can <a href={0}>create an authorisation reques
 client-not-registered.return=Return to your authorisation requests
 client-not-registered.new-request.button=Start a new request
 
+#Legacy authorisation detected
+legacy-auth-detected.title=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.header=Has this client already authorised you through your HMRC online services for agents account?
+legacy-auth-detected.details-header=Why am I being asked this question?
+legacy-auth-detected.details-text1=There is already an authorisation in place for this client to manage their Self Assessment. The authorisation could be for you or for another agent. If this client authorised you through your
+legacy-auth-detected.details-link=HMRC online services for agents account (opens in a new tab)
+legacy-auth-detected.details-text2=, copy the authorisation across to your agent services account. If you copy it across, you do not need to create a new authorisation request link. If they authorised a different agent, create a new authorisation request link.
+legacy-auth-detected.yes=Yes - copy across the client to your agent services account
+legacy-auth-detected.no=No - create a new authorisation request link
+error.legacy-auth-detected.required=Select yes to copy across the client to your agent services account
+
 #Error Cannot View Request
 error.cannot-view-request.title=You cannot view this authorisation request
 error.cannot-view-request.header=You cannot view this authorisation request
@@ -1205,3 +1215,4 @@ timed-out.seconds=seconds
 date.fields.day=Day
 date.fields.month=Month
 date.fields.year=Year
+

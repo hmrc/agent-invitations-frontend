@@ -82,6 +82,7 @@ abstract class BaseISpec
         "features.show-hmrc-mtd-vat"                                              -> true,
         "features.show-hmrc-trust"                                                -> true,
         "features.show-hmrc-cgt"                                                  -> true,
+        "features.enable-alt-itsa"                                                -> true,
         "features.enable-agent-suspension"                                        -> true,
         "features.enable-track-cancel-auth-action"                                -> true,
         "features.show-agent-led-de-auth"                                         -> true,

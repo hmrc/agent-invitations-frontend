@@ -52,6 +52,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val ActiveAuthorisationExistsFormat = Json.format[ActiveAuthorisationExists]
   val PartialAuthorisationExistsFormat = Json.format[PartialAuthorisationExists]
   val ClientNotRegisteredFormat = Json.format[ClientNotRegistered]
+  val LegacyAuthorisationDetectedFormat = Json.format[LegacyAuthorisationDetected]
 
   //Unhappy states
   val KnownFactNotMatchedFormat = Json.format[KnownFactNotMatched]
@@ -104,6 +105,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: SuspendedAgent                  => SuspendedAgentFormat.writes(s)
     case s: PartialAuthorisationExists      => PartialAuthorisationExistsFormat.writes(s)
     case s: ClientNotRegistered             => ClientNotRegisteredFormat.writes(s)
+    case s: LegacyAuthorisationDetected     => LegacyAuthorisationDetectedFormat.writes(s)
   }
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
@@ -147,6 +149,7 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "PartialAuthorisationExists"      => PartialAuthorisationExistsFormat.reads(properties)
     case "AlreadyCopiedAcrossItsa"         => JsSuccess(AlreadyCopiedAcrossItsa)
     case "ClientNotRegistered"             => ClientNotRegisteredFormat.reads(properties)
+    case "LegacyAuthorisationDetected"     => LegacyAuthorisationDetectedFormat.reads(properties)
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 
