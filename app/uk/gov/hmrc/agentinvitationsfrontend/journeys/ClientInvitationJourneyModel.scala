@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.joda.time.DateTime
 import play.api.Logging
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
@@ -234,7 +234,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             arn,
             idealTargetState
           )
-        case WarmUp(clientType, uid, arn, agentName, _) if clientType == ClientType.personal =>
+        case WarmUp(clientType, uid, arn, agentName, _) if clientType == ClientType.Personal =>
           goto(GGUserIdNeeded(clientType, uid, arn, agentName))
         case WarmUp(clientType, uid, arn, agentName, _) =>
           goto(WarmUpSessionRequired(clientType, uid, arn, agentName))
@@ -477,7 +477,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     def continueSomeResponsesFailed(client: AuthorisedClient) = Transition {
       case SomeResponsesFailed(agentName, _, successfulConsents, _) =>
-        goto(InvitationsAccepted(agentName, successfulConsents, if (client.affinityGroup == Individual) personal else business))
+        goto(InvitationsAccepted(agentName, successfulConsents, if (client.affinityGroup == Individual) Personal else Business)) // TODO ACCOMODATE TRUST
     }
 
     def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {

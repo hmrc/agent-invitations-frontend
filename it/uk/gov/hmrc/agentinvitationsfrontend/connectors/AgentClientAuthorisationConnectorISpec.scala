@@ -4,7 +4,7 @@ import java.net.URL
 import org.joda.time.{DateTime, LocalDate}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -24,17 +24,17 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
       "return multi-invitation link for valid data" in {
 
-        givenAgentReference(arn, hash, personal)
+        givenAgentReference(arn, hash, Personal)
 
         val result = await(connector.createAgentLink(arn, "personal"))
         result.isDefined shouldBe true
         result.get should include(
-          s"invitations/$personal/$hash/99-with-flake"
+          s"invitations/$Personal/$hash/99-with-flake"
         )
       }
 
       "return None if unexpected response when creating multi-invitation link" in {
-        givenAgentReferenceNotFound(arn, personal)
+        givenAgentReferenceNotFound(arn, Personal)
         await(connector.createAgentLink(arn, "personal")) shouldBe None
       }
     }
@@ -52,11 +52,11 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     }
 
     "service is for ITSA" should {
-      val agentInvitationITSA = AgentInvitation(Some(personal), "HMRC-MTD-IT", "ni", "AB123456B")
+      val agentInvitationITSA = AgentInvitation(Some(Personal), "HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          Some(personal),
+          Some(Personal),
           "AB123456B",
           invitationIdITSA,
           "AB123456B",
@@ -76,11 +76,11 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     }
 
     "service is for PIR" should {
-      val agentInvitationPIR = AgentInvitation(Some(personal), "PERSONAL-INCOME-RECORD", "ni", "AB123456B")
+      val agentInvitationPIR = AgentInvitation(Some(Personal), "PERSONAL-INCOME-RECORD", "ni", "AB123456B")
       "return a link of a PIR created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          Some(personal),
+          Some(Personal),
           "AB123456B",
           invitationIdPIR,
           "AB123456B",
@@ -99,11 +99,11 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     }
 
     "service is for VAT" should {
-      val agentInvitationVAT = AgentInvitation(Some(business), "HMRC-MTD-VAT", "vrn", validVrn.value)
+      val agentInvitationVAT = AgentInvitation(Some(Business), "HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          Some(business),
+          Some(Business),
           validVrn.value,
           invitationIdVAT,
           validVrn.value,
@@ -122,11 +122,11 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     }
 
     "service is for Trust" should {
-      val agentInvitationTrust = AgentInvitation(Some(business), "HMRC-TERS-ORG", "utr", validUtr.value)
+      val agentInvitationTrust = AgentInvitation(Some(Business), "HMRC-TERS-ORG", "utr", validUtr.value)
       "return a link of a Trust created invitation" in {
         givenInvitationCreationSucceeds(
           arn,
-          Some(business),
+          Some(Business),
           validUtr.value,
           invitationIdTrust,
           validUtr.value,

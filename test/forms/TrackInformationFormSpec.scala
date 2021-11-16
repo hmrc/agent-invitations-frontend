@@ -61,7 +61,7 @@ class TrackInformationFormSpec extends UnitSpec {
 
     "return no errors when unbinding the form" in {
       val unboundForm =
-        testTrackInformationForm.mapping.unbind(TrackResendForm(itsaService, Some(ClientType.personal), expiryDate))
+        testTrackInformationForm.mapping.unbind(TrackResendForm(itsaService, Some(ClientType.Personal), expiryDate))
       unboundForm("service") shouldBe itsaService
       unboundForm("clientType") shouldBe "personal"
       unboundForm("expiryDate") shouldBe expiryDate

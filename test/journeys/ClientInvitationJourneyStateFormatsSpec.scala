@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyMode
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import support.UnitSpec
 
@@ -57,7 +57,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |]"""
 
       "WarmUp" in {
-        val state = WarmUp(personal, "uid", Arn("TARN0000001"), "agent name", "agent-name")
+        val state = WarmUp(Personal, "uid", Arn("TARN0000001"), "agent name", "agent-name")
         val json = Json.parse(
           """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "arn": "TARN0000001", "agentName": "agent name", "normalisedAgentName":"agent-name"}}""")
 
@@ -73,7 +73,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "ActionNeeded" in {
-        val state = ActionNeeded(personal)
+        val state = ActionNeeded(Personal)
         val json = Json.parse("""{"state":"ActionNeeded", "properties": {"clientType": "personal"}}""")
 
         Json.toJson(state: State) shouldBe json
@@ -102,7 +102,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "SuspendedAgent" in {
-        val state = SuspendedAgent(personal, "uid", "agent name", Arn("1234"), Set("ITSA", "VATC"), Seq())
+        val state = SuspendedAgent(Personal, "uid", "agent name", Arn("1234"), Set("ITSA", "VATC"), Seq())
         val json = Json.parse(
           """{"state":"SuspendedAgent","properties":{"clientType": "personal", "uid": "uid",  "agentName": "agent name", "arn": "1234", "suspendedRegimes": ["ITSA", "VATC"], "nonSuspendedConsents": []}}""")
 
@@ -111,7 +111,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "MultiConsent" in {
         val state = MultiConsent(
-          personal,
+          Personal,
           "uid",
           "agent name",
           Arn("1234"),
@@ -137,7 +137,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "SingleConsent" in {
         val state = SingleConsent(
-          personal,
+          Personal,
           "uid",
           "agent name",
           ClientConsent(
@@ -170,7 +170,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "CheckAnswers" in {
         val state = CheckAnswers(
-          personal,
+          Personal,
           "uid",
           "agent name",
           Seq(
@@ -211,7 +211,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               consent = true
             )
           ),
-          personal
+          Personal
         )
         val json = Json.parse(
           s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents, "clientType": "personal"}}""".stripMargin)
@@ -236,7 +236,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               consent = true
             )
           ),
-          personal
+          Personal
         )
         val json = Json.parse(s"""{"state":"InvitationsDeclined",
                                  |"properties":{
@@ -273,7 +273,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               consent = true,
               processed = true
             )),
-          personal
+          Personal
         )
         val json =
           Json.parse(s"""{"state":"SomeResponsesFailed","properties":{"agentName": "agent name", 
@@ -304,7 +304,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
       "ConfirmDecline" in {
         val state = ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "agent name",
           Arn("1234"),
@@ -339,7 +339,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "WarmUpSessionRequired" in {
-        val state = WarmUpSessionRequired(ClientType.personal, "uid", Arn("1234"), "agentName")
+        val state = WarmUpSessionRequired(ClientType.Personal, "uid", Arn("1234"), "agentName")
         val json = Json.parse(
           s"""{"state":"WarmUpSessionRequired","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}""")
         Json.toJson(state: State) shouldBe json
@@ -347,7 +347,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "GGUserIdNeeded" in {
-        val state = GGUserIdNeeded(ClientType.personal, "uid", Arn("1234"), "agentName")
+        val state = GGUserIdNeeded(ClientType.Personal, "uid", Arn("1234"), "agentName")
         val json =
           Json.parse(s"""{"state":"GGUserIdNeeded","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}""")
         Json.toJson(state: State) shouldBe json

@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyCo
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
@@ -638,7 +638,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case ConfirmPostcodeCgt(_, ftr, _, _, _) =>
         Ok(
           confirmPostcodeCgtView(
-            ftr.clientType.getOrElse(personal),
+            ftr.clientType.getOrElse(Personal),
             formWithErrors.or(PostcodeForm.form),
             backLinkFor(breadcrumbs).url,
             fromFastTrack = true,
@@ -647,7 +647,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case ConfirmCountryCodeCgt(_, ftr, _, _, _) =>
         Ok(
           confirmCountryCodeCgtView(
-            ftr.clientType.getOrElse(personal),
+            ftr.clientType.getOrElse(Personal),
             countries,
             formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
             backLinkFor(breadcrumbs).url,
@@ -662,7 +662,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               invitationLink,
               continueUrl,
               continueUrl.isDefined,
-              ClientType.fromEnum(personal),
+              ClientType.fromEnum(Personal),
               inferredExpiryDate,
               agencyEmail,
               Set(service),
@@ -676,7 +676,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               invitationLink,
               continueUrl,
               continueUrl.isDefined,
-              ClientType.fromEnum(business),
+              ClientType.fromEnum(Business),
               inferredExpiryDate,
               agencyEmail,
               Set(service),
@@ -723,7 +723,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           activeAuthExistsView(
             authRequestsExist = false,
             agentFastTrackRequest.service,
-            agentFastTrackRequest.clientType.getOrElse(personal),
+            agentFastTrackRequest.clientType.getOrElse(Personal),
             fromFastTrack = true,
             routes.AgentInvitationJourneyController.showReviewAuthorisations(),
             routes.AgentInvitationFastTrackJourneyController.showClientType()
@@ -789,9 +789,9 @@ object AgentInvitationFastTrackJourneyController {
   val validateFastTrackForm: Constraint[AgentFastTrackRequest] =
     Constraint[AgentFastTrackRequest] { formData: AgentFastTrackRequest =>
       formData match {
-        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCMTDIT, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.Personal) | None, HMRCMTDIT, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(Some(ClientType.personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.Personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
         case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)                       => Valid
         case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)              => Valid

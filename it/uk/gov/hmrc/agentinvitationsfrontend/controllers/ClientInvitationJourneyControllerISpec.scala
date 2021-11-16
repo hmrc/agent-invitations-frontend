@@ -8,7 +8,7 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{business, personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -190,7 +190,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -203,7 +203,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to consent page if the invitation is found" in {
         givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -213,7 +213,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/cannot-find-request if there are no invitations found " +
         "and the client has SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -223,7 +223,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
         "and the client has ALL supported MTD enrolments" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -231,7 +231,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       }
 
       "redirect to /cannot-find-request if the client has no supported MTD enrolments" in {
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithNoSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -241,7 +241,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Accepted or Rejected " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsByStatus(uid, "Accepted")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -251,7 +251,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
         "and the client has ALL supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Rejected")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -261,7 +261,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/agent-cancelled-request if the most recent authorisation request has status of Cancelled " +
         "and the client has ALL supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -271,7 +271,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/authorisation-request-cancelled if the most recent authorisation request has status of Cancelled " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -281,7 +281,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to /respond/error/authorisation-request-expired if the most recent authorisation request has status of Expired " +
         "and the client has only SOME supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Expired")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -290,7 +290,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to /respond/error/authorisation-request-expired if the invitation has mixed statuses, none of which are Pending" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Expired")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -300,7 +300,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to suspended agent if the agent is suspended for all consent services" in {
         givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = true, Some(Set("ITSA", "VATC"))))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -309,7 +309,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to /trust-not-claimed if client doesn't have the trust enrolment but invitation contains trust" in {
         givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
-        journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Business, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUp(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
@@ -320,7 +320,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to /respond/error/cannot-view-request when an agent tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
 
       val result = controller.submitWarmUp(authenticatedAnyClientWithAffinity(request()))
@@ -334,7 +334,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "throw an exception when a user with no affinity group tries to respond to a clients invitation" in {
       givenAllInvitationIdsByStatus(uid, "Pending")
       givenUnauthorisedWith("UnsupportedAffinityGroup")
-      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => requestWithJourneyIdInCookie("GET", "/warm-up")
 
       intercept[Exception] {
@@ -344,7 +344,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to /Government-Gateway-user-ID-needed when there is no session and client type is personal" in {
       givenUnauthorisedWith("MissingBearerToken")
-      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
 
       val result = controller.submitWarmUp(request())
@@ -355,7 +355,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to /warm-up/session-required when there is no session and client type is business" in {
       givenUnauthorisedWith("MissingBearerToken")
-      journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(Business, uid, arn, "My Agency", "my-agency"), Nil)
       val request = () => FakeRequest("GET", "/warm-up").withSession(journeyIdKey -> "foo")
 
       val result = controller.submitWarmUp(request())
@@ -368,7 +368,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /Government-Gateway-user-ID-needed" should {
     "display the correct content" in {
       def request() = requestWithJourneyIdInCookie("GET", "/Government-Gateway-user-ID-needed")
-    journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+    journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
       val result = controller.showGGUserIdNeeded(request())
 
       status(result) shouldBe 200
@@ -386,7 +386,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to /warm-up/session-required when 'Yes' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/Government-Gateway-user-ID-needed")
 
-      journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+      journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
 
       val result =
         controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
@@ -397,7 +397,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to /which-tax-service when 'No' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/Government-Gateway-user-ID-needed")
 
-      journeyState.set(GGUserIdNeeded(personal, "uid", arn, "name"), Nil)
+      journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
 
       val result =
         controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
@@ -409,7 +409,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /which-tax-service" should {
     "display the correct content" in {
       def request() = requestWithJourneyIdInCookie("GET", "/which-tax-service")
-      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+      journeyState.set(WhichTaxService(Personal, "uid", arn, "name"), Nil)
       val result = controller.showWhichTaxService(request())
 
       status(result) shouldBe 200
@@ -426,7 +426,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to /create-new-user-ID when 'Yes' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
 
-      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+      journeyState.set(WhichTaxService(Personal, "uid", arn, "name"), Nil)
 
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
@@ -437,7 +437,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to /invitations/sign-up-to-tax-service when 'No' was selected" in {
       def request() = requestWithJourneyIdInCookie("POST", "/which-tax-service")
 
-      journeyState.set(WhichTaxService(personal, "uid", arn, "name"), Nil)
+      journeyState.set(WhichTaxService(Personal, "uid", arn, "name"), Nil)
 
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
@@ -449,7 +449,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /create-new-user-id" should {
     "display the correct content" in {
       def request() = requestWithJourneyIdInCookie("GET", "/create-new-user-id")
-      journeyState.set(CreateNewUserId(personal, "uid", arn, "name"), Nil)
+      journeyState.set(CreateNewUserId(Personal, "uid", arn, "name"), Nil)
       val result = controller.showCreateNewUserId(request())
 
       status(result) shouldBe 200
@@ -485,7 +485,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
       givenAllInvitationIdsByStatus(uid, "Pending")
-      journeyState.set(WarmUpSessionRequired(personal, uid, arn, "My Agency"), Nil)
+      journeyState.set(WarmUpSessionRequired(Personal, uid, arn, "My Agency"), Nil)
 
       val result = controller.submitWarmUpSessionRequired(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
       status(result) shouldBe 303
@@ -496,7 +496,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /cannot-appoint" should {
     "display the agent suspended page" in {
       def request = requestWithJourneyIdInCookie("GET", "/cannot-appoint")
-      journeyState.set(SuspendedAgent(personal, "uid", "name", arn, Set("ITSA", "VATC"), Seq()), Nil)
+      journeyState.set(SuspendedAgent(Personal, "uid", "name", arn, Set("ITSA", "VATC"), Seq()), Nil)
 
       val result = controller.showSuspendedAgent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -529,7 +529,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "redirect to confirm decline" in {
         givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = false, None))
         givenAllInvitationIdsByStatus(uid, "Pending")
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -538,7 +538,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to /respond/error/cannot-find-request" in {
         givenAllInvitationIdsByStatusReturnsEmpty(uid)
-        journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
@@ -547,7 +547,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
         givenAllInvitationIdsWithTrustByStatus(uid, "Pending")
-        journeyState.set(WarmUp(business, uid, arn, "My Agency", "my-agency"), Nil)
+        journeyState.set(WarmUp(Business, uid, arn, "My Agency", "my-agency"), Nil)
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
@@ -598,7 +598,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     behave like anActionHandlingSessionExpiry(controller.showActionNeeded)
 
     "display the action required page" in {
-      journeyState.set(ActionNeeded(personal), Nil)
+      journeyState.set(ActionNeeded(Personal), Nil)
 
       val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -615,7 +615,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for alt itsa" in {
       journeyState.set(
         MultiConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           arn,
@@ -648,7 +648,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for itsa" in {
       journeyState.set(
         MultiConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           arn,
@@ -681,7 +681,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for cgt personal" in {
       journeyState.set(
         MultiConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           arn,
@@ -713,7 +713,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the correct legend message when there are multiple invitations" in {
       journeyState.set(
         MultiConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           arn,
@@ -731,7 +731,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for cgt business" in {
       journeyState.set(
         MultiConsent(
-          business,
+          Business,
           uid,
           "My Agency",
           arn,
@@ -761,7 +761,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for trust - UTR" in {
       journeyState.set(
         MultiConsent(
-          business,
+          Business,
           uid,
           "My Agency",
           arn,
@@ -781,7 +781,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the multi consent page for trust - URN" in {
       journeyState.set(
         MultiConsent(
-          business,
+          Business,
           uid,
           "My Agency",
           arn,
@@ -807,7 +807,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to check answers when continuing" in {
       journeyState.set(
         MultiConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           arn,
@@ -834,7 +834,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the individual consent page" in {
       journeyState.set(
         SingleConsent(
-          personal,
+          Personal,
           uid,
           "My Agency",
           ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
@@ -862,7 +862,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
       )
       val currentState = CheckAnswers(
-        personal,
+        Personal,
         uid,
         "My Agency",
         consents
@@ -873,7 +873,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         breadcrumbs = List(
           currentState,
           SingleConsent(
-            personal,
+            Personal,
             uid,
             "My Agency",
             ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
@@ -897,7 +897,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the check answers page" in {
       journeyState.set(
         CheckAnswers(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           Seq(
@@ -933,7 +933,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenAcceptInvitationSucceeds(cgtRef.value, invitationIdCgt, "CGTPDRef")
       journeyState.set(
         CheckAnswers(
-          personal,
+          Personal,
           uid,
           "My Agency",
           Seq(
@@ -961,7 +961,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenRejectInvitationSucceeds(cgtRef.value, invitationIdCgt, "CGTPDRef")
       journeyState.set(
         CheckAnswers(
-          personal,
+          Personal,
           uid,
           "My Agency",
           Seq(
@@ -988,7 +988,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenAcceptInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
       journeyState.set(
         CheckAnswers(
-          personal,
+          Personal,
           uid,
           "My Agency",
           Seq(
@@ -1013,7 +1013,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenAcceptInvitationReturnsNotFound("101747696", invitationIdVAT, identifierVAT)
       journeyState.set(
         CheckAnswers(
-          personal,
+          Personal,
           uid,
           "My Agency",
           Seq(
@@ -1039,7 +1039,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the confirm decline page for single itsa consent" in {
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1056,7 +1056,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the confirm decline page for single cgt consent" in {
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1073,7 +1073,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "display the confirm decline page for multi consent" in {
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1103,7 +1103,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1119,7 +1119,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "redirect to confirm terms when no is selected" in {
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1138,7 +1138,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1159,7 +1159,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       journeyState.set(
         ConfirmDecline(
-          personal,
+          Personal,
           "uid",
           "My Agency",
           arn,
@@ -1190,7 +1190,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             Seq(
               ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
               ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
-            personal),
+            Personal),
           Nil
         )
 
@@ -1211,7 +1211,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           InvitationsAccepted(
             "My Agency",
             Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
-            business),
+            Business),
           Nil)
 
       val result = controller.showInvitationsAccepted(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -1232,7 +1232,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           InvitationsDeclined(
             "My Agency",
             Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)),
-            personal),
+            Personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -1248,7 +1248,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           InvitationsDeclined(
             "My Agency",
             Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)),
-            personal),
+            Personal),
           Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -1288,7 +1288,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
               ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
               ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
             Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
-            personal
+            Personal
           ),
           Nil
         )
@@ -1313,7 +1313,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             "My Agency",
             Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
             Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
-            personal
+            Personal
           ),
           Nil
         )
@@ -1326,7 +1326,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         InvitationsAccepted(
           "My Agency",
           Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
-          personal)
+          Personal)
     }
   }
 
@@ -1364,7 +1364,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /action-needed" should {
     def request = requestWithJourneyIdInCookie("GET", "/action-needed")
     "display the page as expected for clientType=personal" in {
-      journeyState.set(ActionNeeded(personal), Nil)
+      journeyState.set(ActionNeeded(Personal), Nil)
 
       val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1378,7 +1378,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new tab)", newWin = true)
     }
     "display the page as expected for clientType=business" in {
-      journeyState.set(ActionNeeded(business), Nil)
+      journeyState.set(ActionNeeded(Business), Nil)
 
       val result = controller.showActionNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1439,7 +1439,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/authorisation-request-expired" should {
     def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-expired")
     "display the page as expected" in {
-      journeyState.set(AuthorisationRequestExpired("d/M/yyyy", personal), Nil)
+      journeyState.set(AuthorisationRequestExpired("d/M/yyyy", Personal), Nil)
 
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1456,7 +1456,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/authorisation-request-cancelled" should {
     def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-cancelled")
     "display the page as expected" in {
-      journeyState.set(AuthorisationRequestCancelled("d/M/yyyy", personal), Nil)
+      journeyState.set(AuthorisationRequestCancelled("d/M/yyyy", Personal), Nil)
 
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1472,7 +1472,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/authorisation-request-already-responded" should {
     def request = requestWithJourneyIdInCookie("GET", "/respond/error/authorisation-request-already-responded")
     "display the page as expected" in {
-      journeyState.set(AuthorisationRequestAlreadyResponded("d/M/yyyy", personal), Nil)
+      journeyState.set(AuthorisationRequestAlreadyResponded("d/M/yyyy", Personal), Nil)
 
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1500,7 +1500,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
   "GET /respond/error/cannot-view-request" should {
     "display the error cannot view request page when current state is WarmUp" in {
-      journeyState.set(WarmUp(personal, uid, arn, "My Agency", "my-agency"), Nil)
+      journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
       val result = controller.showErrorCannotViewRequest(authorisedAsAnyAgent(FakeRequest()))
 
       status(result) shouldBe 403
@@ -1526,7 +1526,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /respond/error/cannot-find-request" should {
     def request = requestWithJourneyIdInCookie("GET", "/respond/error/cannot-find-request")
     "display the page as expected" in {
-      journeyState.set(CannotFindRequest(personal, "My Agency"), Nil)
+      journeyState.set(CannotFindRequest(Personal, "My Agency"), Nil)
 
       val result = controller.showErrorCannotFindRequest(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200

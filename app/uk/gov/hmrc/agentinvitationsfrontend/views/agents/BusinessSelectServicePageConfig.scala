@@ -18,21 +18,27 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
+import uk.gov.hmrc.agentinvitationsfrontend.models.PersonalInvitationsBasket
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 
 case class BusinessSelectServicePageConfig(
-  basket: Basket = Set.empty,
+  basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[String] = Set(HMRCMTDVAT),
-  submitCall: Call,
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages)
     extends SelectServicePageConfig {
 
-  // We only need the service key here
-  override def availableServices: Seq[(String, String)] = Seq(HMRCMTDVAT -> "unused")
+  def submitCall: Call =
+    if (showMultiSelect)
+      routes.AgentInvitationJourneyController.submitBusinessSelectService()
+    else
+      routes.AgentInvitationJourneyController.submitBusinessSelectSingle(remainingService)
+
+  override def availableServices: Seq[(String, String)] =
+    new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
 
   def selectSingleHeaderMessage: String =
     Messages(s"select-single-service.$firstServiceKey.business.header")

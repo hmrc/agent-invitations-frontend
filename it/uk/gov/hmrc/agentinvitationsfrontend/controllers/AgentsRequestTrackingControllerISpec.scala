@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -269,11 +269,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val postResendLink = controller.submitToResendLink
 
     "return 303 and redirect to show resend link page" in {
-      givenAgentReference(arn, "uid", personal)
+      givenAgentReference(arn, "uid", Personal)
       givenGetAgencyEmailAgentStub
       val expirationDate = LocalDate.now(DateTimeZone.UTC).plusDays(21)
       val formData =
-        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), expirationDate.toString))
+        controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(Personal), expirationDate.toString))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -283,7 +283,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 400 BadRequest when form data contains errors in service" in {
       val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
-      val formData = controller.trackInformationForm.fill(TrackResendForm("foo", Some(personal), expirationDate))
+      val formData = controller.trackInformationForm.fill(TrackResendForm("foo", Some(Personal), expirationDate))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
@@ -300,7 +300,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in expiryDate" in {
-      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(personal), "foo"))
+      val formData = controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(Personal), "foo"))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
