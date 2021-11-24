@@ -438,15 +438,15 @@ not-enrolled.p.HMRC-TERSNT-ORG=claimed a trust.
 
 not-enrolled.existing.header=Existing {0} clients
 not-enrolled.existing.p=If you copied an existing {0} authorisation for this client to your agent services account, you can {1}
-not-enrolled.existing.p.HMRC-MTD-IT=<a target="_blank" href="{0}">sign them up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a>
-not-enrolled.existing.p.HMRC-MTD-VAT=<a target="_blank" href="{0}">sign them up to Making Tax Digital for VAT (opens in a new tab).</a>
+not-enrolled.existing.p.HMRC-MTD-IT=<a target="_blank" rel="noreferrer noopener" href="{0}">sign them up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a>
+not-enrolled.existing.p.HMRC-MTD-VAT=<a target="_blank" rel="noreferrer noopener" href="{0}">sign them up to Making Tax Digital for VAT (opens in a new tab).</a>
 
 not-enrolled.mapping.p=Find out how to {0}
 not-enrolled.mapping.link=<a href="{0}">copy across an existing authorisation</a>
 
 not-enrolled.new.header=New {0} clients
-not-enrolled.new.HMRC-MTD-IT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a> You cannot do this step for them.
-not-enrolled.new.HMRC-MTD-VAT=Ask them to <a target="_blank" href="{0}">sign up to Making Tax Digital for VAT (opens in a new tab).</a> You cannot do this step for them.
+not-enrolled.new.HMRC-MTD-IT=Ask them to <a target="_blank" rel="noreferrer noopener" href="{0}">sign up to Making Tax Digital pilot for Income Tax (opens in a new tab).</a> You cannot do this step for them.
+not-enrolled.new.HMRC-MTD-VAT=Ask them to <a target="_blank" rel="noreferrer noopener" href="{0}">sign up to Making Tax Digital for VAT (opens in a new tab).</a> You cannot do this step for them.
 
 # Not Matched
 not-matched.header=We could not find your client
@@ -830,7 +830,7 @@ action-needed.vat.link-text=Making Tax Digital for VAT
 action-needed.itsa.link-text=the Making Tax Digital pilot for Income Tax
 action-needed.details.p1=Make sure you have signed up to {0}.
 action-needed.details.p2=Find out how to {0}
-action-needed.details.link=<a target="_blank" href="{0}">sign up to {1} (opens in a new tab)</a>.
+action-needed.details.link=<a target="_blank" rel="noreferrer noopener" href="{0}">sign up to {1} (opens in a new tab)</a>.
 action-needed.details.ters.p1=You will need to claim a trust or an estate before you can continue.
 action-needed.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
 
