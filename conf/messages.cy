@@ -424,15 +424,15 @@ not-enrolled.p.HMRC-TERSNT-ORG=hawlio ymddiriedolaeth.
 
 not-enrolled.existing.header=Cleientiaid {0} presennol
 not-enrolled.existing.p=Os gwnaethoch gopïo awdurdodiad {0} presennol ar gyfer y cleient hwn i’ch cyfrif gwasanaethau asiant, gallwch {1}
-not-enrolled.existing.p.HMRC-MTD-IT=<a target=”_blank” href=”{0}” rel="noopener noreferrer">ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor ffenestr neu dab newydd).</a>
-not-enrolled.existing.p.HMRC-MTD-VAT=<a target=”_blank” href=”{0}” rel="noopener noreferrer">ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).</a>
+not-enrolled.existing.p.HMRC-MTD-IT=<a target=”_blank” rel=”noreferrer noopener” href=”{0}”>ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor ffenestr neu dab newydd).</a>
+not-enrolled.existing.p.HMRC-MTD-VAT=<a target=”_blank” rel=”noreferrer noopener” href=”{0}”>ei gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).</a>
 
 not-enrolled.mapping.p=Gwybodaeth am sut i {0}
 not-enrolled.mapping.link=<a href=”{0}”>gopïo awdurdodiad presennol ar draws</a>
 
 not-enrolled.new.header=Cleientiaid {0} newydd
-not-enrolled.new.HMRC-MTD-IT=Gofynnwch iddynt <a target=”_blank” href=”{0}” rel="noopener noreferrer">gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor ffenestr neu dab newydd).</a> Ni allwch gwblhau’r cam hwn ar eu cyfer.
-not-enrolled.new.HMRC-MTD-VAT=Gofynnwch iddynt <a target=”_blank” href=”{0}” rel="noopener noreferrer">gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).</a> Ni allwch gwblhau’r cam hwn ar eu cyfer.
+not-enrolled.new.HMRC-MTD-IT=Gofynnwch iddynt <a target=”_blank” rel=”noreferrer noopener” href=”{0}”>gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor ffenestr neu dab newydd).</a> Ni allwch gwblhau’r cam hwn ar eu cyfer.
+not-enrolled.new.HMRC-MTD-VAT=Gofynnwch iddynt <a target=”_blank” rel=”noreferrer noopener” href=”{0}”>gofrestru fel rhan o raglen beilot Troi Treth yn Ddigidol ar gyfer TAW (yn agor ffenestr neu dab newydd).</a> Ni allwch gwblhau’r cam hwn ar eu cyfer.
 
 # Not Matched
 not-matched.header=Ni allem ddod o hyd i’ch cleient
@@ -802,7 +802,7 @@ action-needed.vat.link-text=Troi Treth yn Ddigidol ar gyfer TAW
 action-needed.itsa.link-text=y rhaglen beilot Troi Treth yn Ddigidol ar gyfer Treth Incwm
 action-needed.details.p1=Sicrhewch eich bod wedi cofrestru ar gyfer {0}.
 action-needed.details.p2=Canfyddwch sut i {0}
-action-needed.details.link=<a target=”_blank” href=”{0}” rel="noopener noreferrer">gofrestru ar gyfer {1} (yn agor ffenestr neu dab newydd)</a>.
+action-needed.details.link=<a target=”_blank” rel=”noreferrer noopener” href=”{0}”>gofrestru ar gyfer {1} (yn agor ffenestr neu dab newydd)</a>.
 action-needed.details.ters.p1=Bydd angen i chi hawlio ymddiriedolaeth neu ystâd cyn i chi allu mynd yn eich blaen.
 action-needed.details.ters.p2=Cysylltwch â’r asiant treth a anfonodd y cais hwn atoch os hoffech iddo gynnal ymddiriedolaeth neu ystâd o hyd.
 

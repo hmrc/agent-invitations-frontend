@@ -27,7 +27,7 @@
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_])
 
-<a href="@{appConfig.govUkGuidanceSignupUrl}" target="_blank" class="button--link-style">@signupInfo(invitationOrRelationship)</a>
+<a href="@{appConfig.govUkGuidanceSignupUrl}" target="_blank" rel="noreferrer noopener" class="button--link-style">@signupInfo(invitationOrRelationship)</a>
 
 @uiFormHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
