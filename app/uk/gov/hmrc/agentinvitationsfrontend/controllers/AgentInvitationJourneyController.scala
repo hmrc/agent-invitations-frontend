@@ -81,7 +81,8 @@ class AgentInvitationJourneyController @Inject()(
   allAuthRemovedView: all_authorisations_removed,
   agentSuspendedView: agent_suspended,
   partialAuthExistsView: partial_auth_exists,
-  clientNotRegisteredView: client_not_registered)(
+  clientNotRegisteredView: client_not_registered,
+  clientInsolventView: client_insolvent)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -346,6 +347,8 @@ class AgentInvitationJourneyController @Inject()(
 
   val showLegacyAuthorisationDetected: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[LegacyAuthorisationDetected].orRollback
 
+  val showClientInsolvent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientInsolvent]
+
   val submitLegacyAuthorisationDetected: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       LegacyAuthorisationForm.bindFromRequest
@@ -426,6 +429,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ClientNotRegistered         => routes.AgentInvitationJourneyController.showClientNotRegistered()
     case AlreadyCopiedAcrossItsa        => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
     case _: LegacyAuthorisationDetected => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected()
+    case _: ClientInsolvent             => routes.AgentInvitationJourneyController.showClientInsolvent()
     case _                              => throw new Exception(s"Link not found for $state")
   }
 
@@ -627,7 +631,7 @@ class AgentInvitationJourneyController @Inject()(
             authorisationRequest.invitation.clientId
           ))
 
-      case ConfirmClientPersonalVat(authorisationRequest, _) =>
+      case ConfirmClientPersonalVat(authorisationRequest, _, _) =>
         Ok(
           confirmClientView(
             authorisationRequest.clientName,
@@ -638,7 +642,7 @@ class AgentInvitationJourneyController @Inject()(
             authorisationRequest.invitation.clientId
           ))
 
-      case ConfirmClientBusinessVat(authorisationRequest, basket) =>
+      case ConfirmClientBusinessVat(authorisationRequest, _, _) =>
         Ok(
           confirmClientView(
             authorisationRequest.clientName,
@@ -848,6 +852,11 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(),
             backLinkFor(breadcrumbs).url
           ))
+
+      case ClientInsolvent(basket) =>
+        Ok(
+          clientInsolventView(hasRequests = basket.nonEmpty, isFastTrack = false)
+        )
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }

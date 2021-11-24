@@ -132,9 +132,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
       "ConfirmClientPersonalVat" in {
         val state =
-          ConfirmClientPersonalVat(AuthorisationRequest("Sylvia Plath", VatInvitation(Some(Personal), Vrn("123456")), itemId = "ABC"), Set.empty)
+          ConfirmClientPersonalVat(
+            AuthorisationRequest("Sylvia Plath", VatInvitation(Some(Personal), Vrn("123456")), itemId = "ABC"),
+            Set.empty,
+            true)
         val json = Json.parse(
-          """{"state":"ConfirmClientPersonalVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+          """{"state":"ConfirmClientPersonalVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"personal","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"},"basket":[], "clientInsolvent": true}}""")
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
@@ -143,7 +146,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ConfirmClientBusinessVat(AuthorisationRequest("Sylvia Plath", VatInvitation(Some(Business), Vrn("123456")), itemId = "ABC"), Set.empty)
         val json = Json.parse(
-          """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"},"basket":[]}}""")
+          """{"state":"ConfirmClientBusinessVat","properties":{"request":{"clientName":"Sylvia Plath","invitation":{"type":"VatInvitation","data":{"clientType":"business","service":"HMRC-MTD-VAT","clientIdentifier":"123456","clientIdentifierType":"vrn"}},"state":"New","itemId":"ABC"},"basket":[], "clientInsolvent": false}}""")
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
@@ -361,6 +364,16 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
+
+      "ClientInsolvent" in {
+        val state = ClientInsolvent(Set.empty)
+        val json =
+          Json.parse("""{"state":"ClientInsolvent", "properties": {"basket": []}} """)
+
+        Json.toJson(state: State) shouldBe json
+        json.as[State] shouldBe state
+      }
+
     }
   }
 }

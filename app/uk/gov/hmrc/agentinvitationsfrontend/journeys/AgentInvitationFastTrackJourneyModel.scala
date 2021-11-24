@@ -19,9 +19,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, CannotCreateRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetCgtSubscription, GetPptSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 import uk.gov.hmrc.agentmtdidentifiers.model._
@@ -256,6 +258,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   case object AlreadyCopiedAcrossItsa extends State
 
+  case object ClientInsolventFastTrack extends State
+  case object CannotCreateFastTrackRequest extends State
+
   case class LegacyAuthorisationDetected(fastTrackRequest: AgentFastTrackRequest, arn: Arn, invitation: Invitation, continueUrl: Option[String])
       extends State
 
@@ -265,7 +270,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
-    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
+    type CheckRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type CreateInvitation =
       (Arn, Invitation) => Future[InvitationId]
@@ -620,7 +625,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkRegDateMatches(Vrn(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
               .flatMap {
-                case Some(204) =>
+                case VatKnownFactCheckOk =>
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
@@ -633,8 +638,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
                     appConfig)(createInvitation, getAgentLink, getAgencyEmail)
-                case Some(_) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
-                case None    => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
+                case VatKnownFactNotMatched       => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
+                case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
+                case VatRecordMigrationInProgress => goto(CannotCreateFastTrackRequest)
+                case VatDetailsNotFound           => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
 
@@ -643,7 +650,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkRegDateMatches(Vrn(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
               .flatMap {
-                case Some(204) =>
+                case VatKnownFactCheckOk =>
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
@@ -656,8 +663,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
                     appConfig)(createInvitation, getAgentLink, getAgencyEmail)
-                case Some(_) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
-                case None    => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
+                case VatKnownFactNotMatched       => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
+                case VatDetailsNotFound           => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
+                case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
+                case VatRecordMigrationInProgress => goto(CannotCreateFastTrackRequest)
               }
           } else goto(IdentifyBusinessClient(originalFtr, fastTrackRequest, continueUrl))
 

@@ -1162,6 +1162,10 @@ cannot-find-request.business=business tax affairs
 cannot-find-request.personal=personal tax affairs
 cannot-find-request.p4=Ask your agent if you are not sure.
 
+#Client insolvent
+client-insolvent.header=You cannot create an authorisation request because this client is insolvent
+client-insolvent.p=Clients cannot authorise an agent on their behalf when they are insolvent.
+
 #Authorisation request error template
 error.authorisation-request-error-template.header=This authorisation request {0}
 error.authorisation-request-error-template.header.Expired=has already expired

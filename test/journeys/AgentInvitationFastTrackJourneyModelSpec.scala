@@ -32,6 +32,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -368,7 +369,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
 
@@ -511,7 +512,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
 
@@ -602,7 +603,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
 
@@ -734,7 +735,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for personal vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "ni", nino, vatRegDate)
         val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(400))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactNotMatched)
 
         given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
@@ -742,10 +743,22 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             mockAppConfig)(authorisedAgent)(Confirmation(true)) should
           thenGo(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, None))
       }
+
+      "transition to ClientInsolvent when the clientIdentifier and known fact match for personal vat but client is insolvent" in {
+        val fastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "ni", nino, vatRegDate)
+        val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatRecordClientInsolvent)
+
+        given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
+            hasNoPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(isNotAltItsa)(legacySaRelationshipStatusNotFound)(
+            mockAppConfig)(authorisedAgent)(Confirmation(true)) should
+          thenGo(ClientInsolventFastTrack)
+      }
       "transition to knownFactNotMatched when the clientIdentifier and known fact do not match for business vat" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCMTDVAT, "ni", nino, vatRegDate)
         val originalFastTrackRequest = aFastTrackRequestWithDiffParams(fastTrackRequest)
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(400))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactNotMatched)
 
         given(CheckDetailsCompletePersonalVat(originalFastTrackRequest, fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
@@ -792,7 +805,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       }
       "transition to ClientNotSignedUp when the client is not enrolled for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, vatRegDate)
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(None)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatDetailsNotFound)
 
         given(CheckDetailsCompletePersonalVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
@@ -802,7 +815,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       }
       "transition to ClientNotSignedUp when the client is not enrolled for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCMTDVAT, "vrn", vrn, vatRegDate)
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(None)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatDetailsNotFound)
 
         given(CheckDetailsCompletePersonalVat(aFastTrackRequestWithDiffParams(fastTrackRequest), fastTrackRequest, None)) when
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(createInvitation)(getAgentLink)(getAgencyEmail)(
@@ -918,7 +931,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
       "transition to InvitationSent for itsa service" in {
@@ -995,7 +1008,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
       "transition to InvitationSent for itsa service" in {
@@ -1046,7 +1059,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         Future(InvitationId("ABBTAKTMFKWU8"))
       def getAgentLink(arn: Arn, clientType: Option[ClientType]) = Future("invitation/link")
       def checkPostcodeMatches(nino: Nino, postcode: String) = Future(Some(true))
-      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+      def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
       def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(true))
       def getAgencyEmail() = Future("abc@xyz.com")
 

@@ -28,7 +28,9 @@
 
 @mainTemplate(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
-@back_link(config.backLink)
+    @if(!config.fromFastTrack) {
+        @back_link(config.backLink)
+    }
 
 <h1 id="cannotCreateRequestHeader" class="heading-xlarge">@Messages("cannot-create-request.header")</h1>
 

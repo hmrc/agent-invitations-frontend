@@ -144,7 +144,7 @@ class InvitationsService @Inject()(
 
   def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Int]] =
+    ec: ExecutionContext): Future[VatKnownFactCheckResult] =
     acaConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =

@@ -467,6 +467,24 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "GET /agent-suspended" should {
+    "render the page content" in {
+      val request = FakeRequest("GET", "/agents/suspended")
+      journeyState.set(
+        SuspendedAgent(HMRCMTDVAT, None), List()
+      )
+      val result = controller.showSuspended(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result.futureValue,
+        "agent-suspended.fastrack.heading",
+      "agent-suspended.fastrack.p1",
+        "agent-suspended.fastrack.p3",
+        "agent-suspended.fastrack.p4"
+      )
+    }
+  }
+
   "GET /agents/check-details" should {
     val request = FakeRequest("GET", "/agents/fast-track/check-details")
     "show the check-details page for ITSA service" in {
@@ -1019,6 +1037,83 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent().url)
+    }
+
+    "redirect to client-insolvent" in new VatHappyScenarioPersonal {
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 403, true)
+      journeyState.set(
+        IdentifyPersonalClient(ftr, ftr, None),
+        List(
+          CheckDetailsCompletePersonalVat(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitIdentifyVatClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientIdentifier"       -> "101747696",
+            "registrationDate.year"  -> "2010",
+            "registrationDate.month" -> "10",
+            "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientInsolvent().url)
+    }
+
+    "redirect to cannot-create-request" in new VatHappyScenarioPersonal {
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 423)
+      journeyState.set(
+        IdentifyPersonalClient(ftr, ftr, None),
+        List(
+          CheckDetailsCompletePersonalVat(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitIdentifyVatClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientIdentifier"       -> "101747696",
+            "registrationDate.year"  -> "2010",
+            "registrationDate.month" -> "10",
+            "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest().url)
+
+    }
+
+    "redirect to not matched" in new VatHappyScenarioPersonal {
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-11"))
+      givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 403)
+      journeyState.set(
+        IdentifyPersonalClient(ftr, ftr, None),
+        List(
+          CheckDetailsCompletePersonalVat(ftr, ftr, None),
+          Prologue(None, None)
+        )
+      )
+
+      val result = controller.submitIdentifyVatClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientIdentifier"       -> "101747696",
+            "registrationDate.year"  -> "2010",
+            "registrationDate.month" -> "10",
+            "registrationDate.day"   -> "10"),
+          arn.value
+        ))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched().url)
+
     }
 
     "redirect to invitation-sent for business VAT" in new VatHappyScenarioBusiness {

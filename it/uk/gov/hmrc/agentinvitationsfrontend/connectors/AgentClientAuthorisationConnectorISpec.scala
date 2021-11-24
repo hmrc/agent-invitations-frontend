@@ -5,6 +5,7 @@ import org.joda.time.{DateTime, LocalDate}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
@@ -570,38 +571,47 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
   }
 
   "Check Vat Registered Client KFC" should {
-    "return Some(204) if DES/ETMP has a matching effectiveRegistrationDate" in {
+    "return VatKnownFactCheckOk if DES/ETMP has a matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 204)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(204)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatKnownFactCheckOk
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
-    "return Some(403) if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
+    "return VatRecordClientInsolvent if DES/ETMP has a matching effectiveRegistrationDate but client is insolvent" in {
+      val suppliedDate = LocalDate.parse("2001-02-03")
+      givenVatRegisteredClientReturns(validVrn, suppliedDate, 403, true)
+
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatRecordClientInsolvent
+
+      verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
+    }
+
+    "return VatKnownFactNotMatched if DES/ETMP has customer VAT information but has no matching effectiveRegistrationDate" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 403)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(403)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatKnownFactNotMatched
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
-    "return Some(423) if DES/ETMP VAT information is under going migration" in {
+    "return VatRecordMigrationInProgress if DES/ETMP VAT information is under going migration" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 423)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Some(423)
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatRecordMigrationInProgress
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
 
-    "return None if DES/ETMP has no customer VAT information" in {
+    "return VatDetailsNotFound if DES/ETMP has no customer VAT information" in {
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 404)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe None
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatDetailsNotFound
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }

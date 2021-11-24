@@ -713,7 +713,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 VatInvitation(Some(Personal), Vrn("202949960"), _, _),
                 _,
                 _),
-              `emptyBasket`) =>
+              `emptyBasket`,
+          false) =>
         },
         List(
           IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
@@ -748,7 +749,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 "GDT",
                 VatInvitation(Some(Business), Vrn("202949960"), _, _),
                 _,
-                _), _) =>
+                _), _, false) =>
         },
         List(IdentifyClient(Business, HMRCMTDVAT, emptyBasket))
       )
@@ -1397,7 +1398,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         {
           case ConfirmClientPersonalVat(
               AuthorisationRequest("GDT", VatInvitation(Some(_), Vrn(_), _, _), _, _),
-              _) =>
+              _, false) =>
         },
         List(
           IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
@@ -1482,7 +1483,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
                 "GDT",
                 VatInvitation(Some(_), Vrn(_), _, _),
                 _,
-                _), _) =>
+                _), _, false) =>
         },
         List(IdentifyClient(Business, HMRCMTDVAT, emptyBasket), SelectBusinessService(availableServices, emptyBasket), SelectClientType(emptyBasket))
       )
@@ -1600,6 +1601,27 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations().url)
+    }
+
+    "redirect to client insolvent page when yes is selected and client is insolvent" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, HMRCMTDVAT)
+      givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+      journeyState.set(
+        ConfirmClientPersonalVat(
+          AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
+          `emptyBasket`, clientInsolvent = true),
+        List(
+          IdentifyClient(Personal, HMRCMTDVAT, emptyBasket),
+          SelectPersonalService(availableServices, emptyBasket),
+          SelectClientType(emptyBasket)
+        )
+      )
+
+      val result = controller.submitConfirmClient(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showClientInsolvent().url)
     }
 
     "redirect to review authorisations for business journeys also" in {

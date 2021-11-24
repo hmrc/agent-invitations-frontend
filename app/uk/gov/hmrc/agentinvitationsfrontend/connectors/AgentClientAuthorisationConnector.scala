@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-
-import javax.inject.{Inject, Singleton}
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logging
@@ -30,13 +27,16 @@ import play.api.libs.json.{JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, SimpleObjectReads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.http.controllers.RestFormats.{dateTimeFormats, localDateFormats}
+import uk.gov.hmrc.http.{HttpClient, _}
 
+import java.net.URL
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -470,13 +470,15 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Int]] =
+    ec: ExecutionContext): Future[VatKnownFactCheckResult] =
     monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
       http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map { r =>
         r.status match {
-          case NO_CONTENT        => Some(204)
-          case NOT_FOUND         => None
-          case s if s / 100 == 4 => Some(s)
+          case NO_CONTENT                                                           => VatKnownFactCheckOk
+          case NOT_FOUND                                                            => VatDetailsNotFound
+          case FORBIDDEN if r.body.contains("VAT_REGISTRATION_DATE_DOES_NOT_MATCH") => VatKnownFactNotMatched
+          case FORBIDDEN if r.body.contains("VAT_RECORD_CLIENT_INSOLVENT_TRUE")     => VatRecordClientInsolvent
+          case LOCKED                                                               => VatRecordMigrationInProgress
           case s if s / 100 == 5 =>
             throw new RuntimeException(s"unexpected error during postcode match check, error: ${r.body}")
         }

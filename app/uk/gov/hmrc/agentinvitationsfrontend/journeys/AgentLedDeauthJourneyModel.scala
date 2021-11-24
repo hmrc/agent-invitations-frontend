@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetTrustName}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -83,7 +84,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
-    type VatRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
+    type VatRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
     type SetRelationshipEnded = (Arn, String, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
@@ -286,18 +287,20 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def submitIdentifyClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName, hasActiveRelationship: HasActiveRelationship)(
       agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def vatRegDateMatchResult: Future[Option[Int]] =
+      def vatRegDateMatchResult: Future[VatKnownFactCheckResult] =
         if (vatClient.registrationDate.nonEmpty)
           vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
         else throw new Exception("Vat registration date expected but none found")
 
-      def goToState(vatRegDateMatchResult: Option[Int], finalState: Option[String] => State): Future[State] =
+      def goToState(vatRegDateMatchResult: VatKnownFactCheckResult, finalState: Option[String] => State): Future[State] =
         for {
           finalState <- vatRegDateMatchResult match {
-                         case Some(204) =>
+                         case VatKnownFactCheckOk =>
                            getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(name => goto(finalState(name)))
-                         case Some(403) => goto(KnownFactNotMatched)
-                         case _         => goto(NotSignedUp(HMRCMTDVAT))
+                         case VatKnownFactNotMatched       => goto(KnownFactNotMatched)
+                         case VatRecordClientInsolvent     => goto(KnownFactNotMatched) //for now until we resolve what happens here
+                         case VatRecordMigrationInProgress => goto(NotSignedUp(HMRCMTDVAT)) //for now until we have content
+                         case VatDetailsNotFound           => goto(NotSignedUp(HMRCMTDVAT))
                        }
         } yield finalState
 

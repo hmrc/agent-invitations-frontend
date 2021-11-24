@@ -30,6 +30,7 @@ import support.UnitSpec
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.ConfirmRegDatePpt
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -316,25 +317,40 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         }.getMessage shouldBe "Date of birth expected but none found"
       }
       "transition to ConfirmClientVat when vat reg date matches" in {
-        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
+        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactCheckOk)
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatRegDateMatches, getClientName, hasActiveRelationships)(
           authorisedAgent)(vatClient) should thenGo(ConfirmClientPersonalVat(Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when vat reg date does not match" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
+        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactNotMatched)
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName, hasActiveRelationships)(
           authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
+
+      "transition to KnownFactNotMatched when vat reg date matches but client is insolvent" in {
+        def vatClientInsolvent(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatRecordClientInsolvent)
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatClientInsolvent, getClientName, hasActiveRelationships)(
+          authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+      }
+
+      "transition to Not signed up when vat record is being migrated" in {
+        def vatRecordMigration(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatRecordMigrationInProgress)
+
+        given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatRecordMigration, getClientName, hasActiveRelationships)(
+          authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
+      }
+
       "transition to NotSignedUp when client is not enrolled for VAT" in {
-        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
+        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(clientNotSignedUp, getClientName, hasActiveRelationships)(
           authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
       "throw an Exception when the client has no vat reg date" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
+        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
         intercept[Exception] {
           given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName, hasActiveRelationships)(
@@ -358,20 +374,20 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       def hasActiveRelationships(arn: Arn, clientId: String, service: String) = Future(true)
       val vatClient = VatClient(vrn, vatRegDate)
       "transition to ConfirmClientVat when known fact matches" in {
-        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(204))
+        def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactCheckOk)
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(vatRegDateMatches, getClientName, hasActiveRelationships)(authorisedAgent)(
           vatClient) should thenGo(ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
-        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[Some[Int]] = Future(Some(403))
+        def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactNotMatched)
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName, hasActiveRelationships)(authorisedAgent)(
           vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to NotSignedUp when client is not enrolled" in {
-        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[Option[Int]] = Future(None)
+        def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
         given(IdentifyClientBusiness) when submitIdentifyClientVat(clientNotSignedUp, getClientName, hasActiveRelationships)(authorisedAgent)(
           vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
