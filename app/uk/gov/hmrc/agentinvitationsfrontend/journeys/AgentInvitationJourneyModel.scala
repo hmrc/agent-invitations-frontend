@@ -21,6 +21,7 @@ import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, TrustTaxIdentifier, Urn, Utr, Vrn}
@@ -63,8 +64,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
   trait Confirm extends State
   case class ConfirmClientItsa(request: AuthorisationRequest, basket: Basket) extends Confirm
-  case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket) extends Confirm
-  case class ConfirmClientBusinessVat(request: AuthorisationRequest, basket: Basket) extends Confirm
+  case class ConfirmClientPersonalVat(request: AuthorisationRequest, basket: Basket, clientInsolvent: Boolean = false) extends Confirm
+  case class ConfirmClientBusinessVat(request: AuthorisationRequest, basket: Basket, clientInsolvent: Boolean = false) extends Confirm
   case class ConfirmClientTrust(request: AuthorisationRequest, basket: Basket) extends Confirm
   case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends Confirm
   case class ConfirmClientCgt(request: AuthorisationRequest, basket: Basket) extends Confirm
@@ -97,6 +98,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State
   case object AlreadyCopiedAcrossItsa extends State
+  case class ClientInsolvent(basket: Basket) extends State
 
   type Basket = Set[AuthorisationRequest]
 
@@ -109,7 +111,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, String) => Future[Option[String]]
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
-    type CheckRegDateMatches = (Vrn, LocalDate) => Future[Option[Int]]
+    type CheckRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type CreateMultipleInvitations =
       (Arn, Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
@@ -399,17 +401,18 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         for {
           regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
-                       case Some(204) =>
+                       case kfcResponse @ (VatKnownFactCheckOk | VatRecordClientInsolvent) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientPersonalVat(
                                AuthorisationRequest(clientName.getOrElse(""), VatInvitation(Some(Personal), Vrn(vatClient.clientIdentifier))),
-                               basket
+                               basket,
+                               kfcResponse == VatRecordClientInsolvent
                              ))
                          }
-                       case Some(423) => goto(CannotCreateRequest(basket))
-                       case Some(_)   => goto(KnownFactNotMatched(basket))
-                       case None      => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
+                       case VatRecordMigrationInProgress => goto(CannotCreateRequest(basket))
+                       case VatKnownFactNotMatched       => goto(KnownFactNotMatched(basket))
+                       case VatDetailsNotFound           => goto(ClientNotSignedUp(HMRCMTDVAT, basket))
                      }
         } yield endState
 
@@ -417,18 +420,20 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         for {
           regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
           endState <- regDateMatches match {
-                       case Some(204) =>
+                       case kfcResponse @ (VatKnownFactCheckOk | VatRecordClientInsolvent) =>
                          getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap { clientName =>
                            goto(
                              ConfirmClientBusinessVat(
                                AuthorisationRequest(clientName.getOrElse(""), VatInvitation(Some(Business), Vrn(vatClient.clientIdentifier))),
-                               basket)
+                               basket,
+                               kfcResponse == VatRecordClientInsolvent
+                             )
                            )
 
                          }
-                       case Some(423) => goto(CannotCreateRequest(Set.empty))
-                       case Some(_)   => goto(KnownFactNotMatched(Set.empty))
-                       case None      => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
+                       case VatRecordMigrationInProgress => goto(CannotCreateRequest(basket))
+                       case VatKnownFactNotMatched       => goto(KnownFactNotMatched(basket))
+                       case VatDetailsNotFound           => goto(ClientNotSignedUp(HMRCMTDVAT, Set.empty))
                      }
         } yield endState
     }
@@ -583,18 +588,21 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         } else goto(state)
       }
 
-      case ConfirmClientPersonalVat(request, basket) =>
+      case ConfirmClientPersonalVat(request, basket, clientInsolvent) =>
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(ReviewAuthorisations(Personal, authorisedAgent.personalServices, basket + request))(
-            Personal,
-            authorisedAgent.arn,
-            request,
-            HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
+          if (clientInsolvent) goto(ClientInsolvent(basket))
+          else
+            checkIfPendingOrActiveAndGoto(ReviewAuthorisations(Personal, authorisedAgent.personalServices, basket + request))(
+              Personal,
+              authorisedAgent.arn,
+              request,
+              HMRCMTDVAT,
+              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
         } else goto(IdentifyClient(Personal, HMRCMTDVAT, basket))
 
-      case ConfirmClientBusinessVat(request, basket) =>
-        if (confirmation.choice) {
+      case ConfirmClientBusinessVat(request, basket, isInsolvent) =>
+        if (isInsolvent) goto(ClientInsolvent(basket))
+        else if (confirmation.choice) {
           checkIfPendingOrActiveAndGoto(ReviewAuthorisations(Business, authorisedAgent.businessServices, basket + request))(
             Business,
             authorisedAgent.arn,

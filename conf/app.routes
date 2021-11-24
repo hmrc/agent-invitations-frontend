@@ -74,6 +74,7 @@ GET         /agents/access-removed                                      uk.gov.h
 GET         /agents/timed-out                                           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.timedOut
 GET         /agents/sign-out                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.signOut
 GET         /agents/already-copied-across-itsa                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa
+GET         /agents/client-insolvent                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientInsolvent
 
 #Fast Track Endpoints
 POST        /agents/fast-track                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
@@ -132,6 +133,8 @@ GET         /agents/authorisation-already-requested                     uk.gov.h
 GET         /agents/already-authorised                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
 GET         /agents/suspended                                           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showSuspended
 GET         /agents/track/already-copied-across-itsa                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa
+GET         /agents/track/client-insolvent                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientInsolvent
+GET         /agents/track/cannot-create-request                         uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest
 
 # agent led deauth FSM
 GET         /agents/cancel-authorisation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.agentLedDeauthRoot

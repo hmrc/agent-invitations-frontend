@@ -150,6 +150,8 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "AlreadyCopiedAcrossItsa"         => JsSuccess(AlreadyCopiedAcrossItsa)
     case "ClientNotRegistered"             => ClientNotRegisteredFormat.reads(properties)
     case "LegacyAuthorisationDetected"     => LegacyAuthorisationDetectedFormat.reads(properties)
+    case "ClientInsolventFastTrack"        => JsSuccess(ClientInsolventFastTrack)
+    case "CannotCreateFastTrackRequest"    => JsSuccess(CannotCreateFastTrackRequest)
     case _                                 => JsError(s"Unknown state name $stateName")
   }
 

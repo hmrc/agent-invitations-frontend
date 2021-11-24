@@ -31,6 +31,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 
 import scala.collection.immutable.Set
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -540,12 +541,27 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPersonalVat" in {
 
         given(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket)) when
-          vatClientIdentified(checkRegDateMatches = (_, _) => Future(Some(Status.NO_CONTENT))) should
+          vatClientIdentified(checkRegDateMatches = (_, _) => Future(VatKnownFactCheckOk)) should
           matchPattern {
             case (
                 ConfirmClientPersonalVat(
                   AuthorisationRequest("Piglet", VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"), AuthorisationRequest.NEW, _),
-                  `emptyBasket`),
+                  `emptyBasket`,
+                  false),
+                _) =>
+          }
+      }
+
+      "transition to ConfirmClientPersonalVat when client insolvent" in {
+
+        given(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket)) when
+          vatClientIdentified(checkRegDateMatches = (_, _) => Future(VatRecordClientInsolvent)) should
+          matchPattern {
+            case (
+                ConfirmClientPersonalVat(
+                  AuthorisationRequest("Piglet", VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"), AuthorisationRequest.NEW, _),
+                  `emptyBasket`,
+                  true),
                 _) =>
           }
       }
@@ -553,21 +569,21 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
 
         given(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket)) when
-          vatClientIdentified(checkRegDateMatches = (_, _) => Future(Some(Status.FORBIDDEN))) should
+          vatClientIdentified(checkRegDateMatches = (_, _) => Future(VatKnownFactNotMatched)) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
       "transition to CannotCreateRequest when a migration is in process" in {
 
         given(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket)) when
-          vatClientIdentified(checkRegDateMatches = (_, _) => Future(Some(Status.LOCKED))) should
+          vatClientIdentified(checkRegDateMatches = (_, _) => Future(VatRecordMigrationInProgress)) should
           thenGo(CannotCreateRequest(emptyBasket))
       }
 
       "transition to ClientNotSignedUp when the client is not signed up for the service" in {
 
         given(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket)) when
-          vatClientIdentified(checkRegDateMatches = (_, _) => Future(None)) should
+          vatClientIdentified(checkRegDateMatches = (_, _) => Future(VatDetailsNotFound)) should
           thenGo(ClientNotSignedUp(HMRCMTDVAT, emptyBasket))
       }
 
@@ -701,7 +717,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to ConfirmClientBusinessVat" in {
 
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
 
         given(IdentifyClient(Business, HMRCMTDVAT, emptyBasket)) when
           identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(
@@ -710,18 +726,19 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             case (
                 ConfirmClientBusinessVat(
                   AuthorisationRequest("Piglet", VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"), AuthorisationRequest.NEW, _),
-                  _),
+                  _,
+                  false),
                 _) =>
           }
       }
 
       "transition to KnownFactNotMatched client" in {
 
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) =
-          Future(Some(404))
+        def regDateNotMatched(vrn: Vrn, regDate: LocalDate) =
+          Future(VatKnownFactNotMatched)
 
         given(IdentifyClient(Business, HMRCMTDVAT, emptyBasket)) when
-          identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(
+          identifiedVatClient(regDateNotMatched)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(
             getAgentLink)(getAgencyEmail)(authorisedAgent)(VatClient("123456", "2010-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
@@ -729,7 +746,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to CannotCreateRequest" in {
 
         def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) =
-          Future(Some(423))
+          Future(VatRecordMigrationInProgress)
 
         given(IdentifyClient(Business, HMRCMTDVAT, emptyBasket)) when
           identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(
@@ -742,7 +759,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)
 
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(Some(204))
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
 
         given(IdentifyClient(Business, HMRCMTDVAT, emptyBasket)) when
           identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(hasActiveRelationship)(clientName)(createMultipleInvitations)(
@@ -751,14 +768,15 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             case (
                 ConfirmClientBusinessVat(
                   AuthorisationRequest("Piglet", VatInvitation(Some(_), Vrn("123456"), HMRCMTDVAT, "vrn"), AuthorisationRequest.NEW, _),
-                  _),
+                  _,
+                  false),
                 _) =>
           }
       }
 
       "transition to ClientNotSignedUp" in {
 
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(None)
+        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatDetailsNotFound)
 
         given(IdentifyClient(Business, HMRCMTDVAT, emptyBasket)) when
           identifiedVatClient(checkRegDateMatches)(hasNoPendingInvitation)(hasNoActiveRelationship)(clientName)(createMultipleInvitations)(
@@ -936,6 +954,29 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           }
       }
 
+      "transition to ClientInsolvent" in {
+
+        given(
+          ConfirmClientPersonalVat(
+            AuthorisationRequest(
+              "Piglet",
+              VatInvitation(
+                Some(Personal),
+                Vrn("123456")
+              )
+            ),
+            emptyBasket,
+            clientInsolvent = true
+          )
+        ) when
+          clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
+            hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
+            true)) should
+          thenMatch {
+            case ClientInsolvent(_) =>
+          }
+      }
+
       "transition to PersonalServiceSelected" in {
 
         given(
@@ -1015,7 +1056,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(PendingInvitationExists(Business, emptyBasket))
       }
 
-      "transition to ActiveAuthorisationEXists when an active relationship already exists" in {
+      "transition to ActiveAuthorisationExists when an active relationship already exists" in {
 
         def hasActiveRelationship(arn: Arn, clientId: String, service: String): Future[Boolean] =
           Future.successful(true)

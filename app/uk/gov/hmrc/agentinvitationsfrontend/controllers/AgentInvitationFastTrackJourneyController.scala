@@ -80,7 +80,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   partialAuthExistsView: partial_auth_exists,
   clientNotRegisteredView: client_not_registered,
   alreadyCopiedAcrossView: already_copied_across_itsa,
-  legacyAuthorisationDetectedView: legacy_authorisation_detected)(
+  legacyAuthorisationDetectedView: legacy_authorisation_detected,
+  clientInsolventView: client_insolvent,
+  cannotCreateRequestView: cannot_create_request)(
   implicit configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
@@ -370,6 +372,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     }
   }
 
+  val showClientInsolvent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientInsolventFastTrack.type]
+
+  val showCannotCreateFastTrackRequest: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[CannotCreateFastTrackRequest.type]
+
   private def toReturnFromMapping()(implicit request: Request[AnyContent]) = {
     val sessionKeyUsedInMappingService = "OriginForMapping"
     sessionKeyUsedInMappingService -> localFriendlyUrl(env)(request.path, request.host)
@@ -426,7 +432,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: SuspendedAgent              => routes.AgentInvitationFastTrackJourneyController.showSuspended()
     case AlreadyCopiedAcrossItsa        => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa()
     case _: LegacyAuthorisationDetected => routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected()
-    case _                              => throw new Exception(s"Link not found for $state")
+    case CannotCreateFastTrackRequest   => routes.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest()
+    case ClientInsolventFastTrack       => routes.AgentInvitationFastTrackJourneyController.showClientInsolvent
+
+    case _ => throw new Exception(s"Link not found for $state")
   }
 
   private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(implicit request: Request[_]): Result = {
@@ -614,7 +623,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             backLinkFor(breadcrumbs).url
           )
         )
-
       case IdentifyNoClientTypeClient(_, _, _) =>
         Ok(
           identifyClientVatView(
@@ -779,6 +787,12 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected(),
             routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url
           ))
+
+      case ClientInsolventFastTrack =>
+        Ok(clientInsolventView(hasRequests = false, isFastTrack = true))
+
+      case CannotCreateFastTrackRequest =>
+        Ok(cannotCreateRequestView(CannotCreateRequestConfig(hasRequests = false, fromFastTrack = true, backLink = s"")))
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }

@@ -61,6 +61,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val PptRefNotFoundFormat: OFormat[PptRefNotFound] = Json.format
   val AgentSuspendedFormat: OFormat[AgentSuspended] = Json.format
   val ClientNotRegisteredFormat: OFormat[ClientNotRegistered] = Json.format
+  val ClientInsolventFormat: OFormat[ClientInsolvent] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType            => SelectClientTypeFormat.writes(s)
@@ -95,6 +96,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: PartialAuthorisationExists  => PartialAuthorisationExistsFormat.writes(s)
     case s: ClientNotRegistered         => ClientNotRegisteredFormat.writes(s)
     case s: LegacyAuthorisationDetected => LegacyAuthorisationDetectedFormat.writes(s)
+    case s: ClientInsolvent             => ClientInsolventFormat.writes(s)
 
   }
 
@@ -133,6 +135,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "PartialAuthorisationExists"  => PartialAuthorisationExistsFormat.reads(properties)
     case "ClientNotRegistered"         => ClientNotRegisteredFormat.reads(properties)
     case "LegacyAuthorisationDetected" => LegacyAuthorisationDetectedFormat.reads(properties)
+    case "ClientInsolvent"             => ClientInsolventFormat.reads(properties)
     case _                             => JsError(s"Unknown state name $stateName")
   }
 

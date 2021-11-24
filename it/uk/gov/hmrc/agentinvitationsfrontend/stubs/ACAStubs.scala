@@ -848,12 +848,15 @@ trait ACAStubs {
         .willReturn(aResponse()
           .withStatus(502)))
 
-  def givenVatRegisteredClientReturns(vrn: Vrn, date: LocalDate, responseStatus: Int) =
+  def givenVatRegisteredClientReturns(vrn: Vrn, date: LocalDate, responseStatus: Int, clientInsolvent: Boolean = false) = {
+    val bodyMsg = if(responseStatus == 403){ if(clientInsolvent) """VAT_RECORD_CLIENT_INSOLVENT_TRUE"""  else s"""VAT_REGISTRATION_DATE_DOES_NOT_MATCH"""} else """"""
     stubFor(
       get(urlEqualTo(
         s"/agent-client-authorisation/known-facts/organisations/vat/${vrn.value}/registration-date/${date.toString}"))
         .willReturn(aResponse()
-          .withStatus(responseStatus)))
+          .withStatus(responseStatus).withBody(bodyMsg)))
+  }
+
 
   def givenTrustClientReturns(taxIdentifier: TrustTaxIdentifier, responseStatus: Int, body: String) =
     stubFor(
