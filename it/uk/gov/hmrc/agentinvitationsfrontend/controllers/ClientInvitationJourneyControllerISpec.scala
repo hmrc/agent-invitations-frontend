@@ -1374,8 +1374,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.vat.link-text")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.itsa")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.itsa.link-text")))
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true)
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new tab)", newWin = true)
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true, noopenernoreferrer = true)
+      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new tab)", newWin = true, noopenernoreferrer = true)
     }
     "display the page as expected for clientType=business" in {
       journeyState.set(ActionNeeded(Business), Nil)
@@ -1389,7 +1389,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.ters")))
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p1"))
     checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p2"))
-    checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true)
+    checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true, noopenernoreferrer = true)
   }
   }
 

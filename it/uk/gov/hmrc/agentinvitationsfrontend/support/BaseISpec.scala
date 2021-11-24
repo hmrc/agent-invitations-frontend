@@ -187,9 +187,11 @@ abstract class BaseISpec
     linkText: String,
     clazz: Option[String] = None,
     newWin: Boolean = false,
-                             roleIsButton: Boolean = false): Unit = {
+                             roleIsButton: Boolean = false,
+    noopenernoreferrer: Boolean = false): Unit = {
     val t = if(newWin) "target=" + "\"" + """_blank""" + "\"" else ""
-    val a = s"<a $t".trim
+    val nonr = if(noopenernoreferrer) " " + "rel=" + "\"" + """noopener noreferrer""" + "\"" else ""
+    val a = s"<a $t$nonr".trim
     val element = if (clazz.isDefined) {
       if(roleIsButton) {
         s"""$a href="$linkUrl" class="${clazz.get}" role="button">$linkText</a>"""
