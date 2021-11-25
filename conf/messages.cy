@@ -107,13 +107,13 @@ service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’
 select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
 select-service.HMRC-MTD-IT.personal=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
-select-service.TRUST.business=Cynnal ymddiriedolaeth neu ystâd
+select-service.TRUST.business=Cynnal ei ymddiriedolaeth neu ystâd
 
-select-service.HMRC-CGT-PD.business=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 select-service.HMRC-PPT-ORG.personal=Rheoli ei Dreth Deunydd Pacio Plastig
 select-service.HMRC-PPT-ORG.business=Rheoli ei Dreth Deunydd Pacio Plastig
-select-service.HMRC-PPT-ORG.trust=Rheoli Treth Deunydd Pacio Plastig ymddiriedolaeth
+select-service.HMRC-PPT-ORG.trust=Rheoli ei Treth Deunydd Pacio Plastig ymddiriedolaeth
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
