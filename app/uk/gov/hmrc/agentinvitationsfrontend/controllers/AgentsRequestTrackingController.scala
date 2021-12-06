@@ -45,7 +45,7 @@ case class TrackResendForm(service: String, clientType: Option[ClientType], expi
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
-case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String, invitationId: String)
+case class CancelAuthorisationForm(service: String, clientId: String, clientType: String, clientName: String, invitationId: String, status: String)
 
 case class ConfirmForm(value: Option[Boolean])
 
@@ -291,7 +291,9 @@ class AgentsRequestTrackingController @Inject()(
                 "clientId"     -> data.clientId,
                 "clientName"   -> data.clientName,
                 "clientType"   -> data.clientType,
-                "invitationId" -> data.invitationId)
+                "invitationId" -> data.invitationId,
+                "status"       -> data.status
+            )
         )
     }
   }
@@ -311,6 +313,7 @@ class AgentsRequestTrackingController @Inject()(
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
+      val status = request.session.get("status").getOrElse("Accepted")
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
@@ -320,7 +323,7 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               for {
-                acrResponse <- deleteRelationshipForService(service, agent.arn, clientId)
+                acrResponse <- if (status == "Accepted") deleteRelationshipForService(service, agent.arn, clientId) else Future successful Some(true)
                 acaResponse <- acaConnector.setRelationshipEnded(invitationId)
               } yield {
                 if (acrResponse.isDefined && acaResponse.contains(true))
@@ -402,7 +405,8 @@ class AgentsRequestTrackingController @Inject()(
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName"   -> text,
-        "invitationId" -> text
+        "invitationId" -> text,
+        "status"       -> text.verifying("Unexpected invitationStatus", status => status == "Accepted" || status == "Partialauth")
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
 
