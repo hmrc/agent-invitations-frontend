@@ -168,7 +168,8 @@ object TestEndpointsController {
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName"   -> text,
-        "invitationId" -> text
+        "invitationId" -> text,
+        "status"       -> text.verifying("Unexpected InvitationStatus", status => status == "Accepted" || status == "Partialauth")
       )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
   }
 }
