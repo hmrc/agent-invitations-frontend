@@ -32,7 +32,7 @@
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None, completedInviteGoSurvey = Some(true)) {
+@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None, completedInviteGoSurvey = Some(true)) {
 
     @back_link(config.backLinkUrl)
 

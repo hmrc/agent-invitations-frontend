@@ -25,7 +25,7 @@
 
 @(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
 
     <h1 class="heading-xlarge">@Messages("client-insolvent.header")</h1>

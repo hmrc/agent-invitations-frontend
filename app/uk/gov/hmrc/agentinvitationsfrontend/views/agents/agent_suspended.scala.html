@@ -31,7 +31,7 @@
   else Messages("agent-suspended.heading.multi")
 }
 
-@mainTemplate(title = Messages("generic.title", heading, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(title = Messages("generic.title", heading, Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
     <h1 class="heading-xlarge">@heading</h1>
     <p>@Messages("agent-suspended.p1", Messages(s"agent-suspended.p1.$service"))</p>

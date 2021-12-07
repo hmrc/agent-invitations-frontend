@@ -30,7 +30,7 @@
 
 @(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
+@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("service.name.agents.de-auth")), bodyClasses = None, isAgent = true) {
 
 @back_link(config.backLink)
 

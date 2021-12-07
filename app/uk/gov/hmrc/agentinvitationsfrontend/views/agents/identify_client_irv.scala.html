@@ -29,8 +29,8 @@
 
 @(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
-@banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
+@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @agentInvitationsDateForm = @{
     agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.nino.required")))

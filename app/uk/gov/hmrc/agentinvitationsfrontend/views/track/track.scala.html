@@ -42,7 +42,7 @@
 @clientFieldError = @{config.filterForm.flatMap { f => f.error("client")}}
 @statusFieldError =@{config.filterForm.flatMap { f => f.error("status")}}
 
-@mainTemplate(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("title.suffix.agents")), bodyClasses = Some("full-width"), isAgent = true) {
+@mainTemplate(title = Messages("generic.title", Messages("recent-invitations.header"), Messages("service.name.agents.auth")), bodyClasses = Some("full-width"), isAgent = true) {
 
     @back_link(externalUrls.agentServicesAccountUrl)
 

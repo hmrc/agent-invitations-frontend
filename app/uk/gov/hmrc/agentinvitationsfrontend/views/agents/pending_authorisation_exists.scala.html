@@ -31,7 +31,7 @@
 
 @(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
 
   @back_link(config.backLinkUrl)
 

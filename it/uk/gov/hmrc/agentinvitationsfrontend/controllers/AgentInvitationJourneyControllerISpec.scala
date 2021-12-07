@@ -110,7 +110,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("client-type.header"),
-            htmlEscapedMessage("title.suffix.agents")),
+            htmlEscapedMessage("service.name.agents.auth")),
           htmlEscapedMessage("client-type.header"),
           hasMessage("client-type.p1")
         )
@@ -187,7 +187,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("service.name.agents.auth")),
         htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
         htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
         htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
@@ -238,7 +238,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("service.name.agents.auth")),
         htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
         htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
         htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
@@ -1999,13 +1999,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
-          htmlEscapedMessage("title.suffix.agents"),
+          htmlEscapedMessage("service.name.agents.auth"),
           htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
           htmlEscapedMessage("invitation-sent.l9")
         )
       )
 
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false))
     }
@@ -2027,7 +2027,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
     }
 
@@ -2048,7 +2048,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true))
     }
 
@@ -2086,7 +2086,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
-          htmlEscapedMessage("title.suffix.agents"),
+          htmlEscapedMessage("service.name.agents.auth"),
           htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
           htmlEscapedMessage("invitation-sent.l9")
         )

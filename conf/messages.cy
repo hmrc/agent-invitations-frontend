@@ -1,10 +1,6 @@
-banner.agents.auth=Gofyn i gleient eich awdurdodi
-banner.agents.de-auth=Canslo awdurdodiad cleient
-banner.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
-
-title.suffix.agents=Gofyn i gleient eich awdurdodi
-title.suffix.agents.de-auth=Canslo awdurdodiad cleient
-title.suffix.client=Penodi rhywun i ddelio â CThEM ar eich rhan
+service.name.agents.auth=Gofyn i gleient eich awdurdodi
+service.name.agents.de-auth=Canslo awdurdodiad cleient
+service.name.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
 
 generic.title={0} - {1} - GOV.UK
 

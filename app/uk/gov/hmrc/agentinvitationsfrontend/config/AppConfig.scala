@@ -20,12 +20,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.Lang
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.duration.Duration
 
 @Singleton
-class AppConfig @Inject()(servicesConfig: ServicesConfig) {
+class AppConfig @Inject()(servicesConfig: ServicesConfig, contactFrontendConfig: ContactFrontendConfig) {
 
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
@@ -65,6 +66,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
+  val betaFeedbackWithoutServiceIdUrl: String = getConfString("betaFeedbackUrl")
   val feedbackSurveyUrl: String = getConfString("feedback-frontend.external-url")
   val agentOriginToken = "INVITAGENT"
   val clientOriginToken = "INVITCLIENT"
@@ -112,4 +114,11 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val featuresEnableTrustURNIdentifier: Boolean = servicesConfig.getBoolean("features.enable-trust-urn-identifier")
 
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
+
+  def contactFrontendServiceId(isAgent: Boolean): String =
+    if (isAgent) agentOriginToken else clientOriginToken
+
+  def betaFeedbackUrl(isAgent: Boolean): String =
+    s"$betaFeedbackWithoutServiceIdUrl${contactFrontendServiceId(isAgent)}"
+
 }

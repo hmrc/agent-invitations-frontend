@@ -42,7 +42,7 @@
     @itsaOnlyPanel = @{if(service=="HMRC-MTD-IT"){Seq('_panelText -> Messages("confirm-authorisation-cancelled.track.itsa-panel"))}else{Seq.empty}}
 
 
-@mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
+@mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("service.name.agents.auth")), isAgent = true) {
 
   @back_link(backLinkUrl)
 

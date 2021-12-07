@@ -41,7 +41,7 @@
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = None, scriptElem = Some(gtmScript)) {
+@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = None, scriptElem = Some(gtmScript)) {
 
 
     <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>

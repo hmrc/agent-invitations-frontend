@@ -34,7 +34,7 @@
 )(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
 @mainTemplate(
-    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("title.suffix.agents")),
+    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("service.name.agents.auth")),
     bodyClasses = None,
     isAgent = true
 ) {

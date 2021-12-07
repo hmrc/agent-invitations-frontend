@@ -29,7 +29,7 @@
 
 @(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
 
-@mainTemplate(title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@mainTemplate(title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true) {
 
     @back_link(config.backLinkUrl)
 

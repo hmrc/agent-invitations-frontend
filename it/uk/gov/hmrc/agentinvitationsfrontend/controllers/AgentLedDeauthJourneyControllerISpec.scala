@@ -30,7 +30,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   lazy val journeyState = app.injector.instanceOf[TestAgentLedDeauthJourneyService]
 
-  val controller = app.injector.instanceOf[AgentLedDeauthJourneyController]
+  val controller: AgentLedDeauthJourneyController = app.injector.instanceOf[AgentLedDeauthJourneyController]
 
   before {
     journeyState.clear
@@ -62,7 +62,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           hasMessage(
             "generic.title",
             htmlEscapedMessage("cancel-authorisation.client-type.header"),
-            htmlEscapedMessage("title.suffix.agents.de-auth")),
+            htmlEscapedMessage("service.name.agents.de-auth")),
           htmlEscapedMessage("cancel-authorisation.client-type.header"),
           hasMessage("cancel-authorisation.client-type.p1")
         )
@@ -119,7 +119,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.select-service.header"),
-          htmlEscapedMessage("title.suffix.agents.de-auth")),
+          htmlEscapedMessage("service.name.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.select-service.header")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
@@ -134,7 +134,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
-          htmlEscapedMessage("title.suffix.agents.de-auth")),
+          htmlEscapedMessage("service.name.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
         hasMessage("global.yes"),
         hasMessage("global.no")
@@ -152,7 +152,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         hasMessage(
           "generic.title",
           htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
-          htmlEscapedMessage("title.suffix.agents.de-auth")),
+          htmlEscapedMessage("service.name.agents.de-auth")),
         htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
         hasMessage("cancel-authorisation.select-service.trust"),
         hasMessage("cancel-authorisation.select-service.cgt")
@@ -896,7 +896,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "display the confirm cancel page for alt-itsa" in {
       journeyState.set(
-        ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value, true),
+        ConfirmCancel(HMRCMTDIT, Some("Barry Block"), validNino.value, isPartialAuth = true),
         List(ConfirmClientItsa(Some("Barry Block"), validNino)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
       val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
@@ -934,11 +934,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to the authorisation cancelled page for alt-itsa" in {
-      journeyState.set(ConfirmCancel(HMRCMTDIT, Some("Sufjan Stevens"), nino, true), Nil)
+      journeyState.set(ConfirmCancel(HMRCMTDIT, Some("Sufjan Stevens"), nino, isPartialAuth = true), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now(), true)
+      givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now(), isPartialAuth = true)
       givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
@@ -1150,7 +1150,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"), false, true)
+      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"), newWin = false, roleIsButton = true)
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
     }
   }
