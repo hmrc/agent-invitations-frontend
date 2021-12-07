@@ -17,19 +17,22 @@
 @import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    mainTemplate: MainTemplate,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
-@uiFormHelper(
+@formHelper(
     action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
     'id -> s"fastTrackInvitationCreate-${index}",
     'class -> "form js-form"

@@ -15,25 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @heading = @{
   if(basket.isEmpty) Messages("agent-suspended.heading.single")
   else Messages("agent-suspended.heading.multi")
 }
 
-@mainTemplate(title = Messages("generic.title", heading, Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = Messages("generic.title", heading, Messages("service.name.agents.auth")),
+isAgent = true) {
 
-    <h1 class="heading-xlarge">@heading</h1>
+    <h1 class="govuk-heading-xl">@heading</h1>
     <p>@Messages("agent-suspended.p1", Messages(s"agent-suspended.p1.$service"))</p>
 
     @if(basket.isEmpty) {

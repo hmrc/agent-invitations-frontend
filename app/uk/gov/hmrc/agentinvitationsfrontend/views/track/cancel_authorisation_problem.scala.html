@@ -15,22 +15,24 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link_referer
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 
-@this(
-   mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages("cancel-auth-problem.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true) {
+@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
- @back_link_referer(request)
+@mainTemplate(
+title = Messages("generic.title", Messages("cancel-auth-problem.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLink)
+) {
 
-  <h1 class ="form-title heading-xlarge">@Messages("cancel-auth-problem.header")</h1>
+  <h1 class="govuk-heading-xl">@Messages("cancel-auth-problem.header")</h1>
 
     <p>@Html(Messages("cancel-auth-problem.p"))</p>
 

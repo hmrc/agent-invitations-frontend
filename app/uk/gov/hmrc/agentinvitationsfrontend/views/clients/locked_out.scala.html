@@ -14,14 +14,14 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@this(
-)
+@this()
 
-@()(implicit messages: Messages, externalUrls: ExternalUrls)
+@()(implicit messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-<h1 class="heading-xlarge margin-bottom-30">@Messages("locked-out.header")</h1>
+<h1 class="govuk-heading-xl">@Messages("locked-out.header")</h1>
 
 <p>@Messages("locked-out.p1")</p>
 <p>@Messages("locked-out.p2")</p>

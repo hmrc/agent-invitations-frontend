@@ -15,20 +15,19 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@this(
-        mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")),  isAgent = true) {
 
 
-    <h1 class="heading-xlarge">@Messages("client-insolvent.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("client-insolvent.header")</h1>
 
     <p>@Messages("client-insolvent.p")</p>
 

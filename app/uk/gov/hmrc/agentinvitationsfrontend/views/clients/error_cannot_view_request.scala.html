@@ -15,19 +15,17 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@this(
-        mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")),  isAgent = false) {
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
-
-    <h1 class="heading-xlarge">@Messages("error.cannot-view-request.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("error.cannot-view-request.header")</h1>
 
     <p>@Messages("error.cannot-view-request.p1")</p>
     <p>@Messages("error.cannot-view-request.p2")</p>

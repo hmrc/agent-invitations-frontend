@@ -15,16 +15,15 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationSentPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@this(
-    mainTemplate: main_template
-)
 
+@this(mainTemplate: MainTemplate)
 
-@(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
     <script>
@@ -41,10 +40,10 @@
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, completedInviteGoSurvey = Some(true), gaCalls = None, scriptElem = Some(gtmScript)) {
+@mainTemplate(title = Messages("generic.title", Messages("invitation-sent.header"), Messages("service.name.agents.auth")),  isAgent = true, completedInviteGoSurvey = Some(true), scriptElem = Some(gtmScript)) {
 
 
-    <h1 class="heading-xlarge">@Messages("invitation-sent.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("invitation-sent.header")</h1>
 
     @if(config.isAltItsa) {
         <p>@Messages("invitation-sent.all-steps")</p>
@@ -73,7 +72,7 @@
             <li><a href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax" class="form-field-group" id="signUpYourClient" target="_blank" rel="noreferrer noopener">@Messages("invitation-sent.mtd")</a></li>
         }
     </ol>
-        <h2 class="heading-medium">@Messages("invitation-sent.further-help.heading")</h2>
+        <h2>@Messages("invitation-sent.further-help.heading")</h2>
         <p>@Messages("invitation-sent.further-help.p")</p>
         <ul class="list list-bullet">
             <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" class="form-field-group" id="stepByStep" target="_blank" rel="noreferrer noopener">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>

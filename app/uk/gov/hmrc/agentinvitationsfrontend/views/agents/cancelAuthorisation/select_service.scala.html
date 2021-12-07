@@ -15,35 +15,41 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("service.name.agents.de-auth")), bodyClasses = None, isAgent = true) {
-
-@back_link(config.backLink)
+@mainTemplate(
+bannerTitle = Messages("service.name.agents.de-auth"),
+title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("service.name.agents.de-auth")),
+isAgent = true,
+backLinkHref = Some(config.backLink)
+) {
 
 @if(agentForm.hasErrors) {
-    @uiErrorSummary(Messages("error.summary.heading"), agentForm, Seq.empty, Some("select-service"))
+    @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentForm))
 }
 
-@uiFormHelper(action = config.submitCall,'class -> "form js-form") {
+@formHelper(action = config.submitCall) {
 
     @uiInputRadioGroupCustom(
         agentForm("serviceType"),
         config.enabledPersonalServices,
-        '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>"""),
+        '_legend -> Html("""<h1 class="govuk-heading-xl">"""+ Messages("cancel-authorisation.select-service.header") + """</h1>"""),
         '_groupDivClass -> "form-group",
         '_fieldsetAttributes -> Html("""id='serviceType'""")
     )

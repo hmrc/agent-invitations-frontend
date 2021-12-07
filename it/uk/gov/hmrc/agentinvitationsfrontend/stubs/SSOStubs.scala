@@ -1,12 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 
 trait SSOStubs {
 
   me: WireMockSupport =>
 
-  def givenWhitelistedDomains =
+  def givenAllowlistedDomains: StubMapping =
     stubFor(
       get(urlEqualTo("/sso/domains")).willReturn(
         aResponse()

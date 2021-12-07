@@ -15,26 +15,28 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
+@this(mainTemplate: MainTemplate)
 
-@this(
-    mainTemplate: main_template
-)
-
-
-@(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false, htmlPartial: Option[Html])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false, htmlPartial: Option[Html])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 @banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
-    @back_link_referer(request)
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)),
+isAgent = true,
+backLinkHref = Some(backLink)
+) {
 
-        <h1 class="margin-bottom-50 heading-xlarge">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
+    <h1 class="margin-bottom-50 govuk-heading-xl">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
 
         <p>@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
 

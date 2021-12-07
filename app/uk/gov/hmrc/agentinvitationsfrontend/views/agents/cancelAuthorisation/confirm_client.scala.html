@@ -15,20 +15,24 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @clientIdentifierText = @{clientIdType match {
                             case "utr"      => s"${Messages("cancel-authorisation.utr", clientIdentifier)}"
@@ -36,20 +40,23 @@
                             case _      => ""
                            }
                          }
-@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.title"), Messages("service.name.agents.de-auth")), bodyClasses = None, isAgent = true) {
-
-@back_link(backLinkUrl)
+@mainTemplate(
+bannerTitle = Messages("service.name.agents.de-auth"),
+title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-client.title"), Messages("service.name.agents.de-auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
 @if(choiceForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
+  @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
 }
 
-@uiFormHelper(action = submitCall, 'class -> "form js-form") {
+@formHelper(action = submitCall) {
 
     @uiInputRadioGroupCustom(
         choiceForm("accepted"),
         Seq("true" -> Messages("cancel-authorisation.confirm-client.yes"), "false" -> Messages("cancel-authorisation.confirm-client.no")),
-        '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-client.header", clientName) + """</h1>"""),
+        '_legend -> Html("""<h1 class="govuk-heading-xl">"""+ Messages("cancel-authorisation.confirm-client.header", clientName) + """</h1>"""),
         '_horizontal -> false,
         '_groupDivClass -> "form-group",
         '_fieldsetAttributes -> Html("""id='accepted'""")

@@ -15,21 +15,19 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-        mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
+@(clientType: String, agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@(clientType: String, agencyName: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@mainTemplate(bannerTitle = "service.name.clients", title = Messages(s"generic.title", Messages("cannot-find-request.header"), Messages("title.suffix.client")),  isAgent = false) {
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages(s"generic.title", Messages("cannot-find-request.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
-
-    <h1 class="heading-xlarge">@Messages("cannot-find-request.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("cannot-find-request.header")</h1>
 
     <p>@Messages("cannot-find-request.p1", agencyName)</p>
     <p><a href="@externalUrls.guidanceAuthoriseAgent">@Messages("cannot-find-request.p2")</a> @Messages("cannot-find-request.p4")</p>

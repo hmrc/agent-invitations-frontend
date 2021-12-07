@@ -24,6 +24,7 @@ import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Logging}
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
@@ -102,7 +103,7 @@ class AgentsRequestTrackingController @Inject()(
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(
                            agent.arn,
-                           agent.isWhitelisted,
+                           agent.isAllowlisted,
                            appConfig.trackRequestsShowLastDays,
                            pageInfo,
                            client,
@@ -127,7 +128,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
       trackService
-        .clientNames(agent.arn, agent.isWhitelisted, appConfig.trackRequestsShowLastDays)
+        .clientNames(agent.arn, agent.isAllowlisted, appConfig.trackRequestsShowLastDays)
         .flatMap { clientNames =>
           FilterTrackRequestsForm
             .form(clientNames)

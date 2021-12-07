@@ -15,38 +15,38 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF,
     uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary
+    govukErrorSummary: GovukErrorSummary
 )
 
-
-@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("banner.clients"),
+    bannerTitle = Messages("service.name.clients"),
     title = Messages("generic.title", Messages(s"which-service.header")),
-    bodyClasses = None,
-    isAgent = false
+    isAgent = false,
+    backLinkHref = Some(backLinkUrl.url)
 ) {
 
-@back_link(backLinkUrl.url)
-
 @if(confirmForm.hasErrors){
-    @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("whichService"))
+    @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
 }
 
-    <h1 class="heading-xlarge">@Messages("which-service.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("which-service.header")</h1>
 
-
-    @uiFormHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
+    @formHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
 
     @uiInputRadioGroupCustom(
         confirmForm("accepted"),

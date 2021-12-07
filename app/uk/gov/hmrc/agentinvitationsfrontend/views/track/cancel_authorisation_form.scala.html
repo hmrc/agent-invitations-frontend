@@ -18,17 +18,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF
 )
 
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
-@uiFormHelper(
+@formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
     'id -> s"cancelAuthorisation-$index",
     'class -> "form js-form"

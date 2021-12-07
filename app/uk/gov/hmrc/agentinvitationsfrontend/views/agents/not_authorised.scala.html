@@ -15,26 +15,30 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-  mainTemplate: main_template,
+  mainTemplate: MainTemplate,
   errorPrefix: error_prefix,
-  uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-  uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+  govukErrorSummary: GovukErrorSummary,
+  formHelper: FormWithCSRF,
   uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
   uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
-@(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 @banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-authorised.h1"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-authorised.h1"), Messages(titleSuffix)),  isAgent = true) {
 
-  <h1 id="notMatchedHeader" class="heading-xlarge">@Messages("not-authorised.h1")</h1>
+  <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages("not-authorised.h1")</h1>
 
   <p id="notMatched">@Messages(s"not-authorised.$service.p")</p>
 

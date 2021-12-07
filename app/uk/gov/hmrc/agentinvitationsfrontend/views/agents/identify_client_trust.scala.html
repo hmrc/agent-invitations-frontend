@@ -15,38 +15,43 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF
 )
 
-@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false, showUrnEnabledContent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false, showUrnEnabledContent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 @banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(titleSuffix)),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(trustClientForm.hasErrors) {
-         @uiErrorSummary(Messages("error.summary.heading"), trustClientForm, Seq.empty, Some("identify-trust-client"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(trustClientForm))
     }
 
-    @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
-
+    @formHelper(action = submitFormCall) {
 
         <div class="form-group margin-top-20 @if(trustClientForm.error("taxId").isDefined) {form-field--error soft--ends}">
             <h1>
-                <label for="taxId" class="heading-xlarge">
+                <label for="taxId" class="govuk-heading-xl">
                 @Messages(s"identify-trust-client.header.$showUrnEnabledContent")
                 </label>
             </h1>

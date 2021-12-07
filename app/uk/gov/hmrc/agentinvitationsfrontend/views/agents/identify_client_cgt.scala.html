@@ -15,37 +15,44 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF
 )
 
-@(cgtClientForm : Form[CgtClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(cgtClientForm : Form[CgtClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 @banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(titleSuffix)),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(cgtClientForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), cgtClientForm, Seq.empty, Some("identify-cgt-client"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(cgtClientForm))
     }
 
     <!-- TODO use client type here (personal or trust) -->
 
-    @uiFormHelper(action = submitFormCall, 'class -> "form js-form") {
+    @formHelper(action = submitFormCall) {
         <div class="form-group @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error soft--ends}">
-                <h1>
-                    <label class="heading-xlarge margin-bottom-10" for="cgtRef">@Messages(s"identify-cgt-client.header")</label>
-                </h1>
+            <h1>
+                <label class="govuk-heading-xl margin-bottom-10" for="cgtRef">@Messages(s"identify-cgt-client.header")</label>
+            </h1>
 
             <p class="hint-text" id="cgt-info">@Messages("identify-cgt-client.p1")</p>
             <span class="form-hint margin-bottom-10" id="cgt-hint">@Messages("identify-cgt-client.hint")</span>

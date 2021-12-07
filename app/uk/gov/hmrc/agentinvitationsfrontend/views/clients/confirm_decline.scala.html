@@ -15,22 +15,25 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @inputHint = {
 @if(config.serviceKeys.length == 1){
     <p id="radio-select-hint">
@@ -49,19 +52,22 @@
     }
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
-
-    @back_link(config.backLink.url)
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")),
+isAgent = false,
+backLinkHref = Some(config.backLink.url)
+) {
 
     @if(confirmDeclineForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), confirmDeclineForm, Seq.empty, Some("accepted"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmDeclineForm))
     }
 
-    @uiFormHelper(action = config.submitUrl, 'class -> "form js-form") {
+    @formHelper(action = config.submitUrl) {
         <div class="form-group @if(confirmDeclineForm.hasErrors){ form-field--error error-container}">
         <fieldset id="accepted" aria-describedby="radio-select-hint @if(confirmDeclineForm.hasErrors){radio-select-error}">
             <legend>
-                <h1 class="heading-xlarge margin-bottom-30">@Messages("confirm-decline.heading")</h1>
+                <h1 class="govuk-heading-xl">@Messages("confirm-decline.heading")</h1>
             </legend>
             @inputHint
             @confirmDeclineForm.errors.map { formError => <span class="error-notification" id="radio-select-error">

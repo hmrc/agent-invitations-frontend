@@ -48,8 +48,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       await(super.apply(transition))
   }
 
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
-  val nonWhitelistedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
+  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
+  val nonWhitelistedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val nino = "AB123456A"

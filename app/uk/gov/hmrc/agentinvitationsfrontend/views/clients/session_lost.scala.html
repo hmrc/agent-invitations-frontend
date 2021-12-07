@@ -15,26 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-  bannerTitle = "banner.clients",
+  bannerTitle = "service.name.clients",
   title = Messages("generic.title", Messages("session-lost-client.header"), Messages("title.suffix.client")),
-  bodyClasses = None,
   isAgent = false,
-  mainDataAttributes = None, hasTimeout = false
+  hasTimeout = false
 ) {
-  <h1 class="heading-xlarge">@Messages("session-lost-client.header")</h1>
+
+  <h1 class="govuk-heading-xl">@Messages("session-lost-client.header")</h1>
 
   <p>@Messages("session-lost-client.description.1")</p>
   <p>@Messages("session-lost-client.description.2")</p>
   <p>@Html(Messages("session-lost-client.manage-agents-link", externalUrls.agentClientManagementUrl))</p>
   <p>@Messages("session-lost-client.description.3")</p>
+
 }

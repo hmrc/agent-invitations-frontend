@@ -33,13 +33,13 @@ class SsoConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, me
 
   val url = s"${appConfig.ssoBaseUrl}/sso/domains"
 
-  def getWhitelistedDomains()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
+  def getAllowlistedDomains()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
     monitor("ConsumedAPI-SSO-getExternalDomains-GET") {
       http.GET[HttpResponse](url).map { r =>
         r.status match {
           case OK =>
             (r.json \ "externalDomains").as[Set[String]] ++ (r.json \ "internalDomains").as[Set[String]]
-          case s => throw new Exception(s"retrieval of whitelisted domains failed, status: $s")
+          case s => throw new Exception(s"retrieval of allowlisted domains failed, status: $s")
         }
       }
     }

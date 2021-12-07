@@ -15,19 +15,18 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-        mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")),  isAgent = false) {
 
-    <h1 class="heading-xlarge">@Messages("action-needed.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("action-needed.header")</h1>
 
     <div class="form-group">
         <details>

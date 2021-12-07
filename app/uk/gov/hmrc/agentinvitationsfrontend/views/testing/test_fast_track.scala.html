@@ -15,24 +15,27 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.{routes => testRoutes}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{routes => agentRoutes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 @import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_prefix, main_template}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_prefix, MainTemplate}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
-@(fastTrackForm: Form[AgentFastTrackRequest], isDev: Boolean)(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
-
+@(fastTrackForm: Form[AgentFastTrackRequest], isDev: Boolean)(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @postToInvitations = @{
     val baseUrl = if(isDev) s"http://${request.host}" else ""
     addParamsToUrl(s"${agentRoutes.AgentInvitationFastTrackJourneyController.agentFastTrack().url}",
@@ -45,7 +48,7 @@
 @mainTemplate(title = "Test Only: Fast Track Invitation", isAgent = true) {
   <h1>Test Only: Fast Track Invitation</h1>
 
-  @uiFormHelper(action = Call("POST", postToInvitations)) {
+  @formHelper(action = Call("POST", postToInvitations)) {
     <fieldset class="form-field-group">
       <div class="form-group">
        @uiInput(

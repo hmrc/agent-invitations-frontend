@@ -15,19 +15,23 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.PptClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiDateFields: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.date_input
 )
 
-@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 @banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
@@ -36,18 +40,20 @@
     pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
 }
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(pptClientForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), pptClientForm, Seq.empty, Some("identify-ppt-client"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pptClientForm))
     }
 
- @uiFormHelper(
-  action = submitFormCall, 'class -> "form js-form") {
+ @formHelper(action = submitFormCall) {
 
-     <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
+     <h1 class="govuk-heading-xl margin-bottom-10">@Messages("identify-client.header")</h1>
 
      <p class="hint-text">@Messages("identify-client.vat.p1")</p>
 

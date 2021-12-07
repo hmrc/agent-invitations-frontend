@@ -14,9 +14,12 @@
  * limitations under the License.
  *@
 
+@import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html
 @import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsMainContent
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcLayout, HmrcTimeoutDialogHelper}
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.{HmrcReportTechnicalIssue, ReportTechnicalIssue}
@@ -28,7 +31,8 @@
     hmrcLayout: HmrcLayout,
     standardBetaBanner: StandardBetaBanner,
     hmrcReportTechnicalIssue: HmrcReportTechnicalIssue,
-    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper
+    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
+    twoThirdsLayout: TwoThirdsMainContent,
 )
 
 @(
@@ -36,9 +40,11 @@
     isAgent: Boolean,
     bannerTitle: String = "service.name.agents.auth",
     completedInviteGoSurvey: Option[Boolean] = None,
+    scriptElem: Option[Html] = None,
     hasTimeout: Boolean = true,
+    fullWidth: Boolean = false,
     backLinkHref: Option[String] = None
-)(mainContent: Html)(implicit request: Request[_], messages: Messages, appConfig: AppConfig, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(mainContent: Html)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @timeOutUrl = {
     if(isAgent) {
@@ -74,6 +80,9 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")" type="text/javascript"></script>
 <script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")" type="text/javascript"></script>
+    if(scriptElem != None) {
+        @scriptElem
+    }
 }
 
 
@@ -81,7 +90,7 @@
     @mainContent
     <div class="govuk-!-margin-bottom-9">
         @hmrcReportTechnicalIssue(ReportTechnicalIssue(
-            serviceId = appConfig.contactFrontendServiceId(isAgent),
+            serviceId = externalUrls.contactFrontendServiceId(isAgent),
             language = if(messages.lang.code == "cy") Cy else En,
             referrerUrl = contactFrontendConfig.referrerUrl,
             baseUrl = contactFrontendConfig.baseUrl
@@ -92,7 +101,7 @@
 @hmrcLayout(
     pageTitle = Some(title),
     phaseBanner = Some(standardBetaBanner(
-        url = appConfig.betaFeedbackUrl(isAgent)
+        url = externalUrls.betaFeedbackUrl(isAgent)
     )),
     isWelshTranslationAvailable = true,
     displayHmrcBanner = true,
@@ -101,5 +110,6 @@
     additionalHeadBlock = Some(head),
     additionalScriptsBlock = Some(additionalScripts),
     serviceName = Some(bannerTitle),
-    backLinkUrl = backLinkHref
+    backLinkUrl = backLinkHref,
+    mainContentLayout = if (fullWidth) None else Some(twoThirdsLayout(_)),
 )(mainContentWithHelpLink)

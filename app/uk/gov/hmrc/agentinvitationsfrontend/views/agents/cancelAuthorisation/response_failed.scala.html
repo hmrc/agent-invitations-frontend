@@ -15,25 +15,29 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-   mainTemplate: main_template,
-   uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+   mainTemplate: MainTemplate,
+   formHelper: FormWithCSRF
 )
 
-@(submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("service.name.agents.de-auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("service.name.agents.de-auth")),  isAgent = true) {
 
-<h1 id="responseFailedHeader" class="heading-xlarge margin-top-20">@Messages("cancel-authorisation.response-failed.header")</h1>
+<h1 id="responseFailedHeader" class="govuk-heading-xl margin-top-20">@Messages("cancel-authorisation.response-failed.header")</h1>
 
 <p id="responseFailed">@Messages("cancel-authorisation.response-failed.description")</p>
 
 <p id="responseFailedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
 
-@uiFormHelper(action = submitCall, 'class -> "form js-form" ) {
+@formHelper(action = submitCall ) {
  <input id="confirmCancel" type="hidden" value="true" name="accepted"/>
  <button class="button" type="submit" id="continue">@Messages("try-again.button")</button>
 }

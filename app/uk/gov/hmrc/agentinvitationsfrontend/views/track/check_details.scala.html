@@ -15,24 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
-@(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
 
@@ -41,15 +43,17 @@
     else 4
 }
 
-@mainTemplate(title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @config.backLinkUrl.map(url => back_link(url))
+@mainTemplate(
+title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = config.backLinkUrl
+) {
 
     @if(confirmForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("checkDetails"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("check-details.heading")</h1>
+    <h1 class="govuk-heading-xl">@Messages("check-details.heading")</h1>
 
     <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
 
@@ -121,31 +125,28 @@
 
     @if(config.needClientType) {
 
-        @uiFormHelper(config.changeDetailsCall) {
+        @formHelper(config.changeDetailsCall) {
             <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
         }
         <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
-      @uiFormHelper(config.clientTypeUrl) {
+      @formHelper(config.clientTypeUrl) {
           <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
       }
     }else {
         @if(config.needKnownFact) {
-            @uiFormHelper(config.changeDetailsCall) {
+            @formHelper(config.changeDetailsCall) {
                 <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
             }
             <p class="margin-top-20">@Messages("check-details.change.p1")</p>
 
-          @uiFormHelper(config.knownFactUrl){
+          @formHelper(config.knownFactUrl){
             <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
             }
 
         } else {
 
-            @uiFormHelper(
-                config.submitFormCall,
-                'class -> "margin-top-30"
-            ) {
+            @formHelper(config.submitFormCall, 'class -> "margin-top-30") {
 
                 @uiInputRadioGroup(
                     confirmForm("accepted"),

@@ -15,22 +15,25 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.Relationship
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input
 )
 
-@(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
-
+@(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @mainTemplate(title = "Test Only: Create a relationship", isAgent = true) {
     <h1>Test Only: Create a relationship</h1>
-    @uiFormHelper(routes.TestEndpointsController.submitCreateRelationship()) {
+    @formHelper(routes.TestEndpointsController.submitCreateRelationship()) {
         <fieldset class="form-field-group">
             <div class="form-group">
                @uiInput(

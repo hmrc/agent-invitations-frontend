@@ -15,24 +15,27 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
-@(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")),  isAgent = false) {
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
-
-    <h1 class="heading-xlarge">@Messages("some-responses-failed.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("some-responses-failed.header")</h1>
 
 
   @if(config.consents.map(_.serviceKey).length == 1){
@@ -56,7 +59,7 @@
 
   <p>@Messages("some-responses-failed.advice", config.agencyName)</p>
 
-    @uiFormHelper(config.acceptInvitationCall) {
+    @formHelper(config.acceptInvitationCall) {
         <button id="continueToComplete" class="button" type="submit">@Messages("continue.button")</button>
     }
 }

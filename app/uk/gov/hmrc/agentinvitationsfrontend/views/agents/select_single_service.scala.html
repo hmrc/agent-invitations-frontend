@@ -15,36 +15,42 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-        mainTemplate: main_template,
-        errorPrefix: error_prefix,
-        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true) {
-
-    @back_link(config.backLink)
+@mainTemplate(
+title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(config.backLink)
+) {
 
     @if(choiceForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("service"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @uiFormHelper(
+    @formHelper(
         action = config.submitCall,
         'class -> "form js-form") {
         @uiInputRadioGroupCustom(
             choiceForm("accepted"),
             Seq("true"-> Messages("global.yes"), "false" -> Messages("global.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
+            '_legend -> Html("""<h1 class="govuk-heading-xl">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
             '_horizontal -> true,
             '_groupDivClass -> "form-group",
             '_fieldsetAttributes -> Html("""id='accepted'""")

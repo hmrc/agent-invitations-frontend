@@ -15,41 +15,44 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
         uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 
-@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
 
 
-@mainTemplate(title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(confirmForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-
-    @uiFormHelper(routes.AgentsRequestTrackingController.submitConfirmCancel){
+    @formHelper(routes.AgentsRequestTrackingController.submitConfirmCancel){
 
         @uiInputRadioGroupCustom(
             confirmForm("confirmCancel"),
             Seq(("true", Messages("global.yes")),("false",Messages("global.no"))),
-            '_legend -> Html(s"""<h1 class="heading-xlarge $marginTop">${Messages("confirm-cancel.header")}</h1>"""),
+            '_legend -> Html(s"""<h1 class="govuk-heading-xl $marginTop">${Messages("confirm-cancel.header")}</h1>"""),
             '_inputHint -> Messages(s"confirm-cancel.subheader.$service"),
             '_horizontal -> true,
             '_inputHintClass -> "hint-text",

@@ -15,18 +15,21 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.InvitationDeclinedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(config: InvitationDeclinedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: InvitationDeclinedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, completedInviteGoSurvey = Some(true), mainDataAttributes = None) {
+@mainTemplate(
+    bannerTitle = "service.name.clients",
+    title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
+    isAgent = false,
+    completedInviteGoSurvey = Some(true)
+) {
 
       <div class="transaction-banner--complete with-govuk-success-colour">
           <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>

@@ -15,25 +15,31 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF
 )
 
-@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("banner.clients"), title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
-    bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@mainTemplate(
+    bannerTitle = Messages("service.name.clients"),
+    title =  Messages("generic.title", Messages("check-answers.heading"), Messages("title.suffix.client")),
+    isAgent = false,
+    backLinkHref = Some(pageConfig.backLink.url)
+) {
 
-    @back_link(pageConfig.backLink.url)
-
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("check-answers.heading")</h1>
+    <h1 class="govuk-heading-xl">@Messages("check-answers.heading")</h1>
 
     <h2 class="heading-medium margin-top-40">@Messages("check-answers.subheading", pageConfig.processedAgencyName)</h2>
 
@@ -47,7 +53,7 @@
             @Messages(s"check-answers.consent.${consent.consent}")
             </dd>
             <dd class="app-check-your-answers__change">
-                @uiFormHelper(pageConfig.changeCall(consent.serviceKey)) {
+                @formHelper(pageConfig.changeCall(consent.serviceKey)) {
               <button type="submit" class="button--link-style">
                   <span aria-hidden="true">@Messages("check-answers.change-link")</span>
                   <span class="govuk-visually-hidden">@Messages("check-answers.change-link") @Messages(s"check-answers.service.${consent.serviceKey}")</span>
@@ -60,7 +66,7 @@
     }
     </dl>
 
-    @uiFormHelper(Call("POST", pageConfig.submitCall.url)){
+    @formHelper(Call("POST", pageConfig.submitCall.url)){
             <button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button>
 
     }

@@ -15,24 +15,22 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CannotCreateRequestConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
- mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(config: CannotCreateRequestConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: CannotCreateRequestConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = if(!config.fromFastTrack) {Some(config.backLink)} else {None}) {
 
-    @if(!config.fromFastTrack) {
-        @back_link(config.backLink)
-    }
-
-<h1 id="cannotCreateRequestHeader" class="heading-xlarge">@Messages("cannot-create-request.header")</h1>
+<h1 id="cannotCreateRequestHeader" class="govuk-heading-xl">@Messages("cannot-create-request.header")</h1>
 
     <p id="cannotCreateRequestP1">@Messages("cannot-create-request.p1")</p>
     <p id="cannotCreateRequestP2">@Messages("cannot-create-request.p2")</p>

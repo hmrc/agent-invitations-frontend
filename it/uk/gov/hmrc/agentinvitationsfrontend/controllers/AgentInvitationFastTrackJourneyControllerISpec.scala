@@ -4,6 +4,7 @@ import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers
@@ -16,6 +17,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 class AgentInvitationFastTrackJourneyControllerISpec
@@ -49,12 +51,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to check-details if all values in request are valid with no continue url" when {
 
       "submitted NINO is uppercase" in {
-        givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+        givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
         checkAgentFastTract(submittedNinoStr = "AB123456A")
       }
 
       "submitted NINO is lowercase (APB-3634)" in {
-        givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+        givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
         checkAgentFastTract(submittedNinoStr = "ab123456a")
       }
 
@@ -82,8 +84,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details if all values in request are valid with a continue and error url query parameters" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
-      givenWhitelistedDomains
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
+      givenAllowlistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -103,7 +105,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check-details when there is a referer in the header" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest(
         "POST",
@@ -129,7 +131,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is IRV" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -147,7 +149,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to agent suspended when service is IRV and agent has been suspended for this service" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("PIR"))))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("PIR"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -165,7 +167,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is personal VAT" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -183,7 +185,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is business VAT" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -201,7 +203,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is Trust with utr" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -218,7 +220,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is Trust with urn" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -235,7 +237,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to agent suspended when service is Trust and agent has been suspended for this service" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, Some(Set("TRS"))))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, Some(Set("TRS"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -252,7 +254,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is CGT" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -269,7 +271,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to agent suspended when service is CGT and agent has been suspended for this service" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("CGT"))))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("CGT"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -286,7 +288,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is ITSA with no postcode" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -303,7 +305,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is IRV with no date of birth" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -320,7 +322,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is VAT with no vat reg date" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -337,7 +339,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to check details when service is VAT with no vat reg date or client type" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(false, None))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -353,7 +355,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to agent suspended when service is VAT and agent has been suspended for this service" in {
-      givenGetSuspensionDetailsAgentStub(SuspensionDetails(true, Some(Set("VATC"))))
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("VATC"))))
       journeyState.clear
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
@@ -371,7 +373,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
-      givenWhitelistedDomains
+      givenAllowlistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -392,7 +394,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "throw a Bad Request exception if the continue url is not whitelisted" in {
-      givenWhitelistedDomains
+      givenAllowlistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=https://www.google.com&error=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fnot-authorised"
@@ -411,7 +413,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the error url is not whitelisted" in {
-      givenWhitelistedDomains
+      givenAllowlistedDomains
       val request = FakeRequest(
         "POST",
         "/agents/fast-track?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client&error=https://www.google.com"
@@ -651,7 +653,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("POST", "/agents/check-details")
     "redirect to invitation-sent" in new ItsaHappyScenario {
       givenGetAgencyEmailAgentStub
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
       journeyState.set(
         CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
@@ -666,7 +668,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /already-copied-across-itsa" in new ItsaHappyScenario {
       givenGetAgencyEmailAgentStub
       givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
       journeyState.set(
         CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
@@ -681,7 +683,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /authorisation-detected" in new ItsaHappyScenario {
       givenGetAgencyEmailAgentStub
       givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", nino, Some("BN32TN"))
       journeyState.set(
         CheckDetailsCompleteItsa(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
@@ -1016,7 +1018,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/client-identify-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to invitation-sent" in new VatHappyScenarioPersonal {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       journeyState.set(
         IdentifyPersonalClient(ftr, ftr, None),
         List(
@@ -1040,7 +1042,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to client-insolvent" in new VatHappyScenarioPersonal {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 403, true)
       journeyState.set(
         IdentifyPersonalClient(ftr, ftr, None),
@@ -1065,7 +1067,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to cannot-create-request" in new VatHappyScenarioPersonal {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       givenVatRegisteredClientReturns(Vrn(vrn), LocalDate.parse("2010-10-10"), 423)
       journeyState.set(
         IdentifyPersonalClient(ftr, ftr, None),
@@ -1117,7 +1119,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to invitation-sent for business VAT" in new VatHappyScenarioBusiness {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       journeyState.set(IdentifyBusinessClient(ftr, ftr, None), List())
 
       val result = controller.submitIdentifyVatClient(
@@ -1138,7 +1140,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/client-identify-trust" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-irv-client")
     "redirect to /agents/confirm-trust-client" in new TrustHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "taxId", validUtr.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "taxId", validUtr.value, None)
       journeyState.set(
         IdentifyTrustClient(ftr, ftr, None),
         List(
@@ -1165,7 +1167,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /agents/client-postcode" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         IdentifyCgtClient(ftr, ftr, None),
         List(
@@ -1191,7 +1193,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /agents/client-postcode" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         SelectClientTypeCgt(ftr, ftr, None),
         List(
@@ -1213,7 +1215,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /agents/client-country" in new CgtHappyScenario {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("FR")).toString())
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         SelectClientTypeCgt(ftr, ftr, None),
         List(
@@ -1237,7 +1239,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "GET /agent/confirm-trust-client" should {
     val request = FakeRequest("POST", "/agents/confirm-trust-client")
     "show the confirm client page as expected" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "utr", validUtr.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "utr", validUtr.value, None)
       journeyState.set(
         ConfirmClientTrust(ftr, ftr, None, "trustName"),
         List(
@@ -1261,7 +1263,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agent/confirm-trust-client" should {
     val request = FakeRequest("POST", "/agents/confirm-trust-client")
     "create an invitation as expected if there are no pending invitation exist" in new TrustHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "utr", validUtr.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), TAXABLETRUST, "utr", validUtr.value, None)
       journeyState.set(
         ConfirmClientTrust(ftr, ftr, None, "trustName"),
         List(
@@ -1284,7 +1286,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "GET /agent/confirm-cgt-client" should {
     val request = FakeRequest("GET", "/agents/confirm-cgt-client")
     "show the confirm client page as expected" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmClientCgt(ftr, ftr, None, "some-cgt-name"),
         List(
@@ -1305,7 +1307,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agent/confirm-cgt-client" should {
     val request = FakeRequest("POST", "/agents/confirm-cgt-client")
     "create an invitation as expected if there are no pending invitation exist" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmClientCgt(ftr, ftr, None, "some-cgt-name"),
         List(
@@ -1330,7 +1332,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("POST", "/agents/track/client-postcode")
 
     "redirect user to /agents/track/confirm-cgt-client if postcodes match for a UK client" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmPostcodeCgt(ftr, ftr, None, Some("BN13 1FN"), "firstName lastName"),
         List(
@@ -1346,7 +1348,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect user to /agents/no-match if postcodes do not match for a UK client" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmPostcodeCgt(ftr, ftr, None, Some("BN13 1FN"), "firstName lastName"),
         List(
@@ -1370,7 +1372,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("POST", "/agents/track/client-country")
 
     "redirect user to /agents/track/confirm-cgt-client if country codes match for a non UK client" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmCountryCodeCgt(ftr, ftr, None, "FR", "firstName lastName"),
         List(
@@ -1386,7 +1388,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect user to /agents/no-match if countryCodes do not match for a non UK client" in new CgtHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Business), HMRCCGTPD, "CGTPDRef", cgtRef.value, None)
       journeyState.set(
         ConfirmCountryCodeCgt(ftr, ftr, None, "FR", "firstName lastName"),
         List(
@@ -1464,7 +1466,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/more-details-itsa" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-itsa")
     "redirect to invitation-sent" in new ItsaHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", None)
       journeyState.set(
         NoPostcode(ftr, ftr, None),
         List(
@@ -1481,7 +1483,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to not-matched (Postcode)" in new ItsaNotMatchedScenario {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", None)
       journeyState.set(
         NoPostcode(ftr, ftr, None),
         List(
@@ -1519,7 +1521,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/more-details-irv" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-irv")
     "redirect to invitation-sent" in new IrvHappyScenario {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCPIR, "ni", nino, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCPIR, "ni", nino, None)
       journeyState.set(
         NoDob(ftr, ftr, None),
         List(
@@ -1541,7 +1543,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to not-matched (DOB)" in new IrvNotMatchedScenario {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCPIR, "ni", nino, None)
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCPIR, "ni", nino, None)
       journeyState.set(
         NoDob(ftr, ftr, None),
         List(
@@ -1566,7 +1568,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "POST /agents/more-details-vat" should {
     val request = FakeRequest("POST", "/agents/fast-track/more-details-vat")
     "redirect to invitation-sent" in new VatHappyScenarioPersonal {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("2010-10-10"))
       journeyState.set(
         NoVatRegDate(ftr, ftr, None),
         List(
@@ -1588,8 +1590,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
 
     "redirect to not-matched (Vat Reg. Date)" in new VatNotMatchedScenario {
-      val originalFtr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10"))
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, None)
+      val originalFtr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, Some("1990-10-10"))
+      val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCMTDVAT, "vrn", vrn, None)
       journeyState.set(
         NoVatRegDate(originalFtr, ftr, None),
         List(CheckDetailsCompletePersonalVat(originalFtr, originalFtr, None), Prologue(None, None))

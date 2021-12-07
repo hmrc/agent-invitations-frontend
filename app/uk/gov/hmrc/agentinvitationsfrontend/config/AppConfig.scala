@@ -115,10 +115,4 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, contactFrontendConfig:
 
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
 
-  def contactFrontendServiceId(isAgent: Boolean): String =
-    if (isAgent) agentOriginToken else clientOriginToken
-
-  def betaFeedbackUrl(isAgent: Boolean): String =
-    s"$betaFeedbackWithoutServiceIdUrl${contactFrontendServiceId(isAgent)}"
-
 }

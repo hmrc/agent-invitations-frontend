@@ -94,7 +94,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         clientType match {
           case "personal" =>
             val enabledPersonalServices =
-              if (agent.isWhitelisted)
+              if (agent.isAllowlisted)
                 Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
               else
                 Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)

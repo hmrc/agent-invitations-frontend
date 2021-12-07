@@ -15,38 +15,33 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CreateNewUserIdConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-mainTemplate: main_template,
-uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+mainTemplate: MainTemplate,
+formHelper: FormWithCSRF
 )
 
 
-@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@gaCallsWithoutName(analyticsHost: String, token: String) = {
-var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
-ga('create', '@token', '@analyticsHost');
-ga('set',  'page', pathWithoutName);
-ga('send', 'pageview', { 'anonymizeIp': true });
-}
+@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"new-gg-id.header")),
-bodyClasses = None,
-isAgent = false,
-bannerTitle = "banner.clients",
-gaCalls = Some(gaCallsWithoutName _),
-hasTimeout = false
+    title = Messages("generic.title", Messages(s"new-gg-id.header")),
+    isAgent = false,
+    bannerTitle = "service.name.clients",
+    hasTimeout = false,
+    backLinkHref = Some(backLinkUrl.url)
 ) {
-@back_link(backLinkUrl.url)
 
-    <h1 class="heading-xlarge">@Messages("new-gg-id.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("new-gg-id.header")</h1>
 
     <p>@Messages("new-gg-id.p1")</p>
     <ul class="list list-bullet">

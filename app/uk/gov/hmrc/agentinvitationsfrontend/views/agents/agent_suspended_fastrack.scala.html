@@ -15,20 +15,20 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
+@this(mainTemplate: MainTemplate)
 
-@this(mainTemplate: main_template)
+@(service: String, continueUrl: Option[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
+@mainTemplate(
+title = Messages("generic.title", Messages(s"agent-suspended.fastrack.heading"), Messages("service.name.agents.auth")),
+isAgent = true
+) {
 
-@(service: String, continueUrl: Option[String])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-
-@mainTemplate(title = Messages("generic.title", Messages(s"agent-suspended.fastrack.heading"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-
-  <h1 class="heading-xlarge margin-bottom-20">@Messages("agent-suspended.fastrack.heading")</h1>
+  <h1 class="govuk-heading-xl margin-bottom-20">@Messages("agent-suspended.fastrack.heading")</h1>
 
   <p>@Messages("agent-suspended.fastrack.p1")</p>
    <p>@Messages("agent-suspended.fastrack.p2",Messages(s"agent-suspended.fastrack.p2.$service"))</p>

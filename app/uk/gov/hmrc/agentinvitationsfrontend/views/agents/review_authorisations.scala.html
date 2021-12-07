@@ -15,31 +15,37 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ReviewAuthorisationsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title",  Messages("review-authorisations.heading"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+title = Messages("generic.title", Messages("review-authorisations.heading"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(reviewAuthorisationsForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), reviewAuthorisationsForm, Seq.empty, Some("review-authorisations"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(reviewAuthorisationsForm))
     }
 
-    <h1 class="heading-xlarge margin-bottom-40">@Messages("review-authorisations.heading")</h1>
+    <h1 class="govuk-heading-xl margin-bottom-40">@Messages("review-authorisations.heading")</h1>
 
     <p class="margin-bottom-30">
     @if(config.basket.size == 1) {
@@ -72,7 +78,7 @@
     }
     </dl>
 
-    @uiFormHelper(config.submitCall, 'class -> "form js-form"){
+    @formHelper(config.submitCall){
 
         @if(config.basketFull) {
             <input type="hidden" name="accepted" value="false" />

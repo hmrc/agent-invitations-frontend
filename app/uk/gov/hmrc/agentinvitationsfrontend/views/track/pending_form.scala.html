@@ -17,17 +17,19 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    formHelper: FormWithCSRF
 )
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_])
 
-@uiFormHelper(
+@formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
-    'id -> s"resendLink-${index}",
-    'class -> "form js-form actionButtons"
+    'id -> s"resendLink-${index}"
 ) {
     <input type="hidden" name="service" id="serviceResendLink-@{index}" value="@{
         invitationOrRelationship.service}">
@@ -46,10 +48,9 @@
     </button></div>
 }
 
-@uiFormHelper(
+@formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
-    'id -> s"postToConfirmCancel-$index",
-    'class -> "form js-form"
+    'id -> s"postToConfirmCancel-$index"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientType" id="clientTypeConfirmCancel-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">

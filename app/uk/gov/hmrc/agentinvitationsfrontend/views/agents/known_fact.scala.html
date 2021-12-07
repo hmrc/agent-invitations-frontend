@@ -15,20 +15,24 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-  mainTemplate: main_template,
+  mainTemplate: MainTemplate,
   errorPrefix: error_prefix,
-  uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-  uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+  govukErrorSummary: GovukErrorSummary,
+  formHelper: FormWithCSRF,
   uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
   uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
 )
 
-@(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
@@ -37,20 +41,22 @@
 
 @flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
 
-@mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(s"${config.backLinkUrl}")
+) {
 
- @back_link(s"${config.backLinkUrl}")
+    @if(knownFactForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
+    }
 
- @if(knownFactForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
- }
-
-    @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
+    @formHelper(action = config.submitKFCall) {
 
  <div class="form-group @if(knownFactForm.hasErrors){form-field--error error-container}">
 
    <h1>
-     <label class="heading-xlarge margin-bottom-30" for="knownFact">
+     <label class="govuk-heading-xl" for="knownFact">
        @Messages(s"known-fact.${config.service}.heading")
      </label>
    </h1>

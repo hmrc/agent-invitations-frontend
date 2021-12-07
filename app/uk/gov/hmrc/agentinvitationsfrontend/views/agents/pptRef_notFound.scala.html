@@ -15,21 +15,22 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
- mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call], pptRef: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call], pptRef: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"ppt-not-matched.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = Messages("generic.title", Messages(s"ppt-not-matched.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(tryAgainCall.url)
+) {
 
-  @back_link(tryAgainCall.url)
-
-  <h1 id="notMatchedHeader" class="heading-xlarge margin-bottom-20">@Messages(s"ppt-not-matched.header")</h1>
+  <h1 id="notMatchedHeader" class="govuk-heading-xl margin-bottom-20">@Messages(s"ppt-not-matched.header")</h1>
 
   <p id="enteredPptRef">@Messages(s"ppt-not-matched.p1", pptRef)</p>
 

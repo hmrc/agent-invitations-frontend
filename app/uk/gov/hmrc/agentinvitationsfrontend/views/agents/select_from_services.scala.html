@@ -15,41 +15,42 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
-@(agentInvitationsForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     title = errorPrefix(agentInvitationsForm) + Messages("generic.title",
                                                  config.selectHeaderMessage,
                                                  Messages("service.name.agents.auth")),
-    bodyClasses = None,
-    isAgent = true) {
-
-@back_link(config.backLink)
+    isAgent = true,
+    backLinkHref = Some(config.backLink)
+) {
 
 @if(agentInvitationsForm.hasErrors) {
-    @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("select-service"))
+    @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
 }
 
-@uiFormHelper(
-action = config.submitCall,
-'class -> "form js-form") {
+@formHelper(action = config.submitCall) {
 
     @uiInputRadioGroupCustom(
         agentInvitationsForm("serviceType"),
         config.availableServices,
-    '_legend -> Html(s"""<h1 class="heading-xlarge">${config.selectHeaderMessage}</h1>"""),
+    '_legend -> Html(s"""<h1 class="govuk-heading-xl">${config.selectHeaderMessage}</h1>"""),
     '_inputHint -> Messages("select-service.p1"),
         '_inputHintClass -> "hint-text",
     '_fieldsetDivClass -> "form-hint",

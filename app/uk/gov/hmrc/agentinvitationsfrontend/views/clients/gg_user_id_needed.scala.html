@@ -15,39 +15,43 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients.back_link
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-        mainTemplate: main_template,
-        errorPrefix: error_prefix,
-        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
 )
 
 
-@(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("banner.clients"), title = Messages("generic.title", Messages("gg-user-id-needed.h1"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
-
-    @back_link(backLinkUrl.url)
+@mainTemplate(
+bannerTitle = Messages("service.name.clients"),
+title = Messages("generic.title", Messages("gg-user-id-needed.h1"), Messages("title.suffix.client")),
+isAgent = false,
+backLinkHref = Some(backLinkUrl.url)
+) {
 
     @if(ggUserIdForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), ggUserIdForm, Seq.empty, Some("client-type"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(ggUserIdForm))
     }
 
-    @uiFormHelper(
-        action = submitAction,
-        'class -> "form js-form") {
+    @formHelper(action = submitAction) {
 
         @uiInputRadioGroupCustom(
             ggUserIdForm("accepted"),
             Seq("true" -> Messages("global.yes"), "false" -> Messages("global.no")),
-            '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("gg-user-id-needed.h1")}</h1>"""),
+            '_legend -> Html(s"""<h1 class="govuk-heading-xl">${Messages("gg-user-id-needed.h1")}</h1>"""),
             '_inputHint -> Messages("gg-user-id-needed.p"),
             '_fieldsetAttributes -> Html("""id='accepted'"""),
             '_groupDivClass -> "form-group",

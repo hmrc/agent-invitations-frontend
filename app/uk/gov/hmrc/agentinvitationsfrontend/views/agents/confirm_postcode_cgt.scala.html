@@ -15,39 +15,44 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
     uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
 )
 
-@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @submitUrl = @{ if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode
                 else if(isDeAuth) routes.AgentLedDeauthJourneyController.submitConfirmCgtPostcode
                 else routes.AgentInvitationJourneyController.submitConfirmCgtPostcode
               }
 
-@mainTemplate(title = errorPrefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+title = errorPrefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)) {
 
     @if(postcodeForm.hasErrors){
-        @uiErrorSummary(Messages("error.summary.heading"), postcodeForm, Seq.empty, Some("confirm-postcode-cgt"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(postcodeForm))
     }
 
-    @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
+    @formHelper(action = submitUrl) {
         <div class="form-group @if(postcodeForm.hasErrors){form-field--error soft--ends}">
-                    <h1 class="heading-xlarge">
-                        <label class="heading-xlarge" for="postcode">@Messages("confirm-postcode-cgt.header")</label>
+                    <h1 class="govuk-heading-xl">
+                        <label class="govuk-heading-xl" for="postcode">@Messages("confirm-postcode-cgt.header")</label>
                     </h1>
                 <p class="hint-text" id="postcode-info">@Messages("confirm-postcode-cgt.p1")</p>
                 <span class="form-hint margin-bottom-10" id="postcode-hint">@Messages("confirm-postcode-cgt.hint")</span>

@@ -15,21 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("service.name.agents.auth")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
-  @back_link_referer(request)
 
-  <h1 class="heading-xlarge margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
+@mainTemplate(
+title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLink)
+) {
+
+  <h1 class="govuk-heading-xl margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
 
   <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
 
