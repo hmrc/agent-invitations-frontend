@@ -39,7 +39,8 @@ class CancelAuthorisationFormSpec extends UnitSpec {
             "clientId"     -> clientId,
             "clientName"   -> clientName,
             "clientType"   -> clientType,
-            "invitationId" -> invitationId))
+            "invitationId" -> invitationId,
+            "status"       -> "Partialauth"))
 
       result.errors.isEmpty shouldBe true
     }
@@ -48,15 +49,28 @@ class CancelAuthorisationFormSpec extends UnitSpec {
       val result =
         testCancelAuthorisationForm.bind(
           Json
-            .obj("service" -> "foo", "clientId" -> clientId, "clientName" -> clientName, "clientType" -> clientType, "invitationId" -> invitationId))
+            .obj(
+              "service"      -> "foo",
+              "clientId"     -> clientId,
+              "clientName"   -> clientName,
+              "clientType"   -> clientType,
+              "invitationId" -> invitationId,
+              "status"       -> "Partialauth"))
 
       result.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
     }
 
     "return and error when clientId is invalid" in {
       val result =
-        testCancelAuthorisationForm.bind(Json
-          .obj("service" -> itsaService, "clientId" -> "foo", "clientName" -> clientName, "clientType" -> clientType, "invitationId" -> invitationId))
+        testCancelAuthorisationForm.bind(
+          Json
+            .obj(
+              "service"      -> itsaService,
+              "clientId"     -> "foo",
+              "clientName"   -> clientName,
+              "clientType"   -> clientType,
+              "invitationId" -> invitationId,
+              "status"       -> "Partialauth"))
 
       result.errors shouldBe Seq(FormError("clientId", List("INVALID_CLIENT_ID_RECEIVED:foo")))
     }
@@ -65,19 +79,41 @@ class CancelAuthorisationFormSpec extends UnitSpec {
       val result =
         testCancelAuthorisationForm.bind(
           Json
-            .obj("service" -> itsaService, "clientId" -> clientId, "clientName" -> clientName, "clientType" -> "abc", "invitationId" -> invitationId))
+            .obj(
+              "service"      -> itsaService,
+              "clientId"     -> clientId,
+              "clientName"   -> clientName,
+              "clientType"   -> "abc",
+              "invitationId" -> invitationId,
+              "status"       -> "Partialauth"))
 
       result.errors shouldBe Seq(FormError("clientType", List("Unsupported ClientType")))
     }
 
+    "return and error when status is invalid" in {
+      val result =
+        testCancelAuthorisationForm.bind(
+          Json
+            .obj(
+              "service"      -> itsaService,
+              "clientId"     -> clientId,
+              "clientName"   -> clientName,
+              "clientType"   -> clientType,
+              "invitationId" -> invitationId,
+              "status"       -> "foo"))
+
+      result.errors shouldBe Seq(FormError("status", List("Unexpected InvitationStatus")))
+    }
+
     "return no errors when unbinding the form" in {
       val unboundForm =
-        testCancelAuthorisationForm.mapping.unbind(CancelAuthorisationForm(itsaService, clientId, clientType, clientName, invitationId))
+        testCancelAuthorisationForm.mapping.unbind(CancelAuthorisationForm(itsaService, clientId, clientType, clientName, invitationId, "Accepted"))
       unboundForm("service") shouldBe itsaService
       unboundForm("clientId") shouldBe clientId
       unboundForm("clientName") shouldBe clientName
       unboundForm("clientType") shouldBe clientType
       unboundForm("invitationId") shouldBe invitationId
+      unboundForm("status") shouldBe "Accepted"
     }
   }
 
