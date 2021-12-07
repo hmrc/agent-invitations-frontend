@@ -34,6 +34,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationC
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
@@ -82,6 +83,7 @@ class ClientInvitationJourneyController @Inject()(
   ggUserIdNeededView: gg_user_id_needed,
   authorisationRequestErrorTemplateView: authorisation_request_error_template)(
   implicit configuration: Configuration,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
   featureFlags: FeatureFlags,

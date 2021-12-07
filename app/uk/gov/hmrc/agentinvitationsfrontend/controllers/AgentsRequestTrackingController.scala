@@ -68,6 +68,7 @@ class AgentsRequestTrackingController @Inject()(
   authorisationCancelledView: authorisation_cancelled,
   cancelAuthProblemView: cancel_authorisation_problem)(
   implicit val externalUrls: ExternalUrls,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,

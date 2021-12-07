@@ -59,7 +59,7 @@ class RedirectUrlActionsISpec extends BaseISpec {
     }
 
     "maybeRedirectUrlOrBadRequest" should {
-      "carry out the function block when the continue url has a whitelisted domain" in {
+      "carry out the function block when the continue url has a allowlisted domain" in {
         givenAllowlistedDomains
         implicit val request =
           FakeRequest("GET", "/some/url?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client")
@@ -78,7 +78,7 @@ class RedirectUrlActionsISpec extends BaseISpec {
             Future(Ok("success")))
         status(result) shouldBe 200
       }
-      "throw a Bad Request exception when the url domain is not whitelisted" in {
+      "throw a Bad Request exception when the url domain is not allowlisted" in {
         givenAllowlistedDomains
         implicit val request = FakeRequest("GET", "/some/url?continue=https://www.google.com")
 

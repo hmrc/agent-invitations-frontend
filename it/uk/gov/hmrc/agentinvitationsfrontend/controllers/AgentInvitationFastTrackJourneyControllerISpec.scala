@@ -393,7 +393,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
     }
 
-    "throw a Bad Request exception if the continue url is not whitelisted" in {
+    "throw a Bad Request exception if the continue url is not allowlisted" in {
       givenAllowlistedDomains
       val request = FakeRequest(
         "POST",
@@ -412,7 +412,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           )))
       }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
-    "throw a Bad Request exception if the error url is not whitelisted" in {
+    "throw a Bad Request exception if the error url is not allowlisted" in {
       givenAllowlistedDomains
       val request = FakeRequest(
         "POST",

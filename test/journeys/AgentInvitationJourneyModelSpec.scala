@@ -122,7 +122,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SelectPersonalService(availableServices, emptyBasket))
       }
 
-      "transition to SelectPersonalService with fewer services when agent is not whitelisted" in {
+      "transition to SelectPersonalService with fewer services when agent is not allowlisted" in {
 
         given(SelectClientType(emptyBasket)) when
           selectedClientType(authorisedAgentNotAllowlisted)("personal") should

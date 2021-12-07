@@ -48,10 +48,10 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       await(super.apply(transition))
   }
 
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
-  val nonWhitelistedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
+  val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
+  val nonAllowlistedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
-  val whitelistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  val allowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val nino = "AB123456A"
   val postCode = "BN114AW"
   val vrn = "123456"
@@ -84,12 +84,12 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to SelectServiceBusiness when business is selected" in {
         given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(SelectServiceBusiness)
       }
-      "transition to SelectServicePersonal with only whitelisted services" in {
-        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("personal") should thenGo(SelectServicePersonal(whitelistedServices))
+      "transition to SelectServicePersonal with only allowlisted services" in {
+        given(SelectClientType) when selectedClientType(nonAllowlistedAgent)("personal") should thenGo(SelectServicePersonal(allowlistedServices))
       }
 
-      "transition to SelectServiceTrust with only whitelisted services" in {
-        given(SelectClientType) when selectedClientType(nonWhitelistedAgent)("trust") should thenGo(
+      "transition to SelectServiceTrust with only allowlisted services" in {
+        given(SelectClientType) when selectedClientType(nonAllowlistedAgent)("trust") should thenGo(
           SelectServiceTrust(Set(TRUST, HMRCCGTPD, HMRCPPTORG)))
       }
     }
