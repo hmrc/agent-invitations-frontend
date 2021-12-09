@@ -248,10 +248,10 @@ error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient 
 
 # Invitation Sent
 invitation-sent.header=Yr hyn y mae angen i chi ei wneud nesaf
-invitation-sent.step1.personal.paye-vat=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol a’i fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
+invitation-sent.step1.personal.paye-vat=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol a’i fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
 invitation-sent.step1.personal.paye=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol.
-invitation-sent.step1.personal.vat=Gwiriwch gyda’ch cleient ei fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
-invitation-sent.step1.business.vat=Gwiriwch gyda’ch cleient ei fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
+invitation-sent.step1.personal.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+invitation-sent.step1.business.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
 invitation-sent.step1.business.trust=Gwiriwch gyda’ch cleient ei fod wedi hawlio, neu wedi cofrestru’r ymddiriedolaeth neu’r ystâd o’r blaen.
 invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a’i anfon at eich cleient:
 invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.

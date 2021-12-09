@@ -262,10 +262,10 @@ error.confirm-client.required=Select yes if you want to ask this client for auth
 
 # Invitation Sent
 invitation-sent.header=What you need to do next
-invitation-sent.step1.personal.paye-vat=Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT if they need to.
+invitation-sent.step1.personal.paye-vat=Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT.
 invitation-sent.step1.personal.paye=Check with your client that they have a Government Gateway user ID for their personal tax affairs.
-invitation-sent.step1.personal.vat=Check with your client that they have signed up to Making Tax Digital for VAT if they need to.
-invitation-sent.step1.business.vat=Check with your client that they have signed up to Making Tax Digital for VAT if they need to.
+invitation-sent.step1.personal.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
+invitation-sent.step1.business.vat=Check with your client that they have signed up to Making Tax Digital for VAT.
 invitation-sent.step1.business.trust=Check with your client that they have claimed or previously registered the trust or estate.
 invitation-sent.link-text=Copy this authorisation request link and send it to your client:
 invitation-sent.select-link=Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID.
