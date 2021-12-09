@@ -404,6 +404,28 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
+
+    "redirect to confirm client for personal VAT when client insolvent" in {
+      journeyState.set(IdentifyClientPersonal(HMRCMTDVAT), Nil)
+      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
+
+      givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 403, true)
+      givenClientDetails(validVrn)
+
+      val result =
+        controller.submitIdentifyVatClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "clientIdentifier"       -> s"${validVrn.value}",
+              "registrationDate.year"  -> "2007",
+              "registrationDate.month" -> "7",
+              "registrationDate.day"   -> "7"),
+            arn.value
+          ))
+      status(result) shouldBe 303
+
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+    }
     "redirect to confirm client for business VAT" in {
       journeyState.set(IdentifyClientBusiness, Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")

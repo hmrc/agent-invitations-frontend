@@ -329,11 +329,11 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
 
-      "transition to KnownFactNotMatched when vat reg date matches but client is insolvent" in {
+      "transition to ConfirmClientPersonalVat when vat reg date matches but client is insolvent" in {
         def vatClientInsolvent(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatRecordClientInsolvent)
 
         given(IdentifyClientPersonal(HMRCMTDVAT)) when submitIdentifyClientVat(vatClientInsolvent, getClientName, hasActiveRelationships)(
-          authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+          authorisedAgent)(vatClient) should thenGo(ConfirmClientPersonalVat(Some("John Smith"), Vrn("123456")))
       }
 
       "transition to Not signed up when vat record is being migrated" in {
