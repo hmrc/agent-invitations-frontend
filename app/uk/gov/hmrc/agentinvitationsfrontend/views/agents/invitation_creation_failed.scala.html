@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationCreationFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -29,8 +30,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    submitButton: SubmitButton
 )
 
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -39,57 +39,54 @@
 
     <h1 class="govuk-heading-xl">@Messages("create-auth-failed.header")</h1>
 
-    <p class = "margin-bottom-20">
-  @if(config.hasSingleRequest){
-
-    @Messages(s"create-auth-failed.p1", "request")
-
-  } else {
-      @Messages(s"create-auth-failed.p1", "requests")
-  }</p>
-
-      <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
-      @for(request <- config.failedRequests) {
-          <div>
-              <dt class="cya-question">
-              @request.clientName
-              </dt>
-              <dd class="cya-answer" id="client-identifier">
-                  @Messages(s"create-auth-failed.${request.invitation.service}")
-              </dd>
-          </div>
-      }
-      </dl>
-
-  @if(config.isAll) {
-  <p>@Html(Messages("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
-
-    @formHelper(
-        action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
-        'id -> "tryAgainInvitationCreation"
-    ) {
-        <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
-        <div><button class="button" type="submit" id="resendRequest">@Messages("try-again.button")</button></div>
+    <p class="govuk-!-margin-bottom-4">
+    @if(config.hasSingleRequest){
+        @Messages(s"create-auth-failed.p1", "request")
+    } else {
+        @Messages(s"create-auth-failed.p1", "requests")
     }
-  }else {
-      @formHelper(
+    </p>
+
+    <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+    @for(request <- config.failedRequests) {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+            @request.clientName
+            </dt>
+            <dd class="govuk-summary-list__value" id="client-identifier">
+            @Messages(s"create-auth-failed.${request.invitation.service}")
+            </dd>
+        </div>
+    }
+    </dl>
+
+    @if(config.isAll) {
+        <p>@Html(Messages("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
+
+        @formHelper(
+            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
+            'id -> "tryAgainInvitationCreation"
+        ) {
+            <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
+            @submitButton(id="resendRequest", messageKey = "try-again.button")
+        }
+    } else {
+        @formHelper(
           action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
           'id -> "tryAgainInvitationCreation"
-      ) {
-          <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
-          <p>
+        ) {
+            <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
+            <p>
               @if(config.hasSingleRequest) {
                   @Html(Messages("create-auth-failed.link-text.one"))
-              }else {
+              } else {
                   @Html(Messages("create-auth-failed.link-text.some"))
               }
-          </p>
-      }
+            </p>
+        }
 
-      @formHelper(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
-          <div class="form-group">
-              <button class="button" type="submit" id="continue">@Messages("create-auth-failed.button.continue")</button>
-          </div>
-      }
-  }
+        @formHelper(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
+            @submitButton()
+        }
+    }
 }

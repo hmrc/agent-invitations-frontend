@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -29,7 +30,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputYesNoRadios: InputYesNoRadios,
+    submitButton: SubmitButton
 )
 
 @(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -46,18 +48,14 @@ backLinkHref = Some(config.backLinkUrl)
 
     @formHelper(config.submitDelete) {
 
-        @uiInputRadioGroupCustom(
-            deleteForm("accepted"),
-            Seq(("true", Messages("global.yes")), ("false", Messages("global.no"))),
-        '_legend -> Html(s"""<h1 class="govuk-heading-xl">${Messages("delete.heading", config.clientDetail.clientName)}</h1>"""),
-        '_inputHint -> Messages(s"delete.subheading.${config.clientDetail.invitation.service}"),
-        '_inputHintClass -> "form-hint margin-bottom-10",
-        '_horizontal -> true,
-        '_fieldsetAttributes -> Html("""id='accepted'"""),
-        '_groupDivClass -> "form-group"
+        @inputYesNoRadios(
+            field = deleteForm("accepted"),
+            legend = Messages("delete.heading", config.clientDetail.clientName),
+            headingIsLegend = true,
+            hint = Some(Messages(s"delete.subheading.${config.clientDetail.invitation.service}"))
         )
 
-            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+        @submitButton()
 
     }
 

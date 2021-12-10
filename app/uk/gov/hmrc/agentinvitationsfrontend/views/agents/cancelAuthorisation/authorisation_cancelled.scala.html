@@ -21,39 +21,63 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(mainTemplate: MainTemplate)
 
-@(service: String, clientName: String, agencyName: String, agentServicesAccountUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@this(
+    mainTemplate: MainTemplate,
+    govukPanel: GovukPanel,
+    linkStyledAsButton: LinkStyledAsButton
+)
+
+@(
+    service: String,
+    clientName: String,
+    agencyName: String,
+    agentServicesAccountUrl: String
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
+
+@panelContent = {
+@displayDateForLang(Some(LocalDate.now()))
+}
 
 @mainTemplate(
 bannerTitle = Messages("service.name.agents.de-auth"),
 title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("service.name.agents.de-auth")),
 isAgent = true) {
 
-     <div class="transaction-banner--complete with-govuk-success-colour">
-      <h1 class="transaction-banner__heading">@Messages("cancel-authorisation.cancelled.header")</h1>
-         <p class="transaction-banner__heading">@displayDateForLang(Some(LocalDate.now()))</p>
-     </div>
+    @govukPanel(Panel(
+        title = Text(Messages("cancel-authorisation.cancelled.header")),
+        content = HtmlContent(s"$panelContent")
+    ))
 
     <h2>@Messages("cancel-authorisation.cancelled.subheader")</h2>
     <p>@Html(Messages(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
 
     @if(service=="HMRC-MTD-IT") {
-      <h2>@Messages("authorisation-cancelled.check-sa.subheader")</h2>
-      <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
-      <ul class="list list-bullet govuk-body">
-	<li>@Messages("authorisation-cancelled.check-sa.l1")</li>
-	<li>
-	  <a href="@Messages("authorisation-cancelled.check-sa.l2.link")">@Messages("authorisation-cancelled.check-sa.l2")</a>
-	</li>
-	<li>@Messages("authorisation-cancelled.check-sa.l3")</li>
-      </ul>
+        <h2>@Messages("authorisation-cancelled.check-sa.subheader")</h2>
+
+        <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>@Messages("authorisation-cancelled.check-sa.l1")</li>
+            <li>
+            <a href="@Messages("authorisation-cancelled.check-sa.l2.link")">@Messages("authorisation-cancelled.check-sa.l2")</a>
+            </li>
+            <li>@Messages("authorisation-cancelled.check-sa.l3")</li>
+        </ul>
     }  
     <p>
-        <a href="javascript:window.print()" class="print-link">@Messages("cancel-authorisation.cancelled.print")</a>
+        <a href="javascript:window.print()" class="print-link">
+            <!--TODO place hidden text in messages file-->
+            <span class="govuk-visually-hidden">Print a copy of your cancelled authorisation</span>
+            <span aria-hidden="true">@Messages("cancel-authorisation.cancelled.print")</span>
+        </a>
     </p>
 
-    <a href="@agentServicesAccountUrl" class="button" role="button">@Messages(s"cancel-authorisation.cancelled.return-to-account-services.button")</a>
+    @linkStyledAsButton(href = agentServicesAccountUrl, messageKey = "cancel-authorisation.cancelled.return-to-account-services.button")
 
-    }
+}

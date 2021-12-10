@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,7 +29,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(
@@ -49,15 +51,22 @@
 
     @formHelper(action = submitCall) {
 
-        @uiInputRadioGroupCustom(
-            choiceForm("accepted"),
-            Seq("true" -> Messages("legacy-auth-detected.yes"), "false" -> Messages("legacy-auth-detected.no")),
-            '_legend -> Html(s"""<h1 class="govuk-heading-xl">${Messages("legacy-auth-detected.header")}</h1>"""),
-            '_groupDivClass -> "form-group",
-            '_horizontal -> true,
-            '_fieldsetAttributes -> Html("""id='accepted'""")
+        @inputRadio(
+            field = choiceForm("accepted"),
+            legend = Messages("legacy-auth-detected.header"),
+            headingIsLegend = true,
+            inputs = Seq(
+                RadioItem(
+                    content = Text(Messages("legacy-auth-detected.yes")),
+                    value = Some("true")
+                ),
+                RadioItem(
+                    content = Text(Messages("legacy-auth-detected.no")),
+                    value = Some("false")
+                )
+            )
         )
 
-        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 }

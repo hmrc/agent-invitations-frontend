@@ -19,6 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,7 +30,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -46,15 +49,14 @@ backLinkHref = Some(config.backLink)
 
     @formHelper(action = config.submitCall,'class -> "form js-form") {
 
-        @uiInputRadioGroupCustom(
-            serviceTypeForm("serviceType"),
-            config.enabledTrustServices,
-        '_legend -> Html("""<h1 class="govuk-heading-xl">"""+ Messages("cancel-authorisation.trust-select-service.header") + """</h1>"""),
-            '_groupDivClass -> "form-group",
-            '_fieldsetAttributes -> Html("""id='serviceType'""")
+        @inputRadio(
+            field = serviceTypeForm("serviceType"),
+            legend = Messages("cancel-authorisation.trust-select-service.header"),
+            headingIsLegend = true,
+            inputs = mapToRadioItems(serviceTypeForm("serviceType"), config.enabledTrustServices)
         )
 
-        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 }
 

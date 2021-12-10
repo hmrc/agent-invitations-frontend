@@ -19,7 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -27,62 +28,63 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
+    govukFieldset: GovukFieldset,
     formHelper: FormWithCSRF,
-    uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+    inputText: InputText,
+    inputDate: InputDate,
+    submitButton: SubmitButton
 )
 
 @(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @agentInvitationsDateForm = @{
     agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.nino.required")))
 }
 
+@fieldsetHtml = {
+    <p id="identify-client-hint">@Messages("identify-client.itsa.p1")</p>
+
+    @inputText(
+        field = agentInvitationsForm("clientIdentifier"),
+        label = Messages("identify-client.nino.label"),
+        labelClass = Some("govuk-label--s"),
+        hint = Some(Messages("identify-client.nino.hint")),
+        inputClass = Some("govuk-input--width-10")
+    )
+
+    @inputDate(
+        field = agentInvitationsDateForm("dob"),
+        legend = Messages("identify-client.irv-date-of-birth.label"),
+        hint = Some(Messages("identify-client.irv-date-of-birth.hint"))
+    )
+}
+
 @mainTemplate(
 bannerTitle = Messages(banner),
-title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)),
+title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(agentInvitationsForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = Map("dob" -> "dob.day")))
     }
 
     @formHelper(action = submitFormCall) {
 
-            <h1 class="govuk-heading-xl margin-bottom-10">@Messages("identify-client.header")</h1>
+        @govukFieldset(Fieldset(
+            legend = Some(Legend(
+                content = Text(Messages("identify-client.header")),
+                classes = "govuk-fieldset__legend--xl",
+                isPageHeading = true
+            )),
+            describedBy = "identify-client-hint",
+            html = fieldsetHtml
+        ))
 
-            <p class="hint-text">@Messages("identify-client.itsa.p1")</p>
-
-        <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error soft--ends}">
-            <label class="form-label" for="clientIdentifier">@Messages("identify-client.nino.label")</label>
-            <span class="form-hint" id="nino-hint">@Messages("identify-client.nino.hint")</span>
-            @agentInvitationsForm.error("clientIdentifier").map { formError =>
-                <span class="error-notification" data-journey="search-page:error:nino" id="nino-error">
-                    <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-            }
-            <input class="form-control" id="clientIdentifier" name="clientIdentifier" type="text" spellcheck="false"
-                @agentInvitationsForm.data.get("clientIdentifier").map { v => value="@v"}
-                aria-describedby="nino-hint @if(agentInvitationsForm.error("clientIdentifier").isDefined){nino-error}"
-            >
-        </div>
-
-            <div @if(agentInvitationsForm.error("dob").isDefined){class="nojs-date-fields-error"}>
-            @uiDateFields(agentInvitationsDateForm, "dob",
-                '_legend -> Messages("identify-client.irv-date-of-birth.label"),
-                '_inputHint -> Messages("identify-client.irv-date-of-birth.hint"),
-                '_legendSpanClass -> "form-label",
-                '_legendClass -> "flush--ends"
-            )
-            </div>
-
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-        </div>
+        @submitButton()
     }
-
 
 }

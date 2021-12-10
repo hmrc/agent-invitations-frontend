@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -30,13 +31,14 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 
 @(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @params = @{Seq(
-    '_legend -> Html(s"""<h1 class="govuk-heading-xl margin-bottom-20">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
+    '_legend -> Html(s"""<h1 class="govuk-heading-xl govuk-!-margin-bottom-4">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
     '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.track.$service"),
     '_inputHintClass -> "margin-bottom-30",
     '_horizontal -> true,
@@ -65,8 +67,8 @@ backLinkHref = Some(backLinkUrl)
       )
 
 
-   <div class="form-group margin-top-30">
-    <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+   <div class="govuk-!-margin-top-6">
+    @submitButton()
    </div>
   }
 }

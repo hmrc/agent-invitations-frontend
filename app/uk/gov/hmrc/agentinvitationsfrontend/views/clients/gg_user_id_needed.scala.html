@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -29,7 +30,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 
@@ -58,7 +60,7 @@ backLinkHref = Some(backLinkUrl.url)
             '_horizontal -> true
         )
 
-        <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 
 }

@@ -2306,7 +2306,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result.futureValue,
         "create-auth-failed.header",
-        "create-auth-failed.button.continue",
+        "continue.button",
         "create-auth-failed.HMRC-CGT-PD"
       )
     }
@@ -2441,7 +2441,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result.futureValue,
         "pending-authorisation-exists.header",
         "pending-authorisation-exists.p",
-        "pending-authorisation-exists.new-request.button"
+        "new-request.button"
       )
     }
   }

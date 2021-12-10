@@ -60,7 +60,7 @@
         <p>@Messages(s"client-complete.${config.consents.filter(_.consent == true).map(_.serviceKey).head}.p1", config.agencyName)</p>
     } else {
         <p>@Messages(s"client-complete.multi.p1.head", config.agencyName)</p>
-        <ul class="list list-bullet">
+        <ul class="govuk-list govuk-list--bullet">
         @for(key <- config.consents.filter(_.consent == true).map(_.serviceKey)){
             <li>@Messages(s"client-complete.multi.p1.$key")</li>
         }

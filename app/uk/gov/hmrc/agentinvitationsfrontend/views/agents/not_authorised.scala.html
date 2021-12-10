@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -27,20 +28,21 @@
   errorPrefix: error_prefix,
   govukErrorSummary: GovukErrorSummary,
   formHelper: FormWithCSRF,
-  uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-  uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+  linkStyledAsButton: LinkStyledAsButton
 )
 
 @(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@mainTemplate(bannerTitle = Messages(banner), title = Messages("generic.title", Messages("not-authorised.h1"), Messages(titleSuffix)),  isAgent = true) {
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = Messages("generic.title", Messages("not-authorised.h1"), Messages(banner)),
+isAgent = true) {
 
-  <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages("not-authorised.h1")</h1>
+    <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages("not-authorised.h1")</h1>
 
-  <p id="notMatched">@Messages(s"not-authorised.$service.p")</p>
+    <p id="notMatched">@Messages(s"not-authorised.$service.p")</p>
 
-  <a class="button" role="button" href=@clientTypeCall>@Messages("not-authorised.button")</a>
+    @linkStyledAsButton(href = clientTypeCall.url, messageKey = "start-again.button")
 }

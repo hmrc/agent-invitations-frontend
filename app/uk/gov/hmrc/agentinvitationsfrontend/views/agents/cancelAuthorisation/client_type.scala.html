@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,16 +29,17 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(agentForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = Messages("service.name.agents.de-auth"),
-title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("service.name.agents.de-auth")),
-isAgent = true,
-backLinkHref = Some(config.backLinkUrl)
+    bannerTitle = Messages("service.name.agents.de-auth"),
+    title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.client-type.header"), Messages("service.name.agents.de-auth")),
+    isAgent = true,
+    backLinkHref = Some(config.backLinkUrl)
 ) {
 
     @if(agentForm.hasErrors) {
@@ -46,17 +48,15 @@ backLinkHref = Some(config.backLinkUrl)
 
     @formHelper(action = config.submitCall) {
 
-        @uiInputRadioGroupCustom(
-            agentForm("clientType"),
-            config.clientTypes,
-            '_legend -> Html("""<h1 class="govuk-heading-xl">"""+ Messages("cancel-authorisation.client-type.header") + """</h1>"""),
-            '_inputHint -> Messages("cancel-authorisation.client-type.p1"),
-            '_inputHintClass -> "hint-text",
-            '_groupDivClass -> "form-group soft--ends",
-            '_fieldsetAttributes -> Html("""id='clientType'""")
+        @inputRadio(
+            field = agentForm("clientType"),
+            legend = Messages("cancel-authorisation.client-type.header"),
+            headingIsLegend = true,
+            hint = Some(Messages("cancel-authorisation.client-type.p1")),
+            inputs = config.clientTypesAsRadioItems
         )
 
-    <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
 
     }
 

@@ -20,8 +20,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -33,18 +34,24 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
- <h1 class="govuk-heading-xl margin-bottom-20">@Messages("partial-authorisation-exists.header")</h1>
+ <h1 class="govuk-heading-xl">@Messages("partial-authorisation-exists.header")</h1>
 
  <p>@Html(Messages(s"partial-authorisation-exists.p1"))</p>
 
  <p>@Messages("partial-authorisation-exists.p2")</p>
 
-
- @if(authRequestsExist && !fromFastTrack) {
-  <a href=@reviewAuthsCall class="button" role="button">@Messages("partial-authorisation-exists.return")</a>
- }else {
-  @if(!fromFastTrack) {
-   <div><a href=@clientTypeCall class="button" role="button">@Messages("partial-authorisation-exists.new-request.button")</a></div>
+  @if(authRequestsExist && !fromFastTrack) {
+    @linkStyledAsButton(
+      href = reviewAuthsCall.url,
+      messageKey = "partial-authorisation-exists.return"
+    )
+  } else {
+    @if(!fromFastTrack) {
+      @linkStyledAsButton(
+          href = clientTypeCall.url,
+          messageKey = "new-request.button"
+      )
+    }
   }
- }
+
 }

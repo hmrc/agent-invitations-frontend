@@ -19,8 +19,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -39,16 +40,23 @@ backLinkHref = Some(backLink)
 
     <h2>@Messages("client-not-registered.h2")</h2>
 
-
     <p>@Html(Messages("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))</p>
 
     <p>@Html(Messages("client-not-registered.p3", clientTypeCall))</p>
 
     @if(authRequestsExist && !fromFastTrack) {
-        <a href=@reviewAuthsCall class="button" role="button">@Messages("client-not-registered.return")</a>
-    }else {
+        @linkStyledAsButton(
+            id = "return",
+            href = reviewAuthsCall.url,
+            messageKey = "client-not-registered.return"
+        )
+    } else {
         @if(!fromFastTrack) {
-            <div><a href=@clientTypeCall class="button" role="button">@Messages("client-not-registered.new-request.button")</a></div>
+            @linkStyledAsButton(
+                id = "new-request",
+                href = clientTypeCall.url,
+                messageKey = "new-request.button"
+            )
         }
     }
 }

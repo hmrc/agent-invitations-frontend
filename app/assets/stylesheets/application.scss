@@ -1,10 +1,10 @@
-$govuk-assets-path: "/agent-helpdesk/assets/lib/govuk-frontend/govuk/assets/";
-$hmrc-assets-path: "/agent-helpdesk/assets/lib/hmrc-frontend/hmrc/";
+$govuk-assets-path: "/invitations/assets/lib/govuk-frontend/govuk/assets/";
+$hmrc-assets-path: "/invitations/assets/lib/hmrc-frontend/hmrc/";
 
 @import "lib/govuk-frontend/govuk/all";
 @import "lib/hmrc-frontend/hmrc/all";
 
-@import 'modules/_custom';
+@import 'partials/_custom';
 @import 'partials/_accessibleAutocomplete';
 
 $govuk-global-styles: true;

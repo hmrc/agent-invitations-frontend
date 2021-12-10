@@ -20,31 +20,48 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(authRequestsExist: Boolean, service: String, clientType: ClientType, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+    authRequestsExist: Boolean,
+    service: String,
+    clientType: ClientType,
+    fromFastTrack: Boolean,
+    reviewAuthsCall: Call,
+    clientTypeCall: Call
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(backLink)
+    title = Messages("generic.title", Messages(s"active-authorisation-exists.header"), Messages("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl margin-bottom-20">@Messages("active-authorisation-exists.header")</h1>
+  <h1 class="govuk-heading-xl">@Messages("active-authorisation-exists.header")</h1>
 
   <p>@Messages(s"active-authorisation-exists.p1.$service")</p>
 
   <p>@Messages("active-authorisation-exists.p2")</p>
 
   @if(authRequestsExist && !fromFastTrack) {
-    <a href=@reviewAuthsCall class="button" role="button">@Messages("active-authorisation-exists.return")</a>
-  }else {
+    @linkStyledAsButton(
+        id = "return",
+        href = reviewAuthsCall.url,
+        messageKey = "active-authorisation-exists.return"
+    )
+  } else {
      @if(!fromFastTrack) {
-      <div><a href=@clientTypeCall class="button" role="button">@Messages("pending-authorisation-exists.new-request.button")</a></div>
+        @linkStyledAsButton(
+            id = "start-new",
+            href = clientTypeCall.url,
+            messageKey = "new-request.button"
+        )
      }
   }
+
 }

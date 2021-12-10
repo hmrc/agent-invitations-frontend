@@ -19,7 +19,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.PptClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -27,65 +28,63 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
+    govukFieldset: GovukFieldset,
     formHelper: FormWithCSRF,
-    uiDateFields: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.date_input
+    inputText: InputText,
+    inputDate: InputDate,
+    submitButton: SubmitButton
 )
 
 @(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @agentInvitationsDateForm = @{
-    pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
+pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
+}
+
+@fieldsetHtml = {
+    <p id="identify-client-hint">@Messages("identify-client.vat.p1")</p>
+
+    @inputText(
+        field = pptClientForm("pptRef"),
+        label = Messages("identify-ppt-client.label"),
+        labelClass = Some("govuk-label--s"),
+        hint = Some(Messages("identify-ppt-client.hint")),
+        inputClass = Some("govuk-input--width-10")
+    )
+
+    @inputDate(
+        field = agentInvitationsDateForm("registrationDate"),
+        legend = Messages("identify-ppt-client.registration-date.label"),
+        hint = Some(Messages("identify-ppt-client.registration-date.hint"))
+    )
 }
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)),
-isAgent = true,
-backLinkHref = Some(backLinkUrl)
+    bannerTitle = Messages(banner),
+    title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
+    isAgent = true,
+    backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(pptClientForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pptClientForm))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pptClientForm, mapping = Map("registrationDate" -> "registrationDate.day")))
     }
 
  @formHelper(action = submitFormCall) {
 
-     <h1 class="govuk-heading-xl margin-bottom-10">@Messages("identify-client.header")</h1>
+        @govukFieldset(Fieldset(
+            legend = Some(Legend(
+                content = Text(Messages("identify-client.header")),
+                classes = "govuk-fieldset__legend--xl",
+                isPageHeading = true
+            )),
+            describedBy = "identify-client-hint",
+            html = fieldsetHtml
+        ))
 
-     <p class="hint-text">@Messages("identify-client.vat.p1")</p>
-
-     <div class="form-group @if(pptClientForm.error("pptRef").isDefined) {form-field--error soft--ends}">
-         <label class="form-label" for="clientIdentifier">@Messages("identify-ppt-client.label")</label>
-         <span class="hint-text" id="pptref-hint">@Messages("identify-ppt-client.hint")</span>
-         @pptClientForm.error("pptRef").map { formError =>
-             <span class="error-notification" data-journey="search-page:error:pptref" id="pptref-error">
-                 <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-         }
-         <input
-         type="text"
-         class="form-control"
-         id="pptRef"
-         name="pptRef"
-         spellcheck="false"
-         aria-describedby="pptref-hint @if(pptClientForm.hasErrors) { pptref-error}"
-             @pptClientForm.data.get("pptRef").map { v => value="@v"}
-         >
-     </div>
-
-     <div @if(pptClientForm.error("registrationDate").isDefined){class="nojs-date-fields-error"}>
-     @uiDateFields(agentInvitationsDateForm, "registrationDate",
-         '_legend -> Messages("identify-ppt-client.registration-date.label"),
-         '_inputHint -> Messages("identify-ppt-client.registration-date.hint"),
-         '_legendSpanClass -> "form-label",
-         '_legendClass -> "flush--ends",
-         '_errorPrefix -> Messages("error.prefix")
-     )
-     </div>
-
-     <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+     @submitButton()
 
  }
  }

@@ -19,15 +19,16 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CheckAnswersPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{CheckAnswersRow, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
     mainTemplate: MainTemplate,
-    errorPrefix: error_prefix,
-    govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF
+    formHelper: FormWithCSRF,
+    checkAnswersRow: CheckAnswersRow,
+    submitButton: SubmitButton
 )
 
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -41,34 +42,23 @@
 
     <h1 class="govuk-heading-xl">@Messages("check-answers.heading")</h1>
 
-    <h2 class="heading-medium margin-top-40">@Messages("check-answers.subheading", pageConfig.processedAgencyName)</h2>
+    <h2>@Messages("check-answers.subheading", pageConfig.processedAgencyName)</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-60">
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(consent <- pageConfig.consents) {
-        <div>
-            <dt class="cya-question">
-            @Messages(s"check-answers.service.${consent.serviceKey}")
-            </dt>
-            <dd class="cya-answer" id="client-identifier">
-            @Messages(s"check-answers.consent.${consent.consent}")
-            </dd>
-            <dd class="app-check-your-answers__change">
-                @formHelper(pageConfig.changeCall(consent.serviceKey)) {
-              <button type="submit" class="button--link-style">
-                  <span aria-hidden="true">@Messages("check-answers.change-link")</span>
-                  <span class="govuk-visually-hidden">@Messages("check-answers.change-link") @Messages(s"check-answers.service.${consent.serviceKey}")</span>
-              </button>
-            }
-
-
-            </dd>
-        </div>
+        @checkAnswersRow(
+            key = Messages(s"check-answers.service.${consent.serviceKey}"),
+            valueId = "client-identifier",
+            value = Messages(s"check-answers.consent.${consent.consent}"),
+            actionText = Some(Messages("check-answers.change-link")) ,
+            actionHref = Some(pageConfig.changeCall(consent.serviceKey)),
+            hiddenActionText = Some(Messages("check-answers.change-link") + " " + Messages(s"check-answers.service.${consent.serviceKey}"))
+        )
     }
     </dl>
 
     @formHelper(Call("POST", pageConfig.submitCall.url)){
-            <button class="button" type="submit" id="continueCheckDetails">@Messages("check-answers.continue.button")</button>
-
+        @submitButton(id="continueCheckDetails", messageKey = "check-answers.continue.button")
     }
 
 }

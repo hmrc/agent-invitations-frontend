@@ -1255,7 +1255,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         ))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "confirm-client.yes", "confirm-client.no")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "confirm-client.yes", "global.no-start-over")
       checkIncludesText(result,"Is this the client you want authorisation from?", "Is trustName the client you want authorisation from?")
     }
   }
@@ -1299,7 +1299,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showConfirmClientCgt(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "confirm-client.yes", "confirm-client.no")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "confirm-client.yes", "global.no-start-over")
       checkIncludesText(result, "Is this the client you want authorisation from?", "Is some-cgt-name the client you want authorisation from?")
     }
   }

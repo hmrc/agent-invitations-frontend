@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,7 +29,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -45,17 +47,15 @@ backLinkHref = Some(config.backLinkUrl)
 
     @formHelper(action = config.submitCall) {
 
-        @uiInputRadioGroupCustom(
-            agentInvitationsForm("clientType"),
-            config.clientTypes,
-        '_legend -> Html(s"""<h1 class="govuk-heading-xl">${Messages("client-type.header")}</h1>"""),
-        '_inputHint -> Messages("client-type.p1"),
-            '_inputHintClass -> "hint-text",
-        '_fieldsetAttributes -> Html("""id='clientType'"""),
-        '_groupDivClass -> "form-group"
+        @inputRadio(
+            field = agentInvitationsForm("clientType"),
+            legend = Messages("client-type.header"),
+            headingIsLegend = true,
+            hint = Some(Messages("client-type.p1")),
+            inputs = config.clientTypesAsRadioItems
         )
 
-    <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 
 }

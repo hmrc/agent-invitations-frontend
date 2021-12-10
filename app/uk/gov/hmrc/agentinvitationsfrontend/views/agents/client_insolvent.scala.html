@@ -19,23 +19,34 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")),  isAgent = true) {
+@mainTemplate(
+title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")),
+isAgent = true) {
 
 
     <h1 class="govuk-heading-xl">@Messages("client-insolvent.header")</h1>
 
     <p>@Messages("client-insolvent.p")</p>
 
- @if(hasRequests) {
-  <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button" role="button">@Messages("review-auths.link")</a>
- } else {
-  @if(!isFastTrack) {
-   <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button" role="button">@Messages("new-request.button")</a>
-  }
- }
+    @if(hasRequests) {
+         @linkStyledAsButton(
+             id = "return",
+             href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url,
+             messageKey = "review-auths.link"
+         )
+    } else {
+        @if(!isFastTrack) {
+            @linkStyledAsButton(
+                id = "new-request",
+                href = routes.AgentInvitationJourneyController.showClientType().url,
+                messageKey = "new-request.button"
+            )
+        }
+    }
 }

@@ -59,7 +59,7 @@ backLinkHref = config.backLinkUrl
 
     <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-30">
+    <dl class="govuk-check-your-answers cya-questions-long govuk-!-margin-bottom-6">
         <div>
             @if(config.fastTrackRequest.clientType.nonEmpty){
             <dt class="cya-question">
@@ -128,7 +128,7 @@ backLinkHref = config.backLinkUrl
         @formHelper(config.changeDetailsCall) {
             <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
         }
-        <p class="margin-top-20">@Messages("check-details.change.p1")</p>
+        <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 
       @formHelper(config.clientTypeUrl) {
           <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
@@ -138,7 +138,7 @@ backLinkHref = config.backLinkUrl
             @formHelper(config.changeDetailsCall) {
                 <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
             }
-            <p class="margin-top-20">@Messages("check-details.change.p1")</p>
+            <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 
           @formHelper(config.knownFactUrl){
             <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
@@ -146,7 +146,7 @@ backLinkHref = config.backLinkUrl
 
         } else {
 
-            @formHelper(config.submitFormCall, 'class -> "margin-top-30") {
+            @formHelper(config.submitFormCall, 'class -> "govuk-!-margin-top-6") {
 
                 @uiInputRadioGroup(
                     confirmForm("accepted"),

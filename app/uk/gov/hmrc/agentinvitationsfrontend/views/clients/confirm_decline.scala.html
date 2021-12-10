@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -30,7 +31,8 @@
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
     uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -42,7 +44,7 @@
 } else {
             <div id="radio-select-hint">
             <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
-            <ul class="list list-bullet">
+            <ul class="govuk-list govuk-list--bullet">
             @for(key <- config.serviceKeys) {
                 <li>@Messages(s"confirm-decline.$key.service-name")</li>
             }
@@ -89,7 +91,7 @@ backLinkHref = Some(config.backLink.url)
             </div>
         </fieldset>
         </div>
-        <button class="button form-field--submit" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+        @submitButton()
     }
 }
 

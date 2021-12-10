@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,8 +29,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    submitButton: SubmitButton
 )
 
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -45,7 +45,7 @@
   } else {
       <p>@Messages("some-responses-failed.p1")</p>
 
-      <ul class="list list-bullet">
+      <ul class="govuk-list govuk-list--bullet">
       @for(serviceKey <- config.consents.map(_.serviceKey)) {
           <li>
           @Messages(s"some-responses-failed.li.$serviceKey")
@@ -60,6 +60,6 @@
   <p>@Messages("some-responses-failed.advice", config.agencyName)</p>
 
     @formHelper(config.acceptInvitationCall) {
-        <button id="continueToComplete" class="button" type="submit">@Messages("continue.button")</button>
+        @submitButton(id="continueToComplete")
     }
 }

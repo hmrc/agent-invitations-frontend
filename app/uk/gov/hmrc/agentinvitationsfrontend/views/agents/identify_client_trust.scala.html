@@ -20,7 +20,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -28,17 +29,30 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF
+    govukDetails: GovukDetails,
+    formHelper: FormWithCSRF,
+    inputText: InputText,
+    submitButton: SubmitButton
 )
 
-@(trustClientForm : Form[TrustClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false, showUrnEnabledContent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+trustClientForm : Form[TrustClient],
+submitFormCall: Call,
+backLinkUrl: String,
+isDeAuthJourney: Boolean = false,
+showUrnEnabledContent: Boolean = false
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+
+@detailsContent = {
+<p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
+<p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
+}
 
 @mainTemplate(
 bannerTitle = Messages(banner),
-title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(titleSuffix)),
+title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -49,45 +63,30 @@ backLinkHref = Some(backLinkUrl)
 
     @formHelper(action = submitFormCall) {
 
-        <div class="form-group margin-top-20 @if(trustClientForm.error("taxId").isDefined) {form-field--error soft--ends}">
-            <h1>
-                <label for="taxId" class="govuk-heading-xl">
-                @Messages(s"identify-trust-client.header.$showUrnEnabledContent")
-                </label>
-            </h1>
-            <p class="form-hint margin-bottom-20" id="taxId-info">@Messages("identify-trust-client.p1")</p>
-            <p class="form-hint" id="taxId-hint">@Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent"))</p>
+        <h1 class="govuk-heading-xl">
+            @Messages(s"identify-trust-client.header.$showUrnEnabledContent")
+        </h1>
 
-            @if(showUrnEnabledContent) {
-                <details id="identifyTrustHelper">
-                    <summary id="identifyTrustSummary">
-                        <span id="identifyTrustAlt" class="summary">
-                        @Messages("identify-trust-alternative")
-                        </span>
-                    </summary>
-                    <div class="panel panel-border-narrow" aria-hidden="true">
-                        <p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
-                        <p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
-                    </div>
-                </details>
-            }
+        <p class="govuk-body govuk-!-margin-bottom-4" id="taxId-info">@Messages("identify-trust-client.p1")</p>
 
-            @trustClientForm.error("taxId").map{ formError =>
-                <span class="error-notification margin-top-20" data-journey="search-page:error:taxId" id="taxId-error">
-                    <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-            }
-            <input
-            class="form-control @if(!trustClientForm.hasErrors){margin-top-20}"
-            name="taxId"
-            id="taxId"
-            type="text"
-            spellcheck="false"
-            @trustClientForm.data.get("taxId").map { v => value="@v"}
-            aria-describedby="taxId-info taxId-hint @if(trustClientForm.hasErrors){taxId-error}"
-            >
-        </div>
+        @if(showUrnEnabledContent) {
+            @govukDetails(Details(
+                id = "identifyTrustHelper"
+                summary = Text(Messages("identify-trust-alternative")),
+                content = HtmlContent(s"$detailsContent")
+            ))
+        }
 
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+        @inputText(
+            field = trustClientForm("taxId"),
+            label = Messages(s"identify-trust-client.header.$showUrnEnabledContent"),
+            labelClass = Some("govuk-visually-hidden"),
+            labelAsHeading = false,
+            hint = Some(Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent"))),
+            inputClass = Some("govuk-input--width-10")
+        )
+
+        @submitButton()
 
 
     }

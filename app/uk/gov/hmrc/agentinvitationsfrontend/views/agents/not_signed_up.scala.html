@@ -19,37 +19,51 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(serviceId: String, hasRequests: Boolean, isDeAuthJourney: Boolean = false, htmlPartial: Option[Html])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+    serviceId: String,
+    hasRequests: Boolean,
+    isDeAuthJourney: Boolean = false,
+    htmlPartial: Option[Html]
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(titleSuffix)),
-isAgent = true,
-backLinkHref = Some(backLink)
+    bannerTitle = Messages(banner),
+    title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(banner)),
+    isAgent = true,
+    backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="margin-bottom-50 govuk-heading-xl">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
+    <h1 class="govuk-heading-xl">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
 
-        <p>@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
+    <p>@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
 
     @htmlPartial.getOrElse("")
 
-        @if(hasRequests) {
-            <a href="@routes.AgentInvitationJourneyController.showReviewAuthorisations()" class="button" role="button">@Messages("review-auths.link")</a>
+    @if(hasRequests) {
+        @linkStyledAsButton(
+            href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url,
+            messageKey = "review-auths.link"
+        )
+    } else {
+        @if(!isDeAuthJourney) {
+            @linkStyledAsButton(
+                href = routes.AgentInvitationJourneyController.showClientType().url,
+                messageKey = "new-request.button"
+            )
         } else {
-            @if(!isDeAuthJourney) {
-                <a href="@routes.AgentInvitationJourneyController.showClientType()" class="button" role="button">@Messages("new-request.button")</a>
-            } else {
-                <a href="@routes.AgentLedDeauthJourneyController.agentLedDeauthRoot()" class="button" role="button">@Messages("new-request.button")</a>
-            }
+            @linkStyledAsButton(
+                href = routes.AgentLedDeauthJourneyController.agentLedDeauthRoot().url,
+                messageKey = "new-request.button"
+            )
         }
+    }
 }
 

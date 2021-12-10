@@ -15,7 +15,6 @@
  */
 
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Logger
 import play.api.i18n.{Lang, MessagesApi}
 import play.api.mvc.Result
 import play.api.test.FakeRequest

@@ -18,9 +18,11 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
 @this(
-   mainTemplate: MainTemplate
+   mainTemplate: MainTemplate,
+   linkStyledAsButton: LinkStyledAsButton
 )
 
 @(clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -33,6 +35,10 @@
 
 <p id="notMatchedAdvice">@Messages("cancel-authorisation.not-matched.advice")</p>
 
-<a id="showClientTypeButton" href=@clientTypeCall class="button" role="button">@Messages("cancel-authorisation.start-over.button")</a>
+@linkStyledAsButton(
+ id="showClientTypeButton",
+ href = clientTypeCall.toString,
+ messageKey = "start-over.button"
+)
 
 }

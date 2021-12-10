@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -27,17 +28,23 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF
+    formHelper: FormWithCSRF,
+    inputText: InputText,
+    submitButton: SubmitButton
 )
 
-@(cgtClientForm : Form[CgtClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+cgtClientForm : Form[CgtClient],
+submitFormCall: Call,
+backLinkUrl: String,
+isDeAuthJourney: Boolean = false
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
-@banner      = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @mainTemplate(
 bannerTitle = Messages(banner),
-title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(titleSuffix)),
+title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -49,32 +56,18 @@ backLinkHref = Some(backLinkUrl)
     <!-- TODO use client type here (personal or trust) -->
 
     @formHelper(action = submitFormCall) {
-        <div class="form-group @if(cgtClientForm.error("cgtRef").isDefined) {form-field--error soft--ends}">
-            <h1>
-                <label class="govuk-heading-xl margin-bottom-10" for="cgtRef">@Messages(s"identify-cgt-client.header")</label>
-            </h1>
 
-            <p class="hint-text" id="cgt-info">@Messages("identify-cgt-client.p1")</p>
-            <span class="form-hint margin-bottom-10" id="cgt-hint">@Messages("identify-cgt-client.hint")</span>
-        @cgtClientForm.error("cgtRef").map { formError =>
-            <span class="error-notification" data-journey="search-page:error:cgtRef" id="cgt-error">
-                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-        }
-            <input
-            class="form-control"
-            name="cgtRef"
-            id="cgtRef"
-            type="text"
-            spellcheck="false"
-            @cgtClientForm.data.get("cgtRef").map { v => value="@v"}
-            aria-describedby="cgt-info cgt-hint @if(cgtClientForm.hasErrors){cgt-error}"
-            >
+        @inputText(
+            field = cgtClientForm("cgtRef"),
+            label = Messages(s"identify-cgt-client.header"),
+            labelClass = Some("govuk-label--xl"),
+            labelAsHeading = true,
+            hint = Some(Messages("identify-cgt-client.p1") + " " + Messages("identify-cgt-client.hint")),
+            autocomplete = Some("postal-code"),
+            inputClass = Some("govuk-input--width-20")
+        )
 
-            </div>
-
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-
-
+        @submitButton()
 
     }
 }

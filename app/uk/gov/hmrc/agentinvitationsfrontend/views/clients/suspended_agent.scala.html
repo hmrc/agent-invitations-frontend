@@ -39,7 +39,7 @@
     </p>
 } else {
     <p>@Messages("suspended-agent.p1.multi")</p>
-    <ul class="list list-bullet">
+    <ul class="govuk-list govuk-list--bullet">
     @for(suspendedService <- pageConfig.suspendedServices) {
         <li>@Messages(s"suspended-agent.p1.$suspendedService")</li>
     }

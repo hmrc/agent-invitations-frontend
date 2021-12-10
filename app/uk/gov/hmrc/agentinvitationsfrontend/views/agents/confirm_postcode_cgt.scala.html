@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -29,8 +30,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    inputText: InputText,
+    submitButton: SubmitButton
 )
 
 @(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -50,32 +51,18 @@ backLinkHref = Some(backLinkUrl)) {
     }
 
     @formHelper(action = submitUrl) {
-        <div class="form-group @if(postcodeForm.hasErrors){form-field--error soft--ends}">
-                    <h1 class="govuk-heading-xl">
-                        <label class="govuk-heading-xl" for="postcode">@Messages("confirm-postcode-cgt.header")</label>
-                    </h1>
-                <p class="hint-text" id="postcode-info">@Messages("confirm-postcode-cgt.p1")</p>
-                <span class="form-hint margin-bottom-10" id="postcode-hint">@Messages("confirm-postcode-cgt.hint")</span>
-                @postcodeForm.error("postcode").map { formError =>
-                    <span class="error-notification" id="postcode-error" data-journey="search-page:error:postcode">
-                        <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
 
-                }
-                <input
-                class="form-control"
-                type="text"
-                id="postcode"
-                name="postcode"
-                spellcheck="false"
-                    @postcodeForm.data.get("postcode").map{ v => value="@v"}
-                    aria-describedby="postcode-info postcode-hint @if(postcodeForm.hasErrors){postcode-error}"
-                >
-        </div>
+        @inputText(
+            field = form("postcode"),
+            label = Messages("confirm-postcode-cgt.header"),
+            labelClass = Some("govuk-label--xl"),
+            labelAsHeading = true,
+            hint = Some(Messages("confirm-postcode-cgt.p1") + " " + Messages("confirm-postcode-cgt.hint")),
+            autocomplete = Some("postal-code"),
+            inputClass = Some("govuk-input--width-10")
+        )
 
-
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-
-
+        @submitButton()
 
     }
 }

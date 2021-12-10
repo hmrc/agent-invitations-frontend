@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -27,7 +28,8 @@
 @this(
     mainTemplate: MainTemplate,
     formHelper: FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton,
     govukErrorSummary: GovukErrorSummary
 )
 
@@ -54,8 +56,8 @@
         '_fieldsetAttributes -> Html("""id='whichService'""")
     )
 
-    <div class="form-group margin-top-30">
-        <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+    <div class="govuk-!-margin-top-6">
+        @submitButton()
     </div>
     }
 }

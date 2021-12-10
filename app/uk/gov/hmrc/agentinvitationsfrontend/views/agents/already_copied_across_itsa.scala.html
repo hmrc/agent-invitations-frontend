@@ -32,15 +32,15 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl margin-bottom-20">@Messages("already-copied.header")</h1>
+  <h1 class="govuk-heading-xl">@Messages("already-copied.header")</h1>
 
   <p>@Messages(s"already-copied.p1")</p>
 
-  <h2 class="govuk-heading-m">@Messages("already-copied.header2")</h2>
+  <h2>@Messages("already-copied.header2")</h2>
 
   <p>@Messages("already-copied.p2")</p>
 
-  <ul class="list list-bullet">
+  <ul class="govuk-list govuk-list--bullet">
     <li>@Html(Messages("already-copied.link1"))</li>
     <li>@Html(Messages("already-copied.link2"))</li>
   </ul>

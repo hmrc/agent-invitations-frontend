@@ -13,4 +13,4 @@ addSbtPlugin("com.lucidchart"    % "sbt-scalafmt"         % "1.16")
 addSbtPlugin("ch.epfl.scala"     % "sbt-scalafix"         % "0.9.19")
 addSbtPlugin("com.timushev.sbt"  % "sbt-updates"          % "0.3.4")  // provides sbt command "dependencyUpdates"
 addSbtPlugin("net.virtual-void"  % "sbt-dependency-graph" % "0.10.0-RC1")  // provides sbt command "dependencyTree"
-addSbtPlugin("org.irundaia.sbt"  % "sbt-sassify"          % "1.4.12")
+addSbtPlugin("org.irundaia.sbt"  % "sbt-sassify"          % "1.5.1")

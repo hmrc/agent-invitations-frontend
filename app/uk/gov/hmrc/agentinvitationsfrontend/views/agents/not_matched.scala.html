@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,24 +29,27 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    linkStyledAsButton: LinkStyledAsButton
 )
 
 @(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"not-matched.header"), Messages("service.name.agents.auth")),  isAgent = true) {
+@mainTemplate(
+title = Messages("generic.title", Messages(s"not-matched.header"), Messages("service.name.agents.auth")),
+isAgent = true) {
 
-  <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages(s"not-matched.header")</h1>
+    <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages(s"not-matched.header")</h1>
 
-  <p id="notMatched">@Messages(s"not-matched.description")</p>
+    <p id="notMatched">@Messages(s"not-matched.description")</p>
 
-  <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
+    <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
 
-  <a id="tryAgainButton" href="@tryAgainCall" class="button" role="button">@Messages(s"try-again.button")</a>
+    @linkStyledAsButton(id="tryAgainButton", href = tryAgainCall.url, messageKey = "try-again.button")
 
-  @if(hasJourneyCache) {
-   <p class="margin-top-30"><a id="showReviewAuthLink" class="text-link" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@Messages("review-auths.link")</a></p>
-  }
+    @if(hasJourneyCache) {
+        <p class="govuk-!-margin-top-6">
+            <a id="showReviewAuthLink" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@Messages("review-auths.link")</a>
+        </p>
+    }
 
 }

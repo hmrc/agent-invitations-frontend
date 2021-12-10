@@ -39,14 +39,14 @@
             <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
         } else {
             <p>@Messages(s"invitation-decline.sub-header", config.agencyName)</p>
-            <ul class="list list-bullet">
+            <ul class="govuk-list govuk-list--bullet">
             @for(key <- config.serviceKeys) {
                 <li>@Messages(s"confirm-decline.${if(key == "cgt") s"cgt.${config.clientType}" else key}.service-name")</li>
             }
             </ul>
         }
 
-        <a class="button margin-top-20 margin-bottom-20" href="@externalUrls.signOutUrl(false, None)" id="continue" role="button">@Messages(s"invitation-declined.sign-out.button")</a>
+        <a class="button govuk-!-margin-top-4 govuk-!-margin-bottom-4" href="@externalUrls.signOutUrl(false, None)" id="continue" role="button">@Messages(s"invitation-declined.sign-out.button")</a>
 
         <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
 
