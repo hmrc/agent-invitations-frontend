@@ -128,7 +128,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       }
     }
 
-  val showCheckDetails: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[CheckDetails]
+  val showCheckDetails: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[CheckDetails].orRollback
 
   val submitCheckDetails: Action[AnyContent] =
     actions
@@ -216,7 +216,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val knownFactRedirect: Action[AnyContent] = Action(Redirect(routes.AgentInvitationFastTrackJourneyController.showKnownFact()))
 
-  val showKnownFact: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[MissingDetail]
+  val showKnownFact: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[MissingDetail].orRollback
 
   val submitKnownFactItsa: Action[AnyContent] =
     actions
@@ -261,7 +261,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val progressToClientType
     : Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)(Transitions.checkedDetailsNoClientType) //.apply(helpers.redirect)
 
-  val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientTypeState]
+  val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ClientTypeState].orRollback
 
   val submitClientType: Action[AnyContent] =
     actions
@@ -306,7 +306,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val redirectTryAgainNotMatchedKnownFact: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.tryAgainNotMatchedKnownFact) // TODO: redirect
 
-  def showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt]
+  def showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
   def submitConfirmCgtPostcode: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(PostcodeForm.form).apply(Transitions.confirmPostcodeCgt)
@@ -316,9 +316,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   def submitConfirmCgtCountryCode: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt)
 
-  def showConfirmClientCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientCgt]
+  def showConfirmClientCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientCgt].orRollback
 
-  def showConfirmClientPpt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientPpt]
+  def showConfirmClientPpt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientPpt].orRollback
 
   def submitConfirmCgtClient: Action[AnyContent] =
     actions
