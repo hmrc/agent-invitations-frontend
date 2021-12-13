@@ -84,8 +84,6 @@ error.vat-registration-date.day-month=VAT registration date must include a day a
 error.vat-registration-date.day-year=VAT registration date must include a day and year
 error.vat-registration-date.month-year=VAT registration date must include a month and year
 
-
-
 # Date of Birth
 identify-client.irv-date-of-birth.label=Date of birth
 identify-client.irv-date-of-birth.hint=For example, 31 3 1980
@@ -99,7 +97,6 @@ error.irv-date-of-birth-date.day-year=Date of birth must include a day and year
 error.irv-date-of-birth-date.month-year=Date of birth must include a month and year
 
 ### Selecting services
-
 select-service.p1=You need to create a separate request for each type of authorisation
 service.type.invalid=Select what you want the client to authorise you to do
 
@@ -172,7 +169,6 @@ agent-suspended.p2.single=You can start a new authorisation request for a differ
 agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
 #Agent suspended fast-track
-
 agent-suspended.fastrack.heading=We have temporarily limited your use of this service
 agent-suspended.fastrack.p1=We did this because we have suspended your agent code. We sent you a letter to confirm this.
 agent-suspended.fastrack.p2=This means you will not be able to use this service to ask for authorisation to {0}
@@ -181,7 +177,6 @@ agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage their VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account.
-
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
 agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
@@ -251,7 +246,6 @@ ppt-not-matched.p2=This does not match any registered Plastic Packaging Tax refe
 ppt-not-matched.advice=You can:
 ppt-not-matched.advice.l1=check the reference is correct and try again
 ppt-not-matched.advice.l2=contact the client that gave you this reference, as they may have given you incorrect details
-
 
 # Confirm Client
 confirm-client.title=Is this the client you want authorisation from?
@@ -388,7 +382,6 @@ cancel-authorisation.start-over.button=Start over
 cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
 cancel-authorisation.response-failed.description=You can try again now, or try later.
 cancel-authorisation.response-failed.advice=We may not have saved your responses.
-
 
 #Not authorisation to de-auth
 not-authorised.h1=You have not been authorised
@@ -764,7 +757,6 @@ invitation-expired.p1=The link you tried to access has expired.
 invitation-expired.p2=If you still want to appoint this tax agent, ask them to send you another request.
 invitation-expired.button=Finish and sign out
 
-
 # Complete
 client-complete.header=Approval complete
 client-complete.p.title=What this means
@@ -887,7 +879,6 @@ some-responses-failed.trustNT=We could not save your response for maintain a tru
 some-responses-failed.cgt=We could not save your response for managing your Capital Gains Tax on UK property account.
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ‘Get help with this page’ link.
-
 
 technical-issues.header=Sorry, there is a problem with the service
 technical-issues.p1=Try again later.
