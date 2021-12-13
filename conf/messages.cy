@@ -433,7 +433,6 @@ review-auths.link =Dychwelyd i’ch ceisiadau am awdurdodiad
 #Request cancelled
 client-request-cancelled.header=Mae’r asiant treth wedi canslo’r cais am awdurdodiad hwn
 client-request-cancelled.p=Gofynnwch i’r asiant treth anfon cais arall os hoffech ei awdurdodi o hyd.
-client-request-cancelled.button=Gorffen ac allgofnodi
 
 #All authorisations removed
 all-authorisations-removed.header=Cais am awdurdodiad wedi’i ddileu
@@ -485,7 +484,7 @@ landing-page.service.vat.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth os y
 # Warm up
 warm-up.header=Awdurdodi {0} i ddelio â CThEM ar eich rhan
 warm-up.p1=Defnyddiwch y gwasanaeth hwn i ganiatáu i {0} reoli’ch materion treth.
-warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
+warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich materion treth personol neu TAW.
 warm-up.p3.personal=Os nad oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer eich materion treth personol neu TAW, byddwch yn gallu creu un newydd.
 warm-up.inset=Os byddwch yn awdurdodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
@@ -527,7 +526,7 @@ suspended-agent.p1.TRS=cynnal ymddiriedolaeth neu ystâd
 suspended-agent.p1.CGT=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 suspended-agent.p2=Os oes gennych unrhyw gwestiynau, cysylltwch â’r asiant treth a anfonodd y cais hwn atoch.
 suspended-agent.p3=Gallwch fynd yn eich blaen heb y gwasanaeth hwn, neu
-suspended-agent.finish=orffen ac allgofnodi
+suspended-agent.finish=gorffen ac allgofnodi
 
 # Invitation Declined
 invitation-declined.header=Gwnaethoch wrthod y cais hwn
@@ -539,7 +538,6 @@ invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch 
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
-invitation-declined.sign-out.button=Gorffen ac allgofnodi
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
@@ -721,7 +719,6 @@ check-answers.continue.button=Cadarnhau ac anfon ateb
 invitation-expired.heading=Nid yw’r dudalen hon ar gael mwyach
 invitation-expired.p1=Mae’r cysylltiad y gwnaethoch chi geisio mynd ato wedi dod i ben.
 invitation-expired.p2=Os hoffech benodi’r asiant treth hwn o hyd, gofynnwch iddo anfon cais arall atoch.
-invitation-expired.button=Gorffen ac allgofnodi
 
 
 # Complete
@@ -739,7 +736,6 @@ client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
 client-complete.button.mta=Rheoli’ch asiantau treth
-client-complete.sign-out=Gorffen ac allgofnodi
 
 client-complete.multi.header=Proses gymeradwyo wedi’i chwblhau
 client-complete.multi.header.p=Mae {0} bellach yn gallu delio â CThEM ar eich rhan
@@ -801,12 +797,11 @@ not-found-invitation.description.3=Os yw’r cyfeiriad gwe’n gywir, cysylltwch
 # Invitation Already Responded
 invitation-already-responded.header=Rydych eisoes wedi ymateb i’r cais hwn
 invitation-already-responded.description=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant treth a anfonodd y cais atoch.
-invitation-already-responded.button=Gorffen ac allgofnodi
+
 
 # Cannot View Invitation
 cannot-view-request.header=Ni allwch fwrw golwg dros y cais hwn
 cannot-view-request.p1=Cysylltwch â’r asiant treth a anfonodd y cais atoch os hoffech ei awdurdodi o hyd.
-cannot-view-request.button=Gorffen ac allgofnodi
 
 # Wrong Client Type
 incorrect-client-type.header=Mae problem wedi codi

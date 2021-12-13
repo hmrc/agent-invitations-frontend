@@ -20,9 +20,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.RequestCancelledPageConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: MainTemplate
+    mainTemplate: MainTemplate,
+    govukPanel: GovukPanel
 )
 
 @(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -31,13 +35,13 @@
 
 @mainTemplate(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("service.name.agents.auth")),  isAgent = true) {
 
- <div class="transaction-banner--complete with-govuk-success-colour">
-  <h1 class="transaction-banner__heading">@Messages("request-cancelled.header")</h1>
- </div>
+    @govukPanel(Panel(
+        title = Text(Messages("request-cancelled.header"))
+    ))
 
  <p>@Messages(s"request-cancelled.p1.${pageConfig.service}")</p>
 
-    <div class="panel panel-border-wide govuk-!-margin-top-6 margin-bottom-30">
+    <div class="govuk-inset-text govuk-!-margin-top-6 margin-bottom-30">
         <p>@Messages("request-cancelled.panel", pageConfig.hideClientName)</p>
     </div>
 

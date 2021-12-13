@@ -19,20 +19,22 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
     mainTemplate: MainTemplate,
-    formHelper: FormWithCSRF
+    formHelper: FormWithCSRF,
+    submitButton: SubmitButton
 )
 
 
 @(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")),
+    title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("service.name.clients")),
     isAgent = false,
     bannerTitle = Messages("service.name.clients"),
     hasTimeout = false
@@ -47,14 +49,14 @@
         <p>@Messages("warm-up.p3.personal")</p>
     }
 
-    <div class="panel panel-border-wide margin-bottom-30">@Messages("warm-up.inset", pageConfig.agentName)</div>
+    <div class="govuk-inset-text">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
     @formHelper(pageConfig.getConfirmTermsCall) {
-        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+        @submitButton(id="continueMoreInfo")
     }
 
 <div class="govuk-!-margin-top-4">
-    <a href="@pageConfig.getConfirmDeclineCall" class="button--link-style govuk-!-margin-top-4" id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</a>
+    <a href="@pageConfig.getConfirmDeclineCall" id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</a>
 </div>
 
 

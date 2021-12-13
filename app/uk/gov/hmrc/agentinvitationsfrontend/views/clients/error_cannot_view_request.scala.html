@@ -19,11 +19,16 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(clientType: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("title.suffix.client")),  isAgent = false) {
+
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("error.cannot-view-request.title"), Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages("error.cannot-view-request.header")</h1>
 
@@ -31,6 +36,10 @@
     <p>@Messages("error.cannot-view-request.p2")</p>
     <p>@Messages("error.cannot-view-request.p3", Messages(s"error.cannot-view-request.client-type.$clientType"))</p>
 
-    <a class="govuk-!-margin-top-4 button" role="button" href=@routes.ClientInvitationJourneyController.signOutAndRedirect()>@Messages("error.cannot-view-request.button")</a>
+    @linkStyledAsButton(
+        submitClass = Some("govuk-!-margin-top-4"),
+        href = routes.ClientInvitationJourneyController.signOutAndRedirect().url,
+        messageKey = "error.cannot-view-request.button"
+    )
 
 }

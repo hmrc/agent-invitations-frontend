@@ -33,27 +33,26 @@
 )
 
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")),  isAgent = false) {
+
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages("some-responses-failed.header")</h1>
 
-
-  @if(config.consents.map(_.serviceKey).length == 1){
-
-    <p>@Messages(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
-
-  } else {
-      <p>@Messages("some-responses-failed.p1")</p>
-
-      <ul class="govuk-list govuk-list--bullet">
-      @for(serviceKey <- config.consents.map(_.serviceKey)) {
-          <li>
-          @Messages(s"some-responses-failed.li.$serviceKey")
-          </li>
-
-      }
-      </ul>
-  }
+    @if(config.consents.map(_.serviceKey).length == 1){
+        <p>@Messages(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
+    } else {
+        <p>@Messages("some-responses-failed.p1")</p>
+        <ul class="govuk-list govuk-list--bullet">
+        @for(serviceKey <- config.consents.map(_.serviceKey)) {
+            <li>
+            @Messages(s"some-responses-failed.li.$serviceKey")
+            </li>
+        }
+        </ul>
+    }
 
   <p>@Messages("some-responses-failed.try-again")</p>
 

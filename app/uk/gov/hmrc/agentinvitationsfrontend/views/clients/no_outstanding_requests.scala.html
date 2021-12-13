@@ -23,7 +23,10 @@
 
 @(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("no-outstanding-requests.heading"), Messages("title.suffix.client")),  isAgent = false) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("no-outstanding-requests.heading"), Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages("no-outstanding-requests.heading")</h1>
 

@@ -18,20 +18,24 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("invitation-already-responded.header"), Messages("title.suffix.client")),
+title = Messages("generic.title", Messages("invitation-already-responded.header"), Messages("service.name.clients")),
 isAgent = false) {
 
   <h1 class="govuk-heading-xl">@Messages("invitation-already-responded.header")</h1>
 
   <p>@Messages("invitation-already-responded.description")</p>
 
-  <a class="button" role="button" href=@externalUrls.signOutUrl(false, Some(false))>@Messages("invitation-already-responded.button")</a>
+  @linkStyledAsButton(
+    href = externalUrls.signOutUrl(false, Some(false)),
+    messageKey = "finish.button"
+  )
 
 }

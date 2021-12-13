@@ -1,0 +1,40 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ *@
+
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukCheckboxes
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukCheckboxes, Checkboxes, CheckboxItem, Fieldset, Legend, Hint, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+
+@this(govukCheckboxes: GovukCheckboxes)
+
+@(
+field: Field,
+legend: String,
+legendClass: Option[String] = None,
+hint: Option[String] = None,
+headingIsLegend: Boolean = false,
+id: String,
+checkboxText: String,
+isChecked: Boolean = false
+)(implicit messages: Messages)
+
+@govukCheckboxes(Checkboxes(
+    name = field.name.toString,
+    fieldset = Some(Fieldset(
+        legend = Some(Legend(
+            content = Text(legend),
+            classes = legendClass.getOrElse("govuk-heading-m govuk-!-margin-bottom-4 govuk-!-margin-top-4"),
+            isPageHeading = false
+        ))
+    )),
+    hint = if(hint.isDefined) Some(Hint(content = Text(hint.get))) else None,
+    items = Seq(CheckboxItem(
+        content = Text(checkboxText),
+        value = "true",
+        name = Some(id),
+        id = Some(id),
+        checked = isChecked
+    ))
+).withFormField(field))

@@ -22,10 +22,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, govukPanel: GovukPanel)
 
 @(service: String, clientId: String, clientName: String, clientType: ClientType)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
 @gtmScript = {
  <script>
   window.dataLayer.push({
@@ -37,12 +41,16 @@
  </script>
 }
 
+@panelContent = {
+@displayDateForLang(Some(LocalDate.now()))
+}
+
 @mainTemplate(title = Messages("generic.title", Messages("authorisation-cancelled.header"), Messages("service.name.agents.auth")),  isAgent = true, scriptElem = Some(gtmScript)) {
 
- <div class="transaction-banner--complete with-govuk-success-colour">
-  <h1 class="transaction-banner__heading">@Messages("authorisation-cancelled.header")</h1>
-  <p class="transaction-banner__heading">@displayDateForLang(Some(LocalDate.now()))</p>
- </div>
+     @govukPanel(Panel(
+         title = Text(Messages("authorisation-cancelled.header")),
+         content = HtmlContent(s"$panelContent")
+     ))
 
     <h2>@Messages("authorisation-cancelled.subheader")</h2>
     <p>@Html(Messages(s"authorisation-cancelled.p1.$service", clientName))</p>

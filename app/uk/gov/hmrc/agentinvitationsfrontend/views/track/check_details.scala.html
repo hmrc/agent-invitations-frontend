@@ -55,9 +55,9 @@ backLinkHref = config.backLinkUrl
 
     <h1 class="govuk-heading-xl">@Messages("check-details.heading")</h1>
 
-    <p class="panel panel-border-wide">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
+    <p class="govuk-inset-text">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
 
-    <h2 class="heading-medium margin-top-40">@Messages("check-details.table.heading")</h2>
+    <h2>@Messages("check-details.table.heading")</h2>
 
     <dl class="govuk-check-your-answers cya-questions-long govuk-!-margin-bottom-6">
         <div>
@@ -126,7 +126,7 @@ backLinkHref = config.backLinkUrl
     @if(config.needClientType) {
 
         @formHelper(config.changeDetailsCall) {
-            <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
+            <button id="changeInfo" class="button--link-style govuk-body-s" type="submit">@Messages("check-details.change.link")</button>
         }
         <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 
@@ -136,7 +136,7 @@ backLinkHref = config.backLinkUrl
     }else {
         @if(config.needKnownFact) {
             @formHelper(config.changeDetailsCall) {
-                <button id="changeInfo" class="button--link-style text-link-small" type="submit">@Messages("check-details.change.link")</button>
+                <button id="changeInfo" class="button--link-style govuk-body-s" type="submit">@Messages("check-details.change.link")</button>
             }
             <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 

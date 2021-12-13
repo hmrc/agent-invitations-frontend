@@ -21,13 +21,15 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CreateNewUserIdConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
 mainTemplate: MainTemplate,
-formHelper: FormWithCSRF
+formHelper: FormWithCSRF,
+linkStyledAsButton: LinkStyledAsButton
 )
 
 
@@ -49,5 +51,7 @@ formHelper: FormWithCSRF
         <li>@Messages("new-gg-id.li2")</li>
     </ul>
     <p>@Messages("new-gg-id.p4")</p>
-            <a class="button" role="button" href=@createNewUserIdConfig.ggUrl>@Messages("continue.button")</a>
+
+    @linkStyledAsButton(href = createNewUserIdConfig.ggUrl)
+
 }

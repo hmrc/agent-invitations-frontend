@@ -20,8 +20,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukRadios, Radios, Fieldset, Legend, Text, HmrcYesNoRadioItems, Hint}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -29,34 +30,26 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
+    govukRadios: GovukRadios,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    inputRadio: InputRadios,
+    inputYesNoRadio: InputYesNoRadios,
     submitButton: SubmitButton
 )
 
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@inputHint = {
-@if(config.serviceKeys.length == 1){
-    <p id="radio-select-hint">
-    @Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)
-    </p>
-} else {
-            <div id="radio-select-hint">
-            <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
-            <ul class="govuk-list govuk-list--bullet">
-            @for(key <- config.serviceKeys) {
-                <li>@Messages(s"confirm-decline.$key.service-name")</li>
-            }
-            </ul>
-            </div>
 
+@inputHtmlHint = {
+    <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
+    <ul class="govuk-list govuk-list--bullet">
+    @for(key <- config.serviceKeys) {
+        <li>@Messages(s"confirm-decline.$key.service-name")</li>
     }
+    </ul>
 }
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("title.suffix.client")),
+title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("service.name.clients")),
 isAgent = false,
 backLinkHref = Some(config.backLink.url)
 ) {
@@ -66,31 +59,30 @@ backLinkHref = Some(config.backLink.url)
     }
 
     @formHelper(action = config.submitUrl) {
-        <div class="form-group @if(confirmDeclineForm.hasErrors){ form-field--error error-container}">
-        <fieldset id="accepted" aria-describedby="radio-select-hint @if(confirmDeclineForm.hasErrors){radio-select-error}">
-            <legend>
-                <h1 class="govuk-heading-xl">@Messages("confirm-decline.heading")</h1>
-            </legend>
-            @inputHint
-            @confirmDeclineForm.errors.map { formError => <span class="error-notification" id="radio-select-error">
-                <span class="govuk-visually-hidden">@Messages("error.prefix")</span>
-                @Messages(formError.message)
-            </span>
-            }
-            <div class="multiple-choice">
-                <input type="radio" id="accepted-true" name="accepted" value="true">
-                <label for="accepted-true">
-                    @Messages("global.yes")
-                </label>
-            </div>
-            <div class="multiple-choice">
-                <input type="radio" id="accepted-false" name="accepted" value="false">
-                <label for="accepted-false">
-                @Messages("global.no")
-                </label>
-            </div>
-        </fieldset>
-        </div>
+
+        @if(config.serviceKeys.length == 1){
+            @inputYesNoRadio(
+                field = confirmDeclineForm("accepted"),
+                legend = Messages("confirm-decline.heading"),
+                hint = Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName),
+                headingIsLegend = true
+            )
+        } else {
+            @govukRadios(Radios(
+                classes = "govuk-radios--inline",
+                hint = Some(Hint(content = HtmlContent(inputHtmlHint))),
+                fieldset = Some(Fieldset(
+                    legend = Some(Legend(
+                        content = Text(Messages("confirm-decline.heading")),
+                        isPageHeading = true,
+                        classes = "govuk-fieldset__legend--xl"
+                    ))
+                )),
+                items = HmrcYesNoRadioItems
+                ).withFormField(confirmDeclineForm("accepted"))
+            )
+        }
+
         @submitButton()
     }
 }

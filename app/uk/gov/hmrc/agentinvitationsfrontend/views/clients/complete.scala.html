@@ -19,8 +19,11 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CompletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, govukPanel: GovukPanel)
 
 @(config: CompletePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -47,13 +50,18 @@
 }
 
 
-@mainTemplate(bannerTitle = Messages("service.name.clients"), title = Messages("generic.title", Messages("client-complete.header"), Messages("title.suffix.client")),  isAgent = false, completedInviteGoSurvey = Some(true), scriptElem = Some(gtmScript)) {
+@mainTemplate(
+bannerTitle = Messages("service.name.clients"),
+title = Messages("generic.title", Messages("client-complete.header"), Messages("service.name.clients")),
+isAgent = false,
+completedInviteGoSurvey = Some(true),
+scriptElem = Some(gtmScript)
+) {
 
-        <div class="transaction-banner--complete with-govuk-success-colour">
-            <h1 class="transaction-banner__heading">@Messages("client-complete.multi.header")</h1>
-            <p>@Messages("client-complete.multi.header.p", config.agencyName)</p>
-        </div>
-
+    @govukPanel(Panel(
+        title = Text(Messages("client-complete.multi.header")),
+        content = Text(Messages("client-complete.multi.header.p", config.agencyName))
+    ))
 
     <h2>@Messages("client-complete.p.title")</h2>
     @if(config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
@@ -71,7 +79,7 @@
 
     <p>@Html(Messages("client-complete.whatHappensNext.p1", externalUrls.agentClientManagementUrl))</p>
 
-    <ul class="list-bullet">
+    <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("client-complete.whatHappensNext.l1")</li>
         <li>@Messages("client-complete.whatHappensNext.l2")</li>
     </ul>
@@ -84,5 +92,7 @@
         })</p>
     }
 
-    <a class="text-link-small" href=@externalUrls.signOutUrl(false, None)>@Messages("client-complete.sign-out")</a>
+    <p class="govuk-body-s">
+        <a href=@externalUrls.signOutUrl(false, None)>@Messages("finish.button")</a>
+    </p>
 }

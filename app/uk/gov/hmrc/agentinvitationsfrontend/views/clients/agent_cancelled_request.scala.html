@@ -23,7 +23,11 @@
 
 @(serviceMessageKey: String, cancelledOn: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages(s"generic.title", Messages("agent-cancelled-request.header"), Messages("title.suffix.client")),  isAgent = false) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages(s"generic.title", Messages("agent-cancelled-request.header"),
+Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages("agent-cancelled-request.header")</h1>
 

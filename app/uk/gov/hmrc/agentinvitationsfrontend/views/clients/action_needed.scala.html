@@ -19,56 +19,64 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukDetails, Details, HtmlContent, Text}
 
-@this(mainTemplate: MainTemplate)
+@this(
+    mainTemplate: MainTemplate,
+    linkStyledAsButton: LinkStyledAsButton,
+    govukDetails: GovukDetails
+)
 
 @(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("action-needed.header"), Messages("title.suffix.client")),  isAgent = false) {
+@detailsContent = {
+<p>@Messages("action-needed.details.p1", Messages("action-needed.vat.link-text"))</p>
+<p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-needed.vat.link-text" )))))</p>
+}
+
+@personalClientContent = {
+<p>@Messages("action-needed.details.p1", Messages("action-needed.itsa.link-text"))</p>
+<p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlSaNew, Messages("action-needed.itsa.link-text")))))</p>
+}
+
+@otherClientContent = {
+<p>@Messages("action-needed.details.ters.p1")</p>
+<p>@Messages("action-needed.details.ters.p2")</p>
+}
+
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("action-needed.header"), Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages("action-needed.header")</h1>
 
-    <div class="form-group">
-        <details>
-            <summary>
-                <span class="summary">@Messages("action-needed.summary", Messages("action-needed.vat"))</span>
-            </summary>
-            <div class="panel panel-border-narrow" aria-hidden="true">
-                <p>@Messages("action-needed.details.p1", Messages("action-needed.vat.link-text"))</p>
-                <p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-needed.vat.link-text" )))))</p>
-            </div>
-        </details>
-    </div>
+    @govukDetails(Details(
+        summary = Text(Messages("action-needed.summary", Messages("action-needed.vat"))),
+        content = HtmlContent(s"$detailsContent")
+    ))
+
     @if(clientType == ClientType.Personal) {
 
-        <div class="form-group">
-            <details>
-                <summary>
-                    <span class="summary">@Messages("action-needed.summary", Messages("action-needed.itsa"))</span>
-                </summary>
-                <div class="panel panel-border-narrow" aria-hidden="true">
-                    <p>@Messages("action-needed.details.p1", Messages("action-needed.itsa.link-text"))</p>
-                    <p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlSaNew, Messages("action-needed.itsa.link-text")))))</p>
-                </div>
-            </details>
-        </div>
+        @govukDetails(Details(
+            summary = Text(Messages("action-needed.summary", Messages("action-needed.itsa"))),
+            content = HtmlContent(s"$personalClientContent")
+        ))
+
     } else {
 
-        <div class="form-group">
-            <details>
-                <summary>
-                    <span class="summary">@Messages("action-needed.summary", Messages("action-needed.ters"))</span>
-                </summary>
-                <div class="panel panel-border-narrow" aria-hidden="true">
-                    <p>@Messages("action-needed.details.ters.p1")</p>
-                    <p>@Messages("action-needed.details.ters.p2")</p>
-                </div>
-            </details>
-        </div>
+        @govukDetails(Details(
+            summary = Text(Messages("action-needed.summary", Messages("action-needed.ters"))),
+            content = HtmlContent(s"$otherClientContent")
+        ))
 
     }
 
-    <a href=@externalUrls.signOutUrl(false, Some(false)) class="button" role="button">@Messages("invitation-already-responded.button")</a>
-
+    @linkStyledAsButton(
+        id = "start-again",
+        href = externalUrls.signOutUrl(false, Some(false)),
+        messageKey = "finish.button"
+    )
 
 }

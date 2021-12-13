@@ -25,7 +25,10 @@
 
 @(serviceMessageKey: String, clientType: String, eventDate: String, errorCase: AuthRequestErrorCase)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase")), Messages("title.suffix.client")),  isAgent = false) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase")), Messages("service.name.clients")),
+isAgent = false) {
 
     <h1 class="govuk-heading-xl">@Messages(s"error.authorisation-request-error-template.header", Messages(s"error.authorisation-request-error-template.header.$errorCase"))</h1>
 

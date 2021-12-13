@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SuspendedAgentPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -28,10 +29,12 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF
+    formHelper: FormWithCSRF,
+    submitButton: SubmitButton
 )
 
 @(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
 @pageBody = {
 @if(pageConfig.isOneSuspendedService) {
     <p>
@@ -48,7 +51,10 @@
     <p>@Messages("suspended-agent.p2")</p>
 }
 
-@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("title.suffix.client")),  isAgent = false) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("service.name.clients")),
+isAgent = false) {
 
     @if(pageConfig.isAllSuspended) {
         <h1 class="govuk-heading-xl">@Messages("suspended-agent.all.header")</h1>
@@ -69,9 +75,7 @@
             <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
 
         @formHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
-            <div class="form-group">
-                <button class="button" type="submit" id="continueFromSuspendedAgent">@Messages("continue.button")</button>
-            </div>
+            @submitButton(id="continueFromSuspendedAgent")
         }
     }
 }

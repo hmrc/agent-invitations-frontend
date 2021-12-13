@@ -35,7 +35,9 @@
 
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("title.suffix.client")),  isAgent = true) {
+@mainTemplate(
+title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("service.name.clients")),
+isAgent = true) {
 
     <h1 class="govuk-heading-xl">@Messages("create-auth-failed.header")</h1>
 

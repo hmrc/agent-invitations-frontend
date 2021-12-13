@@ -19,21 +19,28 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.InvitationDeclinedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate,
+linkStyledAsButton: LinkStyledAsButton,
+govukPanel: GovukPanel)
 
 @(config: InvitationDeclinedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     bannerTitle = "service.name.clients",
-    title = Messages("generic.title", Messages("invitation-declined.header"), Messages("title.suffix.client")),
+    title = Messages("generic.title", Messages("invitation-declined.header"), Messages("service.name.clients")),
     isAgent = false,
     completedInviteGoSurvey = Some(true)
 ) {
 
-      <div class="transaction-banner--complete with-govuk-success-colour">
-          <h1 class="transaction-banner__heading">@Messages("invitation-declined.header")</h1>
-      </div>
+
+    @govukPanel(Panel(
+        title = Text(Messages("invitation-declined.header"))
+    ))
 
         @if(config.serviceKeys.length == 1) {
             <p>@Messages(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName)</p>
@@ -46,9 +53,14 @@
             </ul>
         }
 
-        <a class="button govuk-!-margin-top-4 govuk-!-margin-bottom-4" href="@externalUrls.signOutUrl(false, None)" id="continue" role="button">@Messages(s"invitation-declined.sign-out.button")</a>
+        @linkStyledAsButton(
+            submitClass = Some("govuk-!-margin-top-4 govuk-!-margin-bottom-4")
+            id="continue",
+            href = externalUrls.signOutUrl(false, None),
+            messageKey = "finish.button"
+        )
 
-        <h2 class="heading-small">@Messages("invitation-declined.sub-header")</h2>
+        <h2 class="govuk-heading-s">@Messages("invitation-declined.sub-header")</h2>
 
         <p>@Messages("invitation-declined.p3")</p>
 }
