@@ -281,6 +281,36 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         AgentSuspended(HMRCMTDIT, emptyBasket),
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
+
+    "redirect to agent suspended if the agent is suspended for all services with AGSV" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("AGSV"))))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
+
+    "redirect to agent suspended if the agent is suspended for all services with ALL" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
   }
 
   "POST /agents/select-business-service" should {
