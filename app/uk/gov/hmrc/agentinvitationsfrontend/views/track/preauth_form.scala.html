@@ -35,8 +35,7 @@
 
 @formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
-    'id -> s"postToConfirmCancel-$index",
-    'class -> "form js-form"
+    'id -> s"postToConfirmCancel-$index"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientType" id="clientTypeConfirmCancel-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">

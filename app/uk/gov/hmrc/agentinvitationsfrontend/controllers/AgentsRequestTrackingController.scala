@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
+import play.api.i18n.Messages
 import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
@@ -99,7 +100,8 @@ class AgentsRequestTrackingController @Inject()(
 
   private def trackPageConfig(page: Int, agent: AuthorisedAgent, client: Option[String], status: Option[FilterFormStatus])(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) = {
+    ec: ExecutionContext,
+    messages: Messages) = {
     val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(

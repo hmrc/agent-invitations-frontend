@@ -49,7 +49,7 @@ isAgent = true) {
         <p>@Html(Messages("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
         @linkStyledAsButton(
             id = "continue",
-            href = routes.AgentInvitationJourneyController.showReviewAuthorisations
+            href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url
         )
     }
 

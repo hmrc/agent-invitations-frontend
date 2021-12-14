@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -30,7 +30,7 @@
     govukErrorSummary: GovukErrorSummary,
     govukDetails: GovukDetails,
     formHelper: FormWithCSRF,
-    inputRadio: InputRadios,
+    inputYesNoRadios: InputYesNoRadios,
     submitButton: SubmitButton
 )
 
@@ -53,13 +53,13 @@ backLinkHref = Some(config.backLink)
     @formHelper(action = config.submitCall) {
 
         @inputYesNoRadios(
-            field = choiceForm("accepted",
+            field = choiceForm("accepted"),
             legend = Messages(config.selectSingleHeaderMessage),
             headingIsLegend = true
         )
 
         @govukDetails(Details(
-            id = "selectServiceHelper"
+            id = Some("selectServiceHelper"),
             summary = Text(Messages("select-service.alternative")),
             content = HtmlContent(s"$detailsContent")
         ))

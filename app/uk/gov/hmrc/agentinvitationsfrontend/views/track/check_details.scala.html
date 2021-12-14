@@ -19,8 +19,10 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Confirmation}
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CheckDetailsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton, CheckAnswersRow}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -30,17 +32,31 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    checkAnswersRow: CheckAnswersRow,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
-@(confirmForm: Form[Confirmation], config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
+@(confirmForm: Form[Confirmation],
+config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
+@postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
 @postcodeSpace = @{
     if(config.fastTrackRequest.knownFact.get.replaceAll(" ", "").length == 6) 3
     else 4
+}
+
+@knownFactAnswer = {
+    @if(config.fastTrackRequest.service == "HMRC-MTD-IT") {
+        @if(config.fastTrackRequest.knownFact.get.matches(postcodeRegex)) {
+        @config.fastTrackRequest.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
+        } else {
+        @config.fastTrackRequest.knownFact.get
+        }
+    } else {
+    @displayDateForLangFromString(config.fastTrackRequest.knownFact.get)
+    }
 }
 
 @mainTemplate(
@@ -59,107 +75,75 @@ backLinkHref = config.backLinkUrl
 
     <h2>@Messages("check-details.table.heading")</h2>
 
-    <dl class="govuk-check-your-answers cya-questions-long govuk-!-margin-bottom-6">
-        <div>
-            @if(config.fastTrackRequest.clientType.nonEmpty){
-            <dt class="cya-question">
-                @Messages("check-details.client-type")
-            </dt>
-            <dd class="cya-answer" id="client-type">
-                @{config.fastTrackRequest.clientType match {
-                    case Some(ClientType.Personal) => Messages("check-details.client-type.personal")
-                    case Some(ClientType.Business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
-                    case Some(ClientType.Business) => Messages(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
-                    case _ => throw new IllegalArgumentException("client type not found")
-                }}
-            </dd>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+        @if(config.fastTrackRequest.clientType.nonEmpty){
+            @checkAnswersRow(
+                key = Messages("check-details.client-type"),
+                valueId = "client-type",
+                value = config.fastTrackRequest.clientType match {
+                        case Some(ClientType.Personal) => Messages("check-details.client-type.personal")
+                        case Some(ClientType.Business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
+                        case Some(ClientType.Business) => Messages(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
+                        case _ => throw new IllegalArgumentException("client type not found")
+                }
+            )
+        }
+
+        @checkAnswersRow(
+            key = config.fastTrackRequest.clientIdentifierType match {
+                case "ni" => Messages("check-details.nino")
+                case "vrn" => Messages("check-details.vrn")
+                case "utr" => Messages("check-details.utr")
+                case "urn" => Messages("check-details.urn")
+                case "CGTPDRef" => Messages("check-details.cgt")
+                case "EtmpRegistrationNumber" => Messages("check-details.ppt")
+                case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
+            },
+            valueId = "client-identifier",
+            value = config.fastTrackRequest.service match {
+                case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" | "HMRC-PPT-ORG" => config.fastTrackRequest.clientIdentifier
+                case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
             }
-        </div>
-        <div>
-            <dt class="cya-question">
-                @{config.fastTrackRequest.clientIdentifierType match {
-                    case "ni" => Messages("check-details.nino")
-                    case "vrn" => Messages("check-details.vrn")
-                    case "utr" => Messages("check-details.utr")
-                    case "urn" => Messages("check-details.urn")
-                    case "CGTPDRef" => Messages("check-details.cgt")
-                    case "EtmpRegistrationNumber" => Messages("check-details.ppt")
-                    case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
-                }}
-            </dt>
-            <dd class="cya-answer" id="client-identifier">
-                @{config.fastTrackRequest.service match {
-                    case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" | "HMRC-PPT-ORG" => config.fastTrackRequest.clientIdentifier
-                    case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
-                }}
-            </dd>
-        </div>
+        )
+
         @if(config.showKnownFact) {
-            <div>
-                <dt class="cya-question">
-                @{
-                    config.fastTrackRequest.service match {
-                        case "HMRC-MTD-IT" => Messages("check-details.postcode")
-                        case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
-                        case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
-                        case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
-                        case "HMRC-CGT-PD" => Messages("check-details.cgtRef")
-                        case "HMRC-PPT-ORG" => Messages("check-details.ppt-reg-date")
-                    }
-                }
-                </dt>
-                <dd class="cya-answer" id="known-fact">
-                @if(config.fastTrackRequest.service == "HMRC-MTD-IT") {
-                    @if(config.fastTrackRequest.knownFact.get.matches(postcodeRegex)) {
-                        @config.fastTrackRequest.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
-                    }else{
-                        @config.fastTrackRequest.knownFact.get
-                    }
-                } else {
-                    @displayDateForLangFromString(config.fastTrackRequest.knownFact.get)
-                }
-                </dd>
-            </div>
+            @checkAnswersRow(
+                key = config.fastTrackRequest.service match {
+                    case "HMRC-MTD-IT" => Messages("check-details.postcode")
+                    case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
+                    case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
+                    case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
+                    case "HMRC-CGT-PD" => Messages("check-details.cgtRef")
+                    case "HMRC-PPT-ORG" => Messages("check-details.ppt-reg-date")
+                },
+                valueId = "known-fact",
+                value = knownFactAnswer.toString
+            )
         }
     </dl>
 
-    @if(config.needClientType) {
-
-        @formHelper(config.changeDetailsCall) {
-            <button id="changeInfo" class="button--link-style govuk-body-s" type="submit">@Messages("check-details.change.link")</button>
-        }
+    @if(config.needClientType || config.needKnownFact) {
+        <a href="@config.changeDetailsCall.url" id="changeInfo" class="govuk-body-s">@Messages("check-details.change.link")</a>
         <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 
-      @formHelper(config.clientTypeUrl) {
-          <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
-      }
-    }else {
-        @if(config.needKnownFact) {
-            @formHelper(config.changeDetailsCall) {
-                <button id="changeInfo" class="button--link-style govuk-body-s" type="submit">@Messages("check-details.change.link")</button>
-            }
-            <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
-
-          @formHelper(config.knownFactUrl){
-            <button id="continueMoreInfo" type="submit">@Messages("continue.button")</button>
-            }
-
-        } else {
-
-            @formHelper(config.submitFormCall, 'class -> "govuk-!-margin-top-6") {
-
-                @uiInputRadioGroup(
-                    confirmForm("accepted"),
-                    Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))),
-                    '_legend -> Html("""<h1 class="heading-medium flush--top">""" + Messages("confirm-details.sub-header") + """</h1>"""),
-                    '_groupDivClass -> "form-group soft--ends",
-                    '_fieldsetAttributes -> Html("""id='checkDetails'"""),
-                '_errorPrefix -> Messages("error.prefix")
-                )
-
-                <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
-            }
+        @formHelper(config.clientTypeUrl) {
+            @submitButton(id="continueMoreInfo")
         }
+    } else {
+
+        @formHelper(config.submitFormCall, 'class -> "govuk-!-margin-top-6") {
+
+            @inputRadio(
+                field = confirmForm("accepted"),
+                legend = Messages("confirm-details.sub-header"),
+                legendClass = Some("govuk-fieldset__legend--m"),
+                headingIsLegend = false,
+                inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))))
+            )
+
+            @submitButton(id="continueMoreInfo")
+        }
+
     }
 
 

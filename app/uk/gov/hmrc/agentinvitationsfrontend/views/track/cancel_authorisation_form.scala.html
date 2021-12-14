@@ -33,8 +33,7 @@
 
 @formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
-    'id -> s"cancelAuthorisation-$index",
-    'class -> "form js-form"
+    'id -> s"cancelAuthorisation-$index"
 ) {
     <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientId" id="clientId-@{index}" value="@{invitationOrRelationship.clientId}">
@@ -43,7 +42,7 @@
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId.getOrElse("")}">
     <input type="hidden" name="status" id="status-@{index}" value="@invitationOrRelationship.status">
     <button class="button--link-style" type="submit" id="resendRequest-@{index}" onclick="">
-        <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
+    <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
     <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}.aria-text", invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
 }

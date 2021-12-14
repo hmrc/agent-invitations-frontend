@@ -24,9 +24,9 @@
 valueId: String,
 key: String,
 value: String,
-actionText: Option[String],
-actionHref: Option[String],
-hiddenActionText: Option[String]
+actionText: Option[String] = None,
+actionHref: Option[String] = None,
+hiddenActionText: Option[String] = None
 )(implicit messages: Messages)
 
 <div class="govuk-summary-list__row">

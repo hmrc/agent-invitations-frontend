@@ -22,7 +22,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukRadios, Radios, Fieldset, Legend, Text, HmrcYesNoRadioItems, Hint}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukRadios, Radios, Fieldset, Legend, Text, HtmlContent, Hint}
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcYesNoRadioItems
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -64,7 +65,7 @@ backLinkHref = Some(config.backLink.url)
             @inputYesNoRadio(
                 field = confirmDeclineForm("accepted"),
                 legend = Messages("confirm-decline.heading"),
-                hint = Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName),
+                hint = Some(Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)),
                 headingIsLegend = true
             )
         } else {
@@ -78,7 +79,7 @@ backLinkHref = Some(config.backLink.url)
                         classes = "govuk-fieldset__legend--xl"
                     ))
                 )),
-                items = HmrcYesNoRadioItems
+                items = HmrcYesNoRadioItems()
                 ).withFormField(confirmDeclineForm("accepted"))
             )
         }

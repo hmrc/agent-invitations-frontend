@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.Relationship
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.InputText
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -27,7 +28,7 @@
 @this(
     mainTemplate: MainTemplate,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input
+inputText: InputText
 )
 
 @(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -35,25 +36,25 @@
     <h1>Test Only: Create a relationship</h1>
     @formHelper(routes.TestEndpointsController.submitCreateRelationship()) {
         <fieldset class="govuk-fieldset">
-            <div class="form-group">
-               @uiInput(
-                    dRForm("arn"),
-                    '_label -> "Arn"
-                )
-                <p>&nbsp;</p>
-               @uiInput(
-                    dRForm("service"),
-                    '_label -> "Service"
-                )
-                <p>&nbsp;</p>
-               @uiInput(
-                    dRForm("clientId"),
-                    '_label -> "Client ID"
-                )
-            </div>
+            @inputText(
+            field = dRForm("arn"),
+            label = "Arn",
+            inputClass = Some("govuk-input--width-20")
+            )
+
+            @inputText(
+            field = dRForm("service"),
+            label = "Service",
+            inputClass = Some("govuk-input--width-20")
+            )
+
+            @inputText(
+            field = dRForm("clientId"),
+            label = "Client ID",
+            inputClass = Some("govuk-input--width-20")
+            )
         </fieldset>
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">Create</button>
-        </div>
+
+        <button class="govuk-button" type="submit" id="continue">Create</button>
     }
 }

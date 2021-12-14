@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
@@ -62,11 +63,11 @@ config: SelectServicePageConfig
             legend = config.selectHeaderMessage,
             headingIsLegend = true,
             hint = Some(Messages("select-service.p1")),
-            inputs = mapToRadioItems(config.availableServices)
+            inputs = mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices)
         )
 
         @govukDetails(Details(
-            id = "selectServiceHelper"
+            id = Some("selectServiceHelper"),
             summary = Text(Messages("select-service.alternative")),
             content = HtmlContent(s"$detailsContent")
         ))

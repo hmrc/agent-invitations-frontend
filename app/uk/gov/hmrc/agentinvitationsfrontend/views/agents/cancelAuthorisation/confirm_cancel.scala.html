@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, GovukInsetText, InsetText, RadioItem}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -30,6 +30,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
+    govukInsetText: GovukInsetText,
     formHelper: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton
@@ -60,11 +61,20 @@
             @inputRadio(
                 field = choiceForm("accepted"),
                 legend = Messages("cancel-authorisation.confirm-cancel.header"),
-                legendClass = "govuk-visually-hidden"
+                legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
                 hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
                 inline = true,
-                inputs = getYesNoStartOverRadioItems()
+                inputs = Seq(
+                    RadioItem(
+                        content = Text(Messages("global.yes")),
+                        value = Some("true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("global.no-start-over")),
+                        value = Some("false")
+                    )
+                )
             )
 
         } else {
@@ -75,10 +85,20 @@
                 headingIsLegend = true,
                 hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
                 inline = true,
-                inputs = getYesNoStartOverRadioItems()
+                inputs = Seq(
+                    RadioItem(
+                        content = Text(Messages("global.yes")),
+                        value = Some("true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("global.no-start-over")),
+                        value = Some("false")
+                    )
+                )
             )
 
         }
+
         @submitButton()
     }
 }

@@ -1014,7 +1014,6 @@ authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfe
 authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
 authorisation-cancelled.check-sa.l2=mewngofnodi i’ch cyfrif gwasanaethau ar-lein CThEM ar gyfer asiantau
-authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
 authorisation-cancelled.check-sa.l3=dilyn y cyfarwyddiadau ar gyfer dileu’r cleient oddi ar eich rhestr o gleientiaid
 authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar am awdurdodiad
 

@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 @import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_prefix, MainTemplate}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -31,8 +32,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    inputText: InputText
 )
 
 @(fastTrackForm: Form[AgentFastTrackRequest], isDev: Boolean)(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -50,44 +50,44 @@
 
   @formHelper(action = Call("POST", postToInvitations)) {
     <fieldset class="govuk-fieldset">
-      <div class="form-group">
-       @uiInput(
-          fastTrackForm("clientType"),
-          '_label -> "Enter Client Type",
-          '_inputClass -> "input--medium input--cleared")
-
-       @uiInput(
-          fastTrackForm("service"),
-          '_label -> "Enter Service",
-          '_inputClass -> "input--medium input--cleared"
-        )
-       @uiInput(
-          fastTrackForm("clientIdentifier"),
-          '_label -> "Enter ClientId",
-          '_inputClass -> "input--medium input--cleared"
-        )
-
-       @uiInput(
-          fastTrackForm("clientIdentifierType"),
-          '_label -> "Enter ClientIdType",
-          '_inputClass -> "input--medium input--cleared"
-        )
-
-         @uiInput(
-          fastTrackForm("knownFact"),
-          '_label -> "Enter Known Fact",
-          '_inputClass -> "input--medium input--cleared"
-        )
+          @inputText(
+              field = fastTrackForm("clientType"),
+              label = "Enter Client Type",
+              labelClass = Some("govuk-label--s"),
+              inputClass = Some("govuk-input--width-20")
+          )
+          @inputText(
+              field = fastTrackForm("service"),
+              label = "Enter Service",
+              labelClass = Some("govuk-label--s"),
+              inputClass = Some("govuk-input--width-20")
+          )
+          @inputText(
+              field = fastTrackForm("clientIdentifier"),
+              label = "Enter ClientId",
+              labelClass = Some("govuk-label--s"),
+              inputClass = Some("govuk-input--width-20")
+          )
+          @inputText(
+              field = fastTrackForm("clientIdentifierType"),
+              label = "Enter ClientIdType",
+              labelClass = Some("govuk-label--s"),
+              inputClass = Some("govuk-input--width-20")
+          )
+          @inputText(
+              field = fastTrackForm("knownFact"),
+              label = "Enter Known Fact",
+              labelClass = Some("govuk-label--s"),
+              inputClass = Some("govuk-input--width-20")
+          )
 
           @Html("""<p>""" + "Client Types: personal / business" + """</p>""")
 
           @Html("""<p>""" + "Client Id Types: ni / vrn/ CGTPDRef" + """</p>""")
 
           @Html("""<p>""" + "Example Postcode: DH14EJ" + """</p>""" + """<p>""" + "Example Date: 1991-09-13" + """</p>""")
-      </div>
     </fieldset>
-    <div class="form-group">
-      <button class="button" type="submit" id="continue">Create</button>
-    </div>
+
+    <button class="govuk-button" type="submit" id="continue">Create</button>
   }
 }

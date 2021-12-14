@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmTermsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{SubmitButton, InputSingleCheckbox}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -31,8 +32,8 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    submitButton: SubmitButton,
+    inputSingleCheckbox: InputSingleCheckbox
 )
 
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig, changingConsent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -221,33 +222,42 @@ backLinkHref = Some(pageConfig.backLink.url)
     <p>@Html(Messages("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
 
     @formHelper(pageConfig.submitUrl) {
-        <fieldset class="govuk-fieldset">
-            <legend class="govuk-visually-hidden">
-                @if(pageConfig.isSingleConsent)@{Messages("confirm-terms.legend.single",pageConfig.agencyName)} else{
-                @Messages("confirm-terms.legend.multi",pageConfig.agencyName)
-                }
-            </legend>
-
-            @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
-
-                @if(pageConfig.isPending(consent)) {
-
-                    <h2 class="govuk-!-margin-bottom-4 govuk-!-margin-top-4">@Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading")</h2>
-
-                        @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
-                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
-                            @custom_check_box(confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                                '_label -> label(consent.serviceKey),
-                                '_value -> "true")
-                        } else {
-                            @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
-                            @custom_check_box(confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
-                                '_label -> label(consent.serviceKey)
-                        }
-                    <hr class="govuk-section-break govuk-section-break--visible">
-                }
+    <fieldset class="govuk-fieldset">
+        <legend class="govuk-visually-hidden">
+            @if(pageConfig.isSingleConsent)@{Messages("confirm-terms.legend.single",pageConfig.agencyName)} else{
+            @Messages("confirm-terms.legend.multi",pageConfig.agencyName)
             }
-        </fieldset>
-        @submitButton()
+        </legend>
+
+        @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
+
+            @if(pageConfig.isPending(consent)) {
+
+                <h2 class="govuk-!-margin-bottom-4 govuk-!-margin-top-4">@Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading")</h2>
+
+                    @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
+                        @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
+                        @inputSingleCheckbox(
+                            field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
+                            legend = Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading"),
+                            id = consent.serviceKey,
+                            checkboxText = label(consent.serviceKey),
+                            isChecked = true
+                        )
+                    } else {
+                        @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
+                        @inputSingleCheckbox(
+                            field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
+                            legend = Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading"),
+                            id = consent.serviceKey,
+                            checkboxText = label(consent.serviceKey)
+                        )
+                    }
+                <hr class="govuk-section-break govuk-section-break--visible">
+            }
+        }
+    </fieldset>
+    @submitButton()
     }
+
 }

@@ -19,12 +19,30 @@
 
 @this(button: GovukButton)
 
-@(id: String = "continue", messageKey: String = "continue.button", submitClass: Option[String] = None)(implicit messages: Messages)
+@(
+ submitId: String = "filter-button",
+ submitValue: String = "filter",
+ submitMsgKey: String = "recent-invitations.filter.filter.button",
+ secondId: String = "clear-button",
+ secondValue: String = "clear",
+ secondMsgKey: String = "recent-invitations.filter.clear.button",
+ name: String = "filter"
+)(implicit messages: Messages)
 
-
+<div class="govuk-button-group govuk-!-margin-bottom-7">
 @button(Button(
-    attributes = Map("id" -> s"${id}"),
-    classes = s"${submitClass.getOrElse("")}",
+    attributes = Map("id" -> s"${submitId}"),
+    content = Text(messages(submitMsgKey)),
     inputType = Some("submit"),
-    content = Text(messages(messageKey))
+    name = Some(name),
+    value = Some(submitValue)
 ))
+@button(Button(
+    attributes = Map("id" -> s"${secondId}"),
+    classes = "govuk-button--secondary",
+    content = Text(messages(secondMsgKey)),
+    inputType = Some("submit"),
+    name = Some(name),
+    value = Some(secondValue)
+))
+</div>

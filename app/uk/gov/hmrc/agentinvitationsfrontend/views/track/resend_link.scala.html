@@ -36,21 +36,20 @@ completedInviteGoSurvey = Some(true),
 backLinkHref = Some(config.backLinkUrl)
 ) {
 
+    <h1 class="govuk-heading-xl">@Messages("resend-link.header")</h1>
 
-  <h1 class="govuk-heading-xl">@Messages("resend-link.header")</h1>
-
-    <ol class="govuk-list govuk-list--number margin-left-0 govuk-!-margin-bottom-4">
+    <ol class="govuk-list govuk-list--number govuk-list--spaced">
         @if(config.step1Instructions.isDefined){
-            <li class="govuk-!-margin-bottom-4">@config.step1Instructions.get</li>
+            <li>@config.step1Instructions.get</li>
         }
 
-        <li class="govuk-!-margin-bottom-4">
+        <li>
             <p>@Messages("invitation-sent.link-text")</p>
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
-        <li class="govuk-!-margin-bottom-4">@Messages("invitation-sent.select-link")</li>
-        <li class="govuk-!-margin-bottom-4">
+        <li>@Messages("invitation-sent.select-link")</li>
+        <li>
             <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail)</p>
 
             <div class="govuk-warning-text">
@@ -60,11 +59,11 @@ backLinkHref = Some(config.backLinkUrl)
         </li>
     </ol>
 
-            <h2>@Messages("invitation-sent.further-help.heading")</h2>
-            <p>@Messages("invitation-sent.further-help.p")</p>
-            <ul class="govuk-list govuk-list--bullet">
-                <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" class="form-field-group" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
-                <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
-            </ul>
+    <h2>@Messages("invitation-sent.further-help.heading")</h2>
+    <p>@Messages("invitation-sent.further-help.p")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
+        <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
+    </ul>
 
 }

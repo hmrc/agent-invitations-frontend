@@ -1,3 +1,25 @@
+/*
+Taken to preserve existing behaviour on the track page
+Link Style
+Make a button appear like a link
+Markup:
+<button class="button--link-style">Button text</button>
+Styleguide Buttons.Link Style
+*/
+
+.button--link-style {
+  @extend .govuk-link;
+  background: none;
+  box-shadow: none;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background: none;
+  }
+}
+
+
 // for the invitation sent url
 .word-wrap {
     white-space: pre-line;

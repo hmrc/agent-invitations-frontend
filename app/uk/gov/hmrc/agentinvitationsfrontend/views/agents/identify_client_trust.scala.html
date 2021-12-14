@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukInput, Input, Label, Hint}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -30,6 +31,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukDetails: GovukDetails,
+    govukInput: GovukInput,
     formHelper: FormWithCSRF,
     inputText: InputText,
     submitButton: SubmitButton
@@ -71,23 +73,40 @@ backLinkHref = Some(backLinkUrl)
 
         @if(showUrnEnabledContent) {
             @govukDetails(Details(
-                id = "identifyTrustHelper"
+                id = Some("identifyTrustHelper"),
                 summary = Text(Messages("identify-trust-alternative")),
                 content = HtmlContent(s"$detailsContent")
             ))
+
+            @inputText(
+                field = trustClientForm("taxId"),
+                label = Messages(s"identify-trust-client.header.$showUrnEnabledContent"),
+                labelClass = Some("govuk-visually-hidden"),
+                labelAsHeading = false,
+                hint = Some(Messages(s"identify-trust-client.p2.$showUrnEnabledContent")),
+                inputClass = Some("govuk-input--width-10")
+            )
+
+        } else {
+
+            @govukInput(Input(
+                label = Label(
+                    isPageHeading = false,
+                    classes = "govuk-visually-hidden",
+                    content = Text(Messages(s"identify-trust-client.header.$showUrnEnabledContent"))
+                ),
+                hint = Some(Hint(
+                    content = HtmlContent(Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent")))
+                )),
+                spellcheck = Some(false),
+                inputmode = Some("numeric"),
+                pattern = Some("[0-9]*"),
+                classes = "govuk-input--width-10"
+            ).withFormField(trustClientForm("taxId")))
+
         }
 
-        @inputText(
-            field = trustClientForm("taxId"),
-            label = Messages(s"identify-trust-client.header.$showUrnEnabledContent"),
-            labelClass = Some("govuk-visually-hidden"),
-            labelAsHeading = false,
-            hint = Some(Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent"))),
-            inputClass = Some("govuk-input--width-10")
-        )
-
         @submitButton()
-
 
     }
 }

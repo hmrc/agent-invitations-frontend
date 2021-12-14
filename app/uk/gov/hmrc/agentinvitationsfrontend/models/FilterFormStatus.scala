@@ -25,20 +25,21 @@ trait FilterFormStatus {
 object FilterFormStatus {
 
   case object AllStatuses extends FilterFormStatus {
-    override val filterForStatus = (_: TrackInformationSorted) => true
+    override val filterForStatus: TrackInformationSorted => Boolean = (_: TrackInformationSorted) => true
   }
   case object ExpireInNext5Days extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) =>
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) =>
       i.status == "Pending" && i.expiryDate.fold(false)(_.minusDays(5).isBefore(DateTime.now()))
   }
   case object ActivityWithinLast5Days extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.dateTime.fold(false)(_.plusDays(5).isAfter(DateTime.now()))
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) =>
+      i.dateTime.fold(false)(_.plusDays(5).isAfter(DateTime.now()))
   }
   case object ClientNotYetResponded extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Pending"
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "Pending"
   }
   case object AgentCancelledAuthorisation extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) =>
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) =>
       // need to temporarily (until 1/11?) include not client nor hmrc as only recently cancelled auth requests include the endedBy field
       (i.status ==
         "AcceptedThenCancelledByAgent") ||
@@ -46,19 +47,19 @@ object FilterFormStatus {
           .getOrElse("") == "Client" || i.relationshipEndedBy.getOrElse("") == "HMRC"))
   }
   case object DeclinedByClient extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Rejected"
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "Rejected"
   }
   case object AcceptedByClient extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Accepted" && !i.isRelationshipEnded
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "Accepted" && !i.isRelationshipEnded
   }
   case object Expired extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "Expired"
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "Expired"
   }
   case object ClientCancelledAuthorisation extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByClient"
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByClient"
   }
   case object HMRCCancelledAuthorisation extends FilterFormStatus {
-    override val filterForStatus = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByHMRC"
+    override val filterForStatus: TrackInformationSorted => Boolean = (i: TrackInformationSorted) => i.status == "AcceptedThenCancelledByHMRC"
   }
 
   def optionalToEnum: Option[String] => Option[FilterFormStatus] = {

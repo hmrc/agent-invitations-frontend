@@ -37,15 +37,15 @@
         invitationOrRelationship.clientType}">
     <input type="hidden" name="expiryDate" id="expiryDate-@{index}" value="@{
         invitationOrRelationship.expiryDate.map(_.toLocalDate)}">
-    <div><button class="button--link-style" type="submit" id="resendLinkRequest-@{
+    <button class="button--link-style" type="submit" id="resendLinkRequest-@{
         index}">
     <span aria-hidden="true">
     @Messages("recent-invitations.invitations.actions.pending")
     </span>
-        <span class="govuk-visually-hidden">
-        @Messages("recent-invitations.invitations.actions.pending.aria-text", invitationOrRelationship.clientName.getOrElse(""),  Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))
-        </span>
-    </button></div>
+    <span class="govuk-visually-hidden">
+    @Messages("recent-invitations.invitations.actions.pending.aria-text", invitationOrRelationship.clientName.getOrElse(""),  Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))
+    </span>
+    </button>
 }
 
 @formHelper(

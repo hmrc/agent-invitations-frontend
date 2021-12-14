@@ -80,7 +80,7 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),
-            describedBy = "identify-client-hint",
+            describedBy = Some("identify-client-hint"),
             html = fieldsetHtml
         ))
 

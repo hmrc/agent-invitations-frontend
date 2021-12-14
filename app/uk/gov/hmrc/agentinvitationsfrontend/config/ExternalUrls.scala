@@ -73,4 +73,5 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
 
   val guidanceCgtUkProperty = "https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property"
   val guidanceVatSignup = "https://www.gov.uk/vat-record-keeping/sign-up-for-making-tax-digital-for-vat"
+  val guidanceSa = "https://www.gov.uk/guidance/self-assessment-for-agents-online-service"
 }

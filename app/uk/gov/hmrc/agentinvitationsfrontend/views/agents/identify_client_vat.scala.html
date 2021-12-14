@@ -53,7 +53,7 @@
         hint = Some(Messages("identify-client.vrn.hint")),
         inputClass = Some("govuk-input--width-10"),
         pattern=Some("[0-9]*"),
-        inputmode=Some("numeric")
+        inputMode=Some("numeric")
     )
 
     @inputDate(
@@ -82,7 +82,7 @@ backLinkHref = Some(backLinkUrl)
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),
-            describedBy = "identify-client-hint",
+            describedBy = Some("identify-client-hint"),
             html = fieldsetHtml
         ))
 

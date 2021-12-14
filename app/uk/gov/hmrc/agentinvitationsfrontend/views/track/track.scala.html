@@ -25,18 +25,21 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.TrackPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputSelect, SubmitButtonGroup}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
     mainTemplate: MainTemplate,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
     pendingForm: pending_form,
     preAuthForm: preauth_form,
     cancelAuthForm: cancel_authorisation_form,
-    govukErrorSummary: GovukErrorSummary,
     newRequestForm: new_request_form,
-    formHelper: FormWithCSRF,
+    inputSelect: InputSelect,
+    submitButtonGroup: SubmitButtonGroup
 )
 
 
@@ -58,97 +61,77 @@ isAgent = true) {
     @if(config.showFilterForm){
 
         @formHelper(action = config.filterFormSubmitUrl) {
-            <fieldset aria-describedby="client-label status-label">
+            <fieldset class="govuk-fieldset" aria-describedby="client-label status-label">
                 <legend>
                     <h1 class="govuk-heading-xl">@Messages(s"recent-invitations.header")</h1>
                 </legend>
-                <p class="margin-bottom-40">
+
+                <p class="govuk-!-margin-bottom-6">
                 @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
                 </p>
-                <div class="form-group @if(clientFieldError.isDefined){form-field--error soft--ends}">
-                    <label class="label" for="client" id="client-label">@Messages("recent-invitations.filter-client.label")</label>
-                    @clientFieldError.map { formError =>
-                            <span class="error-notification" data-journey="search-page:error:client-filter" id="client-error">
-                                <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-                        }
-                <div class="autocomplete-wrapper" id="client">
-                    <select id="client-auto-complete" name="client">
-                        <option value=""></option>
-                        @for(option <- config.clientSet) {
-                            <option
-                            value="@option"
-                                @config.filterByClient.map {v => @if(v == option){selected}}>@option</option>
-                        }
-                    </select>
-                </div>
-                </div>
-               <div class="form-group @if(statusFieldError.isDefined){ form-field--error soft--ends}">
-                   <label class="label" for="status">@Messages("recent-invitations.filter-status.label")</label>
-                   @statusFieldError.map { formError =>
-                           <span class="error-notification" data-journey="search-page:error:client-status" id="status-error">
-                               <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-                       }
-                   <select class="form-control" id="status" name="status">
-                       @for(status <- config.statuses) {
-                                <option
-                                value="@status"
-                                @config.filterByStatus.map{ s => @if(s == status){selected}}>
-                                @Messages(s"recent-invitations.filter-status.$status")
-                                </option>
-                       }
-                   </select>
-               </div>
+
+                @config.filterForm.map{ form => @if(form != None) {
+
+                @inputSelect(
+                    field = form("client"),
+                    label = Messages("recent-invitations.filter-client.label"),
+                    options = config.clientSeq,
+                    inputClass = Some("govuk-!-width-full")
+                )
+
+                @inputSelect(
+                    field = form("status"),
+                    label = Messages("recent-invitations.filter-status.label"),
+                    options = config.statusesSeq
+                )
+
+                }}
+
             </fieldset>
-            <div class="margin-bottom-40">
-            <button class="button margin-right-5" type="submit" id="filter-button" name="filter" value="filter">@Messages("recent-invitations.filter.filter.button")</button>
-                <button class="button--secondary" id="clear-button" name="filter" value="clear">@Messages("recent-invitations.filter.clear.button")</button>
-            </div>
+
+            @submitButtonGroup()
         }
+
     } else {
 
-        <div class="text">
-            <h1 class="govuk-heading-xl margin-bottom-40">@Messages(s"recent-invitations.header")</h1>
-        </div>
+        <h1 class="govuk-heading-xl">@Messages(s"recent-invitations.header")</h1>
 
-
-        <p class="margin-bottom-40">
+        <p class="govuk-!-margin-bottom-6">
         @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
         </p>
     }
 
     @if(config.hasInvitationsOrRelationships) {
-        <div class="table text-small">
-            <div style="font-size: 16.5px; margin-bottom: 0.5em;">@Messages("recent-invitations.pagination.showing")
-                <strong class="bold">@config.firstResult</strong>
-                @Messages("recent-invitations.pagination.to") <strong class="bold">@config.lastResult</strong>
-                @Messages("recent-invitations.pagination.of") <strong class="bold">@config.totalResults</strong>
-            </div>
-            <div class="table-row table-head">
-                <div class="table-cell column-22">@Messages("recent-invitations.table-row-header.clientName")</div>
-                <div class="table-cell column-30">@Messages("recent-invitations.table-row-header.service")</div>
-                <div class="table-cell column-28">@Messages("recent-invitations.table-row-header.status")</div>
-                <div class="table-cell column-20">@Messages("recent-invitations.table-row-header.actions")</div>
-            </div>
+        <table class="govuk-table govuk-body-s">
+            <caption>@Messages("recent-invitations.pagination.showing")
+                <strong>@config.firstResult</strong>
+                @Messages("recent-invitations.pagination.to") <strong>@config.lastResult</strong>
+                @Messages("recent-invitations.pagination.of") <strong>@config.totalResults</strong>
+            </caption>
+            <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header column-22">@Messages("recent-invitations.table-row-header.clientName")</th>
+                <th scope="col" class="govuk-table__header column-30">@Messages("recent-invitations.table-row-header.service")</th>
+                <th scope="col" class="govuk-table__header column-28">@Messages("recent-invitations.table-row-header.status")</th>
+                <th scope="col" class="govuk-table__header column-20">@Messages("recent-invitations.table-row-header.actions")</th>
+            </tr>
+            </thead>
+            <tbody class="govuk-table__body">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
-            <div id="row-@index" class="table-row">
-                <div class="table-cell taxpayerName">
-                    <h2 class="sr-only">Row @index</h2>
-                    <h3 class="context">@Messages("recent-invitations.table-row-header.clientName")</h3>
+            <tr class="govuk-table__row" id="row-@index">
+                <td class="govuk-table__cell" id="taxpayerName">
                     <span>@invitationOrRelationship.clientName.getOrElse(Messages("recent-invitations.table-row-header.clientNameUnknown"))</span>
-                </div>
-                <div class="table-cell serviceInfo">
-                    <h3 class="context">@Messages("recent-invitations.table-row-header.service")</h3>
+                </td>
+                <td  class="govuk-table__cell" id="serviceInfo">
                     <span>
                        @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
                     </span>
-                </div>
-                <div class="table-cell status">
-                    <h3 class="context">@Messages("recent-invitations.table-row-header.status")</h3>
+                </td>
+                <td class="govuk-table__cell" id="status">
                     @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
                     <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
-                </div>
-                <div class="table-cell action @invitationOrRelationship.status.toLowerCase()">
-                    <h3 class="context">@Messages("recent-invitations.table-row-header.actions")</h3>
+                </td>
+                <td class="govuk-table__cell" id="action-@invitationOrRelationship.status.toLowerCase()">
                     @{
                         invitationOrRelationship.status match {
                             case "Partialauth" => preAuthForm(invitationOrRelationship, index)
@@ -161,10 +144,11 @@ isAgent = true) {
                             case _ => newRequestForm(invitationOrRelationship, index)
                         }
                     }
-                </div>
-            </div>
+                </td>
+            </tr>
             }
-        </div>
+            </tbody>
+        </table>
         @if(config.numberOfPages > 1) {
             @paginationControls
         }

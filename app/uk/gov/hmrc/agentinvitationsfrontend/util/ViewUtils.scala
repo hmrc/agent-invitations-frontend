@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.util
 import play.api.data.{Field, Form}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.html.components.{RadioItem, Text}
-import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 //import uk.gov.hmrc.govukfrontend.views.Aliases.{ActionItem, Actions, HtmlContent, Key, SummaryListRow, Value}
 
 object ViewUtils {

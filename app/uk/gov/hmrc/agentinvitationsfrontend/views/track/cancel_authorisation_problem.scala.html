@@ -19,8 +19,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -32,10 +33,13 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl">@Messages("cancel-auth-problem.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("cancel-auth-problem.header")</h1>
 
     <p>@Html(Messages("cancel-auth-problem.p"))</p>
 
-    <a class="button" role="button" href="@routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm()" >@Messages(s"try-again.button")</a>
+    @linkStyledAsButton(
+        href = routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm().url,
+        messageKey = "try-again.button"
+    )
 
-    }
+}

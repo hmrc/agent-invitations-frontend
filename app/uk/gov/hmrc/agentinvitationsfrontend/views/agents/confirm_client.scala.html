@@ -19,9 +19,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, RadioItem}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
@@ -53,7 +53,16 @@ backLinkHref = Some(backLinkUrl)
             legend = Messages("confirm-client.header", clientName),
             headingIsLegend = true,
             inline = true,
-            inputs = getYesNoStartOverRadioItems()
+            inputs = Seq(
+                RadioItem(
+                    content = Text(Messages("global.yes")),
+                    value = Some("true")
+                ),
+                RadioItem(
+                    content = Text(Messages("global.no-start-over")),
+                    value = Some("false")
+                )
+            )
         )
 
         @submitButton()

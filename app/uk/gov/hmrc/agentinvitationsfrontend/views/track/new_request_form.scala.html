@@ -25,17 +25,17 @@
 @this(
     mainTemplate: MainTemplate,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    formHelper: FormWithCSRF
 )
 
-@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_], now: LocalDate)
+@(
+invitationOrRelationship: TrackInformationSorted,
+index: Int
+)(implicit messages: Messages, request: Request[_], now: LocalDate)
 
 @formHelper(
     action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
-    'id -> s"fastTrackInvitationCreate-${index}",
-    'class -> "form js-form"
+    'id -> s"fastTrackInvitationCreate-${index}"
 ) {
     <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{index}" value="@{invitationOrRelationship.clientIdType}">

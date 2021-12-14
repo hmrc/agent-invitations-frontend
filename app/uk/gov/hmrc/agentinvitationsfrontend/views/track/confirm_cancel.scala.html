@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -30,14 +30,12 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    inputRadio: InputRadios,
+    inputYesNoRadio: InputYesNoRadios,
     submitButton: SubmitButton
 )
 
 
 @(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@marginTop = @{if(confirmForm.hasErrors) """margin-top-0""" else """"""}
-
 
 @mainTemplate(
 title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("service.name.agents.auth")),
@@ -51,19 +49,14 @@ backLinkHref = Some(backLinkUrl)
 
     @formHelper(routes.AgentsRequestTrackingController.submitConfirmCancel){
 
-        @uiInputRadioGroupCustom(
-            confirmForm("confirmCancel"),
-            Seq(("true", Messages("global.yes")),("false",Messages("global.no"))),
-            '_legend -> Html(s"""<h1 class="govuk-heading-xl $marginTop">${Messages("confirm-cancel.header")}</h1>"""),
-            '_inputHint -> Messages(s"confirm-cancel.subheader.$service"),
-            '_horizontal -> true,
-            '_inputHintClass -> "hint-text",
-            '_groupDivClass -> "form-group",
-            '_fieldsetAttributes -> Html("""id='confirmCancel'""")
+        @inputYesNoRadio(
+            field = confirmForm("confirmCancel"),
+            legend = Messages("confirm-cancel.header"),
+            hint = Some(Messages(s"confirm-cancel.subheader.$service")),
+            headingIsLegend = true
         )
 
-
-            @submitButton()
+        @submitButton()
 
     }
 

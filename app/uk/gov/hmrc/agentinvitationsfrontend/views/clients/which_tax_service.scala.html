@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
@@ -52,10 +53,7 @@
             field = confirmForm("accepted"),
             legend = Messages("which-service.header"),
             headingIsLegend = true,
-            inputs = mapToRadioItems(Seq(
-                ("true", Messages("which-service.radio.yes")),
-                ("false",Messages("which-service.radio.no"))
-            ))
+            inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", Messages("which-service.radio.yes")),("false", Messages("which-service.radio.no"))))
         )
 
         @submitButton()

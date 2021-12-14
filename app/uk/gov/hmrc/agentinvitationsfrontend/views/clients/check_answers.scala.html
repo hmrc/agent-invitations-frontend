@@ -51,7 +51,7 @@
             valueId = "client-identifier",
             value = Messages(s"check-answers.consent.${consent.consent}"),
             actionText = Some(Messages("check-answers.change-link")) ,
-            actionHref = Some(pageConfig.changeCall(consent.serviceKey)),
+            actionHref = Some(pageConfig.changeCall(consent.serviceKey).url),
             hiddenActionText = Some(Messages("check-answers.change-link") + " " + Messages(s"check-answers.service.${consent.serviceKey}"))
         )
     }

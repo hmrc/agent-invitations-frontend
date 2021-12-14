@@ -93,7 +93,7 @@ POST        /agents/client-details-ppt                                  uk.gov.h
 
 POST        /agents/to-known-fact                                       uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToKnownFact
 POST        /agents/to-client-type                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToClientType
-POST        /agents/to-identify-client                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToIdentifyClient
+GET         /agents/to-identify-client                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.progressToIdentifyClient
 GET         /agents/confirm-trust-client                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmTrustClient
 POST        /agents/confirm-trust-client                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient
 
