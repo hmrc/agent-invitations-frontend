@@ -295,10 +295,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       def goToState(vatRegDateMatchResult: VatKnownFactCheckResult, finalState: Option[String] => State): Future[State] =
         for {
           finalState <- vatRegDateMatchResult match {
-                         case VatKnownFactCheckOk =>
+                         case VatKnownFactCheckOk | VatRecordClientInsolvent =>
                            getClientName(vatClient.clientIdentifier, HMRCMTDVAT).flatMap(name => goto(finalState(name)))
                          case VatKnownFactNotMatched       => goto(KnownFactNotMatched)
-                         case VatRecordClientInsolvent     => goto(KnownFactNotMatched) //for now until we resolve what happens here
                          case VatRecordMigrationInProgress => goto(NotSignedUp(HMRCMTDVAT)) //for now until we have content
                          case VatDetailsNotFound           => goto(NotSignedUp(HMRCMTDVAT))
                        }

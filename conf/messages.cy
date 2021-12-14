@@ -80,8 +80,6 @@ error.vat-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru TAW 
 error.vat-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a blwyddyn
 error.vat-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis a blwyddyn
 
-
-
 # Date of Birth
 identify-client.irv-date-of-birth.label=Dyddiad geni
 identify-client.irv-date-of-birth.hint=Er enghraifft, 31 3 1980
@@ -95,7 +93,6 @@ error.irv-date-of-birth-date.day-year=Mae’n rhaid i’r dyddiad geni gynnwys d
 error.irv-date-of-birth-date.month-year=Mae’n rhaid i’r dyddiad geni gynnwys mis a blwyddyn
 
 ### Selecting services
-
 select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurdodiad
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
@@ -126,6 +123,9 @@ select-single-service.HMRC-MTD-VAT.business.error=Dewiswch ‘Iawn’ os ydych a
 select-single-service.HMRC-MTD-VAT.personal.header=A ydych am reoli TAW y cleient hwn?
 select-single-service.HMRC-MTD-VAT.personal.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
 
+select-single-service.HMRC-MTD-VAT.trust.header=A ydych am reoli TAW y cleient hwn?
+select-single-service.HMRC-MTD-VAT.trust.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
+
 # Note: trusts are internally treated as "business" client type
 select-single-service.TRUST.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
 select-single-service.TRUST.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
@@ -138,8 +138,19 @@ select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am
 
 select-single-service.HMRC-CGT-PD.personal.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
 select-single-service.HMRC-CGT-PD.business.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+select-single-service.HMRC-CGT-PD.trust.header=A hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU?
+
 select-single-service.HMRC-CGT-PD.personal.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 select-single-service.HMRC-CGT-PD.business.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+select-single-service.HMRC-CGT-PD.trust.error=Dewiswch ‘Iawn’ os hoffech rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+
+select-single-service.HMRC-PPT-ORG.personal.header=Do you want to manage their Plastic Packaging Tax?
+select-single-service.HMRC-PPT-ORG.business.header=Do you want to manage their Plastic Packaging Tax?
+select-single-service.HMRC-PPT-ORG.trust.header=Do you want to manage their Plastic Packaging Tax?
+
+select-single-service.HMRC-PPT-ORG.personal.error=Select yes if you want to manage their Plastic Packaging Tax
+select-single-service.HMRC-PPT-ORG.business.error=Select yes if you want to manage their Plastic Packaging Tax
+select-single-service.HMRC-PPT-ORG.trust.error=Select yes if you want to manage their Plastic Packaging Tax
 
 # Agent suspended
 agent-suspended.heading.multi=Nid oeddem yn gallu creu un o’ch ceisiadau
@@ -154,7 +165,6 @@ agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer g
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
 
 #Agent suspended fast-track
-
 agent-suspended.fastrack.heading=Rydym wedi cyfyngu ar eich defnydd o’r gwasanaeth hwn dros dro
 agent-suspended.fastrack.p1=Gwnaethom hyn oherwydd ein bod wedi gohirio eich cod asiant. Rydym wedi anfon llythyr atoch yn cadarnhau hyn. 
 agent-suspended.fastrack.p2=Mae hyn yn golygu na fyddwch yn gallu defnyddio’r gwasanaeth hwn i ofyn am awdurdodiad er mwyn {0}.
@@ -163,7 +173,6 @@ agent-suspended.fastrack.p2.HMRC-MTD-VAT=rheoli ei TAW.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
-
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
@@ -226,7 +235,6 @@ error.ppt-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru ar g
 error.ppt-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer Treth Deunydd Pacio Plastig gynnwys diwrnod a blwyddyn
 error.ppt-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer Treth Deunydd Pacio Plastig gynnwys mis a blwyddyn
 
-
 ## PPT Not Matched
 ppt-not-matched.header=Nid yw’r cyfeirnod Treth Deunydd Pacio Plastig yn ddilys
 ppt-not-matched.p1=Gwnaethoch nodi {0}.
@@ -242,10 +250,10 @@ error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient 
 
 # Invitation Sent
 invitation-sent.header=Yr hyn y mae angen i chi ei wneud nesaf
-invitation-sent.step1.personal.paye-vat=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol a’i fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
+invitation-sent.step1.personal.paye-vat=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol a’i fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
 invitation-sent.step1.personal.paye=Gwiriwch gyda’ch cleient fod ganddo Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth ar gyfer ei faterion treth personol.
-invitation-sent.step1.personal.vat=Gwiriwch gyda’ch cleient ei fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
-invitation-sent.step1.business.vat=Gwiriwch gyda’ch cleient ei fod wedi cofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW os oes angen iddo fod wedi gwneud hynny.
+invitation-sent.step1.personal.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+invitation-sent.step1.business.vat=Gwiriwch gyda’ch cleient ei fod wedi’i gofrestru ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer TAW.
 invitation-sent.step1.business.trust=Gwiriwch gyda’ch cleient ei fod wedi hawlio, neu wedi cofrestru’r ymddiriedolaeth neu’r ystâd o’r blaen.
 invitation-sent.link-text=Copïwch y cysylltiad hwn sy’n gais am awdurdodiad a’i anfon at eich cleient:
 invitation-sent.select-link=Dywedwch wrtho am ddewis y cysylltiad hwn. Yna, gofynnir iddo fewngofnodi gan ddefnyddio’i Ddynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth.
@@ -366,7 +374,6 @@ cancel-authorisation.response-failed.header=Mae’n ddrwg gennym, mae problem gy
 cancel-authorisation.response-failed.description=Gallwch roi cynnig arall arni nawr, neu yn nes ymlaen.
 cancel-authorisation.response-failed.advice=Efallai nad ydym wedi cadw’ch atebion.
 
-
 #Not authorisation to de-auth
 not-authorised.h1=Nid ydych wedi eich awdurdodi
 not-authorised.HMRC-MTD-IT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
@@ -484,8 +491,9 @@ landing-page.service.vat.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth os y
 # Warm up
 warm-up.header=Awdurdodi {0} i ddelio â CThEM ar eich rhan
 warm-up.p1=Defnyddiwch y gwasanaeth hwn i ganiatáu i {0} reoli’ch materion treth.
-warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich materion treth personol neu TAW.
+warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
+warm-up.p2.trust=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
 warm-up.p3.personal=Os nad oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer eich materion treth personol neu TAW, byddwch yn gallu creu un newydd.
 warm-up.inset=Os byddwch yn awdurdodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
 warm-up.link=Ni hoffwn awdurdodi {0}
@@ -674,6 +682,7 @@ confirm-terms-multi.cgt.business.label=Rwy’n rhoi caniatâd i CThEM alluogi {0
 
 confirm-terms-multi.ppt.personal.heading=Rheoli fy Nhreth Deunydd Pacio Plastig
 confirm-terms-multi.ppt.business.heading=Rheoli Treth Deunydd Pacio Plastig ymddiriedolaeth
+confirm-terms-multi.ppt.trust.heading=Manage a trust’s Plastic Packaging Tax
 confirm-terms-multi.ppt.personal.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch Treth Deunydd Pacio Plastig, mae hyn yn golygu y gall {0} wneud y canlynol:
 confirm-terms-multi.ppt.personal.p1.l1=bwrw golwg dros eich Ffurflenni Treth Deunydd Pacio Plastig
 confirm-terms-multi.ppt.personal.p1.l2=cyflwyno’ch Ffurflenni Treth Deunydd Pacio Plastig
@@ -695,6 +704,17 @@ confirm-terms-multi.ppt.business.p1.l6=cwblhau’ch sefyllfa dreth gyffredinol
 confirm-terms-multi.ppt.business.p1.l7=bwrw golwg dros eich cyfrifiadau a’r symiau dyledus a’r symiau sydd wedi’u talu
 confirm-terms-multi.ppt.business.p1.l8=rheoli’ch Treth Deunydd Pacio Plastig gan ddefnyddio meddalwedd
 confirm-terms-multi.ppt.business.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli Treth Deunydd Pacio Plastig ymddiriedolaeth.
+
+confirm-terms-multi.ppt.trust.p1=If you consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax, this means {0} can:
+confirm-terms-multi.ppt.trust.p1.l1=view your PPT returns
+confirm-terms-multi.ppt.trust.p1.l2=submit your PPT returns
+confirm-terms-multi.ppt.trust.p1.l3=adjust your PPT returns
+confirm-terms-multi.ppt.trust.p1.l4=speak to HMRC about your returns
+confirm-terms-multi.ppt.trust.p1.l5=provide repayment bank details to HMRC when repayment is due
+confirm-terms-multi.ppt.trust.p1.l6=finalise your overall tax position
+confirm-terms-multi.ppt.trust.p1.l7=view your calculations and amounts owed and paid
+confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
+confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
 
 confirm-terms.itsa.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
@@ -719,7 +739,6 @@ check-answers.continue.button=Cadarnhau ac anfon ateb
 invitation-expired.heading=Nid yw’r dudalen hon ar gael mwyach
 invitation-expired.p1=Mae’r cysylltiad y gwnaethoch chi geisio mynd ato wedi dod i ben.
 invitation-expired.p2=Os hoffech benodi’r asiant treth hwn o hyd, gofynnwch iddo anfon cais arall atoch.
-
 
 # Complete
 client-complete.header=Proses gymeradwyo wedi’i chwblhau
@@ -746,6 +765,7 @@ client-complete.multi.p1.vat=rheoli’ch TAW
 client-complete.multi.p1.trust=cynnal ymddiriedolaeth neu ystâd
 client-complete.multi.p1.trustNT=cynnal ymddiriedolaeth neu ystâd
 client-complete.multi.p1.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
 
 # Generic Issue Title
@@ -798,7 +818,6 @@ not-found-invitation.description.3=Os yw’r cyfeiriad gwe’n gywir, cysylltwch
 invitation-already-responded.header=Rydych eisoes wedi ymateb i’r cais hwn
 invitation-already-responded.description=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant treth a anfonodd y cais atoch.
 
-
 # Cannot View Invitation
 cannot-view-request.header=Ni allwch fwrw golwg dros y cais hwn
 cannot-view-request.p1=Cysylltwch â’r asiant treth a anfonodd y cais atoch os hoffech ei awdurdodi o hyd.
@@ -840,7 +859,6 @@ some-responses-failed.trustNT=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal 
 some-responses-failed.cgt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 some-responses-failed.try-again=Gallwch fynd yn eich blaen heb y gwasanaethau hyn, neu roi cynnig arall arni yn nes ymlaen.
 some-responses-failed.advice=cynnal ymddiriedolaeth
-
 
 technical-issues.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 technical-issues.p1=Rhowch gynnig arall arni yn nes ymlaen.
@@ -1110,6 +1128,10 @@ cannot-find-request.business=materion treth busnes
 cannot-find-request.personal=materion treth personol
 cannot-find-request.p4=Gofynnwch i’ch asiant os nad ydych yn siŵr.
 
+#Client insolvent
+client-insolvent.header=You cannot create an authorisation request because this client is insolvent
+client-insolvent.p=Clients cannot authorise an agent on their behalf when they are insolvent.
+
 #Authorisation request error template
 error.authorisation-request-error-template.header=Mae’r cais hwn am awdurdodiad {0}
 error.authorisation-request-error-template.header.Expired=wedi dod i ben eisoes
@@ -1195,3 +1217,4 @@ timed-out.seconds=eiliad
 date.fields.day=Diwrnod
 date.fields.month=Mis
 date.fields.year=Blwyddyn
+
