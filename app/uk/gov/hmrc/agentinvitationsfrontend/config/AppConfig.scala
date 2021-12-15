@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.duration.Duration
 
 @Singleton
-class AppConfig @Inject()(servicesConfig: ServicesConfig, contactFrontendConfig: ContactFrontendConfig) {
+class AppConfig @Inject()(servicesConfig: ServicesConfig) {
 
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
@@ -66,7 +66,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig, contactFrontendConfig:
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
-  val betaFeedbackWithoutServiceIdUrl: String = getConfString("betaFeedbackUrl")
+  val betaFeedbackWithoutServiceIdUrl: String = servicesConfig.getString("betaFeedbackUrl")
   val feedbackSurveyUrl: String = getConfString("feedback-frontend.external-url")
   val agentOriginToken = "INVITAGENT"
   val clientOriginToken = "INVITCLIENT"

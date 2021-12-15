@@ -4,7 +4,6 @@ import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers
@@ -17,7 +16,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 class AgentInvitationFastTrackJourneyControllerISpec
