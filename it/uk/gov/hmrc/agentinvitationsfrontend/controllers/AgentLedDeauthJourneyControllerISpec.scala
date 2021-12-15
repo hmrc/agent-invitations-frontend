@@ -5,7 +5,6 @@ import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -1133,7 +1132,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("cancel-authorisation.cancelled.print")
       )
       checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", htmlEscapedMessage("authorisation-cancelled.check-sa.l2"))
-      checkResultContainsLink(result, s"http://localhost:$wireMockPort/agent-services-account/home", htmlEscapedMessage("cancel-authorisation.cancelled.return-to-account-services.button"), clazz = Some("button"), roleIsButton = true)
+      checkResultContainsLink(result, s"http://localhost:$wireMockPort/agent-services-account/home", htmlEscapedMessage("cancel-authorisation.cancelled.return-to-account-services.button"), roleIsButton = true)
     }
 
     "not display the extra 'check self assessment' lines when cancelling authorisations other than Income Tax" in {
@@ -1172,7 +1171,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", Some("button"), newWin = false, roleIsButton = true)
+      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", roleIsButton = true)
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
     }
   }

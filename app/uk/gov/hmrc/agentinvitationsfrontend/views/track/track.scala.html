@@ -70,22 +70,18 @@ isAgent = true) {
                 @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
                 </p>
 
-                @config.filterForm.map{ form => @if(form != None) {
-
                 @inputSelect(
-                    field = form("client"),
+                    field = config.form("client"),
                     label = Messages("recent-invitations.filter-client.label"),
                     options = config.clientSeq,
                     inputClass = Some("govuk-!-width-full")
                 )
 
                 @inputSelect(
-                    field = form("status"),
+                    field = config.form("status"),
                     label = Messages("recent-invitations.filter-status.label"),
                     options = config.statusesSeq
                 )
-
-                }}
 
             </fieldset>
 

@@ -185,27 +185,24 @@ abstract class BaseISpec
     result: Future[Result],
     linkUrl: String,
     linkText: String,
-    clazz: Option[String] = None,
+    linkId: Option[String] = Some("button-link"),
+    clazz: Option[String] = Some(""),
     newWin: Boolean = false,
-                             roleIsButton: Boolean = false,
-    noopenernoreferrer: Boolean = false): Unit = {
+    roleIsButton: Boolean = false): Unit = {
     val t = if(newWin) "target=" + "\"" + """_blank""" + "\"" else ""
-    val nonr = if(noopenernoreferrer) " " + "rel=" + "\"" + """noopener noreferrer""" + "\"" else ""
+    val nonr = if(newWin) " " + "rel=" + "\"" + """noopener noreferrer""" + "\"" else ""
     val a = s"<a $t$nonr".trim
-    val element = if (clazz.isDefined) {
-      if(roleIsButton) {
-        s"""$a href="$linkUrl" class="${clazz.get}" role="button">$linkText</a>"""
+    val element = if(roleIsButton) {
+        s"""$a id="${linkId.get}" href="$linkUrl" class="govuk-button ${clazz.get}" draggable="false" role="button">$linkText</a>"""
       } else {
-        s"""$a href="$linkUrl" class="${clazz.get}">$linkText</a>"""
+        s"""$a href="$linkUrl">$linkText</a>"""
       }
-    } else {
-      s"""$a href="$linkUrl">$linkText</a>"""
-    }
+
     checkHtmlResultWithBodyText(result.futureValue, element)
   }
 
   def checkResultContainsBackLink(result: Future[Result], backLinkUrl: String): Unit = {
-    val element = s"""<a id="backLink" href="$backLinkUrl" class="link-back">Back</a>"""
+    val element = s"""<a href="$backLinkUrl" class="govuk-back-link">Back</a>"""
     checkHtmlResultWithBodyText(result.futureValue, element)
   }
 

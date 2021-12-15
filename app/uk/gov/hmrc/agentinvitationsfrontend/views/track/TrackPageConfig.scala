@@ -46,6 +46,10 @@ case class TrackPageConfig(
   val additionalQueryParams: String =
     s"""${filterByClient.fold("")(clientName => s"&client=$clientName")}${filterByStatus.fold("")(status => s"&status=$status")}"""
 
+  val form: Form[FilterTrackRequests] = filterForm.getOrElse(
+    FilterTrackRequestsForm
+      .form(Set()))
+
   val statuses: Seq[FilterFormStatus] = FilterFormStatus.statuses
 
   val clientSeq: Seq[(String, String)] = clientSet.map(client => (client, client)).toSeq
