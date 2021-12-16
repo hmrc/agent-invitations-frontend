@@ -4,14 +4,14 @@ $(function() {
     // dont track any elements with data-ga-event="false"
     var exclude = '[data-ga-event="false"]';
 
-    // strips out any text form elements with .visuallyhidden
+    // strips out any text form elements with .govuk-visually-hidden
     function striptext(element){
         // Stop PII data of Agent Name being sent
         if($(element).attr('id') === 'linkConfirmDecline'){
             return 'I do not want to appoint this agent';
         } else {
             // Remove visually hidden text content then return the remaining text
-            return element.clone().children('.visuallyhidden').remove().end().text();
+            return element.clone().children('.govuk-visually-hidden').remove().end().text();
         }
     }
 

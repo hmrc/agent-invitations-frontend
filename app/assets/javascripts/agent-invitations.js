@@ -79,4 +79,16 @@ $(document).ready(function() {
         }
     });
 
+
+    //TODO - remove and deal with in the backend - Trim inputs and Capitalize postcode
+    $('[type="submit"]').click(function(){
+        $input.each( function(){
+            if($(this).val() && $(this).attr('name') === 'postcode'){
+                $(this).val($(this).val().toUpperCase().replace(/\s\s+/g, ' ').trim())
+            }else{
+                $(this).val($(this).val().trim())
+            }
+        });
+    });
+
 });
