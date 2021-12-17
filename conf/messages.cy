@@ -1154,8 +1154,8 @@ cannot-find-request.personal=materion treth personol
 cannot-find-request.p4=Gofynnwch i’ch asiant os nad ydych yn siŵr.
 
 #Client insolvent
-client-insolvent.header=You cannot create an authorisation request because this client is insolvent
-client-insolvent.p=Clients cannot authorise an agent on their behalf when they are insolvent.
+client-insolvent.header=Ni allwch greu cais am awdurdodiad gan fod y cleient hwn yn ansolfent
+client-insolvent.p=Ni all cleientiaid awdurdodi asiant ar eu rhan pan fyddan nhw’n ansolfent.
 
 #Authorisation request error template
 error.authorisation-request-error-template.header=Mae’r cais hwn am awdurdodiad {0}
