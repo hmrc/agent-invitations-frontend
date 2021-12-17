@@ -8,8 +8,17 @@ This is a frontend microservice for Agent Client Authorisation.
 Invitations service currently provides these functions:
  - Agent can create an invitation to represent a client for specific tax regime
  - Client can accept or decline an agent's invitation
+ - Agent can view their authorisation requests and inactive relationships from the last 30 days (track)
+ - Agent fast track service
 
-Currently this service supports ITSA, PIR and VAT invitations.
+Clients can 'personal' or 'buisness' and includes trusts (taxable and non-taxable).
+
+Currently this service supports the following invitaitons:
+- ITSA, including alternative itsa
+- Personal Income Record
+- MTD VAT
+- Capital Gains Tax on UK property account
+- Plastic Packaging Tax should be supported in 2022.
 
 Feature flags exist for each service and for requirement of known facts.
 
@@ -58,6 +67,9 @@ The following are the supported services and relevant fields required to create 
 |personal|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
 |personal or business|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
 |personal or business|HMRC-CGT-PD|CGTPDRef|Valid CGT-PD reference number|Postcode|
+|business|HMRC-TERS-ORG|utr|Valid UTR|Date of trust registration|
+|business|HMRC-TERSNT-ORG|urn|Valid URN|Date of trust registration|
+
 
 Note: Client Type and Known Fact are optional. If either of those are missing you will be redirected to the appropriate page. However, if any other information is missing / invalid / unsupported, you will be given an error url.
 
@@ -74,7 +86,4 @@ Start Page for Clients:
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
 
-
-
-#Dummy
 
