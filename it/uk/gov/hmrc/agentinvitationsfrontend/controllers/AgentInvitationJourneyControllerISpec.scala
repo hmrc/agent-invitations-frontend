@@ -282,37 +282,35 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
     }
 
-    //APB-5653 - restore below after client insolvency release
-//    "redirect to agent suspended if the agent is suspended for all services with AGSV" in {
-//      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("AGSV"))))
-//      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
-//
-//      val result = controller.submitPersonalSelectService(
-//        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
-//
-//      status(result) shouldBe 303
-//      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
-//
-//      journeyState.get should have[State](
-//        AgentSuspended(HMRCMTDIT, emptyBasket),
-//        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
-//    }
-//
-//    "redirect to agent suspended if the agent is suspended for all services with ALL" in {
-//      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
-//      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
-//
-//      val result = controller.submitPersonalSelectService(
-//        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
-//
-//      status(result) shouldBe 303
-//      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
-//
-//      journeyState.get should have[State](
-//        AgentSuspended(HMRCMTDIT, emptyBasket),
-//        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
-//    }
-    //APB-5653 - restore above after client insolvency release
+    "redirect to agent suspended if the agent is suspended for all services with AGSV" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("AGSV"))))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
+
+    "redirect to agent suspended if the agent is suspended for all services with ALL" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+      journeyState.set(SelectPersonalService(availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitPersonalSelectService(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showAgentSuspended().url)
+
+      journeyState.get should have[State](
+        AgentSuspended(HMRCMTDIT, emptyBasket),
+        List(SelectPersonalService(availableServices, emptyBasket), SelectClientType(emptyBasket)))
+    }
   }
 
   "POST /agents/select-business-service" should {
@@ -2037,7 +2035,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         )
       )
 
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
 
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), isAltItsa = false))
     }
@@ -2059,7 +2057,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT), isAltItsa = true))
     }
 
@@ -2080,7 +2078,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
       checkHtmlResultWithBodyText(result,"Check with your client that they have signed up to Making Tax Digital for VAT")
-      checkInviteSentPageContainsSurveyLink(result, true)
+      checkInviteSentPageContainsSurveyLink(result, isAgent = true)
       journeyState.get should have[State](InvitationSentPersonal("invitation/link", None, "abc@xyz.com", Set(HMRCMTDIT, HMRCMTDVAT), isAltItsa = true))
     }
 
