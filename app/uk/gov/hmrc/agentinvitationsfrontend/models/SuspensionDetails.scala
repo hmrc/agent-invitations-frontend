@@ -23,10 +23,8 @@ case class SuspensionDetails(suspensionStatus: Boolean, regimes: Option[Set[Stri
   //PERSONAL-INCOME-RECORD service has no enrolment / regime so cannot be suspended
   private val validSuspensionRegimes = Set("ITSA", "VATC", "TRS", "CGT", "PPT")
 
-  //APB-5653 - restore after client insolvency release
-  //this.regimes.fold(Set.empty[String])(rs => if (rs.contains("ALL") || rs.contains("AGSV")) validSuspensionRegimes else rs)
   val suspendedRegimes: Set[String] =
-    this.regimes.fold(Set.empty[String])(rs => if (rs.contains("ALL")) validSuspensionRegimes else rs)
+    this.regimes.fold(Set.empty[String])(rs => if (rs.contains("ALL") || rs.contains("AGSV")) validSuspensionRegimes else rs)
 
   private val serviceToRegime: Map[String, String] =
     Map(
