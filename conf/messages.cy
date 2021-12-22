@@ -1072,15 +1072,15 @@ client-not-registered.p3=Wedyn, gallwch <a href="{0}">greu cais am awdurdodiad i
 client-not-registered.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
 #Legacy authorisation detected
-legacy-auth-detected.title=Has this client already authorised you through your HMRC online services for agents account?
-legacy-auth-detected.header=Has this client already authorised you through your HMRC online services for agents account?
-legacy-auth-detected.details-header=Why am I being asked this question?
-legacy-auth-detected.details-text1=There is already an authorisation in place for this client to manage their Self Assessment. The authorisation could be for you or for another agent. If this client authorised you through your
-legacy-auth-detected.details-link=HMRC online services for agents account (opens in a new tab)
-legacy-auth-detected.details-text2=, copy the authorisation across to your agent services account. If you copy it across, you do not need to create a new authorisation request link. If they authorised a different agent, create a new authorisation request link.
-legacy-auth-detected.yes=Yes - copy across the client to your agent services account
-legacy-auth-detected.no=No - create a new authorisation request link
-error.legacy-euth-detected=Select yes to copy across the client to your agent services account
+legacy-auth-detected.title=A yw’r cleient hwn eisoes wedi’ch awdurdodi drwy’ch cyfrif gwasanaeth ar-lein CThEM ar gyfer asiantau?
+legacy-auth-detected.header=A yw’r cleient hwn eisoes wedi’ch awdurdodi drwy’ch cyfrif gwasanaeth ar-lein CThEM ar gyfer asiantau?
+legacy-auth-detected.details-header=Pam ydw i’n cael fy ngofyn y cwestiwn hwn?
+legacy-auth-detected.details-text1=Mae awdurdodiad eisoes ar waith i’r cleient hwn reoli ei Hunanasesiad. Gallai’r awdurdodiad fod ar eich cyfer chi neu ar gyfer asiant arall. Os yw’r cleient hwn wedi’ch awdurdodi drwy’ch cyfrif gwasanaethau ar-lein
+legacy-auth-detected.details-link=CThEM ar gyfer asiantau (yn agor tab newydd)
+legacy-auth-detected.details-text2=, copïwch yr awdurdodiad ar draws i’ch cyfrif gwasanaethau asiant. Os byddwch yn ei gopïo ar draws, nid oes angen i chi greu cysylltiad newydd ar gyfer cais am awdurdodiad. Os oeddent yn awdurdodi asiant gwahanol, ewch ati i greu cysylltiad newydd ar gyfer cais am awdurdodiad.
+legacy-auth-detected.yes=Iawn - copïwch y cleient ar draws i’ch cyfrif gwasanaethau asiant
+legacy-auth-detected.no=Na - ewch ati i greu cysylltiad newydd ar gyfer cais am awdurdodiad
+error.legacy-euth-detected=Dewiswch Iawn i gopïo’r cleient ar draws i’ch cyfrif gwasanaethau asiant
 
 #Error Cannot View Request
 error.cannot-view-request.title=Ni allwch fwrw golwg dros y cais am awdurdodiad hwn
@@ -1129,8 +1129,8 @@ cannot-find-request.personal=materion treth personol
 cannot-find-request.p4=Gofynnwch i’ch asiant os nad ydych yn siŵr.
 
 #Client insolvent
-client-insolvent.header=You cannot create an authorisation request because this client is insolvent
-client-insolvent.p=Clients cannot authorise an agent on their behalf when they are insolvent.
+client-insolvent.header=Ni allwch greu cais am awdurdodiad gan fod y cleient hwn yn ansolfent
+client-insolvent.p=Ni all cleientiaid awdurdodi asiant ar eu rhan pan fyddan nhw’n ansolfent.
 
 #Authorisation request error template
 error.authorisation-request-error-template.header=Mae’r cais hwn am awdurdodiad {0}
