@@ -110,7 +110,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           htmlEscapedMessage(
             "generic.title",
             htmlEscapedMessage("client-type.header"),
-            htmlEscapedMessage("title.suffix.agents")),
+            htmlEscapedMessage("service.name.agents.auth")),
           htmlEscapedMessage("client-type.header"),
           hasMessage("client-type.p1")
         )
@@ -187,7 +187,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("service.name.agents.auth")),
         htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
         htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
         htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
@@ -238,7 +238,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("select-service.header"),
-          htmlEscapedMessage("title.suffix.agents")),
+          htmlEscapedMessage("service.name.agents.auth")),
         htmlEscapedMessage("select-service.HMRC-MTD-IT.personal"),
         htmlEscapedMessage("select-service.PERSONAL-INCOME-RECORD.personal"),
         htmlEscapedMessage("select-service.HMRC-MTD-VAT.personal")
@@ -2029,7 +2029,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
-          htmlEscapedMessage("title.suffix.agents"),
+          htmlEscapedMessage("service.name.agents.auth"),
           htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
           htmlEscapedMessage("invitation-sent.l9")
         )
@@ -2116,7 +2116,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage(
           "generic.title",
           htmlEscapedMessage("invitation-sent.header"),
-          htmlEscapedMessage("title.suffix.agents"),
+          htmlEscapedMessage("service.name.agents.auth"),
           htmlEscapedMessage("invitation-sent.email.p", "abc@xyz.com"),
           htmlEscapedMessage("invitation-sent.l9")
         )
@@ -2336,7 +2336,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(
         result.futureValue,
         "create-auth-failed.header",
-        "create-auth-failed.button.continue",
+        "continue.button",
         "create-auth-failed.HMRC-CGT-PD"
       )
     }
@@ -2471,7 +2471,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         result.futureValue,
         "pending-authorisation-exists.header",
         "pending-authorisation-exists.p",
-        "pending-authorisation-exists.new-request.button"
+        "new-request.button"
       )
     }
   }

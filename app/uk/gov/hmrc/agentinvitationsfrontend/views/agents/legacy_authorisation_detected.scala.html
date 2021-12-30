@@ -15,47 +15,58 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, RadioItem}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-        mainTemplate: main_template,
-        errorPrefix: error_prefix,
-        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
 @(
-        choiceForm: Form[Confirmation],
-        submitCall: Call,
-        backlink: String
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+    choiceForm: Form[Confirmation],
+    submitCall: Call,
+    backlink: String
+)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("title.suffix.agents")),
-    bodyClasses = None,
-    isAgent = true
+    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(backlink)
 ) {
 
-    @back_link(backlink)
-
     @if(choiceForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("legacy-auth-detected"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @uiFormHelper(action = submitCall, 'class -> "form js-form") {
+    @formHelper(action = submitCall) {
 
-        @uiInputRadioGroupCustom(
-            choiceForm("accepted"),
-            Seq("true" -> Messages("legacy-auth-detected.yes"), "false" -> Messages("legacy-auth-detected.no")),
-            '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("legacy-auth-detected.header")}</h1>"""),
-            '_groupDivClass -> "form-group",
-            '_horizontal -> true,
-            '_fieldsetAttributes -> Html("""id='accepted'""")
+        @inputRadio(
+            field = choiceForm("accepted"),
+            legend = Messages("legacy-auth-detected.header"),
+            headingIsLegend = true,
+            inputs = Seq(
+                RadioItem(
+                    content = Text(Messages("legacy-auth-detected.yes")),
+                    value = Some("true")
+                ),
+                RadioItem(
+                    content = Text(Messages("legacy-auth-detected.no")),
+                    value = Some("false")
+                )
+            )
         )
 
-        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 }

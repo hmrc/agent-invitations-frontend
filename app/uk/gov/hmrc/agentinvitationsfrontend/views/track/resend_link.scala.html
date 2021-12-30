@@ -15,41 +15,41 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
 
-@(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"}
 
-@mainTemplate(title = Messages("generic.title", Messages("resend-link.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None, completedInviteGoSurvey = Some(true)) {
+@mainTemplate(
+title = Messages("generic.title", Messages("resend-link.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+completedInviteGoSurvey = Some(true),
+backLinkHref = Some(config.backLinkUrl)
+) {
 
-    @back_link(config.backLinkUrl)
+    <h1 class="govuk-heading-xl">@Messages("resend-link.header")</h1>
 
-  <h1 class="heading-xlarge">@Messages("resend-link.header")</h1>
-
-    <ol class="list list-number margin-left-0 margin-bottom-20">
+    <ol class="govuk-list govuk-list--number govuk-list--spaced">
         @if(config.step1Instructions.isDefined){
-            <li class="margin-bottom-20">@config.step1Instructions.get</li>
+            <li>@config.step1Instructions.get</li>
         }
 
-        <li class="margin-bottom-20">
+        <li>
             <p>@Messages("invitation-sent.link-text")</p>
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
-        <li class="margin-bottom-20">@Messages("invitation-sent.select-link")</li>
-        <li class="margin-bottom-20">
+        <li>@Messages("invitation-sent.select-link")</li>
+        <li>
             <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail)</p>
 
             <div class="govuk-warning-text">
@@ -59,11 +59,11 @@
         </li>
     </ol>
 
-            <h2 class="heading-medium">@Messages("invitation-sent.further-help.heading")</h2>
-            <p>@Messages("invitation-sent.further-help.p")</p>
-            <ul class="govuk-list govuk-list--bullet">
-                <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" class="form-field-group" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
-                <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
-            </ul>
+    <h2>@Messages("invitation-sent.further-help.heading")</h2>
+    <p>@Messages("invitation-sent.further-help.p")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
+        <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
+    </ul>
 
 }

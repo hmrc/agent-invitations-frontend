@@ -15,15 +15,13 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@(continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@(continueUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @isAgent=@{
     if(continueUrl.contains("agent"))true else false
 }
@@ -33,12 +31,15 @@
     if(timeout < 60) s"$timeout ${Messages("timed-out.seconds")}" else s"${timeout/60} ${Messages("timed-out.minutes")}"
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("timed-out.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = isAgent, mainDataAttributes = None, hasTimeout = false) {
+@mainTemplate(title = Messages("generic.title", Messages("timed-out.header"), Messages("service.name.clients")),
+bannerTitle = "service.name.clients",
+isAgent = isAgent,
+hasTimeout = false) {
 
-    <h1 class="heading-xlarge margin-bottom-30">@Messages("timed-out.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("timed-out.header")</h1>
     <p>@Messages("timed-out.p1", timeString)</p>
-            @if(isAgent){
-                <p>@Html(Messages("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" role="button" href="@continueUrl">@Messages("timed-out.button")</a>}
-
+        @if(isAgent){
+            <p>@Html(Messages("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" role="button" href="@continueUrl">@Messages("timed-out.button")</a>
+        }
 
 }

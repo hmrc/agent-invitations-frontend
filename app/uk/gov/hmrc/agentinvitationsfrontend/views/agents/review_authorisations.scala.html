@@ -15,33 +15,41 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ReviewAuthorisationsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, CheckAnswersRow, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputYesNoRadio: InputYesNoRadios,
+    checkAnswersRow: CheckAnswersRow,
+    submitButton: SubmitButton
 )
 
-@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title",  Messages("review-authorisations.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+title = Messages("generic.title", Messages("review-authorisations.heading"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(reviewAuthorisationsForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), reviewAuthorisationsForm, Seq.empty, Some("review-authorisations"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(reviewAuthorisationsForm))
     }
 
-    <h1 class="heading-xlarge margin-bottom-40">@Messages("review-authorisations.heading")</h1>
+    <h1 class="govuk-heading-xl">@Messages("review-authorisations.heading")</h1>
 
-    <p class="margin-bottom-30">
+    <p>
     @if(config.basket.size == 1) {
         @Messages("review-authorisations.p", s"${config.basket.size} ${Messages("review-authorisations.singular")}")
     } else {
@@ -49,49 +57,37 @@
     }
     </p>
 
-  @if(config.clientNamesAreDifferent){
+    @if(config.clientNamesAreDifferent){
       <p>@Messages("review-authorisations.different-names")</p>
-  }
+    }
 
-    <dl class="govuk-check-your-answers cya-questions-long margin-bottom-30">
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(authorisationRequest <- config.basket) {
-        <div>
-            <dt class="bold">
-            @config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))
-            </dt>
-            <dd class="cya-answer" id="client-service">
-            @Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}")
-            </dd>
-            <dd class="app-check-your-answers__change">
-                <a href="@config.showDeleteCall(authorisationRequest.itemId)">
-                    <span aria-hidden="true">@Messages("review-authorisations.table.remove")</span>
-                    <span class="govuk-visually-hidden">@Messages("review-authorisations.table.remove.aria-text", Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name")))</span>
-                </a>
-            </dd>
-        </div>
+        @checkAnswersRow(
+            key = config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name")),
+            valueId = "client-service-${authorisationRequest.invitation.service}",
+            value = Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),
+            actionText = Some(Messages("review-authorisations.table.remove")) ,
+            actionHref = Some(config.showDeleteCall(authorisationRequest.itemId).url),
+            hiddenActionText = Some(Messages("review-authorisations.table.remove.aria-text", Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))))
+        )
     }
     </dl>
 
-    @uiFormHelper(config.submitCall, 'class -> "form js-form"){
+    @formHelper(config.submitCall){
 
         @if(config.basketFull) {
             <input type="hidden" name="accepted" value="false" />
             <br />
         } else {
-            @uiInputRadioGroupCustom(
-                reviewAuthorisationsForm("accepted"),
-                Seq(("true", Messages("global.yes")), ("false", Messages("global.no"))),
-                '_legend -> Html("""<h2 class="heading-medium margin-top-0">""" + Messages("review-authorisations.subheader") + """</h2>"""),
-                '_horizontal -> true,
-                '_legendClass -> "form-label",
-                '_groupDivClass -> "form-group",
-                '_fieldsetAttributes -> Html("""id='accepted'""")
+            @inputYesNoRadio(
+                field = reviewAuthorisationsForm("accepted"),
+                legend = Messages("review-authorisations.subheader"),
+                legendClass = Some("govuk-fieldset__legend--m")
             )
         }
 
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
-        </div>
+        @submitButton()
     }
 
 }

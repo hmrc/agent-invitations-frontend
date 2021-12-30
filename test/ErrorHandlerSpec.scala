@@ -15,8 +15,9 @@
  */
 
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Logger
+import play.api.Application
 import play.api.i18n.{Lang, MessagesApi}
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -29,6 +30,15 @@ import uk.gov.hmrc.http.BadGatewayException
 import scala.concurrent.Future
 
 class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite with LogCapturing {
+
+  override implicit lazy val app: Application = appBuilder.build()
+
+  protected def appBuilder: GuiceApplicationBuilder =
+    new GuiceApplicationBuilder()
+      .configure(
+        "metrics.jvm"     -> false,
+        "metrics.logback" -> false,
+      )
 
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   val handler: ErrorHandler = app.injector.instanceOf[ErrorHandler]

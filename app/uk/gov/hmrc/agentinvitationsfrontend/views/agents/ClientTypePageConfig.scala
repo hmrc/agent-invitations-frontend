@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
 import play.api.mvc.Call
+import uk.gov.hmrc.govukfrontend.views.Aliases.{RadioItem, Text}
 
 case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call, showTrustFlag: Boolean, isForVat: Boolean = false, isForCgt: Boolean = false)(
   implicit messages: Messages) {
@@ -25,8 +26,20 @@ case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call, showTrust
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))
   val trustOption = Seq("trust"       -> Messages("client-type.trust"))
-  val clientTypes =
+
+  val clientTypes: Seq[(String, String)] =
     if (showTrustFlag && !isForVat && !isForCgt) personalOption ++ businessOption ++ trustOption
     else if (showTrustFlag && isForCgt) personalOption ++ trustOption
     else personalOption ++ businessOption
+
+  val clientTypesAsRadioItems: Seq[RadioItem] = {
+    clientTypes.map(
+      client =>
+        RadioItem(
+          id = Some(client._1),
+          content = Text(client._2),
+          value = Some(client._1)
+      ))
+  }
+
 }

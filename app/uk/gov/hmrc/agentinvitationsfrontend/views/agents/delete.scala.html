@@ -15,47 +15,47 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputYesNoRadios: InputYesNoRadios,
+    submitButton: SubmitButton
 )
 
+@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-
-@mainTemplate(title = Messages("generic.title", Messages(s"delete.heading", Messages("delete.client")), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(config.backLinkUrl)
+@mainTemplate(
+title = Messages("generic.title", Messages(s"delete.heading", Messages("delete.client")), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(config.backLinkUrl)
+) {
 
     @if(deleteForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), deleteForm, Seq.empty, Some("delete-client"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(deleteForm))
     }
 
+    @formHelper(config.submitDelete) {
 
-    @uiFormHelper(config.submitDelete) {
-
-        @uiInputRadioGroupCustom(
-            deleteForm("accepted"),
-            Seq(("true", Messages("global.yes")), ("false", Messages("global.no"))),
-        '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-30">${Messages("delete.heading", config.clientDetail.clientName)}</h1>"""),
-        '_inputHint -> Messages(s"delete.subheading.${config.clientDetail.invitation.service}"),
-        '_inputHintClass -> "form-hint margin-bottom-10",
-        '_horizontal -> true,
-        '_fieldsetAttributes -> Html("""id='accepted'"""),
-        '_groupDivClass -> "form-group"
+        @inputYesNoRadios(
+            field = deleteForm("accepted"),
+            legend = Messages("delete.heading", config.clientDetail.clientName),
+            headingIsLegend = true,
+            hint = Some(Messages(s"delete.subheading.${config.clientDetail.invitation.service}"))
         )
 
-            <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
+        @submitButton()
 
     }
 

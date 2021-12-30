@@ -32,6 +32,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,6 +46,7 @@ class TestEndpointsController @Inject()(
   createRelationshipView: create_relationship,
   testFastTrackView: test_fast_track)(
   implicit val config: Configuration,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,

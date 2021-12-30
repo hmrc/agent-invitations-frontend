@@ -15,43 +15,47 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ClientTypePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
-@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
-
-    @back_link(config.backLinkUrl)
+@mainTemplate(
+title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(config.backLinkUrl)
+) {
 
     @if(agentInvitationsForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("client-type"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
     }
 
-    @uiFormHelper(
-        action = config.submitCall,
-        'class -> "form js-form") {
+    @formHelper(action = config.submitCall) {
 
-        @uiInputRadioGroupCustom(
-            agentInvitationsForm("clientType"),
-            config.clientTypes,
-        '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("client-type.header")}</h1>"""),
-        '_inputHint -> Messages("client-type.p1"),
-            '_inputHintClass -> "hint-text",
-        '_fieldsetAttributes -> Html("""id='clientType'"""),
-        '_groupDivClass -> "form-group"
+        @inputRadio(
+            field = agentInvitationsForm("clientType"),
+            legend = Messages("client-type.header"),
+            headingIsLegend = true,
+            hint = Some(Messages("client-type.p1")),
+            inputs = config.clientTypesAsRadioItems
         )
 
-    <button class="button form-field--submit margin-top-20" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
     }
 
 }

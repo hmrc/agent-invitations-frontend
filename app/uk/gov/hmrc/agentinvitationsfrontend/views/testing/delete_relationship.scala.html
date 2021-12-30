@@ -15,43 +15,47 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.Relationship
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.InputText
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input
+    mainTemplate: MainTemplate,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputText: InputText
 )
 
-@(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls)
-
+@(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @mainTemplate(title = "Test Only: Delete a relationship", isAgent = true) {
     <h1>Test Only: Delete a relationship</h1>
-    @uiFormHelper(routes.TestEndpointsController.submitDeleteRelationship()) {
-        <fieldset class="form-field-group">
-            <div class="form-group">
-               @uiInput(
-                    dRForm("arn"),
-                    '_label -> "Arn"
-                )
-                <p>&nbsp;</p>
-                @uiInput(
-                    dRForm("service"),
-                    '_label -> "Service"
-                )
-                <p>&nbsp;</p>
-                @uiInput(
-                    dRForm("clientId"),
-                    '_label -> "Client ID"
-                )
-            </div>
+    @formHelper(routes.TestEndpointsController.submitDeleteRelationship()) {
+        <fieldset class="govuk-fieldset">
+            @inputText(
+            field = dRForm("arn"),
+            label = "Arn",
+            inputClass = Some("govuk-input--width-20")
+            )
+
+            @inputText(
+            field = dRForm("service"),
+            label = "Service",
+            inputClass = Some("govuk-input--width-20")
+            )
+
+            @inputText(
+            field = dRForm("clientId"),
+            label = "Client ID",
+            inputClass = Some("govuk-input--width-20")
+            )
         </fieldset>
-        <div class="form-group">
-            <button class="button" type="submit" id="continue">Delete</button>
-        </div>
+
+        <button class="govuk-button" type="submit" id="continue">Delete</button>
     }
 }

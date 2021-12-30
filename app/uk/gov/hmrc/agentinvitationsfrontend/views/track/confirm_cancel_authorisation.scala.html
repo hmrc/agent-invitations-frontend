@@ -15,53 +15,67 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, GovukInsetText, InsetText}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    govukInsetText: GovukInsetText,
+    formHelper: FormWithCSRF,
+    inputYesNoRadio: InputYesNoRadios,
+    submitButton: SubmitButton
 )
 
+@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@params = @{Seq(
-    '_legend -> Html(s"""<h1 class="heading-xlarge margin-bottom-20">${Messages("confirm-authorisation-cancelled.track.header")}</h1>"""),
-    '_inputHint -> Messages(s"confirm-authorisation-cancelled.p1.track.$service"),
-    '_inputHintClass -> "margin-bottom-30",
-    '_horizontal -> true,
-    '_fieldsetAttributes -> Html("""id='confirmCancelAuthorisation'"""))}
-
-    @itsaOnlyPanel = @{if(service=="HMRC-MTD-IT"){Seq('_panelText -> Messages("confirm-authorisation-cancelled.track.itsa-panel"))}else{Seq.empty}}
-
-
-@mainTemplate(title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("title.suffix.agents")), isAgent = true) {
-
-  @back_link(backLinkUrl)
+@mainTemplate(
+title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
   @if(confirmForm.hasErrors) {
-   @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("select-service"))
+    @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
   }
 
 
-  @uiFormHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
+    @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
-      @uiInputRadioGroupCustom(
-        confirmForm("confirmCancelAuthorisation"),
-        Seq(("true", Messages("global.yes")),("false",Messages("global.no"))),
-          params ++ itsaOnlyPanel: _*
-      )
+        @if(service=="HMRC-MTD-IT") {
+            <h1 class="govuk-heading-xl">Messages("confirm-authorisation-cancelled.track.header")</h1>
 
+            @govukInsetText(InsetText(
+            content = Text(Messages("confirm-authorisation-cancelled.track.itsa-panel"))
+            ))
 
-   <div class="form-group margin-top-30">
-    <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
-   </div>
-  }
+            @inputYesNoRadio(
+                field = confirmForm("confirmCancelAuthorisation"),
+                legend = Messages("confirm-authorisation-cancelled.track.header"),
+                legendClass = Some("govuk-visually-hidden"),
+                headingIsLegend = false,
+                hint = Some(Messages(s"confirm-authorisation-cancelled.p1.track.$service"))
+            )
+
+        } else {
+            @inputYesNoRadio(
+                field = confirmForm("confirmCancelAuthorisation"),
+                legend = Messages("confirm-authorisation-cancelled.track.header"),
+                headingIsLegend = true,
+                hint = Some(Messages(s"confirm-authorisation-cancelled.p1.track.$service"))
+            )
+        }
+
+        @submitButton()
+
+    }
 }

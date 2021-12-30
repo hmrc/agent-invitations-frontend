@@ -1,10 +1,6 @@
-banner.agents.auth=Gofyn i gleient eich awdurdodi
-banner.agents.de-auth=Canslo awdurdodiad cleient
-banner.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
-
-title.suffix.agents=Gofyn i gleient eich awdurdodi
-title.suffix.agents.de-auth=Canslo awdurdodiad cleient
-title.suffix.client=Penodi rhywun i ddelio â CThEM ar eich rhan
+service.name.agents.auth=Gofyn i gleient eich awdurdodi
+service.name.agents.de-auth=Canslo awdurdodiad cleient
+service.name.clients=Penodi rhywun i ddelio â CThEM ar eich rhan
 
 generic.title={0} - {1} - GOV.UK
 
@@ -252,8 +248,6 @@ ppt-not-matched.advice.l2=cysylltu â’r cleient a roddodd y cyfeirnod hwn i ch
 # Confirm Client
 confirm-client.title=Ai hwn yw’r cleient yr hoffech gael awdurdodiad ganddo?
 confirm-client.header=Ai {0} yw’r cleient rydych am awdurdodiad ganddo?
-confirm-client.yes=Iawn
-confirm-client.no=Na – mae angen i mi ddechrau eto
 error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
 
 # Invitation Sent
@@ -343,7 +337,6 @@ cancel-authorisation.select-service.hint=Dewiswch opsiwn.
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
 cancel-authorisation.confirm-client.header=Ai {0} yw’r cleient rydych am ganslo’ch awdurdodiad ar ei gyfer?
 cancel-authorisation.confirm-client.yes=Iawn – hwn yw’r cleient
-cancel-authorisation.confirm-client.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-client.required=Dewiswch ‘Iawn’ os hoffech ofyn i’r cleient hwn am awdurdodiad
 cancel-authorisation.utr=Cyfeirnod Unigryw y Trethdalwr: {0}
 cancel-authorisation.cgt.account-ref=Cyfeirnod cyfrif Treth Enillion Cyfalaf: {0}
@@ -356,7 +349,6 @@ cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch a
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {0}.
 cancel-authorisation.confirm-cancel.yes=Iawn
-cancel-authorisation.confirm-cancel.no=Na – mae angen i mi ddechrau eto
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
 cancel-authorisation.confirm-cancel.itsa-panel=Nid yw canslo’ch awdurdodiad i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cleient yn golygu bod awdurdodiad ar gyfer Hunanasesiad wedi’i ganslo hefyd.
 
@@ -380,7 +372,6 @@ cancel-authorisation.not-matched.header=Nid oeddem yn gallu dod o hyd i’ch cle
 cancel-authorisation.not-matched.description=Nid oeddem yn gallu dod o hyd i gleient yn ein cofnodion gan ddefnyddio’r manylion a roesoch i ni.
 cancel-authorisation.not-matched.advice=Gwiriwch y manylion a rhowch gynnig arall arni.
 
-cancel-authorisation.start-over.button=Dechrau eto
 cancel-authorisation.response-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-authorisation.response-failed.description=Gallwch roi cynnig arall arni nawr, neu yn nes ymlaen.
 cancel-authorisation.response-failed.advice=Efallai nad ydym wedi cadw’ch atebion.
@@ -393,7 +384,6 @@ not-authorised.HMRC-MTD-VAT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli
 not-authorised.HMRC-TERS-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-TERSNT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-CGT-PD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-not-authorised.button=Dechrau eto
 
 #Delete
 delete.heading=A ydych yn siŵr eich bod am ddileu’ch cais am awdurdodiad ar gyfer {0}?
@@ -452,12 +442,10 @@ review-auths.link =Dychwelyd i’ch ceisiadau am awdurdodiad
 #Request cancelled
 client-request-cancelled.header=Mae’r asiant treth wedi canslo’r cais am awdurdodiad hwn
 client-request-cancelled.p=Gofynnwch i’r asiant treth anfon cais arall os hoffech ei awdurdodi o hyd.
-client-request-cancelled.button=Gorffen ac allgofnodi
 
 #All authorisations removed
 all-authorisations-removed.header=Cais am awdurdodiad wedi’i ddileu
 all-authorisations-removed.p=Rydych wedi dileu pob un o’ch ceisiadau am awdurdodiad newydd.
-new-request.button=Dechrau cais newydd
 
 #Cannot Create Request
 cannot-create-request.header=Ni allwch ofyn i’r cleient hwn eich awdurdodi ar hyn o bryd
@@ -465,7 +453,6 @@ cannot-create-request.p1=Rydym wrthi’n prosesu cofrestriad y cleient hwn ar gy
 cannot-create-request.p2=Unwaith y bydd hyn wedi’i wneud, gallwch ofyn i’r cleient eich awdurdodi ar gyfer y gwasanaeth hwn.
 cannot-create-request.p3=Gall hyn gymryd hyd at 72 awr, felly rhowch gynnig arall arni yn nes ymlaen.
 cannot-create-request.review-auth=Dychwelyd i’ch ceisiadau am awdurdodiad
-cannot-create-request.start-again=Dechrau cais newydd
 
 #Create authorisation failed
 create-auth-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
@@ -481,7 +468,6 @@ create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad new
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
 create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
 create-auth-failed.link-text.one=Gallwch fynd yn eich blaen heb y cais hwn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
-create-auth-failed.button.continue=Yn eich blaen
 
 create-auth-failed.HMRC-CGT-PD.label=Cyfeirnod cyfrif Treth Enillion Cyfalaf:
 
@@ -508,8 +494,8 @@ landing-page.service.vat.p1=Mae’n rhaid i chi awdurdodi’ch asiant treth os y
 warm-up.header=Awdurdodi {0} i ddelio â CThEM ar eich rhan
 warm-up.p1=Defnyddiwch y gwasanaeth hwn i ganiatáu i {0} reoli’ch materion treth.
 warm-up.p2.personal=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich materion treth personol neu TAW.
-warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
-warm-up.p2.trust=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong class = "bold">materion treth busnes</strong>.
+warm-up.p2.business=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
+warm-up.p2.trust=Er mwyn i ni allu cadarnhau pwy ydych, bydd yn rhaid i chi fewngofnodi gan ddefnyddio’r Dynodydd Defnyddiwr (ID) a’r cyfrinair ar gyfer Porth y Llywodraeth yr ydych yn eu defnyddio ar gyfer eich <strong>materion treth busnes</strong>.
 warm-up.p3.personal=Os nad oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer eich materion treth personol neu TAW, byddwch yn gallu creu un newydd.
 warm-up.inset=Os byddwch yn awdurdodi {0}, bydd hyn yn canslo unrhyw ganiatâd yr ydych wedi’i roi i rywun arall weithredu ar eich rhan ar gyfer yr un gwasanaeth.
 warm-up.link=Ni hoffwn awdurdodi {0}
@@ -550,7 +536,7 @@ suspended-agent.p1.TRS=cynnal ymddiriedolaeth neu ystâd
 suspended-agent.p1.CGT=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 suspended-agent.p2=Os oes gennych unrhyw gwestiynau, cysylltwch â’r asiant treth a anfonodd y cais hwn atoch.
 suspended-agent.p3=Gallwch fynd yn eich blaen heb y gwasanaeth hwn, neu
-suspended-agent.finish=orffen ac allgofnodi
+suspended-agent.finish=gorffen ac allgofnodi
 
 # Invitation Declined
 invitation-declined.header=Gwnaethoch wrthod y cais hwn
@@ -562,7 +548,6 @@ invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch 
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
-invitation-declined.sign-out.button=Gorffen ac allgofnodi
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
@@ -582,7 +567,6 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-confirm-decline.button=Yn eich blaen
 
 # Confirm Terms
 confirm-terms.itsa.title=Telerau cyfranogi – {0} – GOV.UK
@@ -757,7 +741,6 @@ check-answers.continue.button=Cadarnhau ac anfon ateb
 invitation-expired.heading=Nid yw’r dudalen hon ar gael mwyach
 invitation-expired.p1=Mae’r cysylltiad y gwnaethoch chi geisio mynd ato wedi dod i ben.
 invitation-expired.p2=Os hoffech benodi’r asiant treth hwn o hyd, gofynnwch iddo anfon cais arall atoch.
-invitation-expired.button=Gorffen ac allgofnodi
 
 # Complete
 client-complete.header=Proses gymeradwyo wedi’i chwblhau
@@ -774,7 +757,6 @@ client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
 client-complete.button.mta=Rheoli’ch asiantau treth
-client-complete.sign-out=Gorffen ac allgofnodi
 
 client-complete.multi.header=Proses gymeradwyo wedi’i chwblhau
 client-complete.multi.header.p=Mae {0} bellach yn gallu delio â CThEM ar eich rhan
@@ -837,12 +819,10 @@ not-found-invitation.description.3=Os yw’r cyfeiriad gwe’n gywir, cysylltwch
 # Invitation Already Responded
 invitation-already-responded.header=Rydych eisoes wedi ymateb i’r cais hwn
 invitation-already-responded.description=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant treth a anfonodd y cais atoch.
-invitation-already-responded.button=Gorffen ac allgofnodi
 
 # Cannot View Invitation
 cannot-view-request.header=Ni allwch fwrw golwg dros y cais hwn
 cannot-view-request.p1=Cysylltwch â’r asiant treth a anfonodd y cais atoch os hoffech ei awdurdodi o hyd.
-cannot-view-request.button=Gorffen ac allgofnodi
 
 # Wrong Client Type
 incorrect-client-type.header=Mae problem wedi codi
@@ -1028,7 +1008,6 @@ confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymdd
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
-confirm-authorisation-cancelled.radio.no.itsa=Na – mae angen i mi ddechrau eto
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
@@ -1055,7 +1034,6 @@ authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfe
 authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
 authorisation-cancelled.check-sa.l2=mewngofnodi i’ch cyfrif gwasanaethau ar-lein CThEM ar gyfer asiantau
-authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
 authorisation-cancelled.check-sa.l3=dilyn y cyfarwyddiadau ar gyfer dileu’r cleient oddi ar eich rhestr o gleientiaid
 authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar am awdurdodiad
 
@@ -1068,7 +1046,6 @@ pending-authorisation-exists.header=Rydych eisoes wedi creu cais am awdurdodiad 
 pending-authorisation-exists.p=Gofynnwch i’r cleient ymateb i’r cais rydych eisoes wedi ei greu.
 pending-authorisation-exists.button=Dychwelyd i’ch ceisiadau am awdurdodiad
 pending-authorisation-exists.track.button=Olrhain eich ceisiadau am awdurdodiad
-pending-authorisation-exists.new-request.button=Dechrau cais newydd
 
 #Active authorisation exists
 active-authorisation-exists.header=Rydych eisoes wedi’ch awdurdodi
@@ -1087,7 +1064,6 @@ partial-authorisation-exists.header=Rydych eisoes wedi’ch awdurdodi
 partial-authorisation-exists.p1=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm. Mae hyn yn golygu y gallwch nawr <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy'> gofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm</a>.
 partial-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 partial-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
-partial-authorisation-exists.new-request.button=Dechrau cais newydd
 
 #Client not registered (ALT-ITSA)
 client-not-registered.header=Mae angen i’ch cleient gofrestru ar gyfer Hunanasesiad
@@ -1096,7 +1072,6 @@ client-not-registered.h2=Yr hyn i’w wneud nesaf
 client-not-registered.p2=Gofynnwch i’ch cleient <a href="{0}">gofrestru ar gyfer Hunanasesiad</a>. Ar ôl iddo gofrestru, bydd yn cael Cyfeirnod Unigryw y Trethdalwr ar gyfer Hunanasesiad.
 client-not-registered.p3=Wedyn, gallwch <a href="{0}">greu cais am awdurdodiad i’w anfon ato</a>.
 client-not-registered.return=Dychwelyd i’ch ceisiadau am awdurdodiad
-client-not-registered.new-request.button=Dechrau cais newydd
 
 #Legacy authorisation detected
 legacy-auth-detected.title=A yw’r cleient hwn eisoes wedi’ch awdurdodi drwy’ch cyfrif gwasanaeth ar-lein CThEM ar gyfer asiantau?
@@ -1207,11 +1182,15 @@ global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Tret
 #Common
 global.yes=Iawn
 global.no=Na
+global.no-start-over=Na – mae angen i mi ddechrau eto
+button.back=Yn ôl
 try-again.button=Rhoi cynnig arall arni
 continue.button=Yn eich blaen
+start-over.button=Dechrau eto
 start-again.button=Dechrau eto
-button.back=Yn ôl
+new-request.button=Dechrau cais newydd
 finish.button=Gorffen ac allgofnodi
+
 error.summary.heading=Mae problem wedi codi
 error.confirmDecline.invalid=Dewiswch ‘Iawn’ os hoffech wrthod y cais hwn
 error.confirmTerms.invalid=Mae’n rhaid i chi dderbyn y telerau i fynd yn eich blaen
@@ -1240,3 +1219,4 @@ timed-out.seconds=eiliad
 date.fields.day=Diwrnod
 date.fields.month=Mis
 date.fields.year=Blwyddyn
+

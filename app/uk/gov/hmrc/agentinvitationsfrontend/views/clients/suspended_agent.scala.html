@@ -15,19 +15,25 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SuspendedAgentPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    submitButton: SubmitButton
 )
 
-@(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @pageBody = {
 @if(pageConfig.isOneSuspendedService) {
@@ -36,7 +42,7 @@
     </p>
 } else {
     <p>@Messages("suspended-agent.p1.multi")</p>
-    <ul class="list list-bullet">
+    <ul class="govuk-list govuk-list--bullet">
     @for(suspendedService <- pageConfig.suspendedServices) {
         <li>@Messages(s"suspended-agent.p1.$suspendedService")</li>
     }
@@ -45,19 +51,22 @@
     <p>@Messages("suspended-agent.p2")</p>
 }
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("service.name.clients")),
+isAgent = false) {
 
     @if(pageConfig.isAllSuspended) {
-        <h1 class="heading-xlarge">@Messages("suspended-agent.all.header")</h1>
+        <h1 class="govuk-heading-xl">@Messages("suspended-agent.all.header")</h1>
 
         @pageBody
 
         <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("finish.button")</a>
     } else {
         @if(pageConfig.isOneSuspendedService) {
-            <h1 class="heading-xlarge">@Messages("suspended-agent.single.header")</h1>
+            <h1 class="govuk-heading-xl">@Messages("suspended-agent.single.header")</h1>
         } else {
-            <h1 class="heading-xlarge">@Messages("suspended-agent.multi.header")</h1>
+            <h1 class="govuk-heading-xl">@Messages("suspended-agent.multi.header")</h1>
         }
 
         @pageBody
@@ -65,10 +74,8 @@
         <p>@Html(Messages("suspended-agent.p3"))
             <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
 
-        @uiFormHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
-            <div class="form-group">
-                <button class="button" type="submit" id="continueFromSuspendedAgent">@Messages("continue.button")</button>
-            </div>
+        @formHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
+            @submitButton(id="continueFromSuspendedAgent")
         }
     }
 }

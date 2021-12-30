@@ -1,53 +1,11 @@
-$(function() {
-    //Accessibility
-    var errorSummary =  $('#error-summary-display'),
-    $input = $('input:text')
-    //Error summary focus
-    if (errorSummary){ errorSummary.focus() }
-
-    //Trim inputs and Capitalize postcode
-    $('[type="submit"]').click(function(){
-        $input.each( function(){
-            if($(this).val() && $(this).attr('name') === 'postcode'){
-                $(this).val($(this).val().toUpperCase().replace(/\s\s+/g, ' ').trim())
-            }else{
-                $(this).val($(this).val().trim())
-            }
-        });
-    });
-    //Add aria-hidden to hidden inputs
-    $('[type="hidden"]').attr("aria-hidden", true)
-
-    //arrange validation messages.en/classes to correct pattern
-
-    $('.form-date label.form-field--error').each(function () {
-
-            $(this).closest('div').addClass('form-field--error')
-            var $relocate = $(this).closest('fieldset').find('legend')
-            $(this).find('.error-notification').appendTo($relocate)
-
-    })
-
-    $('body').on('change', '#country-auto-complete', function () {
-        if (!$(this).val()) {
-            $('#country select option').removeAttr('selected')
-        }
-
-    });
-
-    $('body').on('change', '#client-auto-complete', function () {
-        if (!$(this).val()) {
-            $('#client select option').removeAttr('selected')
-        }
-
-    });
+$(document).ready(function() {
 
     var selectCountryEl = document.querySelector('#country-auto-complete')
     if (selectCountryEl) {
         accessibleAutocomplete.enhanceSelectElement({
             autoselect: true,
             defaultValue: selectCountryEl.options[selectCountryEl.options.selectedIndex].innerHTML,
-            minLength: 2,
+            minLength: 1,
             selectElement: selectCountryEl
         })
     }
@@ -57,7 +15,7 @@ $(function() {
         accessibleAutocomplete.enhanceSelectElement({
             autoselect: true,
             defaultValue: selectClientEl.options[selectClientEl.options.selectedIndex].innerHTML,
-            minLength: 2,
+            minLength: 1,
             selectElement: selectClientEl
         })
     }
@@ -122,16 +80,15 @@ $(function() {
     });
 
 
-
-    // ------------------------------------
-    // Introduce direct skip link control, to work around voiceover failing of hash links
-    // https://bugs.webkit.org/show_bug.cgi?id=179011
-    // https://axesslab.com/skip-links/
-    // ------------------------------------
-    $('.skiplink').click(function(e) {
-        e.preventDefault();
-        $(':header:first').attr('tabindex', '-1').focus();
+    //TODO - remove and deal with in the backend - Trim inputs and Capitalize postcode
+    $('[type="submit"]').click(function(){
+        $input.each( function(){
+            if($(this).val() && $(this).attr('name') === 'postcode'){
+                $(this).val($(this).val().toUpperCase().replace(/\s\s+/g, ' ').trim())
+            }else{
+                $(this).val($(this).val().trim())
+            }
+        });
     });
 
-    GOVUK.details.init()
 });

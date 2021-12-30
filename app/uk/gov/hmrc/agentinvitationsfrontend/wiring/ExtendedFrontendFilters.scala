@@ -34,7 +34,7 @@ class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, configu
 
   object CSRFExceptionsFilter extends Filter {
 
-    lazy val whitelist: Set[String] = configuration
+    lazy val allowlist: Set[String] = configuration
       .get[Option[Seq[String]]]("csrfexceptions.whitelist")
       .getOrElse(Seq.empty)
       .toSet
@@ -44,7 +44,7 @@ class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, configu
     def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
 
       def filteredHeaders(rh: RequestHeader): RequestHeader =
-        if (rh.method == POST && whitelist.contains(rh.path))
+        if (rh.method == POST && allowlist.contains(rh.path))
           rh.withHeaders(rh.headers.add("Csrf-Token" -> "nocheck"))
         else rh
 

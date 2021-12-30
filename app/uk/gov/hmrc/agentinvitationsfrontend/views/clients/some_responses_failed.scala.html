@@ -15,48 +15,50 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    submitButton: SubmitButton
 )
 
-@(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@mainTemplate(
+bannerTitle = "service.name.clients",
+title = Messages("generic.title", Messages("some-responses-failed.header"), Messages("service.name.clients")),
+isAgent = false) {
 
-    <h1 class="heading-xlarge">@Messages("some-responses-failed.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("some-responses-failed.header")</h1>
 
-
-  @if(config.consents.map(_.serviceKey).length == 1){
-
-    <p>@Messages(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
-
-  } else {
-      <p>@Messages("some-responses-failed.p1")</p>
-
-      <ul class="list list-bullet">
-      @for(serviceKey <- config.consents.map(_.serviceKey)) {
-          <li>
-          @Messages(s"some-responses-failed.li.$serviceKey")
-          </li>
-
-      }
-      </ul>
-  }
+    @if(config.consents.map(_.serviceKey).length == 1){
+        <p>@Messages(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
+    } else {
+        <p>@Messages("some-responses-failed.p1")</p>
+        <ul class="govuk-list govuk-list--bullet">
+        @for(serviceKey <- config.consents.map(_.serviceKey)) {
+            <li>
+            @Messages(s"some-responses-failed.li.$serviceKey")
+            </li>
+        }
+        </ul>
+    }
 
   <p>@Messages("some-responses-failed.try-again")</p>
 
   <p>@Messages("some-responses-failed.advice", config.agencyName)</p>
 
-    @uiFormHelper(config.acceptInvitationCall) {
-        <button id="continueToComplete" class="button" type="submit">@Messages("continue.button")</button>
+    @formHelper(config.acceptInvitationCall) {
+        @submitButton(id="continueToComplete")
     }
 }

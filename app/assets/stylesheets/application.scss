@@ -1,0 +1,27 @@
+$govuk-assets-path: "/invitations/assets/lib/govuk-frontend/govuk/assets/";
+$hmrc-assets-path: "/invitations/assets/lib/hmrc-frontend/hmrc/";
+
+@import "lib/govuk-frontend/govuk/all";
+@import "lib/hmrc-frontend/hmrc/all";
+
+@import 'partials/_custom';
+@import 'partials/_accessibleAutocomplete';
+
+$govuk-global-styles: true;
+
+a {
+  @extend .govuk-link;
+}
+
+p {
+  @extend .govuk-body;
+}
+
+h2 {
+ @extend .govuk-heading-m;
+}
+
+h3 {
+ @extend .govuk-heading-s;
+}
+

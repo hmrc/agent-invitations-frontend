@@ -49,8 +49,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   }
 
   val emptyBasket: Basket = Set.empty
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = true)
-  val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"), isWhitelisted = false)
+  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
+  val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
   private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
@@ -122,7 +122,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SelectPersonalService(availableServices, emptyBasket))
       }
 
-      "transition to SelectPersonalService with fewer services when agent is not whitelisted" in {
+      "transition to SelectPersonalService with fewer services when agent is not allowlisted" in {
 
         given(SelectClientType(emptyBasket)) when
           selectedClientType(authorisedAgentNotAllowlisted)("personal") should

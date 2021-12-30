@@ -15,33 +15,42 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @heading = @{
   if(basket.isEmpty) Messages("agent-suspended.heading.single")
   else Messages("agent-suspended.heading.multi")
 }
 
-@mainTemplate(title = Messages("generic.title", heading, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = Messages("generic.title", heading, Messages("service.name.agents.auth")),
+isAgent = true) {
 
-    <h1 class="heading-xlarge">@heading</h1>
+    <h1 class="govuk-heading-xl">@heading</h1>
     <p>@Messages("agent-suspended.p1", Messages(s"agent-suspended.p1.$service"))</p>
 
     @if(basket.isEmpty) {
         <p>@Messages("agent-suspended.p2.single")</p>
-        <a href="@routes.AgentInvitationJourneyController.agentsRoot().url" class="button" role="button">@Messages("start-again.button")</a>
-    }else {
+        @linkStyledAsButton(
+            id = "start-again",
+            href = routes.AgentInvitationJourneyController.agentsRoot().url,
+            messageKey = "start-again.button"
+        )
+    } else {
         <p>@Html(Messages("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
-        <a href='@routes.AgentInvitationJourneyController.showReviewAuthorisations' class="button" role="button">@Messages("continue.button")</a>
+        @linkStyledAsButton(
+            id = "continue",
+            href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url
+        )
     }
 
 }

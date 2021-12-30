@@ -35,6 +35,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{Co
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, NotSignedUpPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service, trust_select_service}
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -69,6 +70,7 @@ class AgentLedDeauthJourneyController @Inject()(
   override val actionBuilder: DefaultActionBuilder
 )(
   implicit ec: ExecutionContext,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
   appConfig: AppConfig,
   val externalUrls: ExternalUrls,

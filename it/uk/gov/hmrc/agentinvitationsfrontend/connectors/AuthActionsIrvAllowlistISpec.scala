@@ -66,7 +66,7 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
         val result =
           authActions.withAuthorisedAsAgent { agent =>
-            Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
+            Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString))
           }(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
 
         status(result) shouldBe OK
@@ -96,7 +96,7 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
         val result =
           authActions.withAuthorisedAsAgent { agent =>
-            Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString()))
+            Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString()))
           }(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
 
         status(result) shouldBe OK

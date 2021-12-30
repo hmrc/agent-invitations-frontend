@@ -15,48 +15,90 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.ConfirmCancelPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.back_link
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, GovukInsetText, InsetText, RadioItem}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-   mainTemplate: main_template,
-   errorPrefix: error_prefix,
-   uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-   uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    govukInsetText: GovukInsetText,
+    formHelper: FormWithCSRF,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
-@(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@no = @{if(config.service=="HMRC-MTD-IT") { Messages("confirm-authorisation-cancelled.radio.no.itsa") } else { Messages("cancel-authorisation.confirm-cancel.no") }}
-
-    @params = @{Seq( '_legend -> Html("""<h1 class="heading-xlarge margin-bottom-30">"""+ Messages("cancel-authorisation.confirm-cancel.header") + """</h1>"""),
-        '_inputHint -> Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName),
-        '_inputHintClass -> "margin-bottom-30",
-        '_horizontal -> true,
-        '_groupDivClass -> "form-group",
-        '_fieldsetAttributes -> Html("""id='accepted'"""))}
-    @itsaOnlyParam = @{if(config.service=="HMRC-MTD-IT"){Seq('_panelText -> Messages("cancel-authorisation.confirm-cancel.itsa-panel"))}else{Seq.empty}}
-
-@mainTemplate(bannerTitle = Messages("banner.agents.de-auth"), title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("title.suffix.agents.de-auth")), bodyClasses = None, isAgent = true) {
-
-    @back_link(config.backLink)
+@mainTemplate(
+    bannerTitle = Messages("service.name.agents.de-auth"),
+    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("service.name.agents.de-auth")),
+    isAgent = true,
+    backLinkHref = Some(config.backLink)
+) {
 
     @if(choiceForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("cancel-authorisation.confirm-cancel"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @uiFormHelper(action = config.submitCall, 'class -> "form js-form" ) {
+    @formHelper(action = config.submitCall) {
 
-        @uiInputRadioGroupCustom(
-            choiceForm("accepted"),
-            Seq("true" -> Messages("cancel-authorisation.confirm-cancel.yes"), "false" -> no),
-            params ++ itsaOnlyParam: _*
-        )
+        @if(config.service=="HMRC-MTD-IT") {
+            <h1 class="govuk-heading-xl">Messages("cancel-authorisation.client-type.header")</h1>
 
-        <button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
+            @govukInsetText(InsetText(
+                content = Text(Messages("cancel-authorisation.confirm-cancel.itsa-panel"))
+            ))
+
+            @inputRadio(
+                field = choiceForm("accepted"),
+                legend = Messages("cancel-authorisation.confirm-cancel.header"),
+                legendClass = Some("govuk-visually-hidden"),
+                headingIsLegend = false,
+                hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                inline = true,
+                inputs = Seq(
+                    RadioItem(
+                        content = Text(Messages("global.yes")),
+                        value = Some("true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("global.no-start-over")),
+                        value = Some("false")
+                    )
+                )
+            )
+
+        } else {
+
+            @inputRadio(
+                field = choiceForm("accepted"),
+                legend = Messages("cancel-authorisation.confirm-cancel.header"),
+                headingIsLegend = true,
+                hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                inline = true,
+                inputs = Seq(
+                    RadioItem(
+                        content = Text(Messages("global.yes")),
+                        value = Some("true")
+                    ),
+                    RadioItem(
+                        content = Text(Messages("global.no-start-over")),
+                        value = Some("false")
+                    )
+                )
+            )
+
+        }
+
+        @submitButton()
     }
 }

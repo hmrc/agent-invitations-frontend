@@ -14,11 +14,16 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Text, Button}
 
-@(request: Request[_])(implicit messages: Messages)
+@this()
+
+@(
+href: String,
+id: String = "button-link",
+messageKey: String = "continue.button",
+submitClass: Option[String] = None)(implicit messages: Messages)
 
 
-@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
-
-<a id="backLink" href="@backLink" class="link-back">@Messages("button.back")</a>
+<a id="@id" href="@href" class="govuk-button @submitClass" draggable="false" role="button">@messages(messageKey)</a>

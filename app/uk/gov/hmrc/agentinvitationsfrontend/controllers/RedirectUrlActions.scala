@@ -21,7 +21,7 @@ import play.api.mvc.{Request, Result}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.SsoConnector
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
-import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromWhitelist, RedirectUrl, UnsafePermitAll}
+import uk.gov.hmrc.play.bootstrap.binders.{AbsoluteWithHostnameFromAllowlist, RedirectUrl, UnsafePermitAll}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -50,14 +50,14 @@ class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
   def maybeRedirectUrlOrBadRequest(redirectUrlOpt: Option[RedirectUrl])(
     block: Option[String] => Future[Result])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
 
-    val whitelistPolicy = AbsoluteWithHostnameFromWhitelist(ssoConnector.getWhitelistedDomains())
+    val allowlistPolicy = AbsoluteWithHostnameFromAllowlist(ssoConnector.getAllowlistedDomains())
 
     redirectUrlOpt match {
       case Some(redirectUrl) =>
         val unsafeUrl = redirectUrl.get(UnsafePermitAll).url
         if (RedirectUrl.isRelativeUrl(unsafeUrl)) block(Some(unsafeUrl))
         else
-          redirectUrl.getEither(whitelistPolicy).flatMap {
+          redirectUrl.getEither(allowlistPolicy).flatMap {
             case Right(safeRedirectUrl) => block(Some(safeRedirectUrl.url))
             case Left(errorMessage) =>
               throw new BadRequestException(errorMessage)

@@ -40,6 +40,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
@@ -84,6 +85,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   clientInsolventView: client_insolvent,
   cannotCreateRequestView: cannot_create_request)(
   implicit configuration: Configuration,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   ec: ExecutionContext,

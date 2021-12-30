@@ -15,46 +15,57 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, RadioItem}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@clientIdentifierText = @{clientIdType match {
-                          case "utr"      => s"${Messages("cancel-authorisation.utr", clientIdentifier)}"
-                          case "CGTPDRef" => s"${Messages("cancel-authorisation.cgt.account-ref", clientIdentifier)}"
-                          case _      => ""
-                          }
-                         }
+@mainTemplate(
+title = errorPrefix(choiceForm) + Messages("generic.title", Messages("confirm-client.title"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
-@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", Messages("confirm-client.title"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+    @if(choiceForm.hasErrors) {
+      @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
+    }
 
-@back_link(backLinkUrl)
+    @formHelper(action = submitCall) {
 
-@if(choiceForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("confirm-client"))
-}
+        @inputRadio(
+            field = choiceForm("accepted"),
+            legend = Messages("confirm-client.header", clientName),
+            headingIsLegend = true,
+            inline = true,
+            inputs = Seq(
+                RadioItem(
+                    content = Text(Messages("global.yes")),
+                    value = Some("true")
+                ),
+                RadioItem(
+                    content = Text(Messages("global.no-start-over")),
+                    value = Some("false")
+                )
+            )
+        )
 
+        @submitButton()
+    }
 
-@uiFormHelper(action = submitCall, 'class -> "form js-form") {
-
-    @uiInputRadioGroupCustom(
-        choiceForm("accepted"),
-        Seq("true" -> Messages("confirm-client.yes"), "false" -> Messages("confirm-client.no")),
-    '_legend -> Html(s"""<h1 class="heading-xlarge">${Messages("confirm-client.header", clientName)}</h1>"""),
-    '_groupDivClass -> "form-group",
-    '_horizontal -> true,
-    '_fieldsetAttributes -> Html("""id='accepted'""")
-    )
-<button class="button form-field--submit" type="submit" id="continue">@Messages("continue.button")</button>
-}
 }

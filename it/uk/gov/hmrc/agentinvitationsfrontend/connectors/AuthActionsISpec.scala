@@ -4,7 +4,6 @@ import play.api.mvc.Results._
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.test.Helpers
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, FeatureFlags}
@@ -33,13 +32,13 @@ class AuthActionsISpec extends BaseISpec {
       extends AuthActionsImpl(externalUrls, env, config, authConnector, appConfig, featureFlags, pirRelationshipConnector) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
-        Future.successful(Ok((agent.arn.value, agent.isWhitelisted).toString))
+        Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString))
       })
   }
 
   "withAuthorisedAsAgent" should {
 
-    "call body with arn and isWhitelisted flag when valid agent" in {
+    "call body with arn and isAllowlisted flag when valid agent" in {
       givenAuthorisedFor(
         "{}",
         s"""{

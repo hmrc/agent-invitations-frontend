@@ -15,30 +15,30 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
 @this(
-    mainTemplate: main_template
+    mainTemplate: MainTemplate
 )
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @mainTemplate(title = Messages("global.error.500.title"), isAgent = false) {
-    <h1 class="heading-xlarge">@Messages("global.error.500.heading")</h1>
+    <h1 class="govuk-heading-xl">@Messages("global.error.500.heading")</h1>
 
-<p>@Messages("global.error.500.message")</p>
-<p>@Messages("global.error.500.p2")</p>
-<p>
-    <a href="@Messages("global.error.500.vat_helpline.link-href")">
-    @Messages("global.error.500.vat_helpline.link-text")
-    </a>
-        &nbsp;@Messages("global.error.500.vat_helpline")
-</p>
-<p>
-    <a href="@Messages("global.error.500.sa_helpline.link-href")">
-    @Messages("global.error.500.sa_helpline.link-text")
-    </a>
-        &nbsp;@Messages("global.error.500.sa_helpline")
-</p>
+    <p>@Messages("global.error.500.message")</p>
+    <p>@Messages("global.error.500.p2")</p>
+    <p>
+        <a href="@Messages("global.error.500.vat_helpline.link-href")">
+        @Messages("global.error.500.vat_helpline.link-text")
+        </a>
+            &nbsp;@Messages("global.error.500.vat_helpline")
+    </p>
+    <p>
+        <a href="@Messages("global.error.500.sa_helpline.link-href")">
+        @Messages("global.error.500.sa_helpline.link-text")
+        </a>
+            &nbsp;@Messages("global.error.500.sa_helpline")
+    </p>
 }

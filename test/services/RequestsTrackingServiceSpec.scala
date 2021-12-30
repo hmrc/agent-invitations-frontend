@@ -201,18 +201,18 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       }
 
-      "filter out PIR service if user not whitelisted" in {
-        tested.whitelistedInvitation(false)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe false
+      "filter out PIR service if user not allowlisted" in {
+        tested.allowlistedInvitation(false)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe false
 
-        tested.whitelistedInvitation(false)(invitationForService("HMRC-MTD-IT")) shouldBe true
+        tested.allowlistedInvitation(false)(invitationForService("HMRC-MTD-IT")) shouldBe true
 
-        tested.whitelistedInvitation(false)(invitationForService("HMRC-MTD-VAT")) shouldBe true
+        tested.allowlistedInvitation(false)(invitationForService("HMRC-MTD-VAT")) shouldBe true
 
-        tested.whitelistedInvitation(true)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe true
+        tested.allowlistedInvitation(true)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe true
 
-        tested.whitelistedInvitation(true)(invitationForService("HMRC-MTD-IT")) shouldBe true
+        tested.allowlistedInvitation(true)(invitationForService("HMRC-MTD-IT")) shouldBe true
 
-        tested.whitelistedInvitation(true)(invitationForService("HMRC-MTD-VAT")) shouldBe true
+        tested.allowlistedInvitation(true)(invitationForService("HMRC-MTD-VAT")) shouldBe true
       }
 
       "return empty tracked invitations when none supplied" in {

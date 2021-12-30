@@ -19,11 +19,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import play.api.data.Form
+import play.api.i18n.Messages
 import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Logging}
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
@@ -67,6 +69,7 @@ class AgentsRequestTrackingController @Inject()(
   authorisationCancelledView: authorisation_cancelled,
   cancelAuthProblemView: cancel_authorisation_problem)(
   implicit val externalUrls: ExternalUrls,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
@@ -97,12 +100,13 @@ class AgentsRequestTrackingController @Inject()(
 
   private def trackPageConfig(page: Int, agent: AuthorisedAgent, client: Option[String], status: Option[FilterFormStatus])(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext) = {
+    ec: ExecutionContext,
+    messages: Messages) = {
     val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(
                            agent.arn,
-                           agent.isWhitelisted,
+                           agent.isAllowlisted,
                            appConfig.trackRequestsShowLastDays,
                            pageInfo,
                            client,
@@ -127,7 +131,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
       trackService
-        .clientNames(agent.arn, agent.isWhitelisted, appConfig.trackRequestsShowLastDays)
+        .clientNames(agent.arn, agent.isAllowlisted, appConfig.trackRequestsShowLastDays)
         .flatMap { clientNames =>
           FilterTrackRequestsForm
             .form(clientNames)

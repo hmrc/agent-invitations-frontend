@@ -14,18 +14,17 @@
  * limitations under the License.
  *@
 
-@*
-* For accessibility reasons use a <Div> instead of the <Article> you get from play-ui. Reason is because the <Article> interrupts
-* the screen readers unnecessarily which may cause confusion.
-*
-*@
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Text, Button}
 
-@this()
+@this(button: GovukButton)
 
-@(content: Html,
-        includeGridWrapper: Boolean = false,
-        articleClasses: Option[String] = None)
+@(id: String = "continue", messageKey: String = "continue.button", submitClass: Option[String] = None)(implicit messages: Messages)
 
-<div class="content__body@if( includeGridWrapper ){ grid-wrapper}@if(articleClasses.isDefined){ @articleClasses.get }">
-@content
-</div>
+
+@button(Button(
+    attributes = Map("id" -> s"${id}"),
+    classes = s"${submitClass.getOrElse("")}",
+    inputType = Some("submit"),
+    content = Text(messages(messageKey))
+))

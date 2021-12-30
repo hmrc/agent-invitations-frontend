@@ -71,12 +71,12 @@ class TrackService @Inject()(
 
   def bindInvitationsAndRelationships(
     arn: Arn,
-    isPirWhitelisted: Boolean,
+    isPirAllowlisted: Boolean,
     showLastDays: Int,
     pageInfo: PageInfo,
     filterByClient: Option[String],
     filterByStatus: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
-    allResults(arn, isPirWhitelisted, showLastDays).map { all =>
+    allResults(arn, isPirAllowlisted, showLastDays).map { all =>
       val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
       val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
       val until = from + pageInfo.resultsPerPage
@@ -92,15 +92,15 @@ class TrackService @Inject()(
     filterByStatus.fold(maybeClientFiltered)(status => maybeClientFiltered.filter(status.filterForStatus))
   }
 
-  def clientNames(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
-    allResults(arn, isPirWhitelisted, showLastDays).map(r => r.flatMap(_.clientName).toSet)
+  def clientNames(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
+    allResults(arn, isPirAllowlisted, showLastDays).map(r => r.flatMap(_.clientName).toSet)
 
-  def allResults(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
+  def allResults(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
     implicit val now = LocalDate.now(DateTimeZone.UTC)
 
-    val futureInvitations = getRecentAgentInvitations(arn, isPirWhitelisted, showLastDays)
+    val futureInvitations = getRecentAgentInvitations(arn, isPirAllowlisted, showLastDays)
       .map(_.map {
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
           TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu))
@@ -144,7 +144,7 @@ class TrackService @Inject()(
     } yield finalResults.sorted(TrackInformationSorted.orderingByDate)
   }
 
-  def getRecentAgentInvitations(arn: Arn, isPirWhitelisted: Boolean, showLastDays: Int)(
+  def getRecentAgentInvitations(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext,
     now: LocalDate): Future[Seq[TrackedInvitation]] =
@@ -152,12 +152,12 @@ class TrackService @Inject()(
       .getAllInvitations(arn, now.minusDays(showLastDays))
       .map { invitations =>
         invitations
-          .filter(whitelistedInvitation(isPirWhitelisted))
+          .filter(allowlistedInvitation(isPirAllowlisted))
           .map(TrackedInvitation.fromStored)
       }
 
-  def whitelistedInvitation(isPirWhitelisted: Boolean): StoredInvitation => Boolean =
-    i => isPirWhitelisted || i.service != Services.HMRCPIR
+  def allowlistedInvitation(isPirAllowlisted: Boolean): StoredInvitation => Boolean =
+    i => isPirAllowlisted || i.service != Services.HMRCPIR
 
   def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] =
     for {

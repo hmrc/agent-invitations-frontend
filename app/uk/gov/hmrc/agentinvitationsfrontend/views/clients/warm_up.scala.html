@@ -15,35 +15,32 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.main_template
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF,
+    submitButton: SubmitButton
 )
 
 
-@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@gaCallsWithoutName(analyticsHost: String, token: String) = {
-    var pathWithoutName = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
-    ga('create', '@token', '@analyticsHost');
-    ga('set',  'page', pathWithoutName);
-    ga('send', 'pageview', { 'anonymizeIp': true });
-}
+@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("title.suffix.client")),
-    bodyClasses = None,
+    title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("service.name.clients")),
     isAgent = false,
-    bannerTitle = Messages("banner.clients"),
-    gaCalls = Some(gaCallsWithoutName _),
+    bannerTitle = Messages("service.name.clients"),
     hasTimeout = false
 ) {
 
- <h1 class="heading-xlarge">@Messages("warm-up.header", pageConfig.agentName)</h1>
+ <h1 class="govuk-heading-xl">@Messages("warm-up.header", pageConfig.agentName)</h1>
 
     <p>@Messages("warm-up.p1", pageConfig.agentName)</p>
     <p>@Html(Messages(s"warm-up.p2.${pageConfig.typeOfClient}"))</p>
@@ -52,14 +49,14 @@
         <p>@Messages("warm-up.p3.personal")</p>
     }
 
-    <div class="panel panel-border-wide margin-bottom-30">@Messages("warm-up.inset", pageConfig.agentName)</div>
+    <div class="govuk-inset-text">@Messages("warm-up.inset", pageConfig.agentName)</div>
 
-    @uiFormHelper(pageConfig.getConfirmTermsCall) {
-        <button class="button" type="submit" id="continueMoreInfo">@Messages("continue.button")</button>
+    @formHelper(pageConfig.getConfirmTermsCall) {
+        @submitButton(id="continueMoreInfo")
     }
 
-<div class="margin-top-20">
-    <a href="@pageConfig.getConfirmDeclineCall" class="button--link-style margin-top-20" id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</a>
+<div class="govuk-!-margin-top-4">
+    <a href="@pageConfig.getConfirmDeclineCall" id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</a>
 </div>
 
 

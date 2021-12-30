@@ -17,6 +17,8 @@
 package binders
 
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.agentinvitationsfrontend.binders.{ErrorConstants, UrlBinders}
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AllStatuses
@@ -24,6 +26,15 @@ import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import support.UnitSpec
 
 class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
+
+  override implicit lazy val app: Application = appBuilder.build()
+
+  protected def appBuilder: GuiceApplicationBuilder =
+    new GuiceApplicationBuilder()
+      .configure(
+        "metrics.jvm"     -> false,
+        "metrics.logback" -> false,
+      )
 
   private val invitationIdError = Left(ErrorConstants.InvitationIdNotFound)
   private val statusError = Left(ErrorConstants.StatusError)

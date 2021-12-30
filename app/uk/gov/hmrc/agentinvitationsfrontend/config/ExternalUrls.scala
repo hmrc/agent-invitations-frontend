@@ -24,28 +24,29 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
 
-  val companyAuthUrl = appConfig.companyAuthFrontendExternalUrl
-  val companyAuthSignOutPath = appConfig.companyAuthFrontendSignoutPath
-  val companyAuthSignInPath = appConfig.companyAuthFrontendSigninPath
-  val businessTaxAccountUrl = appConfig.btaExternalUrl
+  val companyAuthUrl: String = appConfig.companyAuthFrontendExternalUrl
+  val companyAuthSignOutPath: String = appConfig.companyAuthFrontendSignoutPath
+  val companyAuthSignInPath: String = appConfig.companyAuthFrontendSigninPath
+  val businessTaxAccountUrl: String = appConfig.btaExternalUrl
   val agentServicesAccountUrl = s"${appConfig.asaFrontendExternalUrl}/agent-services-account/home"
-  val contactFrontendUrl = appConfig.contactFrontendExternalUrl
-  val exitSurveyUrl = appConfig.feedbackSurveyUrl
-  val agentOriginToken = appConfig.agentOriginToken
-  val clientOriginToken = appConfig.clientOriginToken
+  val contactFrontendUrl: String = appConfig.contactFrontendExternalUrl
+  val betaFeedbackWithoutServiceIdUrl: String = appConfig.betaFeedbackWithoutServiceIdUrl
+  val exitSurveyUrl: String = appConfig.feedbackSurveyUrl
+  val agentOriginToken: String = appConfig.agentOriginToken
+  val clientOriginToken: String = appConfig.clientOriginToken
 
-  val subscriptionURL = appConfig.agentSubscriptionFrontendExternalUrl
-  val agentClientManagementUrl = appConfig.acmExternalUrl
-  val agentInvitationsExternalUrl = appConfig.agentInvitationsFrontendExternalUrl
-  val privacypolicyUrl = appConfig.privacyPolicyExternalUrl
+  val subscriptionURL: String = appConfig.agentSubscriptionFrontendExternalUrl
+  val agentClientManagementUrl: String = appConfig.acmExternalUrl
+  val agentInvitationsExternalUrl: String = appConfig.agentInvitationsFrontendExternalUrl
+  val privacypolicyUrl: String = appConfig.privacyPolicyExternalUrl
   val agentMappingFrontendUrl = s"${appConfig.agentMappingFrontendExternalUrl}/agent-mapping/start"
-  val timeout = appConfig.timeoutDialogTimeoutSeconds
-  val timeoutCountdown = appConfig.timeoutDialogCountdownSeconds
+  val timeout: Int = appConfig.timeoutDialogTimeoutSeconds
+  val timeoutCountdown: Int = appConfig.timeoutDialogCountdownSeconds
   val guidanceUrlVatExisting = s"${appConfig.govUkGuidanceExternalUrl}/sign-up-for-making-tax-digital-for-vat"
   val guidanceUrlVatNew = s"${appConfig.govUkGuidanceExternalUrl}/sign-your-business-up-for-making-tax-digital-for-vat"
   val guidanceUrlSaExisting = s"${appConfig.govUkGuidanceExternalUrl}/agents-use-software-to-send-income-tax-updates"
   val guidanceUrlSaNew = s"${appConfig.govUkGuidanceExternalUrl}/use-software-to-send-income-tax-updates"
-  val guidanceAuthoriseAgent = {
+  val guidanceAuthoriseAgent: String = {
     s"${appConfig.govUkGuidanceExternalUrl}/authorise-an-agent-to-deal-with-certain-tax-services-for-you"
   }
   val guidanceUrlSaSignup = s"${appConfig.govUkExternalUrl}/register-for-self-assessment/self-employed"
@@ -53,7 +54,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
   val companyAuthFrontendSignInUrl = s"$companyAuthUrl$companyAuthSignInPath"
 
-  private def contactFrontendServiceId(isAgent: Boolean) =
+  def contactFrontendServiceId(isAgent: Boolean): String =
     if (isAgent) agentOriginToken else clientOriginToken
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
@@ -67,12 +68,10 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
     s"$companyAuthFrontendSignOutUrl?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
 
-  def contactFrontendAjaxUrl(isAgent: Boolean): String =
-    s"$contactFrontendUrl/contact/problem_reports_ajax?service=${contactFrontendServiceId(isAgent)}"
-
-  def contactFrontendNonJsUrl(isAgent: Boolean): String =
-    s"$contactFrontendUrl/contact/problem_reports_nonjs?service=${contactFrontendServiceId(isAgent)}"
+  def betaFeedbackUrl(isAgent: Boolean): String =
+    s"$betaFeedbackWithoutServiceIdUrl${contactFrontendServiceId(isAgent)}"
 
   val guidanceCgtUkProperty = "https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property"
   val guidanceVatSignup = "https://www.gov.uk/vat-record-keeping/sign-up-for-making-tax-digital-for-vat"
+  val guidanceSa = "https://www.gov.uk/guidance/self-assessment-for-agents-online-service"
 }

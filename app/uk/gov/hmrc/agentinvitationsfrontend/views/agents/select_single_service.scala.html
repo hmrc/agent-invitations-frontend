@@ -15,58 +15,63 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-        mainTemplate: main_template,
-        errorPrefix: error_prefix,
-        uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-        uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-        uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-        uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    govukDetails: GovukDetails,
+    formHelper: FormWithCSRF,
+    inputYesNoRadios: InputYesNoRadios,
+    submitButton: SubmitButton
 )
 
-@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("title.suffix.agents")), bodyClasses = None, isAgent = true) {
+@detailsContent = {
+<p id="selectServiceSuggestion">@Html(Messages("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
+}
 
-    @back_link(config.backLink)
+@mainTemplate(
+title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(config.backLink)
+) {
 
     @if(choiceForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), choiceForm, Seq.empty, Some("service"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @uiFormHelper(
-        action = config.submitCall,
-        'class -> "form js-form") {
-        @uiInputRadioGroupCustom(
-            choiceForm("accepted"),
-            Seq("true"-> Messages("global.yes"), "false" -> Messages("global.no")),
-            '_legend -> Html("""<h1 class="heading-xlarge">"""+ Messages(config.selectSingleHeaderMessage) + """</h1>"""),
-            '_horizontal -> true,
-            '_groupDivClass -> "form-group",
-            '_fieldsetAttributes -> Html("""id='accepted'""")
+    @formHelper(action = config.submitCall) {
+
+        @inputYesNoRadios(
+            field = choiceForm("accepted"),
+            legend = Messages(config.selectSingleHeaderMessage),
+            headingIsLegend = true
         )
-        <details id="selectServiceHelper">
-            <summary id="selectServiceSummary">
-                <span id="selectServiceAlt" class="summary">
-                @Messages("select-service.alternative")
-                </span>
-            </summary>
 
-            <div class="panel panel-border-narrow">
-                <p id="selectServiceSuggestion">@Html(Messages("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
-            </div>
-        </details>
+        @govukDetails(Details(
+            id = Some("selectServiceHelper"),
+            summary = Text(Messages("select-service.alternative")),
+            content = HtmlContent(s"$detailsContent")
+        ))
 
-        <button class="button form-field--submit margin-top-30" type="submit" id="continue">@Messages("continue.button")</button>
+        @submitButton()
 
     }
 
     @if(config.basket.nonEmpty) {
-        <p class="margin-top-40"><a class="text-link-small" href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a></p>
+        <p class="govuk-!-margin-top-6 govuk-body-s">
+            <a href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a>
+        </p>
     }
 
 }

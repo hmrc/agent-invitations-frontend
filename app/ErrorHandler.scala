@@ -26,6 +26,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template, error_template_5xx}
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -41,6 +42,7 @@ class ErrorHandler @Inject()(
   errorTemplate: error_template,
   errorTemplate5xx: error_template_5xx)(
   implicit val config: Configuration,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   ec: ExecutionContext,
   externalUrls: ExternalUrls,
   appConfig: AppConfig,

@@ -36,11 +36,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{confirm_client, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
 import uk.gov.hmrc.agentmtdidentifiers.model.PptRef
+import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
-import java.net.URI
 
+import java.net.URI
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -84,6 +85,7 @@ class AgentInvitationJourneyController @Inject()(
   clientNotRegisteredView: client_not_registered,
   clientInsolventView: client_insolvent)(
   implicit configuration: Configuration,
+  implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   ec: ExecutionContext,

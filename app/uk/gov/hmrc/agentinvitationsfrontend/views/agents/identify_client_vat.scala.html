@@ -15,77 +15,78 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiDateFields: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.date_input
+    govukErrorSummary: GovukErrorSummary,
+    govukFieldset: GovukFieldset,
+    formHelper: FormWithCSRF,
+    inputText: InputText,
+    inputDate: InputDate,
+    submitButton: SubmitButton
 )
 
-@(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@titleSuffix = @{if(isDeAuthJourney) "title.suffix.agents.de-auth" else "title.suffix.agents"}
-@banner      = @{if(isDeAuthJourney) "banner.agents.de-auth" else "banner.agents.auth"}
+@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
+@agentInvitationsDateForm = @{
+    agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.vrn.required")))
+}
 
-    @agentInvitationsDateForm = @{
-        agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.vrn.required")))
-    }
+@fieldsetHtml = {
+    <p id="identify-client-hint">@Messages("identify-client.vat.p1")</p>
 
-@mainTemplate(bannerTitle = Messages(banner), title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(titleSuffix)), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+    @inputText(
+        field = agentInvitationsForm("clientIdentifier"),
+        label = Messages("identify-client.vrn.label"),
+        labelClass = Some("govuk-label--s"),
+        hint = Some(Messages("identify-client.vrn.hint")),
+        inputClass = Some("govuk-input--width-10"),
+        pattern=Some("[0-9]*"),
+        inputMode=Some("numeric")
+    )
 
-    @back_link(backLinkUrl)
+    @inputDate(
+        field = agentInvitationsDateForm("registrationDate"),
+        legend = Messages("identify-client.vat-registration-date.label"),
+        hint = Some(Messages("identify-client.vat-registration-date.hint"))
+    )
+}
+
+@mainTemplate(
+bannerTitle = Messages(banner),
+title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(agentInvitationsForm.hasErrors) {
-        @uiErrorSummary(Messages("error.summary.heading"), agentInvitationsForm, Seq.empty, Some("identify-client"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = Map("registrationDate" -> "registrationDate.day")))
     }
 
- @uiFormHelper(
-  action = submitFormCall, 'class -> "form js-form") {
+    @formHelper(action = submitFormCall) {
 
-     <h1 class="heading-xlarge margin-bottom-10">@Messages("identify-client.header")</h1>
+        @govukFieldset(Fieldset(
+            legend = Some(Legend(
+                content = Text(Messages("identify-client.header")),
+                classes = "govuk-fieldset__legend--xl",
+                isPageHeading = true
+            )),
+            describedBy = Some("identify-client-hint"),
+            html = fieldsetHtml
+        ))
 
-     <p class="hint-text">@Messages("identify-client.vat.p1")</p>
+        @submitButton()
 
-     <div class="form-group @if(agentInvitationsForm.error("clientIdentifier").isDefined) {form-field--error soft--ends}">
-         <label class="form-label" for="clientIdentifier">@Messages("identify-client.vrn.label")</label>
-         <span class="hint-text" id="vrn-hint">@Messages("identify-client.vrn.hint")</span>
-         @agentInvitationsForm.error("clientIdentifier").map { formError =>
-             <span class="error-notification" data-journey="search-page:error:vrn" id="vrn-error">
-                 <span class="visuallyhidden">@Messages("error.prefix")</span>@Messages(formError.message)</span>
-         }
-         <input
-         type="text"
-         class="form-control"
-         id="clientIdentifier"
-         name="clientIdentifier"
-         spellcheck="false"
-         pattern="[0-9]*"
-         inputmode="numeric"
-         aria-describedby="vrn-hint @if(agentInvitationsForm.error("clientIdentifier").isDefined) { vrn-error}"
-             @agentInvitationsForm.data.get("clientIdentifier").map { v => value="@v"}
-         >
-     </div>
-
-         <div @if(agentInvitationsForm.error("registrationDate").isDefined){class="nojs-date-fields-error"}>
-             @uiDateFields(agentInvitationsDateForm, "registrationDate",
-                 '_legend -> Messages("identify-client.vat-registration-date.label"),
-                 '_inputHint -> Messages("identify-client.vat-registration-date.hint"),
-                 '_legendSpanClass -> "form-label",
-                 '_legendClass -> "flush--ends",
-                 '_errorPrefix -> Messages("error.prefix")
-             )
-        </div>
-
-
-         <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-
-
-
- }
- }
+    }
+}

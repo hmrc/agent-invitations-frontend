@@ -15,22 +15,25 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(
-  mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "banner.clients", title = Messages("generic.title", Messages("invitation-expired.heading"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false,  mainDataAttributes = None) {
+@mainTemplate(bannerTitle = "service.name.clients", title = Messages("generic.title", Messages("invitation-expired.heading"), Messages("service.name.clients")),  isAgent = false) {
 
- <h1 class="heading-xlarge">@Messages("invitation-expired.heading")</h1>
+ <h1 class="govuk-heading-xl">@Messages("invitation-expired.heading")</h1>
 
  <p>@Messages("invitation-expired.p1")</p>
 
  <p>@Messages("invitation-expired.p2")</p>
 
- <a class="button" role="button" href=@externalUrls.signOutUrl(false, Some(false))>@Messages("invitation-expired.button")</a>
+   @linkStyledAsButton(
+    href = externalUrls.signOutUrl(false, Some(false)),
+    messageKey = "finish.button"
+  )
 }

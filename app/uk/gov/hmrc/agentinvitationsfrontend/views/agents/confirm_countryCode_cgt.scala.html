@@ -15,21 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers._
-@import views.html.helper._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputSelect, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
+    mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputSelect: InputSelect,
+    submitButton: SubmitButton
 )
 
-@(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(clientType : ClientType, countries: Map[String, String], countryCodeForm: Form[CountryCode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @submitUrl = @{if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode
                 else if(isDeAuth) routes.AgentLedDeauthJourneyController.submitConfirmCgtCountryCode
@@ -38,53 +43,29 @@
 
 @value = @{ countryCodeForm("countryCode").value match { case Some(x) => x case None => "" case x => x }}
 
-@mainTemplate(title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
-
-    @back_link(backLinkUrl)
+@mainTemplate(
+title = errorPrefix(countryCodeForm) + Messages("generic.title", Messages("confirm-countryCode-cgt.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
+) {
 
     @if(countryCodeForm.hasErrors){
-        @uiErrorSummary(Messages("error.summary.heading"), countryCodeForm, Seq.empty, Some("confirm-countryCode-cgt"))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(countryCodeForm))
     }
 
-    @uiFormHelper(action = submitUrl, 'class -> "form js-form") {
-        <div class="form-group soft--ends @if(countryCodeForm.hasErrors) {form-field--error error-container}">
+    @formHelper(action = submitUrl) {
 
+        @inputSelect(
+            field = countryCodeForm("countryCode"),
+            label = Messages("confirm-countryCode-cgt.header"),
+            labelAsHeading = true,
+            labelClasses = Set("govuk-label--xl"),
+            hint = Some(Messages("confirm-countryCode-cgt.p1") + " " + Messages("confirm-countryCode-cgt.hint")),
+            options = countries.toSeq,
+            inputClass = Some("govuk-input--width-20")
+        )
 
-                    <h1>
-                        <label class="heading-xlarge" for="country-auto-complete">@Messages("confirm-countryCode-cgt.header")</label>
-                    </h1>
-
-                <div id="countryCode-hint">
-                <p class="body-text">@Messages("confirm-countryCode-cgt.p1")</p>
-                <p class="hint-text">@Messages("confirm-countryCode-cgt.hint")</p>
-                </div>
-
-            @countryCodeForm.errors.map { error => <span
-            style="display: block"
-            class="error-notification"
-            id="countryCode-error">
-                <span class="visuallyhidden">@Messages("error.prefix")</span>
-                @Messages(error.message)
-            </span>
-            }
-
-            <div class="autocomplete-wrapper" id="countryCode">
-            <select id="country-auto-complete" name="countryCode">
-                <option value=""></option>
-                @for(option <- countries.toSeq) {
-                    <option
-                    id="countryCode-@option._1"
-                    value="@option._1"
-                        @if(value==option._1){selected="selected"}>@option._2</option>
-                }
-
-
-            </select>
-            </div>
-        </div>
-
-            <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
-
-            }
+        @submitButton()
+    }
 }
 

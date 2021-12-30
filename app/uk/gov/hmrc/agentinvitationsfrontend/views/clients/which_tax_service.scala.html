@@ -15,47 +15,47 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInputRadioGroupCustom: uk.gov.hmrc.agentinvitationsfrontend.views.html.helpers.input_radio_group_custom,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF,
+    inputRadio: InputRadios,
+    submitButton: SubmitButton,
+    govukErrorSummary: GovukErrorSummary
 )
 
-
-@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("banner.clients"),
+    bannerTitle = Messages("service.name.clients"),
     title = Messages("generic.title", Messages(s"which-service.header")),
-    bodyClasses = None,
-    isAgent = false
+    isAgent = false,
+    backLinkHref = Some(backLinkUrl.url)
 ) {
 
-@back_link(backLinkUrl.url)
+    @if(confirmForm.hasErrors){
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
+    }
 
-@if(confirmForm.hasErrors){
-    @uiErrorSummary(Messages("error.summary.heading"), confirmForm, Seq.empty, Some("whichService"))
-}
+    @formHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
 
-    <h1 class="heading-xlarge">@Messages("which-service.header")</h1>
+        @inputRadio(
+            field = confirmForm("accepted"),
+            legend = Messages("which-service.header"),
+            headingIsLegend = true,
+            inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", Messages("which-service.radio.yes")),("false", Messages("which-service.radio.no"))))
+        )
 
-
-    @uiFormHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
-
-    @uiInputRadioGroupCustom(
-        confirmForm("accepted"),
-        Seq(("true", Messages("which-service.radio.yes")),("false",Messages("which-service.radio.no"))),
-        '_fieldsetAttributes -> Html("""id='whichService'""")
-    )
-
-    <div class="form-group margin-top-30">
-        <button class="button" type="submit" id="continue">@Messages("confirm-decline.button")</button>
-    </div>
+        @submitButton()
     }
 }

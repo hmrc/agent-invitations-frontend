@@ -1,10 +1,6 @@
-banner.agents.auth=Ask a client to authorise you
-banner.agents.de-auth=Cancel a client’s authorisation
-banner.clients=Appoint someone to deal with HMRC for you
-
-title.suffix.agents=Ask a client to authorise you
-title.suffix.agents.de-auth=Cancel a client’s authorisation
-title.suffix.client=Appoint someone to deal with HMRC for you
+service.name.agents.auth=Ask a client to authorise you
+service.name.agents.de-auth=Cancel a client’s authorisation
+service.name.clients=Appoint someone to deal with HMRC for you
 
 generic.title={0} - {1} - GOV.UK
 
@@ -252,8 +248,6 @@ ppt-not-matched.advice.l2=contact the client that gave you this reference, as th
 # Confirm Client
 confirm-client.title=Is this the client you want authorisation from?
 confirm-client.header=Is {0} the client you want authorisation from?
-confirm-client.yes=Yes
-confirm-client.no=No - I need to start over again
 error.confirm-client.required=Select yes if you want to ask this client for authorisation
 
 # Invitation Sent
@@ -343,7 +337,6 @@ cancel-authorisation.select-service.hint=Select an option.
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.header=Is {0} the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.yes=Yes - this is the client
-cancel-authorisation.confirm-client.no=No - I need to start over again
 cancel-authorisation.error.confirm-client.required=Select yes if you want to ask this client for authorisation
 cancel-authorisation.utr=Unique Taxpayer Reference: {0}
 cancel-authorisation.cgt.account-ref=Capital Gains Tax account reference: {0}
@@ -356,7 +349,6 @@ cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=If you cancel your authoris
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=If you cancel your authorisation, you will not be able to maintain a trust or an estate on behalf of {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisation, you will not be able to manage Capital Gains Tax on UK property account for {0}.
 cancel-authorisation.confirm-cancel.yes=Yes
-cancel-authorisation.confirm-cancel.no=No - I need to start over again
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
 cancel-authorisation.confirm-cancel.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
@@ -380,7 +372,6 @@ cancel-authorisation.not-matched.header=We could not find your client
 cancel-authorisation.not-matched.description=We could not find a client in our records using the details you gave us.
 cancel-authorisation.not-matched.advice=Check the details and try again.
 
-cancel-authorisation.start-over.button=Start over
 cancel-authorisation.response-failed.header=Sorry, there is a problem with the service
 cancel-authorisation.response-failed.description=You can try again now, or try later.
 cancel-authorisation.response-failed.advice=We may not have saved your responses.
@@ -393,7 +384,6 @@ not-authorised.HMRC-MTD-VAT.p=This client has not authorised you to manage their
 not-authorised.HMRC-TERS-ORG.p=This client has not authorised you to maintain a trust or an estate.
 not-authorised.HMRC-TERSNT-ORG.p=This client has not authorised you to maintain a trust or an estate.
 not-authorised.HMRC-CGT-PD.p=This client has not authorised you to manage their Capital Gains Tax on UK property account.
-not-authorised.button=Start over
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
@@ -452,12 +442,10 @@ review-auths.link =Return to your authorisation requests
 #Request cancelled
 client-request-cancelled.header=The tax agent has cancelled this authorisation request
 client-request-cancelled.p=Ask the tax agent to send another request if you still want to authorise them.
-client-request-cancelled.button=Finish and sign out
 
 #All authorisations removed
 all-authorisations-removed.header=Authorisation request removed
 all-authorisations-removed.p=You have removed all of your new authorisation requests.
-new-request.button=Start a new request
 
 #Cannot Create Request
 cannot-create-request.header=You cannot ask this client to authorise you yet
@@ -465,7 +453,6 @@ cannot-create-request.p1=We are processing this client’s sign-up to VAT.
 cannot-create-request.p2=Once this is done, you can ask the client to authorise you for this service.
 cannot-create-request.p3=This may take up to 72 hours, so try again later.
 cannot-create-request.review-auth=Return to your authorisation requests
-cannot-create-request.start-again=Start a new request
 
 #Create authorisation failed
 create-auth-failed.header=Sorry, there is a problem with the service
@@ -481,7 +468,6 @@ create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation reques
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
 create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
 create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
-create-auth-failed.button.continue=Continue
 
 create-auth-failed.HMRC-CGT-PD.label=Capital Gains Tax account reference:
 
@@ -508,8 +494,8 @@ landing-page.service.vat.p1=You need to authorise your tax agent if you want the
 warm-up.header=Authorise {0} to deal with HMRC for you
 warm-up.p1=Use this service to allow {0} to manage your tax affairs.
 warm-up.p2.personal=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT.
-warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
-warm-up.p2.trust=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong class = "bold"> business tax affairs</strong>.
+warm-up.p2.business=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong> business tax affairs</strong>.
+warm-up.p2.trust=So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your <strong> business tax affairs</strong>.
 warm-up.p3.personal=If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one.
 warm-up.inset=If you authorise {0}, this will cancel any consent you gave to someone else to act for you for the same service.
 warm-up.link=I do not want to authorise {0}
@@ -562,7 +548,6 @@ invitation-declined.multi.vat.p1=You have not given permission to {0} to manage 
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.trustNT.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
-invitation-declined.sign-out.button=Finish and sign out
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 
@@ -582,7 +567,6 @@ confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
 confirm-decline.trustNT.service-name=maintain a trust or an estate
 confirm-decline.cgt.service-name=manage your Capital Gains Tax on UK property account.
-confirm-decline.button=Continue
 
 # Confirm Terms
 confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
@@ -757,7 +741,6 @@ check-answers.continue.button=Confirm and send response
 invitation-expired.heading=This page is no longer available
 invitation-expired.p1=The link you tried to access has expired.
 invitation-expired.p2=If you still want to appoint this tax agent, ask them to send you another request.
-invitation-expired.button=Finish and sign out
 
 # Complete
 client-complete.header=Approval complete
@@ -774,7 +757,6 @@ client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with 
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
 client-complete.button.mta=Manage your tax agents
-client-complete.sign-out=Finish and sign out
 
 client-complete.multi.header=Approval complete
 client-complete.multi.header.p={0} can now deal with HMRC for you
@@ -837,12 +819,10 @@ not-found-invitation.description.3=If the web address is correct, contact the ta
 # Invitation Already Responded
 invitation-already-responded.header=You have already responded to this request
 invitation-already-responded.description=If you think this is wrong, contact the tax agent who sent you the request.
-invitation-already-responded.button=Finish and sign out
 
 # Cannot View Invitation
 cannot-view-request.header=You cannot view this request
 cannot-view-request.p1=Contact the tax agent who sent you the request if you still want to authorise them.
-cannot-view-request.button=Finish and sign out
 
 # Wrong Client Type
 incorrect-client-type.header=There is a problem
@@ -1028,7 +1008,6 @@ confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to m
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage their Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
-confirm-authorisation-cancelled.radio.no.itsa=No - I need to start over again
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=Are you sure you want to cancel this client’s authorisation?
@@ -1055,7 +1034,6 @@ authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for 
 authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
 authorisation-cancelled.check-sa.l1=sign out of this agent services account
 authorisation-cancelled.check-sa.l2=sign in to your HMRC online services for agents account
-authorisation-cancelled.check-sa.l2.link=https://www.gov.uk/guidance/self-assessment-for-agents-online-service
 authorisation-cancelled.check-sa.l3=follow the instructions for deleting the client from your client list
 authorisation-cancelled.track.button=Return to track your recent authorisation requests
 
@@ -1068,7 +1046,6 @@ pending-authorisation-exists.header=You already created an authorisation request
 pending-authorisation-exists.p=Ask the client to respond to the request you have already created.
 pending-authorisation-exists.button=Return to your authorisation requests
 pending-authorisation-exists.track.button=Track your authorisation requests
-pending-authorisation-exists.new-request.button=Start a new request
 
 #Active authorisation exists
 active-authorisation-exists.header=You are already authorised
@@ -1087,7 +1064,6 @@ partial-authorisation-exists.header=You are already authorised
 partial-authorisation-exists.p1=This client has already authorised you to manage their Making Tax Digital for Income Tax. This means that you can now <a href='https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax'> sign your client up for Making Tax Digital for Income Tax</a>.
 partial-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 partial-authorisation-exists.return=Return to your authorisation requests
-partial-authorisation-exists.new-request.button=Start a new request
 
 #Client not registered (ALT-ITSA)
 client-not-registered.header=Your client needs to register for Self Assessment
@@ -1096,7 +1072,6 @@ client-not-registered.h2=What to do next
 client-not-registered.p2=Ask your client to <a href="{0}">register for Self Assessment</a>. After they have registered, they will receive a Self Assessment Unique Taxpayer Reference.
 client-not-registered.p3=Then you can <a href={0}>create an authorisation request to send them</a>.
 client-not-registered.return=Return to your authorisation requests
-client-not-registered.new-request.button=Start a new request
 
 #Legacy authorisation detected
 legacy-auth-detected.title=Has this client already authorised you through your HMRC online services for agents account?
@@ -1207,11 +1182,15 @@ global.error.500.sa_helpline=if you need help with Making Tax Digital for Income
 #Common
 global.yes=Yes
 global.no=No
+global.no-start-over=No - I need to start over again
+button.back=Back
 try-again.button=Try again
 continue.button=Continue
+start-over.button=Start over
 start-again.button=Start again
-button.back=Back
+new-request.button=Start a new request
 finish.button=Finish and sign out
+
 error.summary.heading=There is a problem
 error.confirmDecline.invalid=Select yes if you want to decline this request
 error.confirmTerms.invalid=You must accept the terms to continue

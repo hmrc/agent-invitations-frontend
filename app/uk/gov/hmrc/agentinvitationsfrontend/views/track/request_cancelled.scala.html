@@ -15,33 +15,37 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.RequestCancelledPageConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: main_template
+    mainTemplate: MainTemplate,
+    govukPanel: GovukPanel
 )
 
-@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
-
-@legend = @{"""<h1 class="heading-xlarge">""" + Messages("confirm-cancel.header") + """</h1>""" +
+@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@legend = @{"""<h1 class="govuk-heading-xl">""" + Messages("confirm-cancel.header") + """</h1>""" +
         """<p>""" + Messages(s"confirm-cancel.subheader.${pageConfig.service}") + """</p>"""}
 
-@mainTemplate(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("service.name.agents.auth")),  isAgent = true) {
 
- <div class="transaction-banner--complete with-govuk-success-colour">
-  <h1 class="transaction-banner__heading">@Messages("request-cancelled.header")</h1>
- </div>
+    @govukPanel(Panel(
+        title = Text(Messages("request-cancelled.header"))
+    ))
 
  <p>@Messages(s"request-cancelled.p1.${pageConfig.service}")</p>
 
-    <div class="panel panel-border-wide margin-top-30 margin-bottom-30">
+    <div class="govuk-inset-text govuk-!-margin-top-6 govuk-!-margin-bottom-6">
         <p>@Messages("request-cancelled.panel", pageConfig.hideClientName)</p>
     </div>
 
-    <div class="margin-bottom-30">
+    <div class="govuk-!-margin-bottom-6">
         <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages("request-cancelled.track.link")</a>
     </div>
 

@@ -747,7 +747,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "follow the instructions for deleting the client from your client list"
       )
       checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", "sign in to your HMRC online services for agents account")
-      checkResultContainsLink(result, "/invitations/track", "Return to track your recent authorisation requests", roleIsButton = true, clazz = Some("button"))
+      checkResultContainsLink(result, "/invitations/track", "Return to track your recent authorisation requests", roleIsButton = true)
     }
 
     "render a authorisation cancelled page for IRV" in {

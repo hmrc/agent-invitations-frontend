@@ -15,41 +15,44 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.PendingAuthorisationExistsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(
-    mainTemplate: main_template,
-    errorPrefix: error_prefix,
-    uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-    uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-    uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-    uiInputRadioGroup: uk.gov.hmrc.play.views.html.helpers.InputRadioGroup
-)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = Messages("generic.title", Messages(s"pending-authorisation-exists.header"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(config.backLinkUrl)
+) {
 
-  @back_link(config.backLinkUrl)
-
-  <h1 class="heading-xlarge">@Messages("pending-authorisation-exists.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("pending-authorisation-exists.header")</h1>
 
     <p>@Messages("pending-authorisation-exists.p")</p>
 
-  @if(config.authRequestsExist && !config.fromFastTrack) {
-
-   <a href="@config.reviewAuthsCall" role="button" class="button">@Messages("pending-authorisation-exists.button")</a>
-
-  }else {
+    @if(config.authRequestsExist && !config.fromFastTrack) {
+        @linkStyledAsButton(
+            href = config.reviewAuthsCall.url,
+            messageKey = "pending-authorisation-exists.button"
+        )
+    } else {
       @if(!config.fromFastTrack) {
-
-          <a href="@config.clientTypeCall" class="button" role="button">@Messages("pending-authorisation-exists.new-request.button")</a>
+        @linkStyledAsButton(
+            href = config.clientTypeCall.url,
+            messageKey = "new-request.button"
+        )
       } else {
-          <a class="button" role="button" href=@routes.AgentsRequestTrackingController.showTrackRequests()>@Messages("pending-authorisation-exists.track.button")</a>
+        @linkStyledAsButton(
+            href = routes.AgentsRequestTrackingController.showTrackRequests().url,
+            messageKey = "pending-authorisation-exists.track.button"
+        )
       }
-  }
+    }
 
 }

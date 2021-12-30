@@ -15,20 +15,26 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-  mainTemplate: main_template,
-  errorPrefix: error_prefix,
-  uiErrorSummary: uk.gov.hmrc.play.views.html.helpers.ErrorSummary,
-  uiFormHelper: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
-  uiInput: uk.gov.hmrc.play.views.html.helpers.Input,
-  uiDateFields: uk.gov.hmrc.play.views.html.helpers.DateFieldsFreeInlineLegend
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    formHelper: FormWithCSRF,
+    inputText: InputText,
+    inputDate: InputDate,
+    submitButton: SubmitButton
 )
 
-@(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @noJsDateFieldsError = @{
  if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
@@ -37,102 +43,48 @@
 
 @flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
 
-@mainTemplate(title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("title.suffix.agents")), bodyClasses = None, isAgent = true, mainDataAttributes = None) {
+@mainTemplate(
+title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(s"${config.backLinkUrl}")
+) {
 
- @back_link(s"${config.backLinkUrl}")
+    @if(knownFactForm.hasErrors) {
+        @if(config.service == "HMRC-MTD-IT") {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
+        } else {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = Map("knownFact" -> "knownFact.day")))
+        }
+    }
 
- @if(knownFactForm.hasErrors) {
-  @uiErrorSummary(Messages("error.summary.heading"), knownFactForm, Seq.empty, Some("known-fact"))
- }
+    @formHelper(action = config.submitKFCall) {
 
-    @uiFormHelper(action = config.submitKFCall, 'class -> "form js-form") {
+    <h1 class="govuk-heading-xl">@Messages(s"known-fact.${config.service}.heading")</h1>
 
- <div class="form-group @if(knownFactForm.hasErrors){form-field--error error-container}">
+    <p>@Messages("known-fact.p1")</p>
 
-   <h1>
-     <label class="heading-xlarge margin-bottom-30" for="knownFact">
-       @Messages(s"known-fact.${config.service}.heading")
-     </label>
-   </h1>
+    @if(config.service == "HMRC-MTD-IT") {
 
-<p>@Messages("known-fact.p1")</p>
+        @inputText(
+            field = knownFactForm("knownFact"),
+            label = Messages(s"known-fact.${config.service}.heading"),
+            labelClass = Some("govuk-visually-hidden"),
+            hint = Some(Messages(s"known-fact.${config.service}.helper")),
+            inputClass = Some("govuk-input--width-10")
+        )
 
-<span class="form-hint margin-bottom-10" id="known-fact-hint">@Messages(s"known-fact.${config.service}.helper")</span>
+    } else {
 
-  @if(config.service == "HMRC-MTD-IT") {
-      @knownFactForm.error("knownFact").map{ formError => <span class="error-notification" id="known-fact-error">
-          <span class="govuk-visually-hidden">@Messages("error.prefix")</span>
-          @Messages(formError.message)
-      </span>}
-       <!--don't use play-ui's Input element as it sends an empty label which will be an issue for DAC accessibility -->
-       <input
-       type="text"
-       class="form-control"
-       name="knownFact"
-       id="knownFact"
-       spellcheck="false"
-       @knownFactForm.data.get("knownFact").map { v => value="@v"}
-       aria-describedby="known-fact-hint @if(knownFactForm.hasErrors){known-fact-error}"
-       >
+         @inputDate(
+             field = knownFactForm("knownFact"),
+             legend = Messages(s"known-fact.${config.service}.heading"),
+             legendClass = "govuk-visually-hidden",
+             hint = Some(Messages(s"known-fact.${config.service}.helper"))
+         )
 
-  }else {
-      <div>
-          <fieldset class="form-date" id="knownFact">
-              <legend>
-                  <span class="error-notification">
-                      @for(error <- knownFactForm.errors){
-                          @Messages(error.message) <br>
-                      }
-                  </span>
-              </legend>
-              <label for="knownFact.day" class="form-group form-group-day">
-                  <span>
-                      @Messages("date.fields.day")
-                  </span>
-                  <input
-                  class="form-control input--xsmall"
-                  name="knownFact.day"
-                  id="knownFact.day"
-                  type="text"
-                  pattern="[0-9]*"
-                  inputmode="numeric"
-                  @knownFactForm.data.get("knownFact.day").map { v => value="@v"}
-                  >
-              </label>
-              <label for="knownFact.month" class="form-group form-group-month">
-                  <span>
-                  @Messages("date.fields.month")
-                  </span>
-                  <input
-                  class="form-control input--xsmall"
-                  name="knownFact.month"
-                  id="knownFact.month"
-                  type="text"
-                  pattern="[0-9]*"
-                  inputmode="numeric"
-                      @knownFactForm.data.get("knownFact.month").map { v => value="@v"}
-                  >
-              </label>
-              <label for="knownFact.year" class="form-group form-group-year">
-                  <span>
-                  @Messages("date.fields.year")
-                  </span>
-                  <input
-                  class="form-control input--xsmall"
-                  name="knownFact.year"
-                  id="knownFact.year"
-                  type="text"
-                  pattern="[0-9]*"
-                  inputmode="numeric"
-                      @knownFactForm.data.get("knownFact.year").map { v => value="@v"}
-                  >
-              </label>
-          </fieldset>
-      </div>
-  }
- </div>
+    }
 
-      <button class="button" type="submit" id="continue">@Messages("continue.button")</button>
+      @submitButton()
 
 
  }

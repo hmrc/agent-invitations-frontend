@@ -15,22 +15,24 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(
-    mainTemplate: main_template
-)
+@this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls)
+@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("banner.clients"), title = Messages("generic.title", Messages("all-responses-failed.header"), Messages("title.suffix.client")), bodyClasses = None, isAgent = false, mainDataAttributes = None) {
+@mainTemplate(
+bannerTitle = Messages("service.name.clients"),
+title = Messages("generic.title", Messages("all-responses-failed.header"), Messages("service.name.clients")),
+isAgent = false) {
 
-    <h1 class="heading-xlarge">@Messages("all-responses-failed.header")</h1>
+    <h1 class="govuk-heading-xl">@Messages("all-responses-failed.header")</h1>
 
-  <p>@Messages("all-responses-failed.p1")</p>
-  <p>@Messages("all-responses-failed.p2")</p>
-  <p>@Html(Messages("all-responses-failed.check", externalUrls.agentClientManagementUrl))</p>
-  <p>@Messages("all-responses-failed.p3")</p>
+    <p>@Messages("all-responses-failed.p1")</p>
+    <p>@Messages("all-responses-failed.p2")</p>
+    <p>@Html(Messages("all-responses-failed.check", externalUrls.agentClientManagementUrl))</p>
+    <p>@Messages("all-responses-failed.p3")</p>
 
 }
