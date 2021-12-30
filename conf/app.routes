@@ -1,5 +1,5 @@
 # microservice specific routes
-
+->         /hmrc-frontend                      hmrcfrontend.Routes
 # Invitations ---------------------------------------------------------------------------------------------------------
 
 #When adding a POST endpoint, if there is a possibility of failure ensure it has a corresponding GET to prevent Error Handler complications
@@ -228,10 +228,9 @@ GET         /sign-out-redirect                                          uk.gov.h
 GET         /keep-alive                                                 uk.gov.hmrc.agentinvitationsfrontend.controllers.TimeoutController.keepAlive
 
 GET         /trust-not-claimed                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
+GET         /assets/*file                                               controllers.Assets.versioned(path="/public", file)
 GET         /:clientType/:uid/:agentName                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
 GET         /:clientType-taxes/manage-who-can-deal-with-HMRC-for-you/:uid/:agentName   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String)
 GET         /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showGGUserIdNeeded
 POST        /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitGGUserIdNeeded
 GET         /language/:lang                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationsLanguageController.switchToLanguage(lang: String)
-
-GET         /assets/*file                                               controllers.Assets.versioned(path="/public", file)
