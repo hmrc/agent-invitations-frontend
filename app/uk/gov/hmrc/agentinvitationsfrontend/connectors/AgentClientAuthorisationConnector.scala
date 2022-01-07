@@ -480,7 +480,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
           case FORBIDDEN if r.body.contains("VAT_RECORD_CLIENT_INSOLVENT_TRUE")     => VatRecordClientInsolvent
           case LOCKED                                                               => VatRecordMigrationInProgress
           case s if s / 100 == 5 =>
-            throw new RuntimeException(s"unexpected error during postcode match check, error: ${r.body}")
+            throw new RuntimeException(s"unexpected error during vat registration date match check, error: ${r.body}")
         }
       }
     }
