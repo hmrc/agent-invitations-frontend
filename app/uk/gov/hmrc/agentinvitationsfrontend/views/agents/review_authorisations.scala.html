@@ -65,7 +65,7 @@ backLinkHref = Some(backLinkUrl)
     @for(authorisationRequest <- config.basket) {
         @checkAnswersRow(
             key = config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name")),
-            valueId = "client-service-${authorisationRequest.invitation.service}",
+            valueId = s"client-service-${authorisationRequest.invitation.service}",
             value = Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),
             actionText = Some(Messages("review-authorisations.table.remove")) ,
             actionHref = Some(config.showDeleteCall(authorisationRequest.itemId).url),
