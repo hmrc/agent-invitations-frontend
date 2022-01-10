@@ -39,7 +39,7 @@
 @(confirmTermsForm: Form[ConfirmedTerms], pageConfig: ConfirmTermsPageConfig, changingConsent: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @itsaTerms = {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.itsa.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.itsa.list.item7")</li>
         <li>@Messages("confirm-terms-multi.itsa.list.item1")</li>
@@ -55,7 +55,7 @@
 }
 
 @pirTerms = {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.pir.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.pir.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.pir.list.item1")</li>
         <li>@Messages("confirm-terms-multi.pir.list.item2")</li>
@@ -65,7 +65,7 @@
 }
 
 @vatTerms = {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.vat.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.vat.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.vat.list.item1")</li>
         <li>@Messages("confirm-terms-multi.vat.list.item2")</li>
@@ -86,7 +86,7 @@
 }
 
 @trustTerms = {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.trust.list.item1")</li>
         <li>@Messages("confirm-terms-multi.trust.list.item2")</li>
@@ -94,7 +94,7 @@
 }
 
 @trustNTTerms = {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</span>
+    <p class=" govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.trust.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.trust.list.item1")</li>
         <li>@Messages("confirm-terms-multi.trust.list.item2")</li>
@@ -103,7 +103,7 @@
 
 @cgtTerms = {
     @if(pageConfig.clientType == "personal") {
-        <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.cgt.personal.p1", pageConfig.agencyName)</span>
+        <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.cgt.personal.p1", pageConfig.agencyName)</p>
         <ul class="govuk-list govuk-list--bullet">
             <li>@Messages("confirm-terms-multi.cgt.personal.p1.l1")</li>
             <li>@Messages("confirm-terms-multi.cgt.personal.p1.l2")</li>
@@ -120,7 +120,7 @@
             </li>
         </ul>
     } else {
-        <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)</span>
+        <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)</p>
         <ul class="govuk-list govuk-list--bullet">
             <li>@Messages("confirm-terms-multi.cgt.business.p1.l1")</li>
             <li>@Messages("confirm-terms-multi.cgt.business.p1.l2")</li>
@@ -141,7 +141,7 @@
 
 @pptTerms = {
   @if(pageConfig.clientType == "personal") {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.ppt.personal.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.ppt.personal.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.ppt.personal.p1.l1")</li>
         <li>@Messages("confirm-terms-multi.ppt.personal.p1.l2")</li>
@@ -153,7 +153,7 @@
         <li>@Messages("confirm-terms-multi.ppt.personal.p1.l8")</li>
     </ul>
   } else {
-    <span class="checkbox-heading govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.ppt.business.p1", pageConfig.agencyName)</span>
+    <p class="govuk-!-margin-bottom-4">@Messages("confirm-terms-multi.ppt.business.p1", pageConfig.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@Messages("confirm-terms-multi.ppt.business.p1.l1")</li>
         <li>@Messages("confirm-terms-multi.ppt.business.p1.l2")</li>
@@ -224,9 +224,7 @@ backLinkHref = Some(pageConfig.backLink.url)
     @formHelper(pageConfig.submitUrl) {
     <fieldset class="govuk-fieldset">
         <legend class="govuk-visually-hidden">
-            @if(pageConfig.isSingleConsent)@{Messages("confirm-terms.legend.single",pageConfig.agencyName)} else{
-            @Messages("confirm-terms.legend.multi",pageConfig.agencyName)
-            }
+            @Messages(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName)
         </legend>
 
         @for(consent <- pageConfig.serviceKeyAndExpiryDateSeq) {
@@ -235,25 +233,26 @@ backLinkHref = Some(pageConfig.backLink.url)
 
                 <h2 class="govuk-!-margin-bottom-4 govuk-!-margin-top-4">@Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading")</h2>
 
-                    @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
-                        @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
-                        @inputSingleCheckbox(
-                            field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                            legend = Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading"),
-                            id = consent.serviceKey,
-                            checkboxText = label(consent.serviceKey),
-                            isChecked = true
-                        )
-                    } else {
-                        @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
-                        @inputSingleCheckbox(
-                            field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
-                            legend = Messages(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading"),
-                            id = consent.serviceKey,
-                            checkboxText = label(consent.serviceKey)
-                        )
-                    }
-                <hr class="govuk-section-break govuk-section-break--visible">
+                @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
+
+                @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
+                    @inputSingleCheckbox(
+                        field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
+                        legend = Messages(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName),
+                        checkboxText = label(consent.serviceKey),
+                        isChecked = true
+                    )
+                } else {
+                    @inputSingleCheckbox(
+                        field = confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                        legend = Messages(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName),
+                        checkboxText = label(consent.serviceKey)
+                    )
+                }
+
+                @if(pageConfig.consentSeq.length != 1) {
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                }
             }
         }
     </fieldset>
