@@ -115,19 +115,19 @@ isAgent = true) {
             <tbody class="govuk-table__body">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
             <tr class="govuk-table__row" id="row-@index">
-                <td class="govuk-table__cell" id="taxpayerName">
+                <td class="govuk-table__cell" id="taxpayerName-@index">
                     <span>@invitationOrRelationship.clientName.getOrElse(Messages("recent-invitations.table-row-header.clientNameUnknown"))</span>
                 </td>
-                <td  class="govuk-table__cell" id="serviceInfo">
+                <td  class="govuk-table__cell" id="serviceInfo-@index">
                     <span>
                        @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
                     </span>
                 </td>
-                <td class="govuk-table__cell" id="status">
+                <td class="govuk-table__cell" id="status-@index">
                     @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
                     <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                 </td>
-                <td class="govuk-table__cell" id="action-@invitationOrRelationship.status.toLowerCase()">
+                <td class="govuk-table__cell" id="action-@index-@invitationOrRelationship.status.toLowerCase()">
                     @{
                         invitationOrRelationship.status match {
                             case "Partialauth" => preAuthForm(invitationOrRelationship, index)

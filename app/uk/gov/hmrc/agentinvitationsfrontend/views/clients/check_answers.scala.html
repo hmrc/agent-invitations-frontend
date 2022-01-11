@@ -48,7 +48,7 @@
     @for(consent <- pageConfig.consents) {
         @checkAnswersRow(
             key = Messages(s"check-answers.service.${consent.serviceKey}"),
-            valueId = "client-identifier",
+            valueId = s"client-identifier-${consent.serviceKey}",
             value = Messages(s"check-answers.consent.${consent.consent}"),
             actionText = Some(Messages("check-answers.change-link")) ,
             actionHref = Some(pageConfig.changeCall(consent.serviceKey).url),

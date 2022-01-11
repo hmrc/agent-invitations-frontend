@@ -26,7 +26,6 @@ legend: String,
 legendClass: Option[String] = None,
 hint: Option[String] = None,
 headingIsLegend: Boolean = false,
-id: String,
 checkboxText: String,
 isChecked: Boolean = false
 )(implicit messages: Messages)
@@ -44,8 +43,8 @@ isChecked: Boolean = false
     items = Seq(CheckboxItem(
         content = Text(checkboxText),
         value = "true",
-        name = Some(id),
-        id = Some(id),
-        checked = isChecked
+        name = Some(field.name.toString),
+        id = Some(field.name.toString),
+        checked = if(field.value.contains("true")) true else isChecked
     ))
 ).withFormField(field))
