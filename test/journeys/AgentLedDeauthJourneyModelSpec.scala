@@ -82,7 +82,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(SelectClientType) when selectedClientType(authorisedAgent)("personal") should thenGo(SelectServicePersonal(availableServices))
       }
       "transition to SelectServiceBusiness when business is selected" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(SelectServiceBusiness)
+        given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(
+          SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG)))
       }
       "transition to SelectServicePersonal with only allowlisted services" in {
         given(SelectClientType) when selectedClientType(nonAllowlistedAgent)("personal") should thenGo(SelectServicePersonal(allowlistedServices))
@@ -208,37 +209,38 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
     "at state SelectServiceBusiness" should {
       "transition to IdentifyClientBusiness when YES is selected and feature flag is on" in {
-        given(SelectServiceBusiness) when
-          chosenBusinessService(showVatFlag = true)(authorisedAgent)(HMRCMTDVAT) should
-          thenGo(IdentifyClientBusiness)
+        given(SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG))) when
+          chosenBusinessService(showVatFlag = true, showPptFlag = true)(authorisedAgent)(HMRCMTDVAT) should
+          thenGo(IdentifyClientBusiness(Services.HMRCMTDVAT))
       }
       "transition to ClientType when NO is selected and feature flag is on" in {
-        given(SelectServiceBusiness) when
-          chosenBusinessService(showVatFlag = true)(authorisedAgent)("") should
+        given(SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG))) when
+          chosenBusinessService(showVatFlag = true, showPptFlag = true)(authorisedAgent)("") should
           thenGo(SelectClientType)
       }
       "throw an exception when YES is selected but the show vat flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceBusiness) when
-            chosenBusinessService(showVatFlag = false)(authorisedAgent)(HMRCMTDVAT)
+          given(SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG))) when
+            chosenBusinessService(showVatFlag = false, showPptFlag = true)(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
     }
 
     "at state SelectServiceTrust" should {
       "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(TRUST) should thenGo(
-          IdentifyClientTrust)
+        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
+          authorisedAgent)(TRUST) should thenGo(IdentifyClientTrust)
       }
 
       "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true)(authorisedAgent)(HMRCCGTPD) should thenGo(
-          IdentifyClientCgt)
+        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
+          authorisedAgent)(HMRCCGTPD) should thenGo(IdentifyClientCgt)
       }
 
       "throw an exception when YES is selected but the show trust flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = false, showCgtFlag = true)(authorisedAgent)(TRUST)
+          given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = false, showCgtFlag = true, showPptFlag = true)(
+            authorisedAgent)(TRUST)
         }.getMessage shouldBe "Service: TRUST feature flag is switched off"
       }
     }
@@ -376,21 +378,23 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmClientVat when known fact matches" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactCheckOk)
 
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(vatRegDateMatches, getClientName, hasActiveRelationships)(authorisedAgent)(
-          vatClient) should thenGo(ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
+        given(IdentifyClientBusiness(Services.HMRCMTDVAT)) when submitIdentifyClientVat(vatRegDateMatches, getClientName, hasActiveRelationships)(
+          authorisedAgent)(vatClient) should thenGo(ConfirmClientBusiness(Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactNotMatched)
 
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName, hasActiveRelationships)(authorisedAgent)(
-          vatClient) should thenGo(KnownFactNotMatched)
+        given(IdentifyClientBusiness(Services.HMRCMTDVAT)) when submitIdentifyClientVat(
+          vatRegDateDoesNotMatch,
+          getClientName,
+          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to NotSignedUp when client is not enrolled" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
-        given(IdentifyClientBusiness) when submitIdentifyClientVat(clientNotSignedUp, getClientName, hasActiveRelationships)(authorisedAgent)(
-          vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
+        given(IdentifyClientBusiness(Services.HMRCMTDVAT)) when submitIdentifyClientVat(clientNotSignedUp, getClientName, hasActiveRelationships)(
+          authorisedAgent)(vatClient) should thenGo(NotSignedUp(HMRCMTDVAT))
       }
     }
 

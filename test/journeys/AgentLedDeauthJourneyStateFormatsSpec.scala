@@ -49,8 +49,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "SelectServiceBusiness" in {
-        val state = SelectServiceBusiness
-        val json = Json.parse("""{"state":"SelectServiceBusiness"}""")
+        val state = SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG))
+        val json = Json.parse(s"""{"state":"SelectServiceBusiness", "properties": {"enabledServices": ["$HMRCMTDVAT", "$HMRCPPTORG"]}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -90,8 +90,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "IdentifyClientBusiness" in {
-        val state = IdentifyClientBusiness
-        val json = Json.parse("""{"state":"IdentifyClientBusiness"}""")
+        val state = IdentifyClientBusiness(Services.HMRCMTDVAT)
+        val json = Json.parse(s"""{"state":"IdentifyClientBusiness", "properties": {"service": "$HMRCMTDVAT"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

@@ -494,10 +494,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def confirmRegDatePpt(agent: AuthorisedAgent)(regDate: LocalDate): Transition =
+    def confirmRegDatePpt(agent: AuthorisedAgent)(regDate: String): Transition =
       Transition {
         case ConfirmRegDatePpt(originalFastTrackRequest, fastTrackRequest, continueUrl, actualRegDate, name) =>
-          if (actualRegDate.equals(regDate)) {
+          if (actualRegDate.equals(LocalDate.parse(regDate))) {
             goto(ConfirmClientPpt(originalFastTrackRequest, fastTrackRequest, continueUrl, name))
           } else {
             goto(KnownFactNotMatched(originalFastTrackRequest, fastTrackRequest, continueUrl))
@@ -1019,7 +1019,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case SelectClientTypePpt(originalFtr, ftr, continueUrl, isChanging) =>
           getPptSubscription(PptRef(ftr.clientIdentifier)).map {
             case Some(subscription) =>
-              val newFtr = ftr.copy(clientType = Some(if (suppliedClientType == "trust") Trust else Personal))
+              val newFtr = ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType)))
               if (isChanging)
                 IdentifyPptClient(originalFtr, newFtr, continueUrl)
               else
