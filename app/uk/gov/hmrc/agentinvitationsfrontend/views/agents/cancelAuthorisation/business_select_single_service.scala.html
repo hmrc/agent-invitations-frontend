@@ -17,43 +17,41 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_prefix, MainTemplate}
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 
 @this(
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    inputRadio: InputRadios,
+    inputYesNoRadio: InputYesNoRadios,
     submitButton: SubmitButton
 )
 
-@(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[String], submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = Messages("service.name.agents.de-auth"),
-title = errorPrefix(serviceTypeForm) + Messages("generic.title", Messages("cancel-authorisation.business-select-service.header"), Messages("service.name.agents.de-auth")),
+title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.business-select-service.single.header"), Messages("service.name.agents.de-auth")),
 isAgent = true,
-backLinkHref = Some(config.backLink)
+backLinkHref = Some(backLink)
 ) {
 
-    @if(serviceTypeForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(serviceTypeForm))
+    @if(choiceForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @formHelper(action = config.submitCall,'class -> "form js-form") {
+    @formHelper(action = submitCall) {
 
-        @inputRadio(
-            field = serviceTypeForm("serviceType"),
-            legend = Messages("cancel-authorisation.business-select-service.header"),
-            headingIsLegend = true,
-            inputs = mapToRadioItems(serviceTypeForm("serviceType"), config.enabledBusinessServices)
+        @inputYesNoRadio(
+            field = choiceForm("accepted"),
+            legend = Messages("cancel-authorisation.business-select-service.single.header"),
+            headingIsLegend = true
         )
 
         @submitButton()

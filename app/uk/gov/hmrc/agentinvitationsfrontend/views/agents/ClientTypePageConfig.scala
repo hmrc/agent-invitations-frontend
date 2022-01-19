@@ -20,8 +20,13 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.govukfrontend.views.Aliases.{RadioItem, Text}
 
-case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call, showTrustFlag: Boolean, isForVat: Boolean = false, isForCgt: Boolean = false)(
-  implicit messages: Messages) {
+case class ClientTypePageConfig(
+  backLinkUrl: String,
+  submitCall: Call,
+  showTrustFlag: Boolean,
+  isForVat: Boolean = false,
+  isForCgt: Boolean = false,
+  isForPpt: Boolean = false)(implicit messages: Messages) {
 
   val personalOption = Seq("personal" -> Messages("client-type.personal"))
   val businessOption = Seq("business" -> Messages("client-type.business"))
@@ -30,6 +35,7 @@ case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call, showTrust
   val clientTypes: Seq[(String, String)] =
     if (showTrustFlag && !isForVat && !isForCgt) personalOption ++ businessOption ++ trustOption
     else if (showTrustFlag && isForCgt) personalOption ++ trustOption
+    else if (showTrustFlag && isForPpt) personalOption ++ businessOption ++ trustOption
     else personalOption ++ businessOption
 
   val clientTypesAsRadioItems: Seq[RadioItem] = {

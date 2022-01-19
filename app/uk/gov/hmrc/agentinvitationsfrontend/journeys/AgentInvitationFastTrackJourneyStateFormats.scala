@@ -19,6 +19,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import play.api.libs.json.{Json, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.play.fsm.JsonStateFormats
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
 object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[State] {
 
@@ -40,10 +42,12 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val NoVatRegDateFormat = Json.format[NoVatRegDate]
   val SelectClientTypeVatFormat = Json.format[SelectClientTypeVat]
   val SelectClientTypeCgtFormat = Json.format[SelectClientTypeCgt]
+  val SelectClientTypePptFormat = Json.format[SelectClientTypePpt]
   val IdentifyPersonalClientFormat = Json.format[IdentifyPersonalClient]
   val IdentifyBusinessClientFormat = Json.format[IdentifyBusinessClient]
   val IdentifyTrustClientFormat = Json.format[IdentifyTrustClient]
   val IdentifyCgtClientFormat = Json.format[IdentifyCgtClient]
+  val IdentifyPptClientFormat = Json.format[IdentifyPptClient]
   val IdentifyNoClientTypeClientFormat = Json.format[IdentifyNoClientTypeClient]
   val ConfirmClientTrustFormat = Json.format[ConfirmClientTrust]
   val InvitationSentPersonalFormat = Json.format[InvitationSentPersonal]
@@ -63,8 +67,10 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
   val SuspendedAgentFormat = Json.format[SuspendedAgent]
 
   val ConfirmClientCgtFormat: OFormat[ConfirmClientCgt] = Json.format
+  val ConfirmClientPptFormat: OFormat[ConfirmClientPpt] = Json.format
   val ConfirmCgtPostcodeFormat: OFormat[ConfirmPostcodeCgt] = Json.format
   val ConfirmCgtCountryCodeFormat: OFormat[ConfirmCountryCodeCgt] = Json.format
+  val ConfirmPptRegDateFormat: OFormat[ConfirmRegDatePpt] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: Prologue                        => PrologueFormat.writes(s)
@@ -84,10 +90,12 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: NoVatRegDate                    => NoVatRegDateFormat.writes(s)
     case s: SelectClientTypeVat             => SelectClientTypeVatFormat.writes(s)
     case s: SelectClientTypeCgt             => SelectClientTypeCgtFormat.writes(s)
+    case s: SelectClientTypePpt             => SelectClientTypePptFormat.writes(s)
     case s: IdentifyPersonalClient          => IdentifyPersonalClientFormat.writes(s)
     case s: IdentifyBusinessClient          => IdentifyBusinessClientFormat.writes(s)
     case s: IdentifyTrustClient             => IdentifyTrustClientFormat.writes(s)
     case s: IdentifyCgtClient               => IdentifyCgtClientFormat.writes(s)
+    case s: IdentifyPptClient               => IdentifyPptClientFormat.writes(s)
     case s: IdentifyNoClientTypeClient      => IdentifyNoClientTypeClientFormat.writes(s)
     case s: ConfirmClientTrust              => ConfirmClientTrustFormat.writes(s)
     case s: InvitationSentPersonal          => InvitationSentPersonalFormat.writes(s)
@@ -100,8 +108,10 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case s: CgtRefNotFound                  => CgtRefNotFoundFormat.writes(s)
     case s: PptRefNotFound                  => PptRefNotFoundFormat.writes(s)
     case s: ConfirmClientCgt                => ConfirmClientCgtFormat.writes(s)
+    case s: ConfirmClientPpt                => ConfirmClientPptFormat.writes(s)
     case s: ConfirmPostcodeCgt              => ConfirmCgtPostcodeFormat.writes(s)
     case s: ConfirmCountryCodeCgt           => ConfirmCgtCountryCodeFormat.writes(s)
+    case s: ConfirmRegDatePpt               => ConfirmPptRegDateFormat.writes(s)
     case s: SuspendedAgent                  => SuspendedAgentFormat.writes(s)
     case s: PartialAuthorisationExists      => PartialAuthorisationExistsFormat.writes(s)
     case s: ClientNotRegistered             => ClientNotRegisteredFormat.writes(s)
@@ -126,10 +136,12 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "NoVatRegDate"                    => NoVatRegDateFormat.reads(properties)
     case "SelectClientTypeVat"             => SelectClientTypeVatFormat.reads(properties)
     case "SelectClientTypeCgt"             => SelectClientTypeCgtFormat.reads(properties)
+    case "SelectClientTypePpt"             => SelectClientTypePptFormat.reads(properties)
     case "IdentifyPersonalClient"          => IdentifyPersonalClientFormat.reads(properties)
     case "IdentifyBusinessClient"          => IdentifyBusinessClientFormat.reads(properties)
     case "IdentifyTrustClient"             => IdentifyTrustClientFormat.reads(properties)
     case "IdentifyCgtClient"               => IdentifyCgtClientFormat.reads(properties)
+    case "IdentifyPptClient"               => IdentifyPptClientFormat.reads(properties)
     case "IdentifyNoClientTypeClient"      => IdentifyNoClientTypeClientFormat.reads(properties)
     case "InvitationSentPersonal"          => InvitationSentPersonalFormat.reads(properties)
     case "InvitationSentBusiness"          => InvitationSentBusinessFormat.reads(properties)
@@ -143,8 +155,10 @@ object AgentInvitationFastTrackJourneyStateFormats extends JsonStateFormats[Stat
     case "CgtRefNotFound"                  => CgtRefNotFoundFormat.reads(properties)
     case "PptRefNotFound"                  => PptRefNotFoundFormat.reads(properties)
     case "ConfirmClientCgt"                => ConfirmClientCgtFormat.reads(properties)
+    case "ConfirmClientPpt"                => ConfirmClientPptFormat.reads(properties)
     case "ConfirmPostcodeCgt"              => ConfirmCgtPostcodeFormat.reads(properties)
     case "ConfirmCountryCodeCgt"           => ConfirmCgtCountryCodeFormat.reads(properties)
+    case "ConfirmRegDatePpt"               => ConfirmPptRegDateFormat.reads(properties)
     case "SuspendedAgent"                  => SuspendedAgentFormat.reads(properties)
     case "PartialAuthorisationExists"      => PartialAuthorisationExistsFormat.reads(properties)
     case "AlreadyCopiedAcrossItsa"         => JsSuccess(AlreadyCopiedAcrossItsa)

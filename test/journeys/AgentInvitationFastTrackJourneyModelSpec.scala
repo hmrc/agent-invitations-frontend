@@ -546,7 +546,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
 
         given(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "some-ppt-name")) when
-          confirmRegDatePpt(authorisedAgent)(regDate) should
+          confirmRegDatePpt(authorisedAgent)(regDate.toString("yyyy-MM-dd")) should
           thenGo(ConfirmClientPpt(fastTrackRequest, fastTrackRequest, None, "some-ppt-name"))
       }
 
@@ -554,7 +554,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
 
         given(ConfirmRegDatePpt(fastTrackRequest, fastTrackRequest, None, regDate, "some-ppt-name")) when
-          confirmRegDatePpt(authorisedAgent)(regDate.plusDays(1)) should
+          confirmRegDatePpt(authorisedAgent)(regDate.plusDays(1).toString("yyyy-MM-dd")) should
           thenGo(KnownFactNotMatched(fastTrackRequest, fastTrackRequest, None))
       }
     }

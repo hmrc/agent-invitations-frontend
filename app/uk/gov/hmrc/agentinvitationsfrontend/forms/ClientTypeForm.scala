@@ -36,7 +36,7 @@ object ClientTypeForm {
 
   val supportedClientTypesForCgt: Set[String] = Set("personal", "trust")
 
-  val supportedClientTypesForPpt: Set[String] = Set("personal", "trust")
+  val supportedClientTypesForPpt: Set[String] = Set("personal", "business", "trust")
 
   lazy val authorisationForm: Form[String] = form("error.client-type.empty", supportedClientTypes)
 

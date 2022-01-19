@@ -73,6 +73,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
+  confirmRegDatePptView: confirm_reg_date_ppt,
   notMatchedView: not_matched,
   pendingAuthExistsView: pending_authorisation_exists,
   invitationSentView: invitation_sent,
@@ -318,6 +319,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   def submitConfirmCgtCountryCode: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(CountrycodeForm.form(validCountryCodes))(Transitions.confirmCountryCodeCgt)
 
+  def showConfirmPptRegDate: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmRegDatePpt]
+
+  def submitConfirmPptRegDate: Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(agentFastTrackPptRegDateForm)(Transitions.confirmRegDatePpt)
+
   def showConfirmClientCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientCgt].orRollback
 
   def showConfirmClientPpt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClientPpt].orRollback
@@ -392,6 +398,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       }
     case _: SelectClientTypeVat             => routes.AgentInvitationFastTrackJourneyController.showClientType()
     case _: SelectClientTypeCgt             => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case _: SelectClientTypePpt             => routes.AgentInvitationFastTrackJourneyController.showClientType()
     case _: NoPostcode                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
     case _: NoDob                           => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
     case _: NoVatRegDate                    => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
@@ -414,6 +421,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: ConfirmClientTrust              => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
     case _: ConfirmPostcodeCgt              => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
     case _: ConfirmCountryCodeCgt           => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode()
+    case _: ConfirmRegDatePpt               => routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate()
     case _: ConfirmClientCgt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt()
     case _: ConfirmClientPpt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt()
     case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
@@ -561,6 +569,18 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
+      case SelectClientTypePpt(_, _, _, _) =>
+        Ok(
+          clientTypeView(
+            formWithErrors.or(ClientTypeForm.pptClientTypeForm),
+            ClientTypePageConfig(
+              backLinkFor(breadcrumbs).url,
+              routes.AgentInvitationFastTrackJourneyController.submitClientTypePpt(),
+              featureFlags.showHmrcTrust,
+              isForPpt = true
+            )
+          ))
+
       case ConfirmClientTrust(_, ftr, _, trustName) =>
         Ok(
           confirmClientView(
@@ -663,6 +683,26 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             backLinkFor(breadcrumbs).url,
             fromFastTrack = true,
             isDeAuth = false
+          ))
+
+      case ConfirmRegDatePpt(_, _, _, _, _) =>
+        Ok(
+          confirmRegDatePptView(
+            formWithErrors.or(agentFastTrackPptRegDateForm),
+            submitFormCall = routes.AgentInvitationFastTrackJourneyController.submitConfirmPptRegDate(),
+            backLinkUrl = backLinkFor(breadcrumbs).url,
+            isDeAuth = false
+          ))
+
+      case ConfirmClientPpt(_, ftr, _, name) =>
+        Ok(
+          confirmClientView(
+            name,
+            formWithErrors.or(ConfirmClientForm),
+            backLinkFor(breadcrumbs).url,
+            routes.AgentInvitationFastTrackJourneyController.submitConfirmPptClient(),
+            ftr.clientIdentifierType,
+            ftr.clientIdentifier
           ))
 
       case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, service, isAltItsa) =>

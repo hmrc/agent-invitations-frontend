@@ -103,6 +103,9 @@ POST        /agents/track/client-postcode                               uk.gov.h
 GET         /agents/track/client-country                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode
 POST        /agents/track/client-country                                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmCgtCountryCode
 
+GET         /agents/track/ppt-registration-date                         uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate
+POST        /agents/track/ppt-registration-date                         uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmPptRegDate
+
 GET         /agents/track/confirm-cgt-client                            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showConfirmClientCgt
 POST        /agents/track/confirm-cgt-client                            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitConfirmCgtClient
 
@@ -120,6 +123,7 @@ POST        /agents/more-details-ppt                                    uk.gov.h
 GET         /agents/select-client-type                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientType
 POST        /agents/select-client-type                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientType
 POST        /agents/select-client-type-cgt                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypeCgt
+POST        /agents/select-client-type-ppt                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypePpt
 GET         /agents/sent-invitation                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showInvitationSent
 GET         /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected
 POST        /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected
@@ -143,6 +147,7 @@ POST        /agents/cancel-authorisation/client-type                    uk.gov.h
 GET         /agents/cancel-authorisation/select-service                 uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showSelectService
 POST        /agents/cancel-authorisation/select-personal-service        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitPersonalService
 POST        /agents/cancel-authorisation/select-business-service        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitBusinessService
+POST        /agents/cancel-authorisation/select-business-service-single uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitBusinessServiceSingle
 POST        /agents/cancel-authorisation/select-trust-service           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitTrustService
 GET         /agents/cancel-authorisation/identify-client                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showIdentifyClient
 GET         /agents/cancel-authorisation/identify-itsa-client           uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.identifyClientRedirect
@@ -153,6 +158,7 @@ GET         /agents/cancel-authorisation/identify-vat-client            uk.gov.h
 POST        /agents/cancel-authorisation/identify-vat-client            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyVatClient
 POST        /agents/cancel-authorisation/identify-trust-client          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyTrustClient
 POST        /agents/cancel-authorisation/identify-cgt-client            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyCgtClient
+POST        /agents/cancel-authorisation/identify-ppt-client            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitIdentifyPptClient
 
 GET         /agents/cancel-authorisation/client-postcode                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.showPostcodeCgt
 POST        /agents/cancel-authorisation/client-postcode                uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentLedDeauthJourneyController.submitConfirmCgtPostcode

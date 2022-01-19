@@ -24,6 +24,11 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: Set[String], submitCall: Call, backLink: String)(
   implicit messages: Messages) {
 
+  private val serviceDisplayOrdering: Ordering[String] = new Ordering[String] {
+    val correctOrdering = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD, HMRCPPTORG)
+    override def compare(x: String, y: String): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
+  }
+
   val enabledPersonalServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()
 
@@ -39,13 +44,22 @@ case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: S
     if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
       map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
 
-    map.toSeq match {
-      case Seq(cgt, vat, irv, itsa) => Seq(itsa, irv, vat, cgt)
-      case Seq(cgt, vat, itsa)      => Seq(itsa, vat, cgt)
-      case Seq(vat, itsa)           => Seq(itsa, vat)
-      case Seq(cgt)                 => Seq(cgt)
-      case Seq()                    => Seq()
-    }
+    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
+      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
+
+    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
+  }
+
+  val enabledBusinessServices: Seq[(String, String)] = {
+    val map = collection.mutable.Map[String, String]()
+
+    if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
+      map.update(HMRCMTDVAT, Messages("cancel-authorisation.select-service.vat"))
+
+    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
+      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
+
+    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
   }
 
   val enabledTrustServices: Seq[(String, String)] = {
@@ -57,11 +71,10 @@ case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: S
     if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
       map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
 
-    map.toSeq match {
-      case Seq(cgt, trust) => Seq(trust, cgt)
-      case Seq(trust)      => Seq(trust)
-      case Seq()           => Seq()
-    }
+    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
+      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
+
+    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
   }
 
 }
