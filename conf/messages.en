@@ -554,6 +554,7 @@ invitation-declined.multi.vat.p1=You have not given permission to {0} to manage 
 invitation-declined.multi.trust.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.trustNT.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
+invitation-declined.multi.ppt.p1=You have not given permission to {0} to manage your Plastic Packaging Tax.
 
 invitation-decline.sub-header=You have not given permission to {0} to:
 
@@ -566,6 +567,7 @@ confirm-decline.vat.sub-header={0} will not be able to manage your VAT.
 confirm-decline.trust.sub-header={0} will not be able to maintain a trust or an estate.
 confirm-decline.trustNT.sub-header={0} will not be able to maintain a trust or an estate.
 confirm-decline.cgt.sub-header={0} will not be able to manage your Capital Gains Tax on UK property account.
+confirm-decline.ppt.sub-header={0} will not be able to manage your Plastic Packaging Tax.
 confirm-decline.sub-header={0} will not be able to:
 confirm-decline.itsa.service-name=manage your Making Tax Digital for Income Tax
 confirm-decline.afi.service-name=report your employer PAYE updates through software
@@ -573,6 +575,7 @@ confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
 confirm-decline.trustNT.service-name=maintain a trust or an estate
 confirm-decline.cgt.service-name=manage your Capital Gains Tax on UK property account.
+confirm-decline.ppt.service-name=manage your Plastic Packaging Tax.
 
 # Confirm Terms
 confirm-terms.itsa.title=Terms of participation - {0} - GOV.UK
@@ -999,7 +1002,7 @@ request-cancelled.p1.HMRC-MTD-VAT=You have cancelled your authorisation request 
 request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
 request-cancelled.p1.HMRC-TERSNT-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
 request-cancelled.p1.HMRC-CGT-PD=You have cancelled your authorisation request to manage their Capital Gains Tax on UK property account.
-request-cancelled.p1.HMRC-CGT-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
+request-cancelled.p1.HMRC-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
 request-cancelled.panel= {0} can no longer respond to this request.
 request-cancelled.track.link=Track your recent authorisation requests
 

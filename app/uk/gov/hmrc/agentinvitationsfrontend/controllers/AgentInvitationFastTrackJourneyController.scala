@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoade
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.{ConfirmClientForm, LegacyAuthorisationForm}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions.CheckPptKnownFact
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
@@ -140,8 +141,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.checkedDetailsAllInformation(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val progressToIdentifyClient: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.checkedDetailsChangeInformation).redirect
@@ -159,8 +160,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.identifiedClientItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(isAltItsa)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(appConfig)
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(isAltItsa)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(appConfig)
       )
 
   val submitIdentifyIrvClient: Action[AnyContent] =
@@ -170,8 +171,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.identifiedClientIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitIdentifyVatClient: Action[AnyContent] =
     actions
@@ -180,8 +181,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.identifiedClientVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
@@ -228,8 +229,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.moreDetailsItsa(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitKnownFactIrv: Action[AnyContent] =
     actions
@@ -238,8 +239,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.moreDetailsIrv(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitKnownFactVat: Action[AnyContent] =
     actions
@@ -248,8 +249,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.moreDetailsVat(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val submitKnownFactPpt: Action[AnyContent] =
     actions
@@ -258,8 +259,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.moreDetailsPpt(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(appConfig))
 
   val progressToClientType
     : Action[AnyContent] = actions.whenAuthorisedWithRetrievals(AsAgent)(Transitions.checkedDetailsNoClientType) //.apply(helpers.redirect)
@@ -273,8 +274,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
             acaConnector.getCgtSubscription(_),
             acaConnector.getPptSubscription(_))(appConfig))
 
@@ -285,8 +286,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
             acaConnector.getCgtSubscription(_),
             acaConnector.getPptSubscription(_))(appConfig))
 
@@ -297,8 +298,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.selectedClientType(checkPostcodeMatches)(checkCitizenRecordMatches)(checkVatRegistrationDateMatches)(
-            invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(hasPendingInvitationsFor)(
-            hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
+            checkPptRegistrationDateMatches)(invitationsService.createInvitation)(invitationsService.createAgentLink)(getAgencyEmail)(
+            hasPendingInvitationsFor)(hasActiveRelationshipFor)(hasPartialAuthorisationFor)(isAltItsa)(legacySaRelationshipStatusFor)(
             acaConnector.getCgtSubscription(_),
             acaConnector.getPptSubscription(_))(appConfig))
 

@@ -550,6 +550,7 @@ invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch 
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+invitation-declined.multi.ppt.p1=You have not given permission to {0} to manage your Plastic Packaging Tax.
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
@@ -562,6 +563,7 @@ confirm-decline.vat.sub-header=Ni fydd {0} yn gallu rheoli’ch TAW.
 confirm-decline.trust.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.trustNT.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.cgt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+confirm-decline.ppt.sub-header={0} will not be able to manage your Plastic Packaging Tax.
 confirm-decline.sub-header=Ni fydd {0} yn gallu:
 confirm-decline.itsa.service-name=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 confirm-decline.afi.service-name=adrodd am eich diweddariadau TWE y cyflogwr drwy feddalwedd
@@ -569,6 +571,7 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+confirm-decline.ppt.service-name=manage your Plastic Packaging Tax.
 
 # Confirm Terms
 confirm-terms.itsa.title=Telerau cyfranogi – {0} – GOV.UK
@@ -995,7 +998,7 @@ request-cancelled.p1.HMRC-MTD-VAT=Rydych wedi canslo’ch cais am awdurdodiad i 
 request-cancelled.p1.HMRC-TERS-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-TERSNT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-CGT-PD=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-request-cancelled.p1.HMRC-CGT-PPT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Deunydd Pacio Plastig.
+request-cancelled.p1.HMRC-PPT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Deunydd Pacio Plastig.
 request-cancelled.panel=Ni all {0} ymateb i’r cais hwn mwyach.
 request-cancelled.track.link=Olrhain eich ceisiadau diweddar am awdurdodiad
 

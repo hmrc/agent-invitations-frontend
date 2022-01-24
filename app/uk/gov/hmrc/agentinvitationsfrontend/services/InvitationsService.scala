@@ -147,6 +147,11 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[VatKnownFactCheckResult] =
     acaConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
+  def checkPptRegistrationDateMatches(pptRef: PptRef, userInputRegistrationDate: LocalDate)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[Boolean] =
+    acaConnector.checkKnownFactPPT(PptClient(pptRef, userInputRegistrationDate.toString("yyyy-MM-dd")))
+
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     acaConnector.checkCitizenRecord(nino, dob)
 
