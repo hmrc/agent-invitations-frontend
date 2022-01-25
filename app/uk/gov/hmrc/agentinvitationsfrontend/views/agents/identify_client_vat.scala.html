@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
@@ -71,7 +72,7 @@ backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(agentInvitationsForm.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = Map("registrationDate" -> "registrationDate.day")))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = dateErrorMapping("registrationDate", agentInvitationsDateForm)))
     }
 
     @formHelper(action = submitFormCall) {

@@ -125,7 +125,7 @@ object Validators {
   val validVrn: Constraint[String] =
     ValidateHelper.validateVrnField("error.vrn.required", "enter-vrn.regex-failure")
 
-  def validateDateFields(formMessageKey: String) =
+  def validateDateFields(formMessageKey: String): Constraint[(String, String, String)] =
     Constraint[(String, String, String)] { s: (String, String, String) =>
       (s._1.matches(yearFieldRegex), s._2.matches(monthFieldRegex), s._3.matches(dayFieldRegex)) match {
         //y   //m   //d
@@ -133,12 +133,12 @@ object Validators {
           if (parseDate(s"${s._1}-${s._2}-${s._3}")) Valid
           else invalid(s"enter-$formMessageKey-date.invalid-format", s"$day-$month-$year")
         case (true, true, false)  => invalid(s"error.$formMessageKey-date.day", day)
-        case (true, false, false) => invalid(s"error.$formMessageKey-date.day-month", s"$day-$month-$year")
+        case (true, false, false) => invalid(s"error.$formMessageKey-date.day-month", s"$day-$month")
         case (true, false, true)  => invalid(s"error.$formMessageKey-date.month", month)
         case (false, true, true)  => invalid(s"error.$formMessageKey-date.year", year)
         case (false, false, true) =>
-          invalid(s"error.$formMessageKey-date.month-year", s"$day-$month-$year")
-        case (false, true, false) => invalid(s"error.$formMessageKey-date.day-year", s"$day-$month-$year")
+          invalid(s"error.$formMessageKey-date.month-year", s"$month-$year")
+        case (false, true, false) => invalid(s"error.$formMessageKey-date.day-year", s"$day-$year")
         case (false, false, false) =>
           invalid(
             if (s._1.isEmpty && s._2.isEmpty && s._3.isEmpty) s"error.$formMessageKey-date.required"
@@ -158,7 +158,7 @@ object Validators {
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
 
-  def validTrustTaxId(urnEnabled: Boolean) = if (urnEnabled) validTrustTaxIdentifier() else validUtr()
+  def validTrustTaxId(urnEnabled: Boolean): Constraint[String] = if (urnEnabled) validTrustTaxIdentifier() else validUtr()
 
   def validUtr(): Constraint[String] =
     patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")

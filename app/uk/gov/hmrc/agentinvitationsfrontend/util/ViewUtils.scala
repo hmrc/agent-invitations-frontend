@@ -51,7 +51,31 @@ object ViewUtils {
       }
     )
 
-//  def mapAnswerRowToSummaryListRow(field: Field, answerRow: Seq[AnswerRow])(implicit messages: Messages): Seq[SummaryListRow] =
+  def isDayError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("day"))) true else false
+
+  def isMonthError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("month"))) true else false
+
+  def isYearError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("year"))) true else false
+
+  def isEmptyOrInvalidError(field: String, form: Form[_]): Boolean =
+    if (form
+          .errors(field)
+          .exists(error => error.message.contains("invalid")) || form.errors(field).exists(error => error.message.contains("required"))) true
+    else false
+
+  def dateErrorMapping(field: String, form: Form[_]): Map[String, String] =
+    if (isDayError(field, form) || isEmptyOrInvalidError(field, form)) {
+      Map(field -> s"$field.day")
+    } else if (isMonthError(field, form)) {
+      Map(field -> s"$field.month")
+    } else {
+      Map(field -> s"$field.year")
+    }
+
+  //  def mapAnswerRowToSummaryListRow(field: Field, answerRow: Seq[AnswerRow])(implicit messages: Messages): Seq[SummaryListRow] =
 //    answerRow.map(
 //      a => {
 //        SummaryListRow(
