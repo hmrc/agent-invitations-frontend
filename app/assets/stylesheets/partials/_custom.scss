@@ -5,15 +5,27 @@ Make a button appear like a link
 Markup:
 <button class="button--link-style">Button text</button>
 Styleguide Buttons.Link Style
+
+Ideally, these buttons should be changed into links but they are currently forms with a POST request
 */
 
 .button--link-style {
   @extend .govuk-link;
   background: none;
   box-shadow: none;
+  color: $govuk-link-colour;
+  border-width: 0;
 
-  &:hover,
-  &:focus,
+  &:hover {
+  color: $govuk-link-hover-colour;
+  }
+  &:focus {
+       outline: 3px solid transparent;
+       color: $govuk-link-active-colour;
+       background-color: #fd0;
+       box-shadow: 0 -2px #fd0, 0 4px #0b0c0c;
+       text-decoration: none;
+   }
   &:active {
     background: none;
   }
@@ -64,3 +76,11 @@ Styleguide Buttons.Link Style
     background-color: transparent;
     cursor: default;
 }
+
+// track page hint
+.supplementary-information {
+    display: block;
+    font-size: 0.85em;
+    color: $govuk-secondary-text-colour;
+}
+

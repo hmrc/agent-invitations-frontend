@@ -466,8 +466,8 @@ create-auth-failed.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property acc
 create-auth-failed.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 create-auth-failed.p2.all=You can <a href="{0}">start a new authorisation request</a>, or try again.
 create-auth-failed.p2.some=You can continue without these requests, or <a href="{0}">try again</a>.
-create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
-create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style" type="submit" id="resendRequest">try again</button>.
+create-auth-failed.link-text.some=You can continue without these requests, or <button class="button--link-style govuk-!-font-size-19" type="submit" id="resendRequest">try again</button>.
+create-auth-failed.link-text.one=You can continue without this request, or <button class="button--link-style govuk-!-font-size-19" type="submit" id="resendRequest">try again</button>.
 
 create-auth-failed.HMRC-CGT-PD.label=Capital Gains Tax account reference:
 

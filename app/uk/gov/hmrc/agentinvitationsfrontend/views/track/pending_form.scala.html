@@ -29,7 +29,8 @@
 
 @formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
-    'id -> s"resendLink-${index}"
+    'id -> s"resendLink-${index}",
+    'class -> "govuk-!-margin-bottom-2"
 ) {
     <input type="hidden" name="service" id="serviceResendLink-@{index}" value="@{
         invitationOrRelationship.service}">
@@ -37,7 +38,7 @@
         invitationOrRelationship.clientType}">
     <input type="hidden" name="expiryDate" id="expiryDate-@{index}" value="@{
         invitationOrRelationship.expiryDate.map(_.toLocalDate)}">
-    <button class="button--link-style" type="submit" id="resendLinkRequest-@{
+    <button class="button--link-style govuk-!-font-size-16" type="submit" id="resendLinkRequest-@{
         index}">
     <span aria-hidden="true">
     @Messages("recent-invitations.invitations.actions.pending")
@@ -56,7 +57,7 @@
     <input type="hidden" name="clientType" id="clientTypeConfirmCancel-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId}">
     <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
-    <button class="button--link-style" type="submit" id="confirmCancelRequest-@{index}">
+    <button class="button--link-style govuk-!-font-size-16" type="submit" id="confirmCancelRequest-@{index}">
         <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</span>
         <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.pending.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
