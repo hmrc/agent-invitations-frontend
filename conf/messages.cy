@@ -650,6 +650,7 @@ confirm-terms-multi.trustNT.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i g
 
 confirm-terms-multi.cgt.personal.heading=Rheoli fy nghyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 confirm-terms-multi.cgt.business.heading=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+confirm-terms-multi.cgt.trust.heading=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 confirm-terms-multi.cgt.personal.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU, mae hyn yn golygu y gall {0} wneud y canlynol:
 confirm-terms-multi.cgt.personal.p1.l1=bwrw golwg dros eich Ffurflenni Treth presennol, eu newid a’u cyflwyno
 confirm-terms-multi.cgt.personal.p1.l2=bwrw golwg dros fanylion eich Ffurflenni Treth blaenorol, a’u newid

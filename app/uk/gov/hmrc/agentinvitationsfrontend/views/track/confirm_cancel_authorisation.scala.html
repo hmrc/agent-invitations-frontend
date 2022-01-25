@@ -52,7 +52,7 @@ backLinkHref = Some(backLinkUrl)
     @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
         @if(service=="HMRC-MTD-IT") {
-            <h1 class="govuk-heading-xl">Messages("confirm-authorisation-cancelled.track.header")</h1>
+            <h1 class="govuk-heading-xl">@Messages("confirm-authorisation-cancelled.track.header")</h1>
 
             @govukInsetText(InsetText(
             content = Text(Messages("confirm-authorisation-cancelled.track.itsa-panel"))

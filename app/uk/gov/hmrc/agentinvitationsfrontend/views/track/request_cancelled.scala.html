@@ -30,8 +30,6 @@
 )
 
 @(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@legend = @{"""<h1 class="govuk-heading-xl">""" + Messages("confirm-cancel.header") + """</h1>""" +
-        """<p>""" + Messages(s"confirm-cancel.subheader.${pageConfig.service}") + """</p>"""}
 
 @mainTemplate(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("service.name.agents.auth")),  isAgent = true) {
 

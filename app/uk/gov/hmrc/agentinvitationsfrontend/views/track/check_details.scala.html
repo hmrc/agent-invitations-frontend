@@ -123,7 +123,7 @@ backLinkHref = config.backLinkUrl
     </dl>
 
     @if(config.needClientType || config.needKnownFact) {
-        <a href="@config.changeDetailsCall.url" id="changeInfo" class="govuk-body-s">@Messages("check-details.change.link")</a>
+        <a href="@config.changeDetailsCall.url" id="changeInfo">@Messages("check-details.change.link")</a>
         <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
 
         @formHelper(config.clientTypeUrl) {

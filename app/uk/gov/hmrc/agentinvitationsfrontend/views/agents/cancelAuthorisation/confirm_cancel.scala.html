@@ -52,7 +52,7 @@
     @formHelper(action = config.submitCall) {
 
         @if(config.service=="HMRC-MTD-IT") {
-            <h1 class="govuk-heading-xl">Messages("cancel-authorisation.client-type.header")</h1>
+            <h1 class="govuk-heading-xl">@Messages("cancel-authorisation.client-type.header")</h1>
 
             @govukInsetText(InsetText(
                 content = Text(Messages("cancel-authorisation.confirm-cancel.itsa-panel"))

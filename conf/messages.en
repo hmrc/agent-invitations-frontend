@@ -650,6 +650,7 @@ confirm-terms-multi.trustNT.label=I consent to HMRC allowing {0} to maintain a t
 
 confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.business.heading=Manage a trust’s Capital Gains Tax on UK property account
+confirm-terms-multi.cgt.trust.heading=Manage a trust’s Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.personal.p1=If you consent to HMRC allowing {0} to manage your Capital Gains Tax on UK property account, this means {0} can:
 confirm-terms-multi.cgt.personal.p1.l1=view, change and submit your current returns
 confirm-terms-multi.cgt.personal.p1.l2=view and change your previous return details
