@@ -348,7 +348,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cai
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {0}.
-cancel-authorisation.confirm-cancel.p1.HMRC-PPT-ORG=If you cancel your authorisation, you will not be able to manage Plastic Packaging Tax for {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-PPT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Deunydd Pacio Plastig ar ran {0}.
 cancel-authorisation.confirm-cancel.yes=Iawn
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
 cancel-authorisation.confirm-cancel.itsa-panel=Nid yw canslo’ch awdurdodiad i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cleient yn golygu bod awdurdodiad ar gyfer Hunanasesiad wedi’i ganslo hefyd.
@@ -362,7 +362,7 @@ cancel-authorisation.cancelled.p1.HMRC-MTD-VAT=Nid yw {0} wedi’i awdurdodi mwy
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
-cancel-authorisation.cancelled.p1.HMRC-PPT-ORG={0} is no longer authorised to manage Plastic Packaging Tax for {1}.
+cancel-authorisation.cancelled.p1.HMRC-PPT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Deunydd Pacio Plastig ar ran {1}.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
 cancel-authorisation.business-select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
 cancel-authorisation.error.business-service.required=Dewiswch ‘Iawn’ os ydych am ganslo rheoli TAW y cleient hwn
@@ -402,10 +402,12 @@ error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad
 known-fact.HMRC-MTD-IT.heading=Beth yw cod post eich cleient?
 known-fact.PERSONAL-INCOME-RECORD.heading=Beth yw dyddiad geni eich cleient?
 known-fact.HMRC-MTD-VAT.heading=Beth yw dyddiad cofrestru TAW eich cleient?
+known-fact.HMRC-PPT-ORG.heading=Beth yw dyddiad cofrestru’ch cleient ar gyfer Treth Deunydd Pacio Plastig?
 known-fact.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 known-fact.HMRC-MTD-IT.helper=Dyma god post cyfeiriad cofrestredig eich cleient
 known-fact.PERSONAL-INCOME-RECORD.helper=Er enghraifft, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=Er enghraifft, 31 8 2015
+known-fact.HMRC-PPT-ORG.helper=Er enghraifft, 31 8 2021
 
 # Not Enrolled
 not-enrolled.HMRC-MTD-IT=Hunanasesiad
@@ -550,7 +552,7 @@ invitation-declined.multi.vat.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch 
 invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
-invitation-declined.multi.ppt.p1=You have not given permission to {0} to manage your Plastic Packaging Tax.
+invitation-declined.multi.ppt.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch Treth Deunydd Pacio Plastig.
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
@@ -563,7 +565,7 @@ confirm-decline.vat.sub-header=Ni fydd {0} yn gallu rheoli’ch TAW.
 confirm-decline.trust.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.trustNT.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.cgt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-confirm-decline.ppt.sub-header={0} will not be able to manage your Plastic Packaging Tax.
+confirm-decline.ppt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Deunydd Pacio Plastig.
 confirm-decline.sub-header=Ni fydd {0} yn gallu:
 confirm-decline.itsa.service-name=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 confirm-decline.afi.service-name=adrodd am eich diweddariadau TWE y cyflogwr drwy feddalwedd
@@ -571,7 +573,7 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
-confirm-decline.ppt.service-name=manage your Plastic Packaging Tax.
+confirm-decline.ppt.service-name=rheoli’ch Treth Deunydd Pacio Plastig.
 
 # Confirm Terms
 confirm-terms.itsa.title=Telerau cyfranogi – {0} – GOV.UK
