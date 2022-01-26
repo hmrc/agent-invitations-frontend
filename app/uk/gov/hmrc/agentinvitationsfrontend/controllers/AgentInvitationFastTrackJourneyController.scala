@@ -418,6 +418,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _: IdentifyBusinessClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyTrustClient             => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyCgtClient               => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyPptClient               => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: IdentifyNoClientTypeClient      => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
     case _: ConfirmClientTrust              => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
     case _: ConfirmPostcodeCgt              => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
@@ -646,6 +647,16 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             backLinkFor(breadcrumbs).url
           )
         )
+
+      case IdentifyPptClient(_, ftr, _) =>
+        Ok(
+          identifyClientPptView(
+            formWithErrors.or(PptClientForm.form),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyPptClient(),
+            backLinkFor(breadcrumbs).url
+          )
+        )
+
       case IdentifyNoClientTypeClient(_, _, _) =>
         Ok(
           identifyClientVatView(

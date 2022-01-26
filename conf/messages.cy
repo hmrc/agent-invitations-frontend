@@ -175,6 +175,7 @@ agent-suspended.fastrack.p2.HMRC-MTD-VAT=rheoli ei TAW.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
+agent-suspended.fastrack.p2.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig.
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
@@ -332,6 +333,7 @@ cancel-authorisation.select-service.itsa=Rheoli ei gyfrif Troi Treth yn Ddigidol
 cancel-authorisation.select-service.vat=Rheoli ei TAW
 cancel-authorisation.select-service.trust=Cynnal ymddiriedolaeth neu ystâd
 cancel-authorisation.select-service.cgt=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
+cancel-authorisation.select-service.ppt=Rheoli ei Dreth Deunydd Pacio Plastig
 cancel-authorisation.select-service.hint=Dewiswch opsiwn.
 
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
@@ -386,6 +388,7 @@ not-authorised.HMRC-MTD-VAT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli
 not-authorised.HMRC-TERS-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-TERSNT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-CGT-PD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+not-authorised.HMRC-PPT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Deunydd Pacio Plastig.
 
 #Delete
 delete.heading=A ydych yn siŵr eich bod am ddileu’ch cais am awdurdodiad ar gyfer {0}?
@@ -395,6 +398,7 @@ delete.subheading.HMRC-MTD-VAT=Ni fyddwch yn anfon cais am awdurdodiad ato i reo
 delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+delete.subheading.HMRC-PPT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli Treth Deunydd Pacio Plastig.
 delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 
@@ -538,6 +542,7 @@ suspended-agent.p1.ITSA=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth
 suspended-agent.p1.VATC=rheoli’ch TAW
 suspended-agent.p1.TRS=cynnal ymddiriedolaeth neu ystâd
 suspended-agent.p1.CGT=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+suspended-agent.p1.PPT=rheoli’ch Treth Deunydd Pacio Plastig
 suspended-agent.p2=Os oes gennych unrhyw gwestiynau, cysylltwch â’r asiant treth a anfonodd y cais hwn atoch.
 suspended-agent.p3=Gallwch fynd yn eich blaen heb y gwasanaeth hwn, neu
 suspended-agent.finish=gorffen ac allgofnodi
@@ -860,12 +865,14 @@ some-responses-failed.li.vat=rheoli’ch TAW
 some-responses-failed.li.trust=cynnal ymddiriedolaeth
 some-responses-failed.li.trustNT=cynnal ymddiriedolaeth
 some-responses-failed.li.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
+some-responses-failed.li.ppt=rheoli’ch Treth Deunydd Pacio Plastig
 some-responses-failed.itsa=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Incwm.
 some-responses-failed.afi=Nid oeddem yn gallu cadw’ch ymateb o ran bwrw golwg dros eich cofnod incwm TWE.
 some-responses-failed.vat=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch TAW
 some-responses-failed.trust=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
 some-responses-failed.trustNT=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
 some-responses-failed.cgt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+some-responses-failed.ppt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Deunydd Pacio Plastig
 some-responses-failed.try-again=Gallwch fynd yn eich blaen heb y gwasanaethau hyn, neu roi cynnig arall arni yn nes ymlaen.
 some-responses-failed.advice=cynnal ymddiriedolaeth
 
