@@ -51,27 +51,28 @@ object ViewUtils {
       }
     )
 
-//  def mapAnswerRowToSummaryListRow(field: Field, answerRow: Seq[AnswerRow])(implicit messages: Messages): Seq[SummaryListRow] =
-//    answerRow.map(
-//      a => {
-//        SummaryListRow(
-//          key = Key(
-//            content = Text(a.question)
-//          ),
-//          value = Value(
-//            content = HtmlContent(@for(line <- a.answerLines) { @line<br> })
-//        ),
-//        actions = Some(Actions(
-//          items = Seq(
-//            ActionItem(
-//              href = a.changeLink,
-//              content = Text(a.buttonText),
-//              visuallyHiddenText = Some(a.question)
-//            )
-//          )
-//        ))
-//        )
-//      }
-//    )
+  def isDayError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("day"))) true else false
+
+  def isMonthError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("month"))) true else false
+
+  def isYearError(field: String, form: Form[_]): Boolean =
+    if (form.errors(field).exists(error => error.message.contains("year"))) true else false
+
+  def isEmptyOrInvalidError(field: String, form: Form[_]): Boolean =
+    if (form
+          .errors(field)
+          .exists(error => error.message.contains("invalid")) || form.errors(field).exists(error => error.message.contains("required"))) true
+    else false
+
+  def dateErrorMapping(field: String, form: Form[_]): Map[String, String] =
+    if (isDayError(field, form) || isEmptyOrInvalidError(field, form)) {
+      Map(field -> s"$field.day")
+    } else if (isMonthError(field, form)) {
+      Map(field -> s"$field.month")
+    } else {
+      Map(field -> s"$field.year")
+    }
 
 }

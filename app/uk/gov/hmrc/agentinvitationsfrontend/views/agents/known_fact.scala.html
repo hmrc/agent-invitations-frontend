@@ -18,6 +18,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
@@ -36,13 +37,6 @@
 
 @(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@noJsDateFieldsError = @{
- if(knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors)
-  "nojs-date-fields-error"
-}
-
-@flushHeading = @{if(knownFactForm("knownFact").hasErrors || knownFactForm("knownFact.day").hasErrors || knownFactForm("knownFact.month").hasErrors || knownFactForm("knownFact.year").hasErrors) " flush--top" else ""}
-
 @mainTemplate(
 title = errorPrefix(knownFactForm) + Messages("generic.title", Messages(s"known-fact.${config.service}.heading"), Messages("service.name.agents.auth")),
 isAgent = true,
@@ -53,7 +47,7 @@ backLinkHref = Some(s"${config.backLinkUrl}")
         @if(config.service == "HMRC-MTD-IT") {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
         } else {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = Map("knownFact" -> "knownFact.day")))
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = dateErrorMapping("knownFact", knownFactForm)))
         }
     }
 

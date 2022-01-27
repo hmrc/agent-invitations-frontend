@@ -41,7 +41,7 @@
     <input type="hidden" name="clientType" id="clientType-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId.getOrElse("")}">
     <input type="hidden" name="status" id="status-@{index}" value="@invitationOrRelationship.status">
-    <button class="button--link-style" type="submit" id="resendRequest-@{index}" onclick="">
+    <button class="button--link-style govuk-!-font-size-16" type="submit" id="resendRequest-@{index}" onclick="">
     <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
     <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}.aria-text", invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>

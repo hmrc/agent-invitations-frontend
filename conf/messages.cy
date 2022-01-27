@@ -470,8 +470,8 @@ create-auth-failed.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo 
 create-auth-failed.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
 create-auth-failed.p2.all=Gallwch <a href="{0}">ddechrau cais am awdurdodiad newydd</a>, neu roi cynnig arall arni.
 create-auth-failed.p2.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <a href="{0}">roi cynnig arall arni</a>.
-create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
-create-auth-failed.link-text.one=Gallwch fynd yn eich blaen heb y cais hwn, neu <button class="button--link-style" type="submit" id="resendRequest">roi cynnig arall arni</button>.
+create-auth-failed.link-text.some=Gallwch fynd yn eich blaen heb y ceisiadau hyn, neu <button class="button--link-style govuk-!-font-size-19" type="submit" id="resendRequest">roi cynnig arall arni</button>.
+create-auth-failed.link-text.one=Gallwch fynd yn eich blaen heb y cais hwn, neu <button class="button--link-style govuk-!-font-size-19" type="submit" id="resendRequest">roi cynnig arall arni</button>.
 
 create-auth-failed.HMRC-CGT-PD.label=Cyfeirnod cyfrif Treth Enillion Cyfalaf:
 
@@ -657,6 +657,7 @@ confirm-terms-multi.trustNT.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i g
 
 confirm-terms-multi.cgt.personal.heading=Rheoli fy nghyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 confirm-terms-multi.cgt.business.heading=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+confirm-terms-multi.cgt.trust.heading=Rheoli cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 confirm-terms-multi.cgt.personal.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU, mae hyn yn golygu y gall {0} wneud y canlynol:
 confirm-terms-multi.cgt.personal.p1.l1=bwrw golwg dros eich Ffurflenni Treth presennol, eu newid a’u cyflwyno
 confirm-terms-multi.cgt.personal.p1.l2=bwrw golwg dros fanylion eich Ffurflenni Treth blaenorol, a’u newid

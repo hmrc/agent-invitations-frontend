@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import play.api.data.Forms.{text, tuple}
+import play.api.data.Mapping
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.validateDateFields
 
 object DateFieldHelper {
 
   def validateDate(value: String): Boolean = if (parseDate(value)) true else false
 
-  val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+  val dateTimeFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
 
   def parseDate(date: String): Boolean =
     try {
@@ -34,7 +35,7 @@ object DateFieldHelper {
       case _: Throwable => false
     }
 
-  def dateFieldsMapping(formMessageKey: String) =
+  def dateFieldsMapping(formMessageKey: String): Mapping[String] =
     tuple(
       "year"  -> text,
       "month" -> text,

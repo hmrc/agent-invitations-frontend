@@ -43,11 +43,11 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
   val invalidDateFormError: FormError =
     FormError("registrationDate", List(dateInvalidMessage), Seq("inputFieldClass" -> "day-month-year"))
   val dayMonthFormatFormError: FormError =
-    FormError("registrationDate", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("registrationDate", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month"))
   val dayYearFormatFormError: FormError =
-    FormError("registrationDate", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("registrationDate", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-year"))
   val monthYearFormatFormError: FormError =
-    FormError("registrationDate", List(monthYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("registrationDate", List(monthYearFormatMessage), Seq("inputFieldClass" -> "month-year"))
 
   "agentInvitationIdentifyClientFormVat" when {
 

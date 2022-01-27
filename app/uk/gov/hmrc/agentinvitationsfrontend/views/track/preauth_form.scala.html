@@ -43,7 +43,7 @@
     <input type="hidden" name="clientId" id="clientId-@{index}" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
     <input type="hidden" name="status" id="status-@{index}" value="@{invitationOrRelationship.status}">
-    <button class="button--link-style" type="submit" id="confirmCancelRequest-@{index}">
+    <button class="button--link-style govuk-!-font-size-16" type="submit" id="confirmCancelRequest-@{index}">
         <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.partialauth.cancel")</span>
         <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.partialauth.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>

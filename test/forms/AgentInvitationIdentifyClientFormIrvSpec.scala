@@ -46,11 +46,11 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
   val invalidDateFormError: FormError =
     FormError("dob", List(dateInvalidMessage), Seq("inputFieldClass" -> "day-month-year"))
   val dayMonthFormatFormError: FormError =
-    FormError("dob", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("dob", List(dayMonthFormatMessage), Seq("inputFieldClass" -> "day-month"))
   val dayYearFormatFormError: FormError =
-    FormError("dob", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("dob", List(dayYearFormatMessage), Seq("inputFieldClass" -> "day-year"))
   val monthYearFormatFormError: FormError =
-    FormError("dob", List(monthYearFormatMessage), Seq("inputFieldClass" -> "day-month-year"))
+    FormError("dob", List(monthYearFormatMessage), Seq("inputFieldClass" -> "month-year"))
 
   "agentInvitationIdentifyClientFormIrv" when {
     val validData: Map[String, String] = Map(

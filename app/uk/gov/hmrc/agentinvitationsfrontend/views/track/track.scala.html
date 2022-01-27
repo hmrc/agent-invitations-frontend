@@ -98,8 +98,8 @@ isAgent = true) {
     }
 
     @if(config.hasInvitationsOrRelationships) {
-        <table class="govuk-table govuk-body-s">
-            <caption>@Messages("recent-invitations.pagination.showing")
+        <table class="govuk-table">
+            <caption class="govuk-!-text-align-left">@Messages("recent-invitations.pagination.showing")
                 <strong>@config.firstResult</strong>
                 @Messages("recent-invitations.pagination.to") <strong>@config.lastResult</strong>
                 @Messages("recent-invitations.pagination.of") <strong>@config.totalResults</strong>
@@ -112,7 +112,7 @@ isAgent = true) {
                 <th scope="col" class="govuk-table__header column-20">@Messages("recent-invitations.table-row-header.actions")</th>
             </tr>
             </thead>
-            <tbody class="govuk-table__body">
+            <tbody class="govuk-table__body govuk-body-s">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
             <tr class="govuk-table__row" id="row-@index">
                 <td class="govuk-table__cell" id="taxpayerName-@index">
