@@ -316,8 +316,8 @@ class AgentsRequestTrackingController @Inject()(
       val clientId = request.session.get("clientId").getOrElse("")
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
-      val invitationId = InvitationId(request.session.get("invitationId").getOrElse(""))
       val status = request.session.get("status").getOrElse("Accepted")
+      val isAltItsa = status == "Partialauth"
       confirmCancelAuthorisationForm
         .bindFromRequest()
         .fold(
@@ -327,10 +327,11 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               for {
-                acrResponse <- if (status == "Accepted") deleteRelationshipForService(service, agent.arn, clientId) else Future successful Some(true)
-                acaResponse <- acaConnector.setRelationshipEnded(invitationId)
+                response <- if (isAltItsa) acaConnector.setRelationshipEnded(agent.arn, clientId, service)
+                           else deleteRelationshipForService(service, agent.arn, clientId)
+                success = if (isAltItsa) response.exists(x => x) else response.isDefined
               } yield {
-                if (acrResponse.isDefined && acaResponse.contains(true))
+                if (success)
                   Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
                 else
                   Ok(cancelAuthProblemView())

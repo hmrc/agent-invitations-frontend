@@ -27,6 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.HMRCMTDIT
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -587,7 +588,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for ITSA" in {
       givenCancelledAuthorisationItsa(arn, validNino, 204)
-      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -601,7 +601,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for alt-ITSA" in {
-      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
+      givenSetRelationshipEndedReturns(arn, validNino.value, HMRCMTDIT, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -616,7 +616,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for IRV" in {
       givenTerminateAfiRelationshipSucceeds(arn, "PERSONAL-INCOME-RECORD", validNino.value)
-      givenSetRelationshipEndedReturns(invitationIdPIR, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -631,7 +630,6 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for VAT" in {
       givenCancelledAuthorisationVat(arn, validVrn, 204)
-      givenSetRelationshipEndedReturns(invitationIdVAT, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -644,9 +642,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       redirectLocation(result) shouldBe Some("/invitations/track/cancelled")
     }
 
-    "when yes is selected on confirm cancel authorisation page, but service is session is not supported throw error" in {
+    "when yes is selected on confirm cancel authorisation page, but service in session is not supported throw error" in {
       givenCancelledAuthorisationVat(arn, validVrn, 204)
-      givenSetRelationshipEndedReturns(invitationIdVAT, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -662,12 +659,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "mark the relationship as ended in ACA and go to showAuthorisationCancelledPage even if relationship service returns 404" in {
       givenCancelledAuthorisationItsa(arn, validNino, 404)
-      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value),
+            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Accepted"),
           arn.value
         ))
 
@@ -676,12 +672,29 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "go to problem page when yes is selected on confirm cancel authorisation page, but relationship deletion fails for some other reason" in {
       givenCancelledAuthorisationItsa(arn, validNino, 403)
-      givenSetRelationshipEndedReturns(invitationIdITSA, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
             .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value),
+          arn.value
+        ))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(
+        result,
+        "Sorry, there is a problem with the service",
+        "The authorisation was not cancelled. Please try again.",
+        "Try again")
+    }
+
+    "go to problem page when yes is selected on confirm cancel authorisation page for alt-itsa, but set relationship ended fails" in {
+     givenSetRelationshipEndedReturns(arn, validNino.value, HMRCMTDIT, 500)
+      val result = postConfirmCancelAuth(
+        authorisedAsValidAgent(
+          request
+            .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
+            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Partialauth"),
           arn.value
         ))
 

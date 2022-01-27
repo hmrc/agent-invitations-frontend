@@ -744,10 +744,17 @@ trait ACAStubs {
         )
     )
 
-  def givenSetRelationshipEndedReturns(invitationId: InvitationId, status: Int) =
+  def givenSetRelationshipEndedReturns(arn: Arn, clientId: String, service: String, status: Int) =
     stubFor(
       put(
-        urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}/relationship-ended?endedBy=Agent"))
+        urlEqualTo(s"/agent-client-authorisation/invitations/set-relationship-ended"))
+        .withRequestBody(equalToJson(
+            s"""{
+               |"arn": "${arn.value}",
+               |"clientId": "$clientId",
+               |"service": "$service",
+               |"endedBy": "Agent"
+               |}""".stripMargin))
         .willReturn(
           aResponse()
             .withStatus(status)
@@ -1434,7 +1441,7 @@ trait ACAStubs {
 
   def givenPutAltItsaAuth(arn: Arn) =
     stubFor(
-      put(urlEqualTo(s"/agent-client-authorisation/agent/alt-itsa/update/$arn"))
+      put(urlEqualTo(s"/agent-client-authorisation/agent/alt-itsa/update/${arn.value}"))
         .willReturn(
           aResponse()
             .withStatus(204)

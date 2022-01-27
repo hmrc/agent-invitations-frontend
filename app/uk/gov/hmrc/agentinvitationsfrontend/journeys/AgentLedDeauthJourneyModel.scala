@@ -353,6 +353,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case IdentifyClientBusiness(HMRCMTDVAT) =>
           def nameToState(name: Option[String]) =
             ConfirmClientBusiness(name, Vrn(vatClient.clientIdentifier))
+
           checkVatRegDateAndGoToState(nameToState)
       }
     }
@@ -389,19 +390,13 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       Transition {
         case ConfirmCancel(service, clientName, clientId, isAltItsa) =>
           if (confirmation.choice) {
-            val fCall = if (!isAltItsa) deleteRelationship(service, agent.arn, clientId) else Future successful Some(true)
-            fCall.flatMap {
-              case Some(true) => {
+            val deAuthResult = if (isAltItsa) setRelationshipEnded(agent.arn, clientId, service) else deleteRelationship(service, agent.arn, clientId)
+            deAuthResult.flatMap {
+              case Some(true) =>
                 for {
-                  name    <- getAgencyName(agent.arn)
-                  updated <- setRelationshipEnded(agent.arn, clientId, service)
-                  result <- if (updated.exists(x => x)) goto(AuthorisationCancelled(service, clientName, name))
-                           else {
-                             logger.warn(s"set relationship ended failed...proceeding with authorisation cancelled")
-                             goto(AuthorisationCancelled(service, clientName, name))
-                           }
+                  name   <- getAgencyName(agent.arn)
+                  result <- goto(AuthorisationCancelled(service, clientName, name))
                 } yield result
-              }
               case _ => goto(ResponseFailed(service, clientName, clientId))
             }
           } else goto(root)
