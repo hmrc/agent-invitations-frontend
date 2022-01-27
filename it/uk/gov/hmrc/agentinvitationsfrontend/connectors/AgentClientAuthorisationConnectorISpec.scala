@@ -765,4 +765,24 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
     }
   }
+
+  "setRelationshipEnded" should {
+    "return Some(true) if successful" in {
+      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 204)
+      val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
+      result shouldBe Some(true)
+    }
+
+    "return Some(false) if Not Found" in {
+      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 404)
+      val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
+      result shouldBe Some(false)
+    }
+
+    "return None if Service Unavailable" in {
+      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 503)
+      val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
+      result shouldBe None
+    }
+  }
 }

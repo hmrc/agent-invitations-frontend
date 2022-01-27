@@ -970,7 +970,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       givenCancelledAuthorisationItsa(arn, Nino(nino), 204)
       givenGetAgencyNameClientStub(arn)
       givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now())
-      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
         controller.submitConfirmCancel(
@@ -991,7 +990,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenGetAgencyNameClientStub(arn)
       givenASingleAcceptedInvitation(arn, nino, HMRCMTDIT, "NI", DateTime.now(), isPartialAuth = true)
-      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
+      givenSetRelationshipEndedReturns(arn, nino,HMRCMTDIT, 204)
 
       val result =
         controller.submitConfirmCancel(
@@ -1013,7 +1012,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       givenCancelledAuthorisationTrust(arn,validUtr, 204)
       givenGetAgencyNameClientStub(arn)
       givenASingleAcceptedInvitation(arn, validUtr.value, TAXABLETRUST, "UTR", DateTime.now())
-      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
         controller.submitConfirmCancel(
@@ -1035,7 +1033,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       givenCancelledAuthorisationTrust(arn,validUrn, 204)
       givenGetAgencyNameClientStub(arn)
       givenASingleAcceptedInvitation(arn, validUrn.value, NONTAXABLETRUST, "URN", DateTime.now())
-      givenSetRelationshipEndedReturns(InvitationId("foo1"), 200)
 
       val result =
         controller.submitConfirmCancel(
@@ -1078,28 +1075,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       givenCancelledAuthorisationTrust(arn,validUrn, 204)
       givenGetAgencyNameClientStub(arn)
       givenNoAcceptedInvitationFound(arn, validUrn.value, NONTAXABLETRUST)
-
-      val result =
-        controller.submitConfirmCancel(
-          authorisedAsValidAgent(
-            request.withFormUrlEncodedBody("accepted" -> "true"),
-            arn.value
-          ))
-      status(result) shouldBe 303
-
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
-        .url
-    }
-
-    "redirect to the authorisation cancelled page when update invitation setRelationshipEnded flag fails" in {
-      journeyState.set(ConfirmCancel(TAXABLETRUST, Some("Sufjan Stevens"), validUtr.value), Nil)
-      val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
-
-      givenCancelledAuthorisationTrust(arn,validUtr, 204)
-      givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, validUtr.value, TRUST, "UTR", DateTime.now())
-      givenSetRelationshipEndedReturns(InvitationId("foo1"), 500)
 
       val result =
         controller.submitConfirmCancel(

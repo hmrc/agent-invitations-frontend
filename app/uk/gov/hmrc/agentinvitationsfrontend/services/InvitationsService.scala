@@ -259,29 +259,9 @@ class InvitationsService @Inject()(
   def hasPartialAuthorisationFor(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     acaConnector.getPartialAuthorisationsForClient(arn, clientId).map(s => s.nonEmpty)
 
-  def getActiveInvitationFor(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[InvitationId]] = {
-    implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isAfter _)
-    acaConnector
-      .getInvitationsForClient(arn, clientId, service)
-      .map(
-        _.filter(inv => inv.status == "Accepted" || inv.status == "Partialauth")
-          .sortBy(_.lastUpdated)
-          .map(_.invitationId)
-          .map(InvitationId(_))
-          .headOption)
-  }
-
   def legacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
     relationshipsConnector.getLegacySaRelationshipStatusFor(arn, nino)
 
   def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    getActiveInvitationFor(arn, clientId, service).flatMap {
-      case Some(id) => acaConnector.setRelationshipEnded(id)
-      case None => {
-        logger.warn(s"no invitation found to set relationship ended")
-        Future successful None
-      }
-    }
+    acaConnector.setRelationshipEnded(arn, clientId, service)
 }
