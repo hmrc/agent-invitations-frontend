@@ -23,8 +23,10 @@ import uk.gov.hmrc.play.fsm.JsonStateFormats
 object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
 
   val SelectServicePersonalFormats: OFormat[SelectServicePersonal] = Json.format
+  val SelectServiceBusinessFormats: OFormat[SelectServiceBusiness] = Json.format
   val SelectServiceTrustFormats: OFormat[SelectServiceTrust] = Json.format
   val IdentifyClientPersonalFormats: OFormat[IdentifyClientPersonal] = Json.format
+  val IdentifyClientBusinessFormats: OFormat[IdentifyClientBusiness] = Json.format
   val ConfirmClientsItsaFormats: OFormat[ConfirmClientItsa] = Json.format
   val ConfirmPostcodeCgtFormats: OFormat[ConfirmPostcodeCgt] = Json.format
   val ConfirmCountryCodeCgtFormats: OFormat[ConfirmCountryCodeCgt] = Json.format
@@ -34,6 +36,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val ConfirmClientTrustFormats: OFormat[ConfirmClientTrust] = Json.format
   val ConfirmClientTrustNTFormats: OFormat[ConfirmClientTrustNT] = Json.format
   val ConfirmClientCgtFormats: OFormat[ConfirmClientCgt] = Json.format
+  val ConfirmClientPptFormats: OFormat[ConfirmClientPpt] = Json.format
   val NotSignedUpFormats: OFormat[NotSignedUp] = Json.format
   val ConfirmCancelFormats: OFormat[ConfirmCancel] = Json.format
   val NotAuthorisedFormats: OFormat[NotAuthorised] = Json.format
@@ -44,8 +47,10 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectServicePersonal    => SelectServicePersonalFormats.writes(s)
+    case s: SelectServiceBusiness    => SelectServiceBusinessFormats.writes(s)
     case s: SelectServiceTrust       => SelectServiceTrustFormats.writes(s)
     case s: IdentifyClientPersonal   => IdentifyClientPersonalFormats.writes(s)
+    case s: IdentifyClientBusiness   => IdentifyClientBusinessFormats.writes(s)
     case s: ConfirmPostcodeCgt       => ConfirmPostcodeCgtFormats.writes(s)
     case s: ConfirmCountryCodeCgt    => ConfirmCountryCodeCgtFormats.writes(s)
     case s: ConfirmClientItsa        => ConfirmClientsItsaFormats.writes(s)
@@ -57,6 +62,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case s: CgtRefNotFound           => CgtRefNotFoundFormats.writes(s)
     case s: PptRefNotFound           => PptRefNotFoundFormats.writes(s)
     case s: ConfirmClientCgt         => ConfirmClientCgtFormats.writes(s)
+    case s: ConfirmClientPpt         => ConfirmClientPptFormats.writes(s)
     case s: NotSignedUp              => NotSignedUpFormats.writes(s)
     case s: ConfirmCancel            => ConfirmCancelFormats.writes(s)
     case s: NotAuthorised            => NotAuthorisedFormats.writes(s)
@@ -68,12 +74,13 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "SelectClientType"         => JsSuccess(SelectClientType)
     case "SelectServicePersonal"    => SelectServicePersonalFormats.reads(properties)
-    case "SelectServiceBusiness"    => JsSuccess(SelectServiceBusiness)
+    case "SelectServiceBusiness"    => SelectServiceBusinessFormats.reads(properties)
     case "SelectServiceTrust"       => SelectServiceTrustFormats.reads(properties)
     case "IdentifyClientPersonal"   => IdentifyClientPersonalFormats.reads(properties)
-    case "IdentifyClientBusiness"   => JsSuccess(IdentifyClientBusiness)
+    case "IdentifyClientBusiness"   => IdentifyClientBusinessFormats.reads(properties)
     case "IdentifyClientTrust"      => JsSuccess(IdentifyClientTrust)
     case "IdentifyClientCgt"        => JsSuccess(IdentifyClientCgt)
+    case "IdentifyClientPpt"        => JsSuccess(IdentifyClientPpt)
     case "ConfirmPostcodeCgt"       => ConfirmPostcodeCgtFormats.reads(properties)
     case "ConfirmCountryCodeCgt"    => ConfirmCountryCodeCgtFormats.reads(properties)
     case "ConfirmClientItsa"        => ConfirmClientsItsaFormats.reads(properties)
@@ -83,10 +90,12 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmClientTrust"       => ConfirmClientTrustFormats.reads(properties)
     case "ConfirmClientTrustNT"     => ConfirmClientTrustNTFormats.reads(properties)
     case "ConfirmClientCgt"         => ConfirmClientCgtFormats.reads(properties)
+    case "ConfirmClientPpt"         => ConfirmClientPptFormats.reads(properties)
     case "NotSignedUp"              => NotSignedUpFormats.reads(properties)
     case "KnownFactNotMatched"      => JsSuccess(KnownFactNotMatched)
     case "TrustNotFound"            => JsSuccess(TrustNotFound)
     case "CgtRefNotFound"           => CgtRefNotFoundFormats.reads(properties)
+    case "PptRefNotFound"           => PptRefNotFoundFormats.reads(properties)
     case "ConfirmCancel"            => ConfirmCancelFormats.reads(properties)
     case "NotAuthorised"            => NotAuthorisedFormats.reads(properties)
     case "AuthorisationCancelled"   => AuthorisationCancelledFormats.reads(properties)
