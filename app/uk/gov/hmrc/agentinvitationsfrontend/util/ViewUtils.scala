@@ -75,27 +75,4 @@ object ViewUtils {
       Map(field -> s"$field.year")
     }
 
-  //  def mapAnswerRowToSummaryListRow(field: Field, answerRow: Seq[AnswerRow])(implicit messages: Messages): Seq[SummaryListRow] =
-//    answerRow.map(
-//      a => {
-//        SummaryListRow(
-//          key = Key(
-//            content = Text(a.question)
-//          ),
-//          value = Value(
-//            content = HtmlContent(@for(line <- a.answerLines) { @line<br> })
-//        ),
-//        actions = Some(Actions(
-//          items = Seq(
-//            ActionItem(
-//              href = a.changeLink,
-//              content = Text(a.buttonText),
-//              visuallyHiddenText = Some(a.question)
-//            )
-//          )
-//        ))
-//        )
-//      }
-//    )
-
 }
