@@ -175,6 +175,7 @@ agent-suspended.fastrack.p2.HMRC-MTD-VAT=manage their VAT.
 agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account.
+agent-suspended.fastrack.p2.HMRC-PPT-ORG=manage their Plastic Packaging Tax.
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
 agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
@@ -388,6 +389,7 @@ not-authorised.HMRC-MTD-VAT.p=This client has not authorised you to manage their
 not-authorised.HMRC-TERS-ORG.p=This client has not authorised you to maintain a trust or an estate.
 not-authorised.HMRC-TERSNT-ORG.p=This client has not authorised you to maintain a trust or an estate.
 not-authorised.HMRC-CGT-PD.p=This client has not authorised you to manage their Capital Gains Tax on UK property account.
+not-authorised.HMRC-PPT-ORG.p=This client has not authorised you to manage their Plastic Packaging Tax.
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
@@ -397,6 +399,7 @@ delete.subheading.HMRC-MTD-VAT=You will not send an authorisation request to man
 delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-TERSNT-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-CGT-PD=You will not send them an authorisation request to manage Capital Gains Tax on UK property account.
+delete.subheading.HMRC-PPT-ORG=You will not send them an authorisation request to manage Plastic Packaging Tax.
 delete.client=Your client
 error.delete.radio=Select yes if you want to remove the authorisation request for this client
 
@@ -540,6 +543,7 @@ suspended-agent.p1.ITSA=manage your Making Tax Digital for Income Tax
 suspended-agent.p1.VATC=manage your VAT
 suspended-agent.p1.TRS=maintain a trust or an estate
 suspended-agent.p1.CGT=manage your Capital Gains Tax on UK property account
+suspended-agent.p1.PPT=manage your Plastic Packaging Tax
 suspended-agent.p2=If you have any questions, contact the tax agent who sent you this request.
 suspended-agent.p3=You can continue without this service, or 
 suspended-agent.finish=finish and sign out
@@ -862,12 +866,14 @@ some-responses-failed.li.vat=manage your VAT
 some-responses-failed.li.trust=maintain a trust
 some-responses-failed.li.trustNT=maintain a trust
 some-responses-failed.li.cgt=manage your Capital Gains Tax on UK property account
+some-responses-failed.li.ppt=manage your Plastic Packaging Tax
 some-responses-failed.itsa=We could not save your response for managing your Making Tax Digital for Income Tax.
 some-responses-failed.afi=We could not save your response for viewing your PAYE income record.
 some-responses-failed.vat=We could not save your response for managing your VAT
 some-responses-failed.trust=We could not save your response for maintain a trust or an estate
 some-responses-failed.trustNT=We could not save your response for maintain a trust or an estate
 some-responses-failed.cgt=We could not save your response for managing your Capital Gains Tax on UK property account.
+some-responses-failed.ppt=We could not save your response for managing your Plastic Packaging Tax
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ‘Get help with this page’ link.
 
