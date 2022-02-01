@@ -321,9 +321,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "PendingInvitationExists" in {
-        val state = PendingInvitationExists(Personal, Set.empty)
+        val state = PendingInvitationExists(Personal, "invitation/link", Set.empty)
         val json =
-          Json.parse("""{"state":"PendingInvitationExists","properties":{"clientType": "personal", "basket": []}}""")
+          Json.parse("""{"state":"PendingInvitationExists",
+                       |"properties":{"clientType": "personal",
+                       |"agentLink":"invitation/link",
+                       |"basket": []}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

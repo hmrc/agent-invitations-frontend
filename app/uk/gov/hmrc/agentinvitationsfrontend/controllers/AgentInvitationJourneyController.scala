@@ -805,10 +805,11 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showClientType()
           ))
 
-      case PendingInvitationExists(_, basket) =>
+      case PendingInvitationExists(_, agentLink, basket) =>
         Ok(
           pendingAuthExistsView(
             PendingAuthorisationExistsPageConfig(
+              agentLink,
               basket.nonEmpty,
               backLinkFor(breadcrumbs).url,
               fromFastTrack = false,

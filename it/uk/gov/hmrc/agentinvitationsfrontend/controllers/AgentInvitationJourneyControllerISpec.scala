@@ -2460,7 +2460,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation pending page" in {
       journeyState.set(
-        PendingInvitationExists(Personal, emptyBasket),
+        PendingInvitationExists(Personal, "invitation link", emptyBasket),
         List()
       )
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))

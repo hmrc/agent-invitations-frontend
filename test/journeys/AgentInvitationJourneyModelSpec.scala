@@ -859,7 +859,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
           thenMatch {
-            case PendingInvitationExists(_, basket) if basket.nonEmpty =>
+            case PendingInvitationExists(_, "invitation/link", basket) if basket.nonEmpty =>
           }
       }
 
@@ -1053,7 +1053,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
-          thenGo(PendingInvitationExists(Business, emptyBasket))
+          thenGo(PendingInvitationExists(Business, "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when an active relationship already exists" in {
@@ -1186,7 +1186,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
-          thenGo(PendingInvitationExists(Trust, emptyBasket))
+          thenGo(PendingInvitationExists(Trust, "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when a pending invitation exists for the service" in {

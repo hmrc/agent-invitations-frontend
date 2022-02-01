@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.mvc.Call
 
 case class PendingAuthorisationExistsPageConfig(
+  pendingAuthLink: String,
   authRequestsExist: Boolean,
   backLinkUrl: String,
   fromFastTrack: Boolean,

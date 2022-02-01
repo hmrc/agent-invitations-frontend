@@ -836,7 +836,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
             getAgencyEmail)(hasPendingInvitation)(hasNoActiveRelationship)(hasNoPartialAuthorisation)(isNotAltItsa)(
             legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(true)) should
-          thenGo(PendingInvitationExists(fastTrackRequest, None))
+          thenGo(PendingInvitationExists(fastTrackRequest, "invitation/link", None))
       }
 
       "transition to ActiveAuthorisationExists when there is already an active relationship between agent and client for this service" in {

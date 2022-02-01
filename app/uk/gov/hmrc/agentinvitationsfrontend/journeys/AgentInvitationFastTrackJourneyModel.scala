@@ -19,11 +19,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{Basket, CannotCreateRequest}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetCgtSubscription, GetPptSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
 import uk.gov.hmrc.agentmtdidentifiers.model._
@@ -190,7 +189,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
   case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String = HMRCMTDVAT)
       extends InvitationSent
 
-  case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
+  case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, agentLink: String, continueUrl: Option[String]) extends State
 
   trait AuthExists extends State
   case class ActiveAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends AuthExists
@@ -391,7 +390,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       for {
         hasPendingInvitations <- hasPendingInvitationsFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
         result <- if (hasPendingInvitations) {
-                   goto(PendingInvitationExists(fastTrackRequest, continueUrl))
+                   getAgentLink(arn, fastTrackRequest.clientType).flatMap(agentLink =>
+                     goto(PendingInvitationExists(fastTrackRequest, agentLink, continueUrl)))
                  } else {
                    hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
                      .flatMap {

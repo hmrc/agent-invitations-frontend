@@ -1764,7 +1764,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the already-authorisation-pending page" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
-        PendingInvitationExists(ftr, None),
+        PendingInvitationExists(ftr, "invitation link", None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)

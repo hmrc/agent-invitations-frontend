@@ -391,6 +391,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   }
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
+
     case Prologue(failureUrlOpt, refererUrlOpt) =>
       failureUrlOpt match {
         case Some(failureUrl) =>
@@ -791,10 +792,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             routes.AgentInvitationFastTrackJourneyController.showClientType()
           ))
 
-      case PendingInvitationExists(_, _) =>
+      case PendingInvitationExists(_, agentLink, _) =>
         Ok(
           pendingAuthExistsView(
             PendingAuthorisationExistsPageConfig(
+              agentLink,
               authRequestsExist = false,
               backLinkFor(breadcrumbs).url,
               fromFastTrack = true,
