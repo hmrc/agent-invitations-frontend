@@ -366,6 +366,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi 
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Deunydd Pacio Plastig ar ran {1}.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
+cancel-authorisation.business-select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.business-select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
 cancel-authorisation.error.business-service.required=Dewiswch ‘Iawn’ os ydych am ganslo rheoli TAW y cleient hwn
 
@@ -1056,8 +1057,10 @@ cancel-auth-problem.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-auth-problem.p=Ni chafodd yr awdurdodiad ei ganslo. Rhowch gynnig arall arni.
 
 #Pending authorisation already exists
-pending-authorisation-exists.header=Rydych eisoes wedi creu cais am awdurdodiad ar gyfer y gwasanaeth hwn.
-pending-authorisation-exists.p=Gofynnwch i’r cleient ymateb i’r cais rydych eisoes wedi ei greu.
+pending-authorisation-exists.header=You already created an authorisation request for this tax service
+pending-authorisation-exists.p=You cannot continue until {0} has accepted the authorisation request link.
+pending-authorisation-exists.p2=Resend the authorisation request link that was created when you originally asked {0} to authorise you:
+pending-authorisation-exists.h2=What you can do next
 pending-authorisation-exists.button=Dychwelyd i’ch ceisiadau am awdurdodiad
 pending-authorisation-exists.track.button=Olrhain eich ceisiadau am awdurdodiad
 

@@ -47,7 +47,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   trait Identify extends State
   case class IdentifyClient(clientType: ClientType, service: String, basket: Basket) extends Identify
 
-  case class PendingInvitationExists(clientType: ClientType, basket: Basket) extends State
+  case class PendingInvitationExists(clientType: ClientType, clientName: String, agentLink: String, basket: Basket) extends State
 
   trait AuthorisationExists extends State
   case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
@@ -475,6 +475,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                hasActiveRelationshipFor,
                                hasAltItsaInvitations,
                                legacySaRelationshipStatusFor,
+                               getAgentLink,
                                appConfig)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
@@ -506,6 +507,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       hasActiveRelationshipFor: HasActiveRelationship,
       hasPartialAuthorisationFor: HasPartialAuthorisation,
       legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
+      getAgentLink: GetAgentLink,
       appConfig: AppConfig
     ): Future[State] =
       for {
@@ -515,7 +517,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                 else
                                   hasPendingInvitationsFor(arn, request.invitation.clientId, service)
         result <- if (hasPendingInvitations) {
-                   goto(PendingInvitationExists(clientType, basket))
+                   getAgentLink(arn, Some(clientType))
+                     .flatMap(agentLink => goto(PendingInvitationExists(clientType, request.clientName, agentLink, basket)))
                  } else {
                    hasActiveRelationshipFor(arn, request.invitation.clientId, service).flatMap {
                      case true => goto(ActiveAuthorisationExists(clientType, service, basket))
@@ -563,7 +566,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request,
             HMRCMTDIT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
+            basket)(
+            hasPendingInvitationsFor,
+            hasActiveRelationshipFor,
+            hasPartialAuthorisationFor,
+            legacySaRelationshipStatusFor,
+            getAgentLink,
+            appConfig)
         } else goto(IdentifyClient(Personal, HMRCMTDIT, basket))
 
       case ConfirmClientCgt(request, basket) => {
@@ -584,6 +593,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             hasActiveRelationshipFor,
             hasPartialAuthorisationFor,
             legacySaRelationshipStatusFor,
+            getAgentLink,
             appConfig)
         } else goto(state)
       }
@@ -597,7 +607,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request,
               HMRCMTDVAT,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
+              basket)(
+              hasPendingInvitationsFor,
+              hasActiveRelationshipFor,
+              hasPartialAuthorisationFor,
+              legacySaRelationshipStatusFor,
+              getAgentLink,
+              appConfig)
         } else goto(IdentifyClient(Personal, HMRCMTDVAT, basket))
 
       case ConfirmClientBusinessVat(request, basket, isInsolvent) =>
@@ -608,7 +624,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request,
             HMRCMTDVAT,
-            basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
+            basket)(
+            hasPendingInvitationsFor,
+            hasActiveRelationshipFor,
+            hasPartialAuthorisationFor,
+            legacySaRelationshipStatusFor,
+            getAgentLink,
+            appConfig)
         } else goto(IdentifyClient(Business, HMRCMTDVAT, basket))
 
       case ConfirmClientTrust(request, basket) =>
@@ -620,14 +642,20 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request,
               request.invitation.service,
-              basket)(hasPendingInvitationsFor, hasActiveRelationshipFor, hasPartialAuthorisationFor, legacySaRelationshipStatusFor, appConfig)
+              basket)(
+              hasPendingInvitationsFor,
+              hasActiveRelationshipFor,
+              hasPartialAuthorisationFor,
+              legacySaRelationshipStatusFor,
+              getAgentLink,
+              appConfig)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(Trust))
               result <- if (hasPendingInvitations) {
-                         goto(PendingInvitationExists(Trust, Set.empty))
+                         goto(PendingInvitationExists(Trust, request.clientName, agentLink, Set.empty))
                        } else {
                          hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
                            .flatMap {
@@ -672,6 +700,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             hasActiveRelationshipFor,
             hasPartialAuthorisationFor,
             legacySaRelationshipStatusFor,
+            getAgentLink,
             appConfig)
         } else goto(state)
       }

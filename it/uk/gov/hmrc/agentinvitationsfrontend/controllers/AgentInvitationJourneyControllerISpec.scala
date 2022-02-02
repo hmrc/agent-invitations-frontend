@@ -1,13 +1,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
+import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.mvc.Flash
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -1701,6 +1701,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to pending invitation exists when a pending invitation already exists for this service" in {
       givenGetAllPendingInvitationsReturnsSome(arn, vrn, HMRCMTDVAT)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+      givenAgentReference(arn, "uid", ClientType.Personal)
       journeyState.set(
         ConfirmClientPersonalVat(
           AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
@@ -2460,19 +2461,24 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation pending page" in {
       journeyState.set(
-        PendingInvitationExists(Personal, emptyBasket),
+        PendingInvitationExists(Personal, "Charmarti Ltd.", "http://invitation.link.com", emptyBasket),
         List()
       )
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "pending-authorisation-exists.header",
-        "pending-authorisation-exists.p",
-        "new-request.button"
-      )
+      val html = Jsoup.parse(Helpers.contentAsString(result))
+      html.title shouldBe  "You already created an authorisation request for this tax service - Ask a client to authorise you - GOV.UK"
+      html.select("main h1").text() shouldBe "You already created an authorisation request for this tax service"
+      html.select("main p").get(0).text() shouldBe "You cannot continue until Charmarti Ltd. has accepted the authorisation request link."
+      html.select("main h2").text() shouldBe "What you can do next"
+      html.select("main p").get(1).text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
+      html.select("main p").get(2).text() shouldBe "http://invitation.link.com"
+      html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
+      html.select("main p").get(2).classNames() contains "govuk-body"
+      html.select("main .govuk-button").text() shouldBe "Start a new request"
+      html.select("main .govuk-button").attr("href") should startWith("/invitations/")
     }
   }
 

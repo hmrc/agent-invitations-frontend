@@ -1,6 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.LocalDate
+import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
@@ -1762,9 +1763,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
   "GET /agents/authorisation-already-pending" should {
     val request = FakeRequest("GET", "/agents/fast-track/already-authorisation-pending")
     "show the already-authorisation-pending page" in {
-      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "Charmarti Ltd.", Some("BN114AW"))
       journeyState.set(
-        PendingInvitationExists(ftr, None),
+        PendingInvitationExists(ftr, "http://invitation.link.com", "Charmarti Ltd.", None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)
@@ -1774,9 +1775,16 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "pending-authorisation-exists.header")
-      checkHtmlResultWithBodyMsgs(result.futureValue, "pending-authorisation-exists.p")
-      checkHtmlResultWithBodyMsgs(result.futureValue, "pending-authorisation-exists.track.button")
+      val html = Jsoup.parse(Helpers.contentAsString(result))
+      html.title shouldBe  "You already created an authorisation request for this tax service - Ask a client to authorise you - GOV.UK"
+      html.select("main h1").text() shouldBe "You already created an authorisation request for this tax service"
+      html.select("main p").get(0).text() shouldBe "You cannot continue until Charmarti Ltd. has accepted the authorisation request link."
+      html.select("main p").get(1).text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
+      html.select("main p").get(2).text() shouldBe "http://invitation.link.com"
+      html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
+      html.select("main p").get(2).classNames() contains "govuk-body"
+      html.select("main .govuk-button").text() shouldBe "Track your authorisation requests"
+      html.select("main .govuk-button").attr("href") should startWith("/invitations/")
     }
   }
 

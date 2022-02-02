@@ -16,15 +16,14 @@
 
 package journeys
 import play.api.libs.json.{Format, JsArray, Json}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.State
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, HMRCPPTORG, TAXABLETRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
-import support.UnitSpec
 
 class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
 
@@ -321,9 +320,12 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "PendingInvitationExists" in {
-        val state = PendingInvitationExists(Personal, Set.empty)
+        val state = PendingInvitationExists(Personal, "Acme Ltd", "invitation/link", Set.empty)
         val json =
-          Json.parse("""{"state":"PendingInvitationExists","properties":{"clientType": "personal", "basket": []}}""")
+          Json.parse("""{"state":"PendingInvitationExists",
+                       |"properties":{"clientType": "personal",
+                       |"agentLink":"invitation/link","clientName":"Acme Ltd",
+                       |"basket": []}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

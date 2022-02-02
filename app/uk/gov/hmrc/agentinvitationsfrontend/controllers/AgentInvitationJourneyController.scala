@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import javax.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
-import play.api.{Configuration, Mode}
+import play.api.Configuration
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -27,21 +26,19 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationC
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.{confirm_client, _}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
-import uk.gov.hmrc.agentmtdidentifiers.model.PptRef
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.JourneyController
 
-import java.net.URI
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -805,10 +802,12 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showClientType()
           ))
 
-      case PendingInvitationExists(_, basket) =>
+      case PendingInvitationExists(_, clientName, agentLink, basket) =>
         Ok(
           pendingAuthExistsView(
             PendingAuthorisationExistsPageConfig(
+              clientName,
+              agentLink,
               basket.nonEmpty,
               backLinkFor(breadcrumbs).url,
               fromFastTrack = false,
