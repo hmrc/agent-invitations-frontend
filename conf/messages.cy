@@ -366,6 +366,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi 
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Deunydd Pacio Plastig ar ran {1}.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
+cancel-authorisation.business-select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.business-select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
 cancel-authorisation.error.business-service.required=Dewiswch ‘Iawn’ os ydych am ganslo rheoli TAW y cleient hwn
 
