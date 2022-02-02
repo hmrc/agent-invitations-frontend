@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.agentinvitationsfrontend.views.agents
+@this()
 
-import play.api.mvc.Call
+@(
+   key: String = "",
+   html: Option[Html] = None,
+   classes: Option[String] = None,
+   id: Option[String] = None
+)(implicit msgs: Messages)
 
-case class PendingAuthorisationExistsPageConfig(
-  clientName: String,
-  pendingAuthLink: String,
-  authRequestsExist: Boolean,
-  backLinkUrl: String,
-  fromFastTrack: Boolean,
-  reviewAuthsCall: Call,
-  clientTypeCall: Call)
+@cls = @{if(classes.isDefined) classes.get.concat(" govuk-body") else "govuk-body"}
+
+<p class ="@cls" @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</p>

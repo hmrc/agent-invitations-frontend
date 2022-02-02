@@ -876,10 +876,13 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
           PendingInvitationExists(
             AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ClientIdType", "ClientId", Some("KnownFact")),
             "invitation link",
+            "Acme Ltd",
             Some("continue/url"))
         val json = Json.parse("""{"state":"PendingInvitationExists","properties":{"fastTrackRequest":{"clientType": "personal",
                                 |"service": "HMRC-MTD-IT", "clientIdentifierType": "ClientIdType", "clientIdentifier": "ClientId",
-                                | "knownFact": "KnownFact"}, "agentLink": "invitation link","continueUrl": "continue/url"}}""".stripMargin)
+                                | "knownFact": "KnownFact"},
+                                | "agentLink": "invitation link","clientName":"Acme Ltd",
+                                |  "continueUrl": "continue/url"}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

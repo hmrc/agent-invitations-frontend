@@ -189,7 +189,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
   case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String = HMRCMTDVAT)
       extends InvitationSent
 
-  case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, agentLink: String, continueUrl: Option[String]) extends State
+  case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, agentLink: String, clientName: String, continueUrl: Option[String])
+      extends State
 
   trait AuthExists extends State
   case class ActiveAuthorisationExists(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends AuthExists
@@ -391,7 +392,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         hasPendingInvitations <- hasPendingInvitationsFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
         result <- if (hasPendingInvitations) {
                    getAgentLink(arn, fastTrackRequest.clientType).flatMap(agentLink =>
-                     goto(PendingInvitationExists(fastTrackRequest, agentLink, continueUrl)))
+                     goto(PendingInvitationExists(fastTrackRequest, agentLink, fastTrackRequest.clientIdentifier, continueUrl)))
                  } else {
                    hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
                      .flatMap {

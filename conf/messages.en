@@ -1057,8 +1057,10 @@ cancel-auth-problem.header=Sorry, there is a problem with the service
 cancel-auth-problem.p=The authorisation was not cancelled. Please try again.
 
 #Pending authorisation already exists
-pending-authorisation-exists.header=You already created an authorisation request for this service
-pending-authorisation-exists.p=Ask the client to respond to the request you have already created.
+pending-authorisation-exists.header=You already created an authorisation request for this tax service
+pending-authorisation-exists.p=You cannot continue until {0} has accepted the authorisation request link.
+pending-authorisation-exists.p2=Resend the authorisation request link that was created when you originally asked {0} to authorise you:
+pending-authorisation-exists.h2=What you can do next
 pending-authorisation-exists.button=Return to your authorisation requests
 pending-authorisation-exists.track.button=Track your authorisation requests
 

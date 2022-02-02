@@ -18,20 +18,19 @@ package journeys
 
 import org.joda.time.LocalDate
 import org.mockito.Mockito.{mock, when}
-import play.api.http.Status
 import play.api.test.Helpers._
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{start => _, _}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import support.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 
 import scala.collection.immutable.Set
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -859,7 +858,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
           thenMatch {
-            case PendingInvitationExists(_, "invitation/link", basket) if basket.nonEmpty =>
+            case PendingInvitationExists(_, "Piglet", "invitation/link", basket) if basket.nonEmpty =>
           }
       }
 
@@ -1053,7 +1052,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
-          thenGo(PendingInvitationExists(Business, "invitation/link", emptyBasket))
+          thenGo(PendingInvitationExists(Business, "Piglet", "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when an active relationship already exists" in {
@@ -1186,7 +1185,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasPendingInvitation)(
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             true)) should
-          thenGo(PendingInvitationExists(Trust, "invitation/link", emptyBasket))
+          thenGo(PendingInvitationExists(Trust, "Piglet", "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when a pending invitation exists for the service" in {

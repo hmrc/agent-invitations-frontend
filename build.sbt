@@ -34,6 +34,10 @@ def testDeps(scope: String) = Seq(
   "com.vladsch.flexmark"    % "flexmark-all"        % "0.35.10"       % scope
 )
 
+TwirlKeys.templateImports ++= Seq(
+  "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
+)
+
 lazy val root = (project in file("."))
   .settings(
     name := "agent-invitations-frontend",

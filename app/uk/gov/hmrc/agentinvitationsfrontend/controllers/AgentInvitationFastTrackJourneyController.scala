@@ -792,10 +792,11 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             routes.AgentInvitationFastTrackJourneyController.showClientType()
           ))
 
-      case PendingInvitationExists(_, agentLink, _) =>
+      case PendingInvitationExists(_, agentLink, clientName, _) =>
         Ok(
           pendingAuthExistsView(
             PendingAuthorisationExistsPageConfig(
+              clientName,
               agentLink,
               authRequestsExist = false,
               backLinkFor(breadcrumbs).url,

@@ -47,7 +47,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   trait Identify extends State
   case class IdentifyClient(clientType: ClientType, service: String, basket: Basket) extends Identify
 
-  case class PendingInvitationExists(clientType: ClientType, agentLink: String, basket: Basket) extends State
+  case class PendingInvitationExists(clientType: ClientType, clientName: String, agentLink: String, basket: Basket) extends State
 
   trait AuthorisationExists extends State
   case class ActiveAuthorisationExists(clientType: ClientType, service: String, basket: Basket) extends AuthorisationExists
@@ -518,7 +518,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                   hasPendingInvitationsFor(arn, request.invitation.clientId, service)
         result <- if (hasPendingInvitations) {
                    getAgentLink(arn, Some(clientType))
-                     .flatMap(agentLink => goto(PendingInvitationExists(clientType, agentLink, basket)))
+                     .flatMap(agentLink => goto(PendingInvitationExists(clientType, request.clientName, agentLink, basket)))
                  } else {
                    hasActiveRelationshipFor(arn, request.invitation.clientId, service).flatMap {
                      case true => goto(ActiveAuthorisationExists(clientType, service, basket))
@@ -655,7 +655,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               hasPendingInvitations <- hasPendingInvitationsFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
               agentLink             <- getAgentLink(authorisedAgent.arn, Some(Trust))
               result <- if (hasPendingInvitations) {
-                         goto(PendingInvitationExists(Trust, agentLink, Set.empty))
+                         goto(PendingInvitationExists(Trust, request.clientName, agentLink, Set.empty))
                        } else {
                          hasActiveRelationshipFor(authorisedAgent.arn, request.invitation.clientId, request.invitation.service)
                            .flatMap {
