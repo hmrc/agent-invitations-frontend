@@ -1701,6 +1701,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to pending invitation exists when a pending invitation already exists for this service" in {
       givenGetAllPendingInvitationsReturnsSome(arn, vrn, HMRCMTDVAT)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
+      givenAgentReference(arn, "uid", ClientType.Personal)
       journeyState.set(
         ConfirmClientPersonalVat(
           AuthorisationRequest("GDT", VatInvitation(Some(Personal), Vrn(vrn))),
