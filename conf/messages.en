@@ -915,7 +915,7 @@ error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 
 #Track invitation requests
-recent-invitations.header=Track your recent authorisation requests
+recent-invitations.header=Manage your recent authorisation requests
 recent-invitations.description=Check the status of your authorisation requests to clients in the last {0} days, or cancel requests and authorisations you no longer need.
 recent-invitations.empty=You do not have any recent authorisation requests.
 recent-invitations.empty.continue=Start a new authorisation request
@@ -1010,7 +1010,7 @@ request-cancelled.p1.HMRC-TERSNT-ORG=You have cancelled your authorisation reque
 request-cancelled.p1.HMRC-CGT-PD=You have cancelled your authorisation request to manage their Capital Gains Tax on UK property account.
 request-cancelled.p1.HMRC-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
 request-cancelled.panel= {0} can no longer respond to this request.
-request-cancelled.track.link=Track your recent authorisation requests
+request-cancelled.track.link=Manage your recent authorisation requests
 
 request-cancelled.p2=If you cancelled your authorisation request by mistake, you will need to <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">start a new authorisation request</a>.
 
@@ -1050,7 +1050,7 @@ authorisation-cancelled.check-sa.p1=You could still have an authorisation in pla
 authorisation-cancelled.check-sa.l1=sign out of this agent services account
 authorisation-cancelled.check-sa.l2=sign in to your HMRC online services for agents account
 authorisation-cancelled.check-sa.l3=follow the instructions for deleting the client from your client list
-authorisation-cancelled.track.button=Return to track your recent authorisation requests
+authorisation-cancelled.track.button=Return to manage your recent authorisation requests
 
 #Cancel authorisation problem page
 cancel-auth-problem.header=Sorry, there is a problem with the service
@@ -1062,7 +1062,7 @@ pending-authorisation-exists.p=You cannot continue until {0} has accepted the au
 pending-authorisation-exists.p2=Resend the authorisation request link that was created when you originally asked {0} to authorise you:
 pending-authorisation-exists.h2=What you can do next
 pending-authorisation-exists.button=Return to your authorisation requests
-pending-authorisation-exists.track.button=Track your authorisation requests
+pending-authorisation-exists.track.button=Manage your authorisation requests
 
 #Active authorisation exists
 active-authorisation-exists.header=You are already authorised

@@ -1783,7 +1783,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       html.select("main p").get(2).text() shouldBe "http://invitation.link.com"
       html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
       html.select("main p").get(2).classNames() contains "govuk-body"
-      html.select("main .govuk-button").text() shouldBe "Track your authorisation requests"
+      html.select("main .govuk-button").text() shouldBe "Manage your authorisation requests"
       html.select("main .govuk-button").attr("href") should startWith("/invitations/")
     }
   }

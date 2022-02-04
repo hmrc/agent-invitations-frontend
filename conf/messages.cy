@@ -915,7 +915,7 @@ error.terminate.500.title=Mae’n ddrwg gennym – rydym yn profi anawsterau tec
 error.terminate.500.message=Mae modd i asiantau treth weld eich cofnod incwm o hyd. Rhowch gynnig arall arni mewn ychydig o funudau.
 
 #Track invitation requests
-recent-invitations.header=Olrhain eich ceisiadau diweddar am awdurdodiad
+recent-invitations.header=Rheoli eich ceisiadau diweddar am awdurdodiad
 recent-invitations.description=Gwirio statws eich ceisiadau am awdurdodiad i gleientiaid yn ystod y {0} o ddiwrnodau diwethaf, neu ganslo ceisiadau ac awdurdodiadau nad oes eu hangen mwyach.
 recent-invitations.empty=Nid oes gennych unrhyw geisiadau diweddar am awdurdodiad.
 recent-invitations.empty.continue=Dechrau cais am awdurdodiad newydd
@@ -1010,7 +1010,7 @@ request-cancelled.p1.HMRC-TERSNT-ORG=Rydych wedi canslo’ch cais am awdurdodiad
 request-cancelled.p1.HMRC-CGT-PD=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 request-cancelled.p1.HMRC-PPT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Deunydd Pacio Plastig.
 request-cancelled.panel=Ni all {0} ymateb i’r cais hwn mwyach.
-request-cancelled.track.link=Olrhain eich ceisiadau diweddar am awdurdodiad
+request-cancelled.track.link=Rheoli eich ceisiadau diweddar am awdurdodiad
 
 request-cancelled.p2=Os gwnaethoch ganslo’ch cais am awdurdodiad drwy ddamwain, bydd yn rhaid i chi <a id="startNewRequestLink" href="{0}" target="_blank" rel="noopener noreferrer">ddechrau cais am awdurdodiad newydd</a>.
 
@@ -1050,7 +1050,7 @@ authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
 authorisation-cancelled.check-sa.l2=mewngofnodi i’ch cyfrif gwasanaethau ar-lein CThEM ar gyfer asiantau
 authorisation-cancelled.check-sa.l3=dilyn y cyfarwyddiadau ar gyfer dileu’r cleient oddi ar eich rhestr o gleientiaid
-authorisation-cancelled.track.button=Dychwelyd i olrhain eich ceisiadau diweddar am awdurdodiad
+authorisation-cancelled.track.button=Dychwelyd i rheoli eich ceisiadau diweddar am awdurdodiad
 
 #Cancel authorisation problem page
 cancel-auth-problem.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
@@ -1062,7 +1062,7 @@ pending-authorisation-exists.p=You cannot continue until {0} has accepted the au
 pending-authorisation-exists.p2=Resend the authorisation request link that was created when you originally asked {0} to authorise you:
 pending-authorisation-exists.h2=What you can do next
 pending-authorisation-exists.button=Dychwelyd i’ch ceisiadau am awdurdodiad
-pending-authorisation-exists.track.button=Olrhain eich ceisiadau am awdurdodiad
+pending-authorisation-exists.track.button=Rheoli eich ceisiadau am awdurdodiad
 
 #Active authorisation exists
 active-authorisation-exists.header=Rydych eisoes wedi’ch awdurdodi
