@@ -35,7 +35,7 @@
     submitButton: SubmitButton
 )
 
-@(regDateForm: Form[String], submitFormCall: Call, backLinkUrl: String, isDeAuth: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(regDateForm: Form[String], submitFormCall: Call, backLinkUrl: String, isDeAuth: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuth) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
@@ -44,18 +44,18 @@
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@Messages("identify-client.vat.p1")</p>
+    <p id="identify-client-hint">@msgs("identify-client.vat.p1")</p>
 
     @inputDate(
         field = agentInvitationsDateForm("knownFact"),
-        legend = Messages("identify-ppt-client.registration-date.label"),
-        hint = Some(Messages("identify-ppt-client.registration-date.hint"))
+        legend = msgs("identify-ppt-client.registration-date.label"),
+        hint = Some(msgs("identify-ppt-client.registration-date.hint"))
     )
 }
 
 @mainTemplate(
-    bannerTitle = Messages(banner),
-    title = errorPrefix(regDateForm) + Messages("generic.title", Messages("known-fact.HMRC-PPT-ORG.heading"), Messages(banner)),
+    bannerTitle = msgs(banner),
+    title = errorPrefix(regDateForm) + msgs("generic.title", msgs("known-fact.HMRC-PPT-ORG.heading"), msgs(banner)),
     isAgent = true,
     backLinkHref = Some(backLinkUrl)
 ) {
@@ -68,7 +68,7 @@
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
-                content = Text(Messages("known-fact.HMRC-PPT-ORG.heading")),
+                content = Text(msgs("known-fact.HMRC-PPT-ORG.heading")),
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),

@@ -29,24 +29,24 @@
     govukPanel: GovukPanel
 )
 
-@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(title = Messages("generic.title", Messages("request-cancelled.header"), Messages("service.name.agents.auth")),  isAgent = true) {
+@mainTemplate(title = msgs("generic.title", msgs("request-cancelled.header"), msgs("service.name.agents.auth")),  isAgent = true) {
 
     @govukPanel(Panel(
-        title = Text(Messages("request-cancelled.header"))
+        title = Text(msgs("request-cancelled.header"))
     ))
 
- <p>@Messages(s"request-cancelled.p1.${pageConfig.service}")</p>
+ <p>@msgs(s"request-cancelled.p1.${pageConfig.service}")</p>
 
     <div class="govuk-inset-text govuk-!-margin-top-6 govuk-!-margin-bottom-6">
-        <p>@Messages("request-cancelled.panel", pageConfig.hideClientName)</p>
+        <p>@msgs("request-cancelled.panel", pageConfig.hideClientName)</p>
     </div>
 
     <div class="govuk-!-margin-bottom-6">
-        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@Messages("request-cancelled.track.link")</a>
+        <a href="@routes.AgentsRequestTrackingController.showTrackRequests()">@msgs("request-cancelled.track.link")</a>
     </div>
 
-    <p>@Html(Messages("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))</p>
+    <p>@Html(msgs("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))</p>
 
     }

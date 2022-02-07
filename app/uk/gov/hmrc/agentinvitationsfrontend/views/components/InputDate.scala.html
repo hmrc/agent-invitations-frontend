@@ -27,13 +27,13 @@ legend: String,
 legendClass: String = "govuk-fieldset__legend--s",
 hint: Option[String] = None,
 legendAsHeading: Boolean = false
-)(implicit messages: Messages)
+)(implicit msgs: Messages)
 
 @govukDateInput(DateInput(
-    hint = hint.map(hint => Hint(content = Text(messages(hint)))),
+    hint = hint.map(hint => Hint(content = Text(msgs(hint)))),
     fieldset = Some(Fieldset(
         legend = Some(Legend(
-            content = Text(messages(legend)),
+            content = Text(msgs(legend)),
             classes = legendClass,
             isPageHeading = legendAsHeading
         ))

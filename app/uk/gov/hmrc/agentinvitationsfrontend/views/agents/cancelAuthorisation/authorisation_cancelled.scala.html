@@ -38,7 +38,7 @@
     clientName: String,
     agencyName: String,
     agentServicesAccountUrl: String
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 
 @panelContent = {
@@ -46,34 +46,34 @@
 }
 
 @mainTemplate(
-bannerTitle = Messages("service.name.agents.de-auth"),
-title = Messages("generic.title", Messages("cancel-authorisation.cancelled.header"), Messages("service.name.agents.de-auth")),
+bannerTitle = msgs("service.name.agents.de-auth"),
+title = msgs("generic.title", msgs("cancel-authorisation.cancelled.header"), msgs("service.name.agents.de-auth")),
 isAgent = true) {
 
     @govukPanel(Panel(
-        title = Text(Messages("cancel-authorisation.cancelled.header")),
+        title = Text(msgs("cancel-authorisation.cancelled.header")),
         content = HtmlContent(s"$panelContent")
     ))
 
-    <h2>@Messages("cancel-authorisation.cancelled.subheader")</h2>
-    <p>@Html(Messages(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
+    <h2>@msgs("cancel-authorisation.cancelled.subheader")</h2>
+    <p>@Html(msgs(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
 
     @if(service=="HMRC-MTD-IT") {
-        <h2>@Messages("authorisation-cancelled.check-sa.subheader")</h2>
+        <h2>@msgs("authorisation-cancelled.check-sa.subheader")</h2>
 
-        <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
+        <p>@msgs("authorisation-cancelled.check-sa.p1")</p>
         <ul class="govuk-list govuk-list--bullet">
-            <li>@Messages("authorisation-cancelled.check-sa.l1")</li>
+            <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
             <li>
-            <a href="@externalUrls.guidanceSa">@Messages("authorisation-cancelled.check-sa.l2")</a>
+            <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
             </li>
-            <li>@Messages("authorisation-cancelled.check-sa.l3")</li>
+            <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
         </ul>
     }  
     <p>
         <a href="javascript:window.print()" class="print-link">
             <!--TODO add hidden text with more context in messages file-->
-            <span>@Messages("cancel-authorisation.cancelled.print")</span>
+            <span>@msgs("cancel-authorisation.cancelled.print")</span>
         </a>
     </p>
 

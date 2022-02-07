@@ -31,7 +31,7 @@
 @(
 invitationOrRelationship: TrackInformationSorted,
 index: Int
-)(implicit messages: Messages, request: Request[_], now: LocalDate)
+)(implicit msgs: Messages, request: Request[_], now: LocalDate)
 
 @formHelper(
     action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
@@ -42,7 +42,7 @@ index: Int
     <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{index}" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="knownFact" id="knownFact-@{index}" value="">
     <button class="button--link-style govuk-!-font-size-16" type="submit" id="resendRequest-@{index}">
-        <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
-        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.aria-text", invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
+        <span aria-hidden="true">@msgs(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
+        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.aria-text", invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
 }

@@ -23,7 +23,7 @@
 
 @this(mainTemplate: MainTemplate)
 
-@(config: InvitationSentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: InvitationSentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
     <script>
@@ -41,15 +41,15 @@
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.relativeInvitationUrl}"}
 
 @mainTemplate(
-title = Messages("generic.title", Messages("invitation-sent.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("invitation-sent.header"), msgs("service.name.agents.auth")),
 completedInviteGoSurvey = Some(true),
 scriptElem = Some(gtmScript),
 isAgent = true) {
 
-    <h1 class="govuk-heading-xl">@Messages("invitation-sent.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("invitation-sent.header")</h1>
 
     @if(config.isAltItsa) {
-        <p>@Messages("invitation-sent.all-steps")</p>
+        <p>@msgs("invitation-sent.all-steps")</p>
     }
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
@@ -58,31 +58,31 @@ isAgent = true) {
         }
 
         <li>
-            <p>@Messages("invitation-sent.link-text")</p>
+            <p>@msgs("invitation-sent.link-text")</p>
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
-        <li>@Messages("invitation-sent.select-link")</li>
+        <li>@msgs("invitation-sent.select-link")</li>
         <li>
-            <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDate), config.agencyEmail)</p>
+            <p>@msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDate), config.agencyEmail)</p>
             @if(config.showWarning) {
                 <div class="govuk-warning-text">
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                     <span class="govuk-warning-text__assistive">Warning</span>
-                    <strong class="govuk-warning-text__text">@Messages("invitation-sent.client-warning")</strong>
+                    <strong class="govuk-warning-text__text">@msgs("invitation-sent.client-warning")</strong>
                 </div>
             }
         </li>
         @if(config.isAltItsa) {
-            <li><a href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax" id="signUpYourClient" target="_blank" rel="noreferrer noopener">@Messages("invitation-sent.mtd")</a></li>
+            <li><a href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax" id="signUpYourClient" target="_blank" rel="noreferrer noopener">@msgs("invitation-sent.mtd")</a></li>
         }
     </ol>
 
-    <h2>@Messages("invitation-sent.further-help.heading")</h2>
-    <p>@Messages("invitation-sent.further-help.p")</p>
+    <h2>@msgs("invitation-sent.further-help.heading")</h2>
+    <p>@msgs("invitation-sent.further-help.p")</p>
     <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep" target="_blank" rel="noreferrer noopener">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
-        <li><a href="@config.continueUrl" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
+        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep" target="_blank" rel="noreferrer noopener">@msgs("invitation-sent.further-help.link-text.sbs")</a></li>
+        <li><a href="@config.continueUrl" id="continue">@msgs("invitation-sent.further-help.link-text.asa")</a></li>
     </ul>
 
 }

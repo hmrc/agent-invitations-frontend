@@ -43,13 +43,13 @@
 )
 
 
-@(config: TrackPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig, now: LocalDate)
+@(config: TrackPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig, now: LocalDate)
 
 @clientFieldError = @{config.filterForm.flatMap { f => f.error("client")}}
 @statusFieldError =@{config.filterForm.flatMap { f => f.error("status")}}
 
 @mainTemplate(
-title = Messages("generic.title", Messages("recent-invitations.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("recent-invitations.header"), msgs("service.name.agents.auth")),
 backLinkHref = Some(externalUrls.agentServicesAccountUrl),
 fullWidth = true,
 isAgent = true) {
@@ -63,23 +63,23 @@ isAgent = true) {
         @formHelper(action = config.filterFormSubmitUrl) {
             <fieldset class="govuk-fieldset" aria-describedby="client-label status-label">
                 <legend>
-                    <h1 class="govuk-heading-xl">@Messages(s"recent-invitations.header")</h1>
+                    <h1 class="govuk-heading-xl">@msgs(s"recent-invitations.header")</h1>
                 </legend>
 
                 <p class="govuk-!-margin-bottom-6">
-                @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
+                @msgs(s"recent-invitations.description", config.trackRequestsShowLastDays)
                 </p>
 
                 @inputSelect(
                     field = config.form("client"),
-                    label = Messages("recent-invitations.filter-client.label"),
+                    label = msgs("recent-invitations.filter-client.label"),
                     options = config.clientSeq,
                     inputClass = Some("govuk-!-width-full")
                 )
 
                 @inputSelect(
                     field = config.form("status"),
-                    label = Messages("recent-invitations.filter-status.label"),
+                    label = msgs("recent-invitations.filter-status.label"),
                     options = config.statusesSeq
                 )
 
@@ -90,41 +90,41 @@ isAgent = true) {
 
     } else {
 
-        <h1 class="govuk-heading-xl">@Messages(s"recent-invitations.header")</h1>
+        <h1 class="govuk-heading-xl">@msgs(s"recent-invitations.header")</h1>
 
         <p class="govuk-!-margin-bottom-6">
-        @Messages(s"recent-invitations.description", config.trackRequestsShowLastDays)
+        @msgs(s"recent-invitations.description", config.trackRequestsShowLastDays)
         </p>
     }
 
     @if(config.hasInvitationsOrRelationships) {
         <table class="govuk-table">
-            <caption class="govuk-!-text-align-left">@Messages("recent-invitations.pagination.showing")
+            <caption class="govuk-!-text-align-left">@msgs("recent-invitations.pagination.showing")
                 <strong>@config.firstResult</strong>
-                @Messages("recent-invitations.pagination.to") <strong>@config.lastResult</strong>
-                @Messages("recent-invitations.pagination.of") <strong>@config.totalResults</strong>
+                @msgs("recent-invitations.pagination.to") <strong>@config.lastResult</strong>
+                @msgs("recent-invitations.pagination.of") <strong>@config.totalResults</strong>
             </caption>
             <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header column-22">@Messages("recent-invitations.table-row-header.clientName")</th>
-                <th scope="col" class="govuk-table__header column-30">@Messages("recent-invitations.table-row-header.service")</th>
-                <th scope="col" class="govuk-table__header column-28">@Messages("recent-invitations.table-row-header.status")</th>
-                <th scope="col" class="govuk-table__header column-20">@Messages("recent-invitations.table-row-header.actions")</th>
+                <th scope="col" class="govuk-table__header column-22">@msgs("recent-invitations.table-row-header.clientName")</th>
+                <th scope="col" class="govuk-table__header column-30">@msgs("recent-invitations.table-row-header.service")</th>
+                <th scope="col" class="govuk-table__header column-28">@msgs("recent-invitations.table-row-header.status")</th>
+                <th scope="col" class="govuk-table__header column-20">@msgs("recent-invitations.table-row-header.actions")</th>
             </tr>
             </thead>
             <tbody class="govuk-table__body govuk-body-s">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
             <tr class="govuk-table__row" id="row-@index">
                 <td class="govuk-table__cell" id="taxpayerName-@index">
-                    <span>@invitationOrRelationship.clientName.getOrElse(Messages("recent-invitations.table-row-header.clientNameUnknown"))</span>
+                    <span>@invitationOrRelationship.clientName.getOrElse(msgs("recent-invitations.table-row-header.clientNameUnknown"))</span>
                 </td>
                 <td  class="govuk-table__cell" id="serviceInfo-@index">
                     <span>
-                       @Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
+                       @msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
                     </span>
                 </td>
                 <td class="govuk-table__cell" id="track-status-@index">
-                    @Messages(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
+                    @msgs(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
                     <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                 </td>
                 <td class="govuk-table__cell" id="action-@index-@invitationOrRelationship.status.toLowerCase()">
@@ -149,9 +149,9 @@ isAgent = true) {
             @paginationControls
         }
     } else {
-        <p>@Messages(s"recent-invitations.empty")</p>
+        <p>@msgs(s"recent-invitations.empty")</p>
         <p>
-            <a href="@routes.AgentInvitationJourneyController.showSelectService()">@Messages(s"recent-invitations.empty.continue")</a>
+            <a href="@routes.AgentInvitationJourneyController.showSelectService()">@msgs(s"recent-invitations.empty.continue")</a>
         </p>
     }
 }
@@ -175,9 +175,9 @@ isAgent = true) {
     </ul>
 }
 
-@dateInfo(invitation: TrackInformationSorted)(implicit messages: Messages) = {
+@dateInfo(invitation: TrackInformationSorted)(implicit msgs: Messages) = {
 @if(invitation.status == "Pending") {
-    <span>@Messages("recent-invitations.invitation.expires")</span>
+    <span>@msgs("recent-invitations.invitation.expires")</span>
     @displayDate(invitation.expiryDate)
 } else {
     @if(invitation.status == "Expired") {

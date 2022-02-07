@@ -22,17 +22,17 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(serviceMessageKey: String = "afi")(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(serviceMessageKey: String = "afi")(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages(s"generic.title", Messages("not-authorised.header"), Messages("service.name.clients")),
+title = msgs(s"generic.title", msgs("not-authorised.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@Messages("not-authorised.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("not-authorised.header")</h1>
 
-    <p>@Messages("not-authorised.description.p1")</p>
-    <p>@Messages("not-authorised.description.p2")</p>
+    <p>@msgs("not-authorised.description.p1")</p>
+    <p>@msgs("not-authorised.description.p2")</p>
 
     @linkStyledAsButton(
         href = externalUrls.companyAuthFrontendSignOutUrl,

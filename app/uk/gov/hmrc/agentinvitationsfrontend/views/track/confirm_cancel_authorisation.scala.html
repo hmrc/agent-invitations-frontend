@@ -36,10 +36,10 @@
     submitButton: SubmitButton
 )
 
-@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages("confirm-authorisation-cancelled.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("confirm-authorisation-cancelled.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -52,26 +52,26 @@ backLinkHref = Some(backLinkUrl)
     @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
         @if(service=="HMRC-MTD-IT") {
-            <h1 class="govuk-heading-xl">@Messages("confirm-authorisation-cancelled.track.header")</h1>
+            <h1 class="govuk-heading-xl">@msgs("confirm-authorisation-cancelled.track.header")</h1>
 
             @govukInsetText(InsetText(
-            content = Text(Messages("confirm-authorisation-cancelled.track.itsa-panel"))
+            content = Text(msgs("confirm-authorisation-cancelled.track.itsa-panel"))
             ))
 
             @inputYesNoRadio(
                 field = confirmForm("confirmCancelAuthorisation"),
-                legend = Messages("confirm-authorisation-cancelled.track.header"),
+                legend = msgs("confirm-authorisation-cancelled.track.header"),
                 legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
-                hint = Some(Messages(s"confirm-authorisation-cancelled.p1.track.$service"))
+                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.$service"))
             )
 
         } else {
             @inputYesNoRadio(
                 field = confirmForm("confirmCancelAuthorisation"),
-                legend = Messages("confirm-authorisation-cancelled.track.header"),
+                legend = msgs("confirm-authorisation-cancelled.track.header"),
                 headingIsLegend = true,
-                hint = Some(Messages(s"confirm-authorisation-cancelled.p1.track.$service"))
+                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.$service"))
             )
         }
 

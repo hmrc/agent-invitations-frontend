@@ -22,15 +22,15 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"all-authorisations-removed.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"all-authorisations-removed.header"), msgs("service.name.agents.auth")),
 isAgent = true) {
 
-  <h1 class="govuk-heading-xl">@Messages("all-authorisations-removed.header")</h1>
+  <h1 class="govuk-heading-xl">@msgs("all-authorisations-removed.header")</h1>
 
-  <p>@Messages("all-authorisations-removed.p")</p>
+  <p>@msgs("all-authorisations-removed.p")</p>
 
     @linkStyledAsButton(
         href = clientTypeCall.url,

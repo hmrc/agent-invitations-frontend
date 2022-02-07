@@ -36,7 +36,7 @@
     submitButton: SubmitButton
 )
 
-@(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentInvitationsForm : Form[VatClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
@@ -45,13 +45,13 @@
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@Messages("identify-client.vat.p1")</p>
+    <p id="identify-client-hint">@msgs("identify-client.vat.p1")</p>
 
     @inputText(
         field = agentInvitationsForm("clientIdentifier"),
-        label = Messages("identify-client.vrn.label"),
+        label = msgs("identify-client.vrn.label"),
         labelClass = Some("govuk-label--s"),
-        hint = Some(Messages("identify-client.vrn.hint")),
+        hint = Some(msgs("identify-client.vrn.hint")),
         inputClass = Some("govuk-input--width-10"),
         pattern=Some("[0-9]*"),
         inputMode=Some("numeric")
@@ -59,14 +59,14 @@
 
     @inputDate(
         field = agentInvitationsDateForm("registrationDate"),
-        legend = Messages("identify-client.vat-registration-date.label"),
-        hint = Some(Messages("identify-client.vat-registration-date.hint"))
+        legend = msgs("identify-client.vat-registration-date.label"),
+        hint = Some(msgs("identify-client.vat-registration-date.hint"))
     )
 }
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
+bannerTitle = msgs(banner),
+title = errorPrefix(agentInvitationsForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -79,7 +79,7 @@ backLinkHref = Some(backLinkUrl)
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
-                content = Text(Messages("identify-client.header")),
+                content = Text(msgs("identify-client.header")),
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),

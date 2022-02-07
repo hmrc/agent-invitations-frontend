@@ -38,7 +38,7 @@
     clientId: String,
     clientName: String,
     clientType: ClientType
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
  <script>
@@ -56,29 +56,29 @@
 }
 
 @mainTemplate(
-title = Messages("generic.title", Messages("authorisation-cancelled.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("authorisation-cancelled.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 scriptElem = Some(gtmScript)
 ) {
 
      @govukPanel(Panel(
-         title = Text(Messages("authorisation-cancelled.header")),
+         title = Text(msgs("authorisation-cancelled.header")),
          content = HtmlContent(s"$panelContent")
      ))
 
-    <h2>@Messages("authorisation-cancelled.subheader")</h2>
-    <p>@Html(Messages(s"authorisation-cancelled.p1.$service", clientName))</p>
+    <h2>@msgs("authorisation-cancelled.subheader")</h2>
+    <p>@Html(msgs(s"authorisation-cancelled.p1.$service", clientName))</p>
 
     @if(service=="HMRC-MTD-IT") {
-    <h2>@Messages("authorisation-cancelled.check-sa.subheader")</h2>
+    <h2>@msgs("authorisation-cancelled.check-sa.subheader")</h2>
 
-    <p>@Messages("authorisation-cancelled.check-sa.p1")</p>
+    <p>@msgs("authorisation-cancelled.check-sa.p1")</p>
     <ul class="govuk-list govuk-list--bullet govuk-body">
-        <li>@Messages("authorisation-cancelled.check-sa.l1")</li>
+        <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
         <li>
-        <a href="@externalUrls.guidanceSa">@Messages("authorisation-cancelled.check-sa.l2")</a>
+        <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
         </li>
-        <li>@Messages("authorisation-cancelled.check-sa.l3")</li>
+        <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
     </ul>
     }
 

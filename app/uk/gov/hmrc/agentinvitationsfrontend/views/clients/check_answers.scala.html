@@ -31,28 +31,28 @@
     submitButton: SubmitButton
 )
 
-@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("service.name.clients"),
-    title =  Messages("generic.title", Messages("check-answers.heading"), Messages("service.name.clients")),
+    bannerTitle = msgs("service.name.clients"),
+    title =  msgs("generic.title", msgs("check-answers.heading"), msgs("service.name.clients")),
     isAgent = false,
     backLinkHref = Some(pageConfig.backLink.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("check-answers.heading")</h1>
+    <h1 class="govuk-heading-xl">@msgs("check-answers.heading")</h1>
 
-    <h2>@Messages("check-answers.subheading", pageConfig.processedAgencyName)</h2>
+    <h2>@msgs("check-answers.subheading", pageConfig.processedAgencyName)</h2>
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(consent <- pageConfig.consents) {
         @checkAnswersRow(
-            key = Messages(s"check-answers.service.${consent.serviceKey}"),
+            key = msgs(s"check-answers.service.${consent.serviceKey}"),
             valueId = s"client-identifier-${consent.serviceKey}",
-            value = Messages(s"check-answers.consent.${consent.consent}"),
-            actionText = Some(Messages("check-answers.change-link")) ,
+            value = msgs(s"check-answers.consent.${consent.consent}"),
+            actionText = Some(msgs("check-answers.change-link")) ,
             actionHref = Some(pageConfig.changeCall(consent.serviceKey).url),
-            hiddenActionText = Some(Messages("check-answers.change-link") + " " + Messages(s"check-answers.service.${consent.serviceKey}"))
+            hiddenActionText = Some(msgs("check-answers.change-link") + " " + msgs(s"check-answers.service.${consent.serviceKey}"))
         )
     }
     </dl>

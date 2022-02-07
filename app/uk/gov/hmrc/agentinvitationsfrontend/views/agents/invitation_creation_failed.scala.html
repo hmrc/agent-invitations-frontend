@@ -33,19 +33,19 @@
     submitButton: SubmitButton
 )
 
-@(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages("create-auth-failed.header"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("create-auth-failed.header"), msgs("service.name.clients")),
 isAgent = true) {
 
-    <h1 class="govuk-heading-xl">@Messages("create-auth-failed.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("create-auth-failed.header")</h1>
 
     <p class="govuk-!-margin-bottom-4">
     @if(config.hasSingleRequest){
-        @Messages(s"create-auth-failed.p1", "request")
+        @msgs(s"create-auth-failed.p1", "request")
     } else {
-        @Messages(s"create-auth-failed.p1", "requests")
+        @msgs(s"create-auth-failed.p1", "requests")
     }
     </p>
 
@@ -56,14 +56,14 @@ isAgent = true) {
             @request.clientName
             </dt>
             <dd class="govuk-summary-list__value" id="client-identifier">
-            @Messages(s"create-auth-failed.${request.invitation.service}")
+            @msgs(s"create-auth-failed.${request.invitation.service}")
             </dd>
         </div>
     }
     </dl>
 
     @if(config.isAll) {
-        <p>@Html(Messages("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
+        <p>@Html(msgs("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
 
         @formHelper(
             action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
@@ -80,9 +80,9 @@ isAgent = true) {
             <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
             <p>
               @if(config.hasSingleRequest) {
-                  @Html(Messages("create-auth-failed.link-text.one"))
+                  @Html(msgs("create-auth-failed.link-text.one"))
               } else {
-                  @Html(Messages("create-auth-failed.link-text.some"))
+                  @Html(msgs("create-auth-failed.link-text.some"))
               }
             </p>
         }

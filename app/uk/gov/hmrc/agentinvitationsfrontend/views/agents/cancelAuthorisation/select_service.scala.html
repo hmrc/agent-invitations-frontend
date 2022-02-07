@@ -34,11 +34,11 @@
     submitButton: SubmitButton
 )
 
-@(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = Messages("service.name.agents.de-auth"),
-title = errorPrefix(agentForm) + Messages("generic.title", Messages("cancel-authorisation.select-service.header"), Messages("service.name.agents.de-auth")),
+bannerTitle = msgs("service.name.agents.de-auth"),
+title = errorPrefix(agentForm) + msgs("generic.title", msgs("cancel-authorisation.select-service.header"), msgs("service.name.agents.de-auth")),
 isAgent = true,
 backLinkHref = Some(config.backLink)
 ) {
@@ -51,7 +51,7 @@ backLinkHref = Some(config.backLink)
 
     @inputRadio(
         field = agentForm("serviceType"),
-        legend = Messages("cancel-authorisation.select-service.header"),
+        legend = msgs("cancel-authorisation.select-service.header"),
         headingIsLegend = true,
         inputs = mapToRadioItems(agentForm("serviceType"), config.enabledPersonalServices)
     )

@@ -23,22 +23,22 @@
     mainTemplate: MainTemplate
 )
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@mainTemplate(title = Messages("global.error.500.title"), isAgent = false) {
-    <h1 class="govuk-heading-xl">@Messages("global.error.500.heading")</h1>
+@()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@mainTemplate(title = msgs("global.error.500.title"), isAgent = false) {
+    <h1 class="govuk-heading-xl">@msgs("global.error.500.heading")</h1>
 
-    <p>@Messages("global.error.500.message")</p>
-    <p>@Messages("global.error.500.p2")</p>
+    <p>@msgs("global.error.500.message")</p>
+    <p>@msgs("global.error.500.p2")</p>
     <p>
-        <a href="@Messages("global.error.500.vat_helpline.link-href")">
-        @Messages("global.error.500.vat_helpline.link-text")
+        <a href="@msgs("global.error.500.vat_helpline.link-href")">
+        @msgs("global.error.500.vat_helpline.link-text")
         </a>
-            &nbsp;@Messages("global.error.500.vat_helpline")
+            &nbsp;@msgs("global.error.500.vat_helpline")
     </p>
     <p>
-        <a href="@Messages("global.error.500.sa_helpline.link-href")">
-        @Messages("global.error.500.sa_helpline.link-text")
+        <a href="@msgs("global.error.500.sa_helpline.link-href")">
+        @msgs("global.error.500.sa_helpline.link-text")
         </a>
-            &nbsp;@Messages("global.error.500.sa_helpline")
+            &nbsp;@msgs("global.error.500.sa_helpline")
     </p>
 }

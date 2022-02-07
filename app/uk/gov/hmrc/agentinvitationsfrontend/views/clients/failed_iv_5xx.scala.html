@@ -19,12 +19,12 @@
 
 @this()
 
-@()(implicit messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@()(implicit msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-    <h1 class="govuk-heading-xl">@Messages("technical-issues.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("technical-issues.header")</h1>
 
-    <p>@Messages("technical-issues.p1")</p>
-    <p>@Messages("technical-issues.p2")</p>
-    <p>@Html(Messages("technical-issues.vat", Messages("technical-issues.vat-url")))</p>
-    <p>@Html(Messages("technical-issues.it", Messages("technical-issues.sa-url")))</p>
+    <p>@msgs("technical-issues.p1")</p>
+    <p>@msgs("technical-issues.p2")</p>
+    <p>@Html(msgs("technical-issues.vat", msgs("technical-issues.vat-url")))</p>
+    <p>@Html(msgs("technical-issues.it", msgs("technical-issues.sa-url")))</p>
 

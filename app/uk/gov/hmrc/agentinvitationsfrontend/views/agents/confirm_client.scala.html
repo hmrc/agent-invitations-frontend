@@ -34,10 +34,10 @@
     submitButton: SubmitButton
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = errorPrefix(choiceForm) + Messages("generic.title", Messages("confirm-client.title"), Messages("service.name.agents.auth")),
+title = errorPrefix(choiceForm) + msgs("generic.title", msgs("confirm-client.title"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -50,16 +50,16 @@ backLinkHref = Some(backLinkUrl)
 
         @inputRadio(
             field = choiceForm("accepted"),
-            legend = Messages("confirm-client.header", clientName),
+            legend = msgs("confirm-client.header", clientName),
             headingIsLegend = true,
             inline = true,
             inputs = Seq(
                 RadioItem(
-                    content = Text(Messages("global.yes")),
+                    content = Text(msgs("global.yes")),
                     value = Some("true")
                 ),
                 RadioItem(
-                    content = Text(Messages("global.no-start-over")),
+                    content = Text(msgs("global.no-start-over")),
                     value = Some("false")
                 )
             )

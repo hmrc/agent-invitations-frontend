@@ -33,46 +33,46 @@
     submitButton: SubmitButton
 )
 
-@(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @pageBody = {
 @if(pageConfig.isOneSuspendedService) {
     <p>
-    @Messages("suspended-agent.p1.single", Messages(s"suspended-agent.p1.${pageConfig.suspendedServices.head}"))
+    @msgs("suspended-agent.p1.single", msgs(s"suspended-agent.p1.${pageConfig.suspendedServices.head}"))
     </p>
 } else {
-    <p>@Messages("suspended-agent.p1.multi")</p>
+    <p>@msgs("suspended-agent.p1.multi")</p>
     <ul class="govuk-list govuk-list--bullet">
     @for(suspendedService <- pageConfig.suspendedServices) {
-        <li>@Messages(s"suspended-agent.p1.$suspendedService")</li>
+        <li>@msgs(s"suspended-agent.p1.$suspendedService")</li>
     }
     </ul>
 }
-    <p>@Messages("suspended-agent.p2")</p>
+    <p>@msgs("suspended-agent.p2")</p>
 }
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("suspended-agent.all.header"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("suspended-agent.all.header"), msgs("service.name.clients")),
 isAgent = false) {
 
     @if(pageConfig.isAllSuspended) {
-        <h1 class="govuk-heading-xl">@Messages("suspended-agent.all.header")</h1>
+        <h1 class="govuk-heading-xl">@msgs("suspended-agent.all.header")</h1>
 
         @pageBody
 
-        <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("finish.button")</a>
+        <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@msgs("finish.button")</a>
     } else {
         @if(pageConfig.isOneSuspendedService) {
-            <h1 class="govuk-heading-xl">@Messages("suspended-agent.single.header")</h1>
+            <h1 class="govuk-heading-xl">@msgs("suspended-agent.single.header")</h1>
         } else {
-            <h1 class="govuk-heading-xl">@Messages("suspended-agent.multi.header")</h1>
+            <h1 class="govuk-heading-xl">@msgs("suspended-agent.multi.header")</h1>
         }
 
         @pageBody
 
-        <p>@Html(Messages("suspended-agent.p3"))
-            <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@Messages("suspended-agent.finish")</a></p>
+        <p>@Html(msgs("suspended-agent.p3"))
+            <a href="@externalUrls.signOutUrl(isAgent = false, Some(false))">@msgs("suspended-agent.finish")</a></p>
 
         @formHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
             @submitButton(id="continueFromSuspendedAgent")

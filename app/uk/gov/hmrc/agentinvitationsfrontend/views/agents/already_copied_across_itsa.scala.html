@@ -22,26 +22,26 @@
 
 @this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 @mainTemplate(
-title = Messages("generic.title", Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl">@Messages("already-copied.header")</h1>
+  <h1 class="govuk-heading-xl">@msgs("already-copied.header")</h1>
 
-  <p>@Messages(s"already-copied.p1")</p>
+  <p>@msgs(s"already-copied.p1")</p>
 
-  <h2>@Messages("already-copied.header2")</h2>
+  <h2>@msgs("already-copied.header2")</h2>
 
-  <p>@Messages("already-copied.p2")</p>
+  <p>@msgs("already-copied.p2")</p>
 
   <ul class="govuk-list govuk-list--bullet">
-    <li>@Html(Messages("already-copied.link1"))</li>
-    <li>@Html(Messages("already-copied.link2"))</li>
+    <li>@Html(msgs("already-copied.link1"))</li>
+    <li>@Html(msgs("already-copied.link2"))</li>
   </ul>
 }

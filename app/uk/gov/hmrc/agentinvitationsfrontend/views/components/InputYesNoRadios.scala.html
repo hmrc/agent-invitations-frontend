@@ -14,45 +14,45 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.GovukRadios
-@import uk.gov.hmrc.govukfrontend.views.html.components.{Radios, Fieldset, Legend, Text, RadioItem, Hint, ErrorMessage}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorMessage, Fieldset, GovukRadios, Hint, Legend, RadioItem, Radios, Text}
 
 @this(govukRadios: GovukRadios)
 
 @(
-field: Field,
-legend: String,
-legendClass: Option[String] = None,
-hint: Option[String] = None,
-headingIsLegend: Boolean = false
-)(implicit messages: Messages)
+    field: Field,
+    legend: String,
+    legendClass: Option[String] = None,
+    hint: Option[String] = None,
+    headingIsLegend: Boolean = false
+)(implicit msgs: Messages)
 
-@govukRadios(Radios(
-    idPrefix = Some(field.id),
-    name = field.name,
-    classes = "govuk-radios--inline",
-    errorMessage = field.error match {
-        case Some(e) => Some(ErrorMessage.errorMessageWithDefaultStringsTranslated(content = Text(messages(e.message, e.args:_*))))
-        case None => None
+@govukRadios(
+    Radios(
+        idPrefix = Some(field.id),
+        name = field.name,
+        classes = "govuk-radios--inline",
+        errorMessage = field.error match {
+            case Some(e) => Some(ErrorMessage.errorMessageWithDefaultStringsTranslated(content = Text(msgs(e.message, e.args: _*))))
+            case None => None
         },
-    hint = if(hint.isDefined) Some(Hint(content = Text(hint.get))) else None,
-    fieldset = Some(Fieldset(
-        legend = Some(Legend(
-            content = Text(legend),
-            isPageHeading = headingIsLegend,
-            classes = legendClass.getOrElse("govuk-fieldset__legend--xl")
+        hint = if(hint.isDefined) Some(Hint(content = Text(hint.get))) else None,
+        fieldset = Some(Fieldset(
+            legend = Some(Legend(
+                content = Text(legend),
+                isPageHeading = headingIsLegend,
+                classes = legendClass.getOrElse("govuk-fieldset__legend--xl")
             ))
         )),
-    items = Seq(
-        RadioItem(
-            content = Text(Messages("global.yes")),
-            value = Some("true")
-        ),
-        RadioItem(
-            content = Text(Messages("global.no")),
-            value = Some("false")
+        items = Seq(
+            RadioItem(
+                content = Text(msgs("global.yes")),
+                value = Some("true")
+            ),
+            RadioItem(
+                content = Text(msgs("global.no")),
+                value = Some("false")
+            )
         )
-    )
     ).withFormField(field)
 )

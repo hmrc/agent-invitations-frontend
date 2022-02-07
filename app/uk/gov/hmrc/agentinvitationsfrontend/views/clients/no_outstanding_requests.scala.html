@@ -21,15 +21,15 @@
 
 @this(mainTemplate: MainTemplate)
 
-@(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, messages: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("no-outstanding-requests.heading"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("no-outstanding-requests.heading"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@Messages("no-outstanding-requests.heading")</h1>
+    <h1 class="govuk-heading-xl">@msgs("no-outstanding-requests.heading")</h1>
 
-    <p>@Html(Messages("no-outstanding-requests.p", s"${externalUrls.agentClientManagementUrl}#history"))</p>
+    <p>@Html(msgs("no-outstanding-requests.p", s"${externalUrls.agentClientManagementUrl}#history"))</p>
 
 }

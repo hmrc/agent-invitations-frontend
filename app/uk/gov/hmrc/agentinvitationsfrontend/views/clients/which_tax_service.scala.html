@@ -34,11 +34,11 @@
     govukErrorSummary: GovukErrorSummary
 )
 
-@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("service.name.clients"),
-    title = Messages("generic.title", Messages(s"which-service.header")),
+    bannerTitle = msgs("service.name.clients"),
+    title = msgs("generic.title", msgs(s"which-service.header")),
     isAgent = false,
     backLinkHref = Some(backLinkUrl.url)
 ) {
@@ -51,9 +51,9 @@
 
         @inputRadio(
             field = confirmForm("accepted"),
-            legend = Messages("which-service.header"),
+            legend = msgs("which-service.header"),
             headingIsLegend = true,
-            inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", Messages("which-service.radio.yes")),("false", Messages("which-service.radio.no"))))
+            inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", msgs("which-service.radio.yes")),("false", msgs("which-service.radio.no"))))
         )
 
         @submitButton()

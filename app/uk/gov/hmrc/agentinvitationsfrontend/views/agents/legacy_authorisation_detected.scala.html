@@ -37,10 +37,10 @@
     choiceForm: Form[Confirmation],
     submitCall: Call,
     backlink: String
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("legacy-auth-detected.title"), Messages("service.name.agents.auth")),
+    title = errorPrefix(choiceForm) + msgs("generic.title", msgs("legacy-auth-detected.title"), msgs("service.name.agents.auth")),
     isAgent = true,
     backLinkHref = Some(backlink)
 ) {
@@ -53,15 +53,15 @@
 
         @inputRadio(
             field = choiceForm("accepted"),
-            legend = Messages("legacy-auth-detected.header"),
+            legend = msgs("legacy-auth-detected.header"),
             headingIsLegend = true,
             inputs = Seq(
                 RadioItem(
-                    content = Text(Messages("legacy-auth-detected.yes")),
+                    content = Text(msgs("legacy-auth-detected.yes")),
                     value = Some("true")
                 ),
                 RadioItem(
-                    content = Text(Messages("legacy-auth-detected.no")),
+                    content = Text(msgs("legacy-auth-detected.no")),
                     value = Some("false")
                 )
             )

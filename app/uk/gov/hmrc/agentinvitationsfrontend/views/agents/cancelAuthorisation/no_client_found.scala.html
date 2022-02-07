@@ -25,15 +25,15 @@
    linkStyledAsButton: LinkStyledAsButton
 )
 
-@(clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = Messages("service.name.agents.de-auth"), title = Messages("generic.title", Messages("cancel-authorisation.not-matched.header"), Messages("service.name.agents.de-auth")),  isAgent = true) {
+@mainTemplate(bannerTitle = msgs("service.name.agents.de-auth"), title = msgs("generic.title", msgs("cancel-authorisation.not-matched.header"), msgs("service.name.agents.de-auth")),  isAgent = true) {
 
-<h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages("cancel-authorisation.not-matched.header")</h1>
+<h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs("cancel-authorisation.not-matched.header")</h1>
 
-<p id="notMatched">@Messages("cancel-authorisation.not-matched.description")</p>
+<p id="notMatched">@msgs("cancel-authorisation.not-matched.description")</p>
 
-<p id="notMatchedAdvice">@Messages("cancel-authorisation.not-matched.advice")</p>
+<p id="notMatchedAdvice">@msgs("cancel-authorisation.not-matched.advice")</p>
 
 @linkStyledAsButton(
  id="showClientTypeButton",

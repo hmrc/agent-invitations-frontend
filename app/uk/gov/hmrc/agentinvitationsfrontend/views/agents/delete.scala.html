@@ -34,10 +34,10 @@
     submitButton: SubmitButton
 )
 
-@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"delete.heading", Messages("delete.client")), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"delete.heading", msgs("delete.client")), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(config.backLinkUrl)
 ) {
@@ -50,9 +50,9 @@ backLinkHref = Some(config.backLinkUrl)
 
         @inputYesNoRadios(
             field = deleteForm("accepted"),
-            legend = Messages("delete.heading", config.clientDetail.clientName),
+            legend = msgs("delete.heading", config.clientDetail.clientName),
             headingIsLegend = true,
-            hint = Some(Messages(s"delete.subheading.${config.clientDetail.invitation.service}"))
+            hint = Some(msgs(s"delete.subheading.${config.clientDetail.invitation.service}"))
         )
 
         @submitButton()

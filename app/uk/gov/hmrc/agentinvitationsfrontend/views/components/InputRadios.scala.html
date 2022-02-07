@@ -28,7 +28,7 @@ hint: Option[String] = None,
 headingIsLegend: Boolean = false,
 inputs: Seq[RadioItem],
 inline: Boolean = false
-)(implicit messages: Messages)
+)(implicit msgs: Messages)
 
 @govukRadios(Radios(
     classes = if(inline) "govuk-radios--inline" else "",

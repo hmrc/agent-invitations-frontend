@@ -28,7 +28,7 @@ hint: Option[String] = None,
 headingIsLegend: Boolean = false,
 checkboxText: String,
 isChecked: Boolean = false
-)(implicit messages: Messages)
+)(implicit msgs: Messages)
 
 @govukCheckboxes(Checkboxes(
     name = field.name.toString,

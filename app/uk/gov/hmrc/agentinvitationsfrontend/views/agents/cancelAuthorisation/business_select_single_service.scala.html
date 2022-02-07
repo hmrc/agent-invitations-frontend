@@ -33,11 +33,11 @@
     submitButton: SubmitButton
 )
 
-@(choiceForm: Form[String], submitCall: Call, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[String], submitCall: Call, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = Messages("service.name.agents.de-auth"),
-title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.business-select-service.single.header"), Messages("service.name.agents.de-auth")),
+bannerTitle = msgs("service.name.agents.de-auth"),
+title = errorPrefix(choiceForm) + msgs("generic.title", msgs("cancel-authorisation.business-select-service.single.header"), msgs("service.name.agents.de-auth")),
 isAgent = true,
 backLinkHref = Some(backLink)
 ) {
@@ -50,7 +50,7 @@ backLinkHref = Some(backLink)
 
         @inputYesNoRadio(
             field = choiceForm("accepted"),
-            legend = Messages("cancel-authorisation.business-select-service.single.header"),
+            legend = msgs("cancel-authorisation.business-select-service.single.header"),
             headingIsLegend = true
         )
 

@@ -33,24 +33,24 @@ linkStyledAsButton: LinkStyledAsButton
 )
 
 
-@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = Messages("generic.title", Messages(s"new-gg-id.header")),
+    title = msgs("generic.title", msgs(s"new-gg-id.header")),
     isAgent = false,
     bannerTitle = "service.name.clients",
     hasTimeout = false,
     backLinkHref = Some(backLinkUrl.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("new-gg-id.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("new-gg-id.header")</h1>
 
-    <p>@Messages("new-gg-id.p1")</p>
+    <p>@msgs("new-gg-id.p1")</p>
     <ul class="govuk-list govuk-list--bullet">
-        <li>@Messages("new-gg-id.li1")</li>
-        <li>@Messages("new-gg-id.li2")</li>
+        <li>@msgs("new-gg-id.li1")</li>
+        <li>@msgs("new-gg-id.li2")</li>
     </ul>
-    <p>@Messages("new-gg-id.p4")</p>
+    <p>@msgs("new-gg-id.p4")</p>
 
     @linkStyledAsButton(href = createNewUserIdConfig.ggUrl)
 

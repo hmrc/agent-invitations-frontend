@@ -28,46 +28,46 @@
     govukDetails: GovukDetails
 )
 
-@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
-<p>@Messages("action-needed.details.p1", Messages("action-needed.vat.link-text"))</p>
-<p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlVatExisting, Messages("action-needed.vat.link-text" )))))</p>
+<p>@msgs("action-needed.details.p1", msgs("action-needed.vat.link-text"))</p>
+<p>@Html(msgs("action-needed.details.p2", Html(msgs("action-needed.details.link", externalUrls.guidanceUrlVatExisting, msgs("action-needed.vat.link-text" )))))</p>
 }
 
 @personalClientContent = {
-<p>@Messages("action-needed.details.p1", Messages("action-needed.itsa.link-text"))</p>
-<p>@Html(Messages("action-needed.details.p2", Html(Messages("action-needed.details.link", externalUrls.guidanceUrlSaNew, Messages("action-needed.itsa.link-text")))))</p>
+<p>@msgs("action-needed.details.p1", msgs("action-needed.itsa.link-text"))</p>
+<p>@Html(msgs("action-needed.details.p2", Html(msgs("action-needed.details.link", externalUrls.guidanceUrlSaNew, msgs("action-needed.itsa.link-text")))))</p>
 }
 
 @otherClientContent = {
-<p>@Messages("action-needed.details.ters.p1")</p>
-<p>@Messages("action-needed.details.ters.p2")</p>
+<p>@msgs("action-needed.details.ters.p1")</p>
+<p>@msgs("action-needed.details.ters.p2")</p>
 }
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("action-needed.header"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("action-needed.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@Messages("action-needed.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("action-needed.header")</h1>
 
     @govukDetails(Details(
-        summary = Text(Messages("action-needed.summary", Messages("action-needed.vat"))),
+        summary = Text(msgs("action-needed.summary", msgs("action-needed.vat"))),
         content = HtmlContent(s"$detailsContent")
     ))
 
     @if(clientType == ClientType.Personal) {
 
         @govukDetails(Details(
-            summary = Text(Messages("action-needed.summary", Messages("action-needed.itsa"))),
+            summary = Text(msgs("action-needed.summary", msgs("action-needed.itsa"))),
             content = HtmlContent(s"$personalClientContent")
         ))
 
     } else {
 
         @govukDetails(Details(
-            summary = Text(Messages("action-needed.summary", Messages("action-needed.ters"))),
+            summary = Text(msgs("action-needed.summary", msgs("action-needed.ters"))),
             content = HtmlContent(s"$otherClientContent")
         ))
 

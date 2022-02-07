@@ -34,11 +34,11 @@
     submitButton: SubmitButton
 )
 
-@(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(serviceTypeForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = Messages("service.name.agents.de-auth"),
-title = errorPrefix(serviceTypeForm) + Messages("generic.title", Messages("cancel-authorisation.business-select-service.header"), Messages("service.name.agents.de-auth")),
+bannerTitle = msgs("service.name.agents.de-auth"),
+title = errorPrefix(serviceTypeForm) + msgs("generic.title", msgs("cancel-authorisation.business-select-service.header"), msgs("service.name.agents.de-auth")),
 isAgent = true,
 backLinkHref = Some(config.backLink)
 ) {
@@ -51,7 +51,7 @@ backLinkHref = Some(config.backLink)
 
         @inputRadio(
             field = serviceTypeForm("serviceType"),
-            legend = Messages("cancel-authorisation.business-select-service.header"),
+            legend = msgs("cancel-authorisation.business-select-service.header"),
             headingIsLegend = true,
             inputs = mapToRadioItems(serviceTypeForm("serviceType"), config.enabledBusinessServices)
         )

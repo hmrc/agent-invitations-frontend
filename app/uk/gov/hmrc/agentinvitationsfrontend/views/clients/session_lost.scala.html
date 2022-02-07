@@ -21,20 +21,20 @@
 
 @this(mainTemplate: MainTemplate)
 
-@()(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
   bannerTitle = "service.name.clients",
-  title = Messages("generic.title", Messages("session-lost-client.header"), Messages("service.name.clients")),
+  title = msgs("generic.title", msgs("session-lost-client.header"), msgs("service.name.clients")),
   isAgent = false,
   hasTimeout = false
 ) {
 
-  <h1 class="govuk-heading-xl">@Messages("session-lost-client.header")</h1>
+  <h1 class="govuk-heading-xl">@msgs("session-lost-client.header")</h1>
 
-  <p>@Messages("session-lost-client.description.1")</p>
-  <p>@Messages("session-lost-client.description.2")</p>
-  <p>@Html(Messages("session-lost-client.manage-agents-link", externalUrls.agentClientManagementUrl))</p>
-  <p>@Messages("session-lost-client.description.3")</p>
+  <p>@msgs("session-lost-client.description.1")</p>
+  <p>@msgs("session-lost-client.description.2")</p>
+  <p>@Html(msgs("session-lost-client.manage-agents-link", externalUrls.agentClientManagementUrl))</p>
+  <p>@msgs("session-lost-client.description.3")</p>
 
 }

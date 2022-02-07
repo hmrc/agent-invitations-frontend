@@ -35,10 +35,10 @@
 )
 
 
-@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages("confirm-cancel.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("confirm-cancel.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -51,8 +51,8 @@ backLinkHref = Some(backLinkUrl)
 
         @inputYesNoRadio(
             field = confirmForm("confirmCancel"),
-            legend = Messages("confirm-cancel.header"),
-            hint = Some(Messages(s"confirm-cancel.subheader.$service")),
+            legend = msgs("confirm-cancel.header"),
+            hint = Some(msgs(s"confirm-cancel.subheader.$service")),
             headingIsLegend = true
         )
 

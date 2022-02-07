@@ -36,7 +36,7 @@
     submitButton: SubmitButton
 )
 
-@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
@@ -45,26 +45,26 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@Messages("identify-client.vat.p1")</p>
+    <p id="identify-client-hint">@msgs("identify-client.vat.p1")</p>
 
     @inputText(
         field = pptClientForm("pptRef"),
-        label = Messages("identify-ppt-client.label"),
+        label = msgs("identify-ppt-client.label"),
         labelClass = Some("govuk-label--s"),
-        hint = Some(Messages("identify-ppt-client.hint")),
+        hint = Some(msgs("identify-ppt-client.hint")),
         inputClass = Some("govuk-input--width-10")
     )
 
     @inputDate(
         field = agentInvitationsDateForm("registrationDate"),
-        legend = Messages("identify-ppt-client.registration-date.label"),
-        hint = Some(Messages("identify-ppt-client.registration-date.hint"))
+        legend = msgs("identify-ppt-client.registration-date.label"),
+        hint = Some(msgs("identify-ppt-client.registration-date.hint"))
     )
 }
 
 @mainTemplate(
-    bannerTitle = Messages(banner),
-    title = errorPrefix(pptClientForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
+    bannerTitle = msgs(banner),
+    title = errorPrefix(pptClientForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
     isAgent = true,
     backLinkHref = Some(backLinkUrl)
 ) {
@@ -77,7 +77,7 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
-                content = Text(Messages("identify-client.header")),
+                content = Text(msgs("identify-client.header")),
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),

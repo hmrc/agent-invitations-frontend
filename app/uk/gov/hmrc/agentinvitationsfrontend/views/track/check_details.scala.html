@@ -38,7 +38,7 @@
 )
 
 @(confirmForm: Form[Confirmation],
-config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+config: CheckDetailsPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @postcodeRegex = @{"^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"}
 
@@ -60,7 +60,7 @@ config: CheckDetailsPageConfig)(implicit request: Request[_], messages: Messages
 }
 
 @mainTemplate(
-title = errorPrefix(confirmForm) + Messages("generic.title", Messages("check-details.heading"), Messages("service.name.agents.auth")),
+title = errorPrefix(confirmForm) + msgs("generic.title", msgs("check-details.heading"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = config.backLinkUrl
 ) {
@@ -69,21 +69,21 @@ backLinkHref = config.backLinkUrl
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    <h1 class="govuk-heading-xl">@Messages("check-details.heading")</h1>
+    <h1 class="govuk-heading-xl">@msgs("check-details.heading")</h1>
 
-    <p class="govuk-inset-text">@Messages(s"check-details.p.${config.fastTrackRequest.service}")</p>
+    <p class="govuk-inset-text">@msgs(s"check-details.p.${config.fastTrackRequest.service}")</p>
 
-    <h2>@Messages("check-details.table.heading")</h2>
+    <h2>@msgs("check-details.table.heading")</h2>
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
         @if(config.fastTrackRequest.clientType.nonEmpty){
             @checkAnswersRow(
-                key = Messages("check-details.client-type"),
+                key = msgs("check-details.client-type"),
                 valueId = "client-type",
                 value = config.fastTrackRequest.clientType match {
-                        case Some(ClientType.Personal) => Messages("check-details.client-type.personal")
-                        case Some(ClientType.Business) => Messages(s"check-details.client-type.business.${config.fastTrackRequest.service}")
-                        case Some(ClientType.Business) => Messages(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
+                        case Some(ClientType.Personal) => msgs("check-details.client-type.personal")
+                        case Some(ClientType.Business) => msgs(s"check-details.client-type.business.${config.fastTrackRequest.service}")
+                        case Some(ClientType.Business) => msgs(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
                         case _ => throw new IllegalArgumentException("client type not found")
                 }
             )
@@ -91,12 +91,12 @@ backLinkHref = config.backLinkUrl
 
         @checkAnswersRow(
             key = config.fastTrackRequest.clientIdentifierType match {
-                case "ni" => Messages("check-details.nino")
-                case "vrn" => Messages("check-details.vrn")
-                case "utr" => Messages("check-details.utr")
-                case "urn" => Messages("check-details.urn")
-                case "CGTPDRef" => Messages("check-details.cgt")
-                case "EtmpRegistrationNumber" => Messages("check-details.ppt")
+                case "ni" => msgs("check-details.nino")
+                case "vrn" => msgs("check-details.vrn")
+                case "utr" => msgs("check-details.utr")
+                case "urn" => msgs("check-details.urn")
+                case "CGTPDRef" => msgs("check-details.cgt")
+                case "EtmpRegistrationNumber" => msgs("check-details.ppt")
                 case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
             },
             valueId = "client-identifier",
@@ -109,12 +109,12 @@ backLinkHref = config.backLinkUrl
         @if(config.showKnownFact) {
             @checkAnswersRow(
                 key = config.fastTrackRequest.service match {
-                    case "HMRC-MTD-IT" => Messages("check-details.postcode")
-                    case "PERSONAL-INCOME-RECORD" => Messages("check-details.dob")
-                    case "HMRC-MTD-VAT" => Messages("check-details.vat-reg-date")
-                    case "HMRC-TERS-ORG" => Messages("check-details.trust.utr")
-                    case "HMRC-CGT-PD" => Messages("check-details.cgtRef")
-                    case "HMRC-PPT-ORG" => Messages("check-details.ppt-reg-date")
+                    case "HMRC-MTD-IT" => msgs("check-details.postcode")
+                    case "PERSONAL-INCOME-RECORD" => msgs("check-details.dob")
+                    case "HMRC-MTD-VAT" => msgs("check-details.vat-reg-date")
+                    case "HMRC-TERS-ORG" => msgs("check-details.trust.utr")
+                    case "HMRC-CGT-PD" => msgs("check-details.cgtRef")
+                    case "HMRC-PPT-ORG" => msgs("check-details.ppt-reg-date")
                 },
                 valueId = "known-fact",
                 value = knownFactAnswer.toString
@@ -123,8 +123,8 @@ backLinkHref = config.backLinkUrl
     </dl>
 
     @if(config.needClientType || config.needKnownFact) {
-        <a href="@config.changeDetailsCall.url" id="changeInfo">@Messages("check-details.change.link")</a>
-        <p class="govuk-!-margin-top-4">@Messages("check-details.change.p1")</p>
+        <a href="@config.changeDetailsCall.url" id="changeInfo">@msgs("check-details.change.link")</a>
+        <p class="govuk-!-margin-top-4">@msgs("check-details.change.p1")</p>
 
         @formHelper(config.clientTypeUrl) {
             @submitButton(id="continueMoreInfo")
@@ -135,10 +135,10 @@ backLinkHref = config.backLinkUrl
 
             @inputRadio(
                 field = confirmForm("accepted"),
-                legend = Messages("confirm-details.sub-header"),
+                legend = msgs("confirm-details.sub-header"),
                 legendClass = Some("govuk-fieldset__legend--m"),
                 headingIsLegend = false,
-                inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", Messages("confirm-details.radio1")), ("false", Messages("confirm-details.radio2"))))
+                inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", msgs("confirm-details.radio1")), ("false", msgs("confirm-details.radio2"))))
             )
 
             @submitButton(id="continueMoreInfo")

@@ -24,18 +24,18 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(config: CannotCreateRequestConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: CannotCreateRequestConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"cannot-create-request.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"cannot-create-request.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = if(!config.fromFastTrack) {Some(config.backLink)} else {None}) {
 
-    <h1 id="cannotCreateRequestHeader" class="govuk-heading-xl">@Messages("cannot-create-request.header")</h1>
+    <h1 id="cannotCreateRequestHeader" class="govuk-heading-xl">@msgs("cannot-create-request.header")</h1>
 
-    <p id="cannotCreateRequestP1">@Messages("cannot-create-request.p1")</p>
-    <p id="cannotCreateRequestP2">@Messages("cannot-create-request.p2")</p>
-    <p id="cannotCreateRequestP3">@Messages("cannot-create-request.p3")</p>
+    <p id="cannotCreateRequestP1">@msgs("cannot-create-request.p1")</p>
+    <p id="cannotCreateRequestP2">@msgs("cannot-create-request.p2")</p>
+    <p id="cannotCreateRequestP3">@msgs("cannot-create-request.p3")</p>
 
     @if(config.hasRequests && (config.fromFastTrack == false)) {
         <p class="govuk-!-margin-top-6">
