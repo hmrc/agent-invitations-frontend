@@ -23,21 +23,21 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(titleKey: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(titleKey: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages(titleKey.getOrElse("cannot-confirm-identity.header")), Messages("service.name.clients")),
+title = msgs("generic.title", msgs(titleKey.getOrElse("cannot-confirm-identity.header")), msgs("service.name.clients")),
 isAgent = false) {
 
  @if(html.isDefined) {
      @html.get
  } else {
-  <h1 class="govuk-heading-xl">@Messages("cannot-confirm-identity.header")</h1>
+  <h1 class="govuk-heading-xl">@msgs("cannot-confirm-identity.header")</h1>
 
-  <p>@Messages("cannot-confirm-identity.p1")</p>
+  <p>@msgs("cannot-confirm-identity.p1")</p>
 
-  <p>@Messages("cannot-confirm-identity.p2")</p>
+  <p>@msgs("cannot-confirm-identity.p2")</p>
 
   @linkStyledAsButton(
    id="tryAgainButton",

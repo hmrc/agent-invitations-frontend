@@ -25,7 +25,7 @@
     formHelper: FormWithCSRF
 )
 
-@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit messages: Messages, request: Request[_])
+@(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit msgs: Messages, request: Request[_])
 
 @formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
@@ -41,10 +41,10 @@
     <button class="button--link-style govuk-!-font-size-16" type="submit" id="resendLinkRequest-@{
         index}">
     <span aria-hidden="true">
-    @Messages("recent-invitations.invitations.actions.pending")
+    @msgs("recent-invitations.invitations.actions.pending")
     </span>
     <span class="govuk-visually-hidden">
-    @Messages("recent-invitations.invitations.actions.pending.aria-text", invitationOrRelationship.clientName.getOrElse(""),  Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))
+    @msgs("recent-invitations.invitations.actions.pending.aria-text", invitationOrRelationship.clientName.getOrElse(""),  msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))
     </span>
     </button>
 }
@@ -58,8 +58,8 @@
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId}">
     <input type="hidden" name="clientName" id="clientName-@{index}" value="@{invitationOrRelationship.clientName}">
     <button class="button--link-style govuk-!-font-size-16" type="submit" id="confirmCancelRequest-@{index}">
-        <span aria-hidden="true">@Messages(s"recent-invitations.invitations.actions.pending.cancel")</span>
-        <span class="govuk-visually-hidden">@Messages(s"recent-invitations.invitations.actions.pending.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), Messages(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
+        <span aria-hidden="true">@msgs(s"recent-invitations.invitations.actions.pending.cancel")</span>
+        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.pending.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
     </button>
 }
 

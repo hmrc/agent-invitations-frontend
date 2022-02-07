@@ -28,22 +28,22 @@
     hasRequests: Boolean,
     isDeAuthJourney: Boolean = false,
     htmlPartial: Option[Html]
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 @mainTemplate(
-    bannerTitle = Messages(banner),
-    title = Messages("generic.title", Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId")), Messages(banner)),
+    bannerTitle = msgs(banner),
+    title = msgs("generic.title", msgs("not-enrolled.title", msgs(s"not-enrolled.title.$serviceId")), msgs(banner)),
     isAgent = true,
     backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("not-enrolled.title", Messages(s"not-enrolled.title.$serviceId"))</h1>
+    <h1 class="govuk-heading-xl">@msgs("not-enrolled.title", msgs(s"not-enrolled.title.$serviceId"))</h1>
 
-    <p>@Messages("not-enrolled.p", Messages(s"not-enrolled.p.$serviceId"))</p>
+    <p>@msgs("not-enrolled.p", msgs(s"not-enrolled.p.$serviceId"))</p>
 
     @htmlPartial.getOrElse("")
 

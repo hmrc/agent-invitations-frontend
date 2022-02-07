@@ -22,16 +22,16 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("incorrect-invitation.header"),  Messages("service.name.clients")),
+title = msgs("generic.title", msgs("incorrect-invitation.header"),  msgs("service.name.clients")),
 isAgent = false) {
 
-  <h1 class="govuk-heading-xl">@Messages("incorrect-invitation.header")</h1>
+  <h1 class="govuk-heading-xl">@msgs("incorrect-invitation.header")</h1>
 
-  <p>@Messages("incorrect-invitation.description")</p>
+  <p>@msgs("incorrect-invitation.description")</p>
 
   @linkStyledAsButton(
     href = externalUrls.signOutUrl(false, Some(false)),

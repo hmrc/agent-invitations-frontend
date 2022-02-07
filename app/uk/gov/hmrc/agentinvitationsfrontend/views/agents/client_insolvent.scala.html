@@ -23,16 +23,16 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"client-insolvent.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"client-insolvent.header"), msgs("service.name.agents.auth")),
 isAgent = true) {
 
 
-    <h1 class="govuk-heading-xl">@Messages("client-insolvent.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("client-insolvent.header")</h1>
 
-    <p>@Messages("client-insolvent.p")</p>
+    <p>@msgs("client-insolvent.p")</p>
 
     @if(hasRequests) {
          @linkStyledAsButton(

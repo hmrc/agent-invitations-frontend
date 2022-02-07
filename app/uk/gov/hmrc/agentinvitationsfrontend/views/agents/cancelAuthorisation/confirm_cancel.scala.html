@@ -36,11 +36,11 @@
     submitButton: SubmitButton
 )
 
-@(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("service.name.agents.de-auth"),
-    title = errorPrefix(choiceForm) + Messages("generic.title", Messages("cancel-authorisation.confirm-cancel.header"), Messages("service.name.agents.de-auth")),
+    bannerTitle = msgs("service.name.agents.de-auth"),
+    title = errorPrefix(choiceForm) + msgs("generic.title", msgs("cancel-authorisation.confirm-cancel.header"), msgs("service.name.agents.de-auth")),
     isAgent = true,
     backLinkHref = Some(config.backLink)
 ) {
@@ -52,26 +52,26 @@
     @formHelper(action = config.submitCall) {
 
         @if(config.service=="HMRC-MTD-IT") {
-            <h1 class="govuk-heading-xl">@Messages("cancel-authorisation.confirm-cancel.header")</h1>
+            <h1 class="govuk-heading-xl">@msgs("cancel-authorisation.confirm-cancel.header")</h1>
 
             @govukInsetText(InsetText(
-                content = Text(Messages("cancel-authorisation.confirm-cancel.itsa-panel"))
+                content = Text(msgs("cancel-authorisation.confirm-cancel.itsa-panel"))
             ))
 
             @inputRadio(
                 field = choiceForm("accepted"),
-                legend = Messages("cancel-authorisation.confirm-cancel.header"),
+                legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
-                hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(
-                        content = Text(Messages("global.yes")),
+                        content = Text(msgs("global.yes")),
                         value = Some("true")
                     ),
                     RadioItem(
-                        content = Text(Messages("global.no-start-over")),
+                        content = Text(msgs("global.no-start-over")),
                         value = Some("false")
                     )
                 )
@@ -81,17 +81,17 @@
 
             @inputRadio(
                 field = choiceForm("accepted"),
-                legend = Messages("cancel-authorisation.confirm-cancel.header"),
+                legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 headingIsLegend = true,
-                hint = Some(Messages(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(
-                        content = Text(Messages("global.yes")),
+                        content = Text(msgs("global.yes")),
                         value = Some("true")
                     ),
                     RadioItem(
-                        content = Text(Messages("global.no-start-over")),
+                        content = Text(msgs("global.no-start-over")),
                         value = Some("false")
                     )
                 )

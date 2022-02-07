@@ -29,19 +29,19 @@
    submitButton: SubmitButton
 )
 
-@(submitCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(submitCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = Messages("service.name.agents.de-auth"),
-    title = Messages("generic.title", Messages("cancel-authorisation.response-failed.header"), Messages("service.name.agents.de-auth")),
+    bannerTitle = msgs("service.name.agents.de-auth"),
+    title = msgs("generic.title", msgs("cancel-authorisation.response-failed.header"), msgs("service.name.agents.de-auth")),
     isAgent = true
 ) {
 
-<h1 id="responseFailedHeader" class="govuk-heading-xl govuk-!-margin-top-4">@Messages("cancel-authorisation.response-failed.header")</h1>
+<h1 id="responseFailedHeader" class="govuk-heading-xl govuk-!-margin-top-4">@msgs("cancel-authorisation.response-failed.header")</h1>
 
-<p id="responseFailed">@Messages("cancel-authorisation.response-failed.description")</p>
+<p id="responseFailed">@msgs("cancel-authorisation.response-failed.description")</p>
 
-<p id="responseFailedAdvice">@Messages("cancel-authorisation.response-failed.advice")</p>
+<p id="responseFailedAdvice">@msgs("cancel-authorisation.response-failed.advice")</p>
 
 @formHelper(action = submitCall) {
  <input id="confirmCancel" type="hidden" value="true" name="accepted"/>

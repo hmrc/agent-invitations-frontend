@@ -44,7 +44,7 @@
     hasTimeout: Boolean = true,
     fullWidth: Boolean = false,
     backLinkHref: Option[String] = None
-)(mainContent: Html)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(mainContent: Html)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @timeOutUrl = {
     @if(isAgent) {
@@ -78,8 +78,8 @@
 
 @additionalScripts = {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")" type="text/javascript"></script>
-<script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")" type="text/javascript"></script>
+<script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")"></script>
+<script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")"></script>
     @if(scriptElem != None) {
         @scriptElem
     }
@@ -91,7 +91,7 @@
     <div class="govuk-!-margin-bottom-9">
         @hmrcReportTechnicalIssue(ReportTechnicalIssue(
             serviceId = externalUrls.contactFrontendServiceId(isAgent),
-            language = if(messages.lang.code == "cy") Cy else En,
+            language = if(msgs.lang.code == "cy") Cy else En,
             referrerUrl = contactFrontendConfig.referrerUrl,
             baseUrl = contactFrontendConfig.baseUrl
         ))
@@ -109,7 +109,7 @@
     signOutUrl = Some(signOutUrl.toString),
     additionalHeadBlock = Some(head),
     additionalScriptsBlock = Some(additionalScripts),
-    serviceName = Some(messages(bannerTitle)),
+    serviceName = Some(msgs(bannerTitle)),
     backLinkUrl = backLinkHref,
     mainContentLayout = if (fullWidth) None else Some(twoThirdsLayout(_)),
 )(mainContentWithHelpLink)

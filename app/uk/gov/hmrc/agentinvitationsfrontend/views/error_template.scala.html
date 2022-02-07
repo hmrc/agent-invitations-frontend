@@ -21,7 +21,7 @@
 
 @this(appConfig: AppConfig, mainTemplate: MainTemplate)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(title = pageTitle, isAgent = false) {
     <h1 class="govuk-heading-xl">@heading</h1>

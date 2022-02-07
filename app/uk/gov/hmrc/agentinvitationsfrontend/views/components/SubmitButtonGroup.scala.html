@@ -27,12 +27,12 @@
  secondValue: String = "clear",
  secondMsgKey: String = "recent-invitations.filter.clear.button",
  name: String = "filter"
-)(implicit messages: Messages)
+)(implicit msgs: Messages)
 
 <div class="govuk-button-group govuk-!-margin-bottom-7">
 @button(Button(
     attributes = Map("id" -> s"${submitId}"),
-    content = Text(messages(submitMsgKey)),
+    content = Text(msgs(submitMsgKey)),
     inputType = Some("submit"),
     name = Some(name),
     value = Some(submitValue)
@@ -40,7 +40,7 @@
 @button(Button(
     attributes = Map("id" -> s"${secondId}"),
     classes = "govuk-button--secondary",
-    content = Text(messages(secondMsgKey)),
+    content = Text(msgs(secondMsgKey)),
     inputType = Some("submit"),
     name = Some(name),
     value = Some(secondValue)

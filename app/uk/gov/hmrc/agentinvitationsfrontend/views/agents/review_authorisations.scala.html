@@ -35,10 +35,10 @@
     submitButton: SubmitButton
 )
 
-@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages("review-authorisations.heading"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("review-authorisations.heading"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -47,29 +47,29 @@ backLinkHref = Some(backLinkUrl)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(reviewAuthorisationsForm))
     }
 
-    <h1 class="govuk-heading-xl">@Messages("review-authorisations.heading")</h1>
+    <h1 class="govuk-heading-xl">@msgs("review-authorisations.heading")</h1>
 
     <p>
     @if(config.basket.size == 1) {
-        @Messages("review-authorisations.p", s"${config.basket.size} ${Messages("review-authorisations.singular")}")
+        @msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.singular")}")
     } else {
-        @Messages("review-authorisations.p", s"${config.basket.size} ${Messages("review-authorisations.plural")}")
+        @msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.plural")}")
     }
     </p>
 
     @if(config.clientNamesAreDifferent){
-      <p>@Messages("review-authorisations.different-names")</p>
+      <p>@msgs("review-authorisations.different-names")</p>
     }
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(authorisationRequest <- config.basket) {
         @checkAnswersRow(
-            key = config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name")),
+            key = config.clientNameOf(authorisationRequest, msgs("review-authorisations.no-client-name")),
             valueId = s"client-service-${authorisationRequest.invitation.service}",
-            value = Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),
-            actionText = Some(Messages("review-authorisations.table.remove")) ,
+            value = msgs(s"review-authorisations.table.${authorisationRequest.invitation.service}"),
+            actionText = Some(msgs("review-authorisations.table.remove")) ,
             actionHref = Some(config.showDeleteCall(authorisationRequest.itemId).url),
-            hiddenActionText = Some(Messages("review-authorisations.table.remove.aria-text", Messages(s"review-authorisations.table.${authorisationRequest.invitation.service}"),config.clientNameOf(authorisationRequest, Messages("review-authorisations.no-client-name"))))
+            hiddenActionText = Some(msgs("review-authorisations.table.remove.aria-text", msgs(s"review-authorisations.table.${authorisationRequest.invitation.service}"),config.clientNameOf(authorisationRequest, msgs("review-authorisations.no-client-name"))))
         )
     }
     </dl>
@@ -82,7 +82,7 @@ backLinkHref = Some(backLinkUrl)
         } else {
             @inputYesNoRadio(
                 field = reviewAuthorisationsForm("accepted"),
-                legend = Messages("review-authorisations.subheader"),
+                legend = msgs("review-authorisations.subheader"),
                 legendClass = Some("govuk-fieldset__legend--m")
             )
         }

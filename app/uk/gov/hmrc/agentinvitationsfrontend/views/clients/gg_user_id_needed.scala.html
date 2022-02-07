@@ -35,11 +35,11 @@
 )
 
 
-@(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = Messages("service.name.clients"),
-title = Messages("generic.title", Messages("gg-user-id-needed.h1"), Messages("service.name.clients")),
+bannerTitle = msgs("service.name.clients"),
+title = msgs("generic.title", msgs("gg-user-id-needed.h1"), msgs("service.name.clients")),
 isAgent = false,
 backLinkHref = Some(backLinkUrl.url)
 ) {
@@ -52,9 +52,9 @@ backLinkHref = Some(backLinkUrl.url)
 
         @inputYesNoRadio(
             field = ggUserIdForm("accepted"),
-            legend = Messages("gg-user-id-needed.h1"),
+            legend = msgs("gg-user-id-needed.h1"),
             headingIsLegend = true,
-            hint = Some(Messages("gg-user-id-needed.p"))
+            hint = Some(msgs("gg-user-id-needed.p"))
         )
 
         @submitButton()

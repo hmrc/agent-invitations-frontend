@@ -24,29 +24,29 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @heading = @{
-  if(basket.isEmpty) Messages("agent-suspended.heading.single")
-  else Messages("agent-suspended.heading.multi")
+  if(basket.isEmpty) msgs("agent-suspended.heading.single")
+  else msgs("agent-suspended.heading.multi")
 }
 
 @mainTemplate(
-title = Messages("generic.title", heading, Messages("service.name.agents.auth")),
+title = msgs("generic.title", heading, msgs("service.name.agents.auth")),
 isAgent = true) {
 
     <h1 class="govuk-heading-xl">@heading</h1>
-    <p>@Messages("agent-suspended.p1", Messages(s"agent-suspended.p1.$service"))</p>
+    <p>@msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.$service"))</p>
 
     @if(basket.isEmpty) {
-        <p>@Messages("agent-suspended.p2.single")</p>
+        <p>@msgs("agent-suspended.p2.single")</p>
         @linkStyledAsButton(
             id = "start-again",
             href = routes.AgentInvitationJourneyController.agentsRoot().url,
             messageKey = "start-again.button"
         )
     } else {
-        <p>@Html(Messages("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
+        <p>@Html(msgs("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
         @linkStyledAsButton(
             id = "continue",
             href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url

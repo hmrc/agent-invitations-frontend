@@ -37,20 +37,20 @@
     submitButton: SubmitButton
 )
 
-@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @inputHtmlHint = {
-    <p>@Messages(s"confirm-decline.sub-header", config.agencyName)</p>
+    <p>@msgs(s"confirm-decline.sub-header", config.agencyName)</p>
     <ul class="govuk-list govuk-list--bullet">
     @for(key <- config.serviceKeys) {
-        <li>@Messages(s"confirm-decline.$key.service-name")</li>
+        <li>@msgs(s"confirm-decline.$key.service-name")</li>
     }
     </ul>
 }
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = errorPrefix(confirmDeclineForm) + Messages("generic.title", Messages("confirm-decline.heading"), Messages("service.name.clients")),
+title = errorPrefix(confirmDeclineForm) + msgs("generic.title", msgs("confirm-decline.heading"), msgs("service.name.clients")),
 isAgent = false,
 backLinkHref = Some(config.backLink.url)
 ) {
@@ -64,8 +64,8 @@ backLinkHref = Some(config.backLink.url)
         @if(config.serviceKeys.length == 1){
             @inputYesNoRadio(
                 field = confirmDeclineForm("accepted"),
-                legend = Messages("confirm-decline.heading"),
-                hint = Some(Messages(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)),
+                legend = msgs("confirm-decline.heading"),
+                hint = Some(msgs(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)),
                 headingIsLegend = true
             )
         } else {
@@ -74,7 +74,7 @@ backLinkHref = Some(config.backLink.url)
                 hint = Some(Hint(content = HtmlContent(inputHtmlHint))),
                 fieldset = Some(Fieldset(
                     legend = Some(Legend(
-                        content = Text(Messages("confirm-decline.heading")),
+                        content = Text(msgs("confirm-decline.heading")),
                         isPageHeading = true,
                         classes = "govuk-fieldset__legend--xl"
                     ))

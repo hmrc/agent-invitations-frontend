@@ -31,32 +31,32 @@
 )
 
 
-@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = Messages("generic.title", Messages(s"warm-up.header", "Your Agent"), Messages("service.name.clients")),
+    title = msgs("generic.title", msgs(s"warm-up.header", "Your Agent"), msgs("service.name.clients")),
     isAgent = false,
-    bannerTitle = Messages("service.name.clients"),
+    bannerTitle = msgs("service.name.clients"),
     hasTimeout = false
 ) {
 
- <h1 class="govuk-heading-xl">@Messages("warm-up.header", pageConfig.agentName)</h1>
+ <h1 class="govuk-heading-xl">@msgs("warm-up.header", pageConfig.agentName)</h1>
 
-    <p>@Messages("warm-up.p1", pageConfig.agentName)</p>
-    <p>@Html(Messages(s"warm-up.p2.${pageConfig.typeOfClient}"))</p>
+    <p>@msgs("warm-up.p1", pageConfig.agentName)</p>
+    <p>@Html(msgs(s"warm-up.p2.${pageConfig.typeOfClient}"))</p>
 
     @if(pageConfig.typeOfClient == "personal") {
-        <p>@Messages("warm-up.p3.personal")</p>
+        <p>@msgs("warm-up.p3.personal")</p>
     }
 
-    <div class="govuk-inset-text">@Messages("warm-up.inset", pageConfig.agentName)</div>
+    <div class="govuk-inset-text">@msgs("warm-up.inset", pageConfig.agentName)</div>
 
     @formHelper(pageConfig.getConfirmTermsCall) {
         @submitButton(id="continueMoreInfo")
     }
 
 <p class="govuk-!-margin-bottom-7">
-    <a href="@pageConfig.getConfirmDeclineCall" id="linkConfirmDecline">@Messages("warm-up.link", pageConfig.agentName)</a>
+    <a href="@pageConfig.getConfirmDeclineCall" id="linkConfirmDecline">@msgs("warm-up.link", pageConfig.agentName)</a>
 </p>
 
 

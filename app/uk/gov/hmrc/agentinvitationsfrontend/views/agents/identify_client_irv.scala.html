@@ -36,7 +36,7 @@
     submitButton: SubmitButton
 )
 
-@(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
@@ -45,26 +45,26 @@
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@Messages("identify-client.itsa.p1")</p>
+    <p id="identify-client-hint">@msgs("identify-client.itsa.p1")</p>
 
     @inputText(
         field = agentInvitationsForm("clientIdentifier"),
-        label = Messages("identify-client.nino.label"),
+        label = msgs("identify-client.nino.label"),
         labelClass = Some("govuk-label--s"),
-        hint = Some(Messages("identify-client.nino.hint")),
+        hint = Some(msgs("identify-client.nino.hint")),
         inputClass = Some("govuk-input--width-10")
     )
 
     @inputDate(
         field = agentInvitationsDateForm("dob"),
-        legend = Messages("identify-client.irv-date-of-birth.label"),
-        hint = Some(Messages("identify-client.irv-date-of-birth.hint"))
+        legend = msgs("identify-client.irv-date-of-birth.label"),
+        hint = Some(msgs("identify-client.irv-date-of-birth.hint"))
     )
 }
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("identify-client.header"), Messages(banner)),
+bannerTitle = msgs(banner),
+title = errorPrefix(agentInvitationsForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -77,7 +77,7 @@ backLinkHref = Some(backLinkUrl)
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
-                content = Text(Messages("identify-client.header")),
+                content = Text(msgs("identify-client.header")),
                 classes = "govuk-fieldset__legend--xl",
                 isPageHeading = true
             )),

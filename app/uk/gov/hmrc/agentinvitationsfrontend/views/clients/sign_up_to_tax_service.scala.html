@@ -21,22 +21,22 @@
 
 @this(mainTemplate: MainTemplate)
 
-@(backLinkUrl: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("tax-service.header"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("tax-service.header"), msgs("service.name.clients")),
 isAgent = false,
 backLinkHref = Some(backLinkUrl.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("tax-service.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("tax-service.header")</h1>
 
-    <p>@Messages("tax-service.p1")</p>
+    <p>@msgs("tax-service.p1")</p>
 
     <ul class="govuk-list govuk-list--bullet">
-        <li><a href="@externalUrls.guidanceCgtUkProperty">@Messages("tax-service.l1")</a></li>
-        <li><a href="@externalUrls.guidanceVatSignup">@Messages("tax-service.l2")</a></li>
+        <li><a href="@externalUrls.guidanceCgtUkProperty">@msgs("tax-service.l1")</a></li>
+        <li><a href="@externalUrls.guidanceVatSignup">@msgs("tax-service.l2")</a></li>
     </ul>
 
 }

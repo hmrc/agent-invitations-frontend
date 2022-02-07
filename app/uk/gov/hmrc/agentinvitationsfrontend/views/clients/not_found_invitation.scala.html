@@ -21,16 +21,16 @@
 
 @this(mainTemplate: MainTemplate)
 
-@(serviceMessageKey: String)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
-title = Messages("generic.title", Messages("not-found-invitation.header"), Messages("service.name.clients")),
+title = msgs("generic.title", msgs("not-found-invitation.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@Messages("not-found-invitation.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("not-found-invitation.header")</h1>
 
-    <p>@Messages("not-found-invitation.description.1")</p>
-    <p>@Messages("not-found-invitation.description.2")</p>
-    <p>@Messages("not-found-invitation.description.3")</p>
+    <p>@msgs("not-found-invitation.description.1")</p>
+    <p>@msgs("not-found-invitation.description.2")</p>
+    <p>@msgs("not-found-invitation.description.3")</p>
 }

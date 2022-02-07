@@ -30,7 +30,7 @@ formGroupClasses: Set[String] = Set.empty,
 inputClass: Option[String] = None,
 labelClasses: Set[String] = Set("govuk-label--s"),
 selectAttribute: Map[String, String] = Map.empty
-)(implicit messages: Messages)
+)(implicit msgs: Messages)
 
 @govukSelect(Select(
     id = field.id,

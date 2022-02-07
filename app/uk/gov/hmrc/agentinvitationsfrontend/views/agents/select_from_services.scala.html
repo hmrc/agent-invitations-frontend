@@ -38,16 +38,16 @@
 @(
 agentInvitationsForm: Form[String],
 config: SelectServicePageConfig
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
-<p id="selectServiceSuggestion">@Html(Messages("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
+<p id="selectServiceSuggestion">@Html(msgs("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
 }
 
 @mainTemplate(
-    title = errorPrefix(agentInvitationsForm) + Messages("generic.title",
+    title = errorPrefix(agentInvitationsForm) + msgs("generic.title",
                                                         config.selectHeaderMessage,
-                                                        Messages("service.name.agents.auth")),
+                                                        msgs("service.name.agents.auth")),
     isAgent = true,
     backLinkHref = Some(config.backLink)
 ) {
@@ -62,13 +62,13 @@ config: SelectServicePageConfig
             field = agentInvitationsForm("serviceType"),
             legend = config.selectHeaderMessage,
             headingIsLegend = true,
-            hint = Some(Messages("select-service.p1")),
+            hint = Some(msgs("select-service.p1")),
             inputs = mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices)
         )
 
         @govukDetails(Details(
             id = Some("selectServiceHelper"),
-            summary = Text(Messages("select-service.alternative")),
+            summary = Text(msgs("select-service.alternative")),
             content = HtmlContent(s"$detailsContent")
         ))
 
@@ -77,7 +77,7 @@ config: SelectServicePageConfig
 
     @if(config.basket.nonEmpty) {
     <p class="govuk-!-margin-top-6 govuk-body-s">
-        <a href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a>
+        <a href="@config.reviewAuthsCall">@msgs("select-service.review-auth-link")</a>
     </p>
     }
 

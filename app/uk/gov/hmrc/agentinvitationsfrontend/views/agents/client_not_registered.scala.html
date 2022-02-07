@@ -23,26 +23,26 @@
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
 
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"client-not-registered.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"client-not-registered.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("client-not-registered.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("client-not-registered.header")</h1>
 
-    <p>@Messages(s"client-not-registered.p1")</p>
+    <p>@msgs(s"client-not-registered.p1")</p>
 
-    <h2>@Messages("client-not-registered.h2")</h2>
+    <h2>@msgs("client-not-registered.h2")</h2>
 
-    <p>@Html(Messages("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))</p>
+    <p>@Html(msgs("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))</p>
 
-    <p>@Html(Messages("client-not-registered.p3", clientTypeCall))</p>
+    <p>@Html(msgs("client-not-registered.p3", clientTypeCall))</p>
 
     @if(authRequestsExist && !fromFastTrack) {
         @linkStyledAsButton(

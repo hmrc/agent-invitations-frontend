@@ -32,23 +32,23 @@
     linkStyledAsButton: LinkStyledAsButton
 )
 
-@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = Messages("generic.title", Messages(s"not-matched.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs(s"not-matched.header"), msgs("service.name.agents.auth")),
 isAgent = true) {
 
-    <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages(s"not-matched.header")</h1>
+    <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs(s"not-matched.header")</h1>
 
-    <p id="notMatched">@Messages(s"not-matched.description")</p>
+    <p id="notMatched">@msgs(s"not-matched.description")</p>
 
-    <p id="notMatchedAdvice">@Messages(s"not-matched.advice")</p>
+    <p id="notMatchedAdvice">@msgs(s"not-matched.advice")</p>
 
     @linkStyledAsButton(id="tryAgainButton", href = tryAgainCall.url, messageKey = "try-again.button")
 
     @if(hasJourneyCache) {
         <p class="govuk-!-margin-top-6">
-            <a id="showReviewAuthLink" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@Messages("review-auths.link")</a>
+            <a id="showReviewAuthLink" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@msgs("review-auths.link")</a>
         </p>
     }
 

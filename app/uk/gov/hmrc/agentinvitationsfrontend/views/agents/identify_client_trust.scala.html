@@ -43,18 +43,18 @@ submitFormCall: Call,
 backLinkUrl: String,
 isDeAuthJourney: Boolean = false,
 showUrnEnabledContent: Boolean = false
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @detailsContent = {
-<p id="identifyTrustSuggestion">@Html(Messages("identify-trust.alt-suggestion"))</p>
-<p id="identifyTrustGuidance">@Html(Messages("identify-trust.suggestion"))</p>
+<p id="identifyTrustSuggestion">@Html(msgs("identify-trust.alt-suggestion"))</p>
+<p id="identifyTrustGuidance">@Html(msgs("identify-trust.suggestion"))</p>
 }
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = errorPrefix(trustClientForm) + Messages("generic.title", Messages(s"identify-trust-client.title.$showUrnEnabledContent"), Messages(banner)),
+bannerTitle = msgs(banner),
+title = errorPrefix(trustClientForm) + msgs("generic.title", msgs(s"identify-trust-client.title.$showUrnEnabledContent"), msgs(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -66,24 +66,24 @@ backLinkHref = Some(backLinkUrl)
     @formHelper(action = submitFormCall) {
 
         <h1 class="govuk-heading-xl">
-            @Messages(s"identify-trust-client.header.$showUrnEnabledContent")
+            @msgs(s"identify-trust-client.header.$showUrnEnabledContent")
         </h1>
 
-        <p class="govuk-body govuk-!-margin-bottom-4" id="taxId-info">@Messages("identify-trust-client.p1")</p>
+        <p class="govuk-body govuk-!-margin-bottom-4" id="taxId-info">@msgs("identify-trust-client.p1")</p>
 
         @if(showUrnEnabledContent) {
             @govukDetails(Details(
                 id = Some("identifyTrustHelper"),
-                summary = Text(Messages("identify-trust-alternative")),
+                summary = Text(msgs("identify-trust-alternative")),
                 content = HtmlContent(s"$detailsContent")
             ))
 
             @inputText(
                 field = trustClientForm("taxId"),
-                label = Messages(s"identify-trust-client.header.$showUrnEnabledContent"),
+                label = msgs(s"identify-trust-client.header.$showUrnEnabledContent"),
                 labelClass = Some("govuk-visually-hidden"),
                 labelAsHeading = false,
-                hint = Some(Messages(s"identify-trust-client.p2.$showUrnEnabledContent")),
+                hint = Some(msgs(s"identify-trust-client.p2.$showUrnEnabledContent")),
                 inputClass = Some("govuk-input--width-10")
             )
 
@@ -93,10 +93,10 @@ backLinkHref = Some(backLinkUrl)
                 label = Label(
                     isPageHeading = false,
                     classes = "govuk-visually-hidden",
-                    content = Text(Messages(s"identify-trust-client.header.$showUrnEnabledContent"))
+                    content = Text(msgs(s"identify-trust-client.header.$showUrnEnabledContent"))
                 ),
                 hint = Some(Hint(
-                    content = HtmlContent(Html(Messages(s"identify-trust-client.p2.$showUrnEnabledContent")))
+                    content = HtmlContent(Html(msgs(s"identify-trust-client.p2.$showUrnEnabledContent")))
                 )),
                 spellcheck = Some(false),
                 inputmode = Some("numeric"),

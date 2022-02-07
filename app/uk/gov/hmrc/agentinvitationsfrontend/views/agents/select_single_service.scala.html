@@ -34,14 +34,14 @@
     submitButton: SubmitButton
 )
 
-@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
-<p id="selectServiceSuggestion">@Html(Messages("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
+<p id="selectServiceSuggestion">@Html(msgs("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
 }
 
 @mainTemplate(
-title = errorPrefix(choiceForm) + Messages("generic.title", config.selectSingleHeaderMessage, Messages("service.name.agents.auth")),
+title = errorPrefix(choiceForm) + msgs("generic.title", config.selectSingleHeaderMessage, msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(config.backLink)
 ) {
@@ -54,13 +54,13 @@ backLinkHref = Some(config.backLink)
 
         @inputYesNoRadios(
             field = choiceForm("accepted"),
-            legend = Messages(config.selectSingleHeaderMessage),
+            legend = msgs(config.selectSingleHeaderMessage),
             headingIsLegend = true
         )
 
         @govukDetails(Details(
             id = Some("selectServiceHelper"),
-            summary = Text(Messages("select-service.alternative")),
+            summary = Text(msgs("select-service.alternative")),
             content = HtmlContent(s"$detailsContent")
         ))
 
@@ -70,7 +70,7 @@ backLinkHref = Some(config.backLink)
 
     @if(config.basket.nonEmpty) {
         <p class="govuk-!-margin-top-6 govuk-body-s">
-            <a href="@config.reviewAuthsCall">@Messages("select-service.review-auth-link")</a>
+            <a href="@config.reviewAuthsCall">@msgs("select-service.review-auth-link")</a>
         </p>
     }
 

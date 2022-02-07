@@ -19,14 +19,14 @@
 
 @this()
 
-@(serviceId: String, pageUrls: NotSignedUpPageUrls)(implicit messages: Messages, externalUrls: ExternalUrls)
+@(serviceId: String, pageUrls: NotSignedUpPageUrls)(implicit msgs: Messages, externalUrls: ExternalUrls)
 
-<h2>@Messages("not-enrolled.existing.header", Messages(s"not-enrolled.$serviceId"))</h2>
+<h2>@msgs("not-enrolled.existing.header", msgs(s"not-enrolled.$serviceId"))</h2>
 
-    <p>@Html(Messages("not-enrolled.existing.p", Messages(s"not-enrolled.$serviceId"), Messages(s"not-enrolled.existing.p.$serviceId", pageUrls.existingClientUrl)))</p>
+    <p>@Html(msgs("not-enrolled.existing.p", msgs(s"not-enrolled.$serviceId"), msgs(s"not-enrolled.existing.p.$serviceId", pageUrls.existingClientUrl)))</p>
 
-    <p>@Html(Messages("not-enrolled.mapping.p", Messages("not-enrolled.mapping.link", externalUrls.agentMappingFrontendUrl)))</p>
+    <p>@Html(msgs("not-enrolled.mapping.p", msgs("not-enrolled.mapping.link", externalUrls.agentMappingFrontendUrl)))</p>
 
-<h2>@Messages("not-enrolled.new.header", Messages(s"not-enrolled.$serviceId"))</h2>
+<h2>@msgs("not-enrolled.new.header", msgs(s"not-enrolled.$serviceId"))</h2>
 
-    <p>@Html(Messages(s"not-enrolled.new.$serviceId", pageUrls.newClientUrl))</p>
+    <p>@Html(msgs(s"not-enrolled.new.$serviceId", pageUrls.newClientUrl))</p>

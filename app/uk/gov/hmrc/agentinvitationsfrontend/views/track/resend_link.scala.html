@@ -25,18 +25,18 @@
 @this(mainTemplate: MainTemplate)
 
 
-@(config: ResendLinkPageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: ResendLinkPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"}
 
 @mainTemplate(
-title = Messages("generic.title", Messages("resend-link.header"), Messages("service.name.agents.auth")),
+title = msgs("generic.title", msgs("resend-link.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 completedInviteGoSurvey = Some(true),
 backLinkHref = Some(config.backLinkUrl)
 ) {
 
-    <h1 class="govuk-heading-xl">@Messages("resend-link.header")</h1>
+    <h1 class="govuk-heading-xl">@msgs("resend-link.header")</h1>
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
         @if(config.step1Instructions.isDefined){
@@ -44,26 +44,26 @@ backLinkHref = Some(config.backLinkUrl)
         }
 
         <li>
-            <p>@Messages("invitation-sent.link-text")</p>
+            <p>@msgs("invitation-sent.link-text")</p>
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
-        <li>@Messages("invitation-sent.select-link")</li>
+        <li>@msgs("invitation-sent.select-link")</li>
         <li>
-            <p>@Messages("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail)</p>
+            <p>@msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail)</p>
 
             <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                <strong class="govuk-warning-text__text">@Messages("invitation-sent.client-warning")</strong>
+                <strong class="govuk-warning-text__text">@msgs("invitation-sent.client-warning")</strong>
             </div>
         </li>
     </ol>
 
-    <h2>@Messages("invitation-sent.further-help.heading")</h2>
-    <p>@Messages("invitation-sent.further-help.p")</p>
+    <h2>@msgs("invitation-sent.further-help.heading")</h2>
+    <p>@msgs("invitation-sent.further-help.p")</p>
     <ul class="govuk-list govuk-list--bullet">
-        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep">@Messages("invitation-sent.further-help.link-text.sbs")</a></li>
-        <li><a href="@config.asaUrl" class="form-field-group" id="continue">@Messages("invitation-sent.further-help.link-text.asa")</a></li>
+        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep">@msgs("invitation-sent.further-help.link-text.sbs")</a></li>
+        <li><a href="@config.asaUrl" class="form-field-group" id="continue">@msgs("invitation-sent.further-help.link-text.asa")</a></li>
     </ul>
 
 }

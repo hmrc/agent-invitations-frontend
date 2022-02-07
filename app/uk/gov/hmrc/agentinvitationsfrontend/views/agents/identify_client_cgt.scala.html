@@ -38,13 +38,13 @@ cgtClientForm : Form[CgtClient],
 submitFormCall: Call,
 backLinkUrl: String,
 isDeAuthJourney: Boolean = false
-)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = errorPrefix(cgtClientForm) + Messages("generic.title", Messages(s"identify-cgt-client.header"), Messages(banner)),
+bannerTitle = msgs(banner),
+title = errorPrefix(cgtClientForm) + msgs("generic.title", msgs(s"identify-cgt-client.header"), msgs(banner)),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)
 ) {
@@ -59,10 +59,10 @@ backLinkHref = Some(backLinkUrl)
 
         @inputText(
             field = cgtClientForm("cgtRef"),
-            label = Messages(s"identify-cgt-client.header"),
+            label = msgs(s"identify-cgt-client.header"),
             labelClass = Some("govuk-label--xl"),
             labelAsHeading = true,
-            hint = Some(Messages("identify-cgt-client.p1") + " " + Messages("identify-cgt-client.hint")),
+            hint = Some(msgs("identify-cgt-client.p1") + " " + msgs("identify-cgt-client.hint")),
             autocomplete = Some("postal-code"),
             inputClass = Some("govuk-input--width-20")
         )

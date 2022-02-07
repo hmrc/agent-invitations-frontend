@@ -34,7 +34,7 @@
     submitButton: SubmitButton
 )
 
-@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientType : ClientType, postcodeForm: Form[Postcode], backLinkUrl: String, fromFastTrack: Boolean, isDeAuth: Boolean)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @submitUrl = @{ if(fromFastTrack) routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtPostcode
                 else if(isDeAuth) routes.AgentLedDeauthJourneyController.submitConfirmCgtPostcode
@@ -42,7 +42,7 @@
               }
 
 @mainTemplate(
-title = errorPrefix(postcodeForm) + Messages("generic.title", Messages("confirm-postcode-cgt.header"), Messages("service.name.agents.auth")),
+title = errorPrefix(postcodeForm) + msgs("generic.title", msgs("confirm-postcode-cgt.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(backLinkUrl)) {
 
@@ -54,10 +54,10 @@ backLinkHref = Some(backLinkUrl)) {
 
         @inputText(
             field = postcodeForm("postcode"),
-            label = Messages("confirm-postcode-cgt.header"),
+            label = msgs("confirm-postcode-cgt.header"),
             labelClass = Some("govuk-label--xl"),
             labelAsHeading = true,
-            hint = Some(Messages("confirm-postcode-cgt.p1") + " " + Messages("confirm-postcode-cgt.hint")),
+            hint = Some(msgs("confirm-postcode-cgt.p1") + " " + msgs("confirm-postcode-cgt.hint")),
             autocomplete = Some("postal-code"),
             inputClass = Some("govuk-input--width-10")
         )

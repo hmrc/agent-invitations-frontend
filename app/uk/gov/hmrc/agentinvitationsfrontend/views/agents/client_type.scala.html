@@ -33,10 +33,10 @@
     submitButton: SubmitButton
 )
 
-@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentInvitationsForm: Form[String], config: ClientTypePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = errorPrefix(agentInvitationsForm) + Messages("generic.title", Messages("client-type.header"), Messages("service.name.agents.auth")),
+title = errorPrefix(agentInvitationsForm) + msgs("generic.title", msgs("client-type.header"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(config.backLinkUrl)
 ) {
@@ -49,9 +49,9 @@ backLinkHref = Some(config.backLinkUrl)
 
         @inputRadio(
             field = agentInvitationsForm("clientType"),
-            legend = Messages("client-type.header"),
+            legend = msgs("client-type.header"),
             headingIsLegend = true,
-            hint = Some(Messages("client-type.p1")),
+            hint = Some(msgs("client-type.p1")),
             inputs = config.clientTypesAsRadioItems
         )
 

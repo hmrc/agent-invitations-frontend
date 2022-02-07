@@ -31,18 +31,18 @@
   linkStyledAsButton: LinkStyledAsButton
 )
 
-@(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], messages: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @mainTemplate(
-bannerTitle = Messages(banner),
-title = Messages("generic.title", Messages("not-authorised.h1"), Messages(banner)),
+bannerTitle = msgs(banner),
+title = msgs("generic.title", msgs("not-authorised.h1"), msgs(banner)),
 isAgent = true) {
 
-    <h1 id="notMatchedHeader" class="govuk-heading-xl">@Messages("not-authorised.h1")</h1>
+    <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs("not-authorised.h1")</h1>
 
-    <p id="notMatched">@Messages(s"not-authorised.$service.p")</p>
+    <p id="notMatched">@msgs(s"not-authorised.$service.p")</p>
 
     @linkStyledAsButton(href = clientTypeCall.url, messageKey = "start-again.button")
 }

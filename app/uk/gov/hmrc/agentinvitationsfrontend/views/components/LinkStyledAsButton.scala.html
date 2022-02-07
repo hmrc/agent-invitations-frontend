@@ -23,7 +23,7 @@
 href: String,
 id: String = "button-link",
 messageKey: String = "continue.button",
-submitClass: Option[String] = None)(implicit messages: Messages)
+submitClass: Option[String] = None)(implicit msgs: Messages)
 
 
-<a id="@id" href="@href" class="govuk-button @submitClass" draggable="false" role="button">@messages(messageKey)</a>
+<a id="@id" href="@href" class="govuk-button @submitClass" draggable="false" role="button">@msgs(messageKey)</a>
