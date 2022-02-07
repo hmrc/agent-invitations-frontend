@@ -104,7 +104,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val featuresEnableTrackCancelAction: Boolean = servicesConfig.getBoolean("features.enable-track-cancel-auth-action")
   val featuresAgentSuspension: Boolean = servicesConfig.getBoolean("features.enable-agent-suspension")
   val featuresAgentLedDeAuth: Boolean = servicesConfig.getBoolean("features.show-agent-led-de-auth")
-  val featuresIrvAllowlist: Boolean = servicesConfig.getBoolean("features.enable-irv-allowlist")
 
   val passcodeAuthEnabled: Boolean = servicesConfig.getBoolean("passcodeAuthentication.enabled")
   val passcodeAuthRegime: String = servicesConfig.getString("passcodeAuthentication.regime")

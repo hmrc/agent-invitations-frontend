@@ -137,7 +137,7 @@ class TrackServiceISpec extends BaseISpec {
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(20).toString, LocalDate.now().minusDays(4).toString)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), true, 30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
       result.size shouldBe 1
 
@@ -160,7 +160,7 @@ class TrackServiceISpec extends BaseISpec {
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(15).toString, LocalDate.now().minusDays(5).toString)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), true, 30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
       result.size shouldBe 2
 
@@ -176,7 +176,7 @@ class TrackServiceISpec extends BaseISpec {
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(15).toString, LocalDate.now().minusDays(5).toString)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), true, 30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
       result.size shouldBe 2
 
@@ -192,7 +192,7 @@ class TrackServiceISpec extends BaseISpec {
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship("HMRC-MTD-VAT", "123456789", LocalDate.now().minusDays(10).toString, LocalDate.now().minusDays(3).toString)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), true, 30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
       result.size shouldBe 1
 
@@ -208,7 +208,7 @@ class TrackServiceISpec extends BaseISpec {
       givenGetInvitations() // 9 invitations
       givenNinoForMtdItId(mtdItId, validNino)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"),true, 30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"),30))
 
       result.size shouldBe 10
 

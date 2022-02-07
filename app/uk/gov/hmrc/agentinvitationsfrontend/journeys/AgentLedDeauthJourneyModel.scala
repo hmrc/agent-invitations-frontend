@@ -96,10 +96,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         clientType match {
           case "personal" =>
             val enabledPersonalServices =
-              if (agent.isAllowlisted)
-                Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
-              else
-                Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+              Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
             goto(SelectServicePersonal(enabledPersonalServices))
           case "business" => goto(SelectServiceBusiness(agent.businessServices))
           case "trust"    => goto(SelectServiceTrust(agent.trustServices))

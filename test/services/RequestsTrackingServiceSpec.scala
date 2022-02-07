@@ -201,25 +201,11 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
       }
 
-      "filter out PIR service if user not allowlisted" in {
-        tested.allowlistedInvitation(false)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe false
-
-        tested.allowlistedInvitation(false)(invitationForService("HMRC-MTD-IT")) shouldBe true
-
-        tested.allowlistedInvitation(false)(invitationForService("HMRC-MTD-VAT")) shouldBe true
-
-        tested.allowlistedInvitation(true)(invitationForService("PERSONAL-INCOME-RECORD")) shouldBe true
-
-        tested.allowlistedInvitation(true)(invitationForService("HMRC-MTD-IT")) shouldBe true
-
-        tested.allowlistedInvitation(true)(invitationForService("HMRC-MTD-VAT")) shouldBe true
-      }
-
       "return empty tracked invitations when none supplied" in {
         when(acaConnector.getAllInvitations(any(classOf[Arn]), any(classOf[LocalDate]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Seq()))
 
-        val result = await(tested.getRecentAgentInvitations(Arn(""), true, 30))
+        val result = await(tested.getRecentAgentInvitations(Arn(""), 30))
 
         result shouldBe empty
       }
@@ -243,7 +229,7 @@ class RequestsTrackingServiceSpec extends UnitSpec {
                 invitationForService("PERSONAL-INCOME-RECORD")
               )))
 
-        val result = await(tested.getRecentAgentInvitations(Arn(""), true, 30))
+        val result = await(tested.getRecentAgentInvitations(Arn(""), 30))
 
         // result.map(_.clientName) should contain theSameElementsAs Seq("Aaa Itsa Trader", "Aaa Ltd.", "Foo Bar")
 
