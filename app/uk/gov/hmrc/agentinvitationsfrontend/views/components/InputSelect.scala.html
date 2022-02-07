@@ -47,7 +47,7 @@ selectAttribute: Map[String, String] = Map.empty
                 value = Some(option._1),
                 text = option._2,
                 selected = field.value.contains(option._1),
-                attributes = Map("id" -> s"${field.name}-${option._1}")
+                attributes = Map("id" -> s"${field.name}-${option._1.filterNot(_.isWhitespace)}")
             )
     ),
     classes = if(inputClass.isDefined) inputClass.get else "",
