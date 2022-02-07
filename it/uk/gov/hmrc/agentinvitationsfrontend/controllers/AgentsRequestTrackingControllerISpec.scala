@@ -404,7 +404,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       redirectLocation(result) shouldBe Some("/invitations/track/request-cancelled")
     }
 
-    "redirect to track page when there is no invitationId in the session" in {
+    "redirect to manage page when there is no invitationId in the session" in {
       givenCancelInvitationReturns(arn, invitationIdITSA, 204)
       val result = postConfirmCancel(
         authorisedAsValidAgent(
@@ -417,7 +417,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       redirectLocation(result) shouldBe Some("/invitations/track")
     }
 
-    "redirect to track page when no service in the session" in {
+    "redirect to manage page when no service in the session" in {
       givenCancelInvitationReturns(arn, invitationIdITSA, 204)
       val result = postConfirmCancel(
         authorisedAsValidAgent(
@@ -454,7 +454,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       status(result) shouldBe FORBIDDEN
     }
 
-    "when no is selected on confirm cancel page, go back to track authorisations page" in {
+    "when no is selected on confirm cancel page, go back to manage authorisations page" in {
       val result = postConfirmCancel(
         authorisedAsValidAgent(
           request
@@ -706,7 +706,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Try again")
     }
 
-    "when no is selected on confirm cancel authorisation page, go back to track authorisations page" in {
+    "when no is selected on confirm cancel authorisation page, go back to manage authorisations page" in {
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -760,7 +760,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "follow the instructions for deleting the client from your client list"
       )
       checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", "sign in to your HMRC online services for agents account")
-      checkResultContainsLink(result, "/invitations/track", "Return to track your recent authorisation requests", roleIsButton = true)
+      checkResultContainsLink(result, "/invitations/track", "Return to manage your recent authorisation requests",
+        roleIsButton = true)
     }
 
     "render a authorisation cancelled page for IRV" in {
@@ -781,7 +782,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "Authorisation cancelled",
         "What this means",
         "You are no longer authorised by Bubbles Powerpuff to view their PAYE income record.",
-        "Return to track your recent authorisation requests"
+        "Return to manage your recent authorisation requests"
       )
     }
 
@@ -804,7 +805,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "What this means",
         "You are no longer authorised by Blossom Powerpuff to manage their " +
           "VAT.",
-        "Return to track your recent authorisation requests"
+        "Return to manage your recent authorisation requests"
       )
     }
   }
