@@ -17,20 +17,18 @@
 package journeys
 
 import org.joda.time.LocalDate
+import play.api.test.Helpers._
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetAgencyEmail, GetCgtSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, TrustTaxIdentifier, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import support.UnitSpec
-import play.api.test.Helpers._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.ConfirmRegDatePpt
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -48,8 +46,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       await(super.apply(transition))
   }
 
-  val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
-  val nonAllowlistedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
+  val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val allowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   val nino = "AB123456A"
@@ -84,14 +81,6 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to SelectServiceBusiness when business is selected" in {
         given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(
           SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG)))
-      }
-      "transition to SelectServicePersonal with only allowlisted services" in {
-        given(SelectClientType) when selectedClientType(nonAllowlistedAgent)("personal") should thenGo(SelectServicePersonal(allowlistedServices))
-      }
-
-      "transition to SelectServiceTrust with only allowlisted services" in {
-        given(SelectClientType) when selectedClientType(nonAllowlistedAgent)("trust") should thenGo(
-          SelectServiceTrust(Set(TRUST, HMRCCGTPD, HMRCPPTORG)))
       }
     }
     "at state SelectServicePersonal" should {

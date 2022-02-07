@@ -48,7 +48,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
       await(super.apply(transition))
   }
 
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
+  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
   val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCPPTORG)
   val nino = "AB123456A"
   val postCode = Some("BN114AW")

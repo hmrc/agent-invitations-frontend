@@ -41,10 +41,8 @@ class AuthActionsImpl @Inject()(
   val env: Environment,
   val config: Configuration,
   val authConnector: AuthConnector,
-  val appConfig: AppConfig,
-  featureFlags: FeatureFlags,
-  pirRelationshipConnector: PirRelationshipConnector)
-    extends AuthorisedFunctions with AuthRedirects with Logging {
+  val appConfig: AppConfig
+) extends AuthorisedFunctions with AuthRedirects with Logging {
 
   private val requiredCL = ConfidenceLevel.L200
 
@@ -71,11 +69,7 @@ class AuthActionsImpl @Inject()(
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
-          case Some(arn) if appConfig.featuresIrvAllowlist =>
-            pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
-              body(AuthorisedAgent(arn, allowed))
-            }
-          case Some(arn) => body(AuthorisedAgent(arn, true))
+          case Some(arn) => body(AuthorisedAgent(arn))
           case None =>
             logger.warn("Arn not found for the logged in agent")
             Future successful Forbidden

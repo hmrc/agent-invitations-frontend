@@ -41,14 +41,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       )
       givenGetAllInvitations()
 
-      val result = await(
-        tested.bindInvitationsAndRelationships(
-          arn = Arn(""),
-          isPirAllowlisted = true,
-          showLastDays = 30,
-          pageInfo = PageInfo(1, 10),
-          filterByClient = None,
-          filterByStatus = None))
+      val result = await(tested
+        .bindInvitationsAndRelationships(arn = Arn(""), showLastDays = 30, pageInfo = PageInfo(1, 10), filterByClient = None, filterByStatus = None))
 
       result shouldBe tested.TrackResultsPage(
         results = Seq(
@@ -204,7 +198,6 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       val result = await(
         tested.bindInvitationsAndRelationships(
           arn = Arn(""),
-          isPirAllowlisted = true,
           showLastDays = 30,
           pageInfo = PageInfo(1, 10),
           filterByClient = Some("John Jones"),
@@ -265,7 +258,6 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       val result = await(
         tested.bindInvitationsAndRelationships(
           arn = Arn(""),
-          isPirAllowlisted = true,
           showLastDays = 30,
           pageInfo = PageInfo(1, 10),
           filterByClient = None,
@@ -326,7 +318,6 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       val result = await(
         tested.bindInvitationsAndRelationships(
           arn = Arn(""),
-          isPirAllowlisted = true,
           showLastDays = 30,
           pageInfo = PageInfo(1, 10),
           filterByClient = None,
