@@ -2461,7 +2461,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation pending page" in {
       journeyState.set(
-        PendingInvitationExists(Personal, "Charmarti Ltd.", "http://invitation.link.com", emptyBasket),
+        PendingInvitationExists(Personal, "Charmarti Ltd.", "/invitation-link/ABC123", emptyBasket),
         List()
       )
       val result = controller.showPendingAuthorisationExists(authorisedAsValidAgent(request, arn.value))
@@ -2474,7 +2474,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       html.select("main p").get(0).text() shouldBe "You cannot continue until Charmarti Ltd. has accepted the authorisation request link."
       html.select("main h2").text() shouldBe "What you can do next"
       html.select("main p").get(1).text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
-      html.select("main p").get(2).text() shouldBe "http://invitation.link.com"
+      html.select("main p").get(2).text() should include ("/invitation-link/ABC123")
       html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
       html.select("main p").get(2).classNames() contains "govuk-body"
       html.select("main .govuk-button").text() shouldBe "Start a new request"

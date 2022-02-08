@@ -1765,7 +1765,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the already-authorisation-pending page" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "Charmarti Ltd.", Some("BN114AW"))
       journeyState.set(
-        PendingInvitationExists(ftr, "http://invitation.link.com", "Charmarti Ltd.", None),
+        PendingInvitationExists(ftr, "/invitation-link/ABC123", "Charmarti Ltd.", None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)
@@ -1780,7 +1780,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       html.select("main h1").text() shouldBe "You already created an authorisation request for this tax service"
       html.select("main p").get(0).text() shouldBe "You cannot continue until Charmarti Ltd. has accepted the authorisation request link."
       html.select("main p").get(1).text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
-      html.select("main p").get(2).text() shouldBe "http://invitation.link.com"
+      html.select("main p").get(2).text() should include ("/invitation-link/ABC123")
       html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
       html.select("main p").get(2).classNames() contains "govuk-body"
       html.select("main .govuk-button").text() shouldBe "Manage your authorisation requests"

@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -45,6 +45,7 @@ trait GetClientName extends Logging {
       case Services.TAXABLETRUST    => getTrustName(clientId)
       case Services.NONTAXABLETRUST => getTrustName(clientId)
       case Services.HMRCCGTPD       => getCgtClientName(CgtRef(clientId))
+      case Services.HMRCPPTORG      => getPptClientName(PptRef(clientId))
       case _                        => Future successful None
     }
 
@@ -85,4 +86,11 @@ trait GetClientName extends Logging {
         None
     }
 
+  def getPptClientName(pptRef: PptRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    acaConnector.getPptSubscription(pptRef).map {
+      case Some(pptSubscription) => Some(pptSubscription.customerName)
+      case None =>
+        logger.warn(s"no pptSubscription found to retrieve name for reference: ${pptRef.value}")
+        None
+    }
 }
