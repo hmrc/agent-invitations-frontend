@@ -26,6 +26,8 @@
 
 @(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
+@invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.pendingAuthLink}"}
+
 @mainTemplate(
     title = msgs("generic.title", msgs(s"pending-authorisation-exists.header"), msgs("service.name.agents.auth")),
     isAgent = true,
@@ -38,7 +40,7 @@
 
     @h2("pending-authorisation-exists.h2")
     @p(msgs("pending-authorisation-exists.p2", config.clientName ))
-    @p(config.pendingAuthLink, classes = Some("govuk-!-font-weight-bold"))
+    @p(invitationLink, classes = Some("govuk-!-font-weight-bold"))
 
     @if(config.authRequestsExist && !config.fromFastTrack) {
         @linkStyledAsButton(

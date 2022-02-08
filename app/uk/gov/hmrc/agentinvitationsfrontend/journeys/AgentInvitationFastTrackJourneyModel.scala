@@ -379,7 +379,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       isAltItsa: IsAltItsa,
       legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
       appConfig: AppConfig
-    )(createInvitation: CreateInvitation, getAgentLink: GetAgentLink, getAgencyEmail: GetAgencyEmail): Future[State] = {
+    )(createInvitation: CreateInvitation, getAgentLink: GetAgentLink, getAgencyEmail: GetAgencyEmail, getClientName: GetClientName): Future[State] = {
 
       def invitationSent =
         invitationSentState(fastTrackRequest, arn, invitation, continueUrl)(
@@ -391,8 +391,11 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       for {
         hasPendingInvitations <- hasPendingInvitationsFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
         result <- if (hasPendingInvitations) {
-                   getAgentLink(arn, fastTrackRequest.clientType).flatMap(agentLink =>
-                     goto(PendingInvitationExists(fastTrackRequest, agentLink, fastTrackRequest.clientIdentifier, continueUrl)))
+                   for {
+                     agentLink <- getAgentLink(arn, fastTrackRequest.clientType)
+                     clientName <- getClientName(fastTrackRequest.clientIdentifier, fastTrackRequest.service)
+                     newState <- goto(PendingInvitationExists(fastTrackRequest, agentLink, clientName.getOrElse(fastTrackRequest.clientIdentifier), continueUrl))
+                   } yield newState
                  } else {
                    hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
                      .flatMap {
@@ -570,7 +573,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     }
 
     def checkedDetailsAllInformation(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
-      checkRegDateMatches: CheckRegDateMatches)(checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(
+      checkRegDateMatches: CheckRegDateMatches)(checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(
       getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
       hasPartialAuthorisation: HasPartialAuthorisation)(hasPendingAltItsaInvitation: IsAltItsa)(
       legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -591,7 +594,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPartialAuthorisation,
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
                 case Some(false) => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case None =>
                   if (appConfig.featuresAltItsa) goto(ClientNotRegistered(fastTrackRequest, continueUrl))
@@ -617,7 +620,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPartialAuthorisation,
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
                 case _ => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPersonalClient(originalFtr, fastTrackRequest, continueUrl))
@@ -639,7 +642,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPartialAuthorisation,
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
                 case VatKnownFactNotMatched       => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
                 case VatRecordMigrationInProgress => goto(CannotCreateFastTrackRequest)
@@ -664,7 +667,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPartialAuthorisation,
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
                 case VatKnownFactNotMatched       => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
                 case VatDetailsNotFound           => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
                 case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
@@ -689,7 +692,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               hasPartialAuthorisation,
               hasPendingAltItsaInvitation,
               legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
           } else goto(IdentifyTrustClient(originalFtr, fastTrackRequest, continueUrl))
 
         case CheckDetailsCompleteCgt(originalFtr, fastTrackRequest, continueUrl) =>
@@ -705,7 +708,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               hasPartialAuthorisation,
               hasPendingAltItsaInvitation,
               legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
           } else goto(IdentifyCgtClient(originalFtr, fastTrackRequest, continueUrl))
 
         case CheckDetailsCompletePpt(originalFtr, fastTrackRequest, continueUrl) =>
@@ -725,14 +728,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     hasPartialAuthorisation,
                     hasPendingAltItsaInvitation,
                     legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
                 case false => goto(KnownFactNotMatched(originalFtr, fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPptClient(originalFtr, fastTrackRequest, continueUrl))
       }
 
     def identifiedClientItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPendingAltItsaInvitation: IsAltItsa)(
       hasPartialAuthorisation: HasPartialAuthorisation)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(itsaClient: ItsaClient) =
@@ -742,14 +745,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             originalFtr,
             ftr.copy(clientIdentifier = itsaClient.clientIdentifier, knownFact = Some(itsaClient.postcode)),
             continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
     def identifiedClientIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPendingAltItsaInvitation: IsAltItsa)(
       hasPartialAuthorisation: HasPartialAuthorisation)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(irvClient: IrvClient) =
@@ -760,14 +763,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               originalFtr,
               ftr.copy(clientIdentifier = irvClient.clientIdentifier, knownFact = Some(irvClient.dob)),
               continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
     def identifiedClientVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(vatClient: VatClient) =
@@ -777,7 +780,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             originalFtr,
             ftr.copy(clientIdentifier = vatClient.clientIdentifier, knownFact = Some(vatClient.registrationDate)),
             continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
@@ -786,7 +789,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             originalFtr,
             ftr.copy(clientIdentifier = vatClient.clientIdentifier, knownFact = Some(vatClient.registrationDate)),
             continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
@@ -813,7 +816,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitConfirmTrustClient(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+    def submitConfirmTrustClient(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -835,13 +838,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               hasPartialAuthorisation,
               hasPendingAltItsaInvitation,
               legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
           } else {
             goto(IdentifyTrustClient(originalFtr, ftr, continueUrl))
           }
       }
 
-    def submitConfirmClientCgt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+    def submitConfirmClientCgt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -859,13 +862,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               hasPartialAuthorisation,
               hasPendingAltItsaInvitation,
               legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
           } else {
             goto(IdentifyCgtClient(originalFtr, ftr, continueUrl))
           }
       }
 
-    def submitConfirmClientPpt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+    def submitConfirmClientPpt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(confirmation: Confirmation) =
@@ -883,28 +886,28 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               hasPartialAuthorisation,
               hasPendingAltItsaInvitation,
               legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail)
+              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
           } else {
             goto(IdentifyPptClient(originalFtr, ftr, continueUrl))
           }
       }
 
     def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
         case NoPostcode(originalFtr, ftr, continueUrl) =>
           val newState = CheckDetailsCompleteItsa(originalFtr, ftr.copy(knownFact = Some(suppliedKnownFact)), continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
     def moreDetailsIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(suppliedKnownFact: String) =
@@ -912,14 +915,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case NoDob(originalFtr, ftr, continueUrl) =>
           val newState =
             CheckDetailsCompleteIrv(originalFtr, ftr.copy(knownFact = Some(suppliedKnownFact)), continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
     def moreDetailsVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(suppliedKnownFact: String) =
@@ -934,7 +937,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           val newState =
             checkDetailsState(originalFtr, ftRequest.copy(knownFact = Some(suppliedKnownFact)), continueUrl)
 
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
@@ -942,7 +945,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       }
 
     def moreDetailsPpt(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
       agent: AuthorisedAgent)(suppliedKnownFact: String) =
@@ -953,7 +956,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           val newState =
             checkDetailsState(originalFtr, ftRequest.copy(knownFact = Some(suppliedKnownFact)), continueUrl)
 
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(
+          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(getAgentLink)(getClientName)(
             getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
             legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
             .apply(newState)
@@ -991,7 +994,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       }
 
     def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getAgencyEmail: GetAgencyEmail)(
+      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
       hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
       hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(
       getCgtSubscription: GetCgtSubscription,
@@ -1006,7 +1009,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             val newState =
               completeState(originalFtr, ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))), continueUrl)
             checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(createInvitation)(
-              getAgentLink)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
+              getAgentLink)(getClientName)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
               legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
               .apply(newState)
           } else {
