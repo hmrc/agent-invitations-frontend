@@ -79,7 +79,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         s"${displayDate(LocalDate.now())}",
         "Resend request to client",
         "Cancel this request",
-        "Start a new request",
+        "Start new request",
         "Cancel your authorisation",
         htmlEscapedMessage("recent-invitations.description", 30)
       )
