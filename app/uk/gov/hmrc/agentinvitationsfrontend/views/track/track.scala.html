@@ -14,20 +14,18 @@
  * limitations under the License.
  *@
 
-@import org.joda.time.LocalDate
-@import org.joda.time.DateTime
+@import org.joda.time.{DateTime, LocalDate}
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputSelect, SubmitButtonGroup}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.track._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.TrackPageConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputSelect, SubmitButtonGroup}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -157,20 +155,35 @@ isAgent = true) {
 }
 
 @paginationControls = {
-    <ul class="pager-items all-sub" style="float: right; display: flex">
+    <ul class="pager-items all-sub" >
         @if(config.pageInfo.page > 1) {
-          <li class="prev"><a class="home" href="?page=@(config.pageInfo.page - 1)@config.additionalQueryParams"><span class="visually-hidden">page</span>Prev </a></li>
+            <li>
+                <a  href="?page=@(config.pageInfo.page - 1) @config.additionalQueryParams" aria-label="Prev page">
+                    <span class="govuk-visually-hidden">Prev</span>
+                    <span aria-hidden="true" role="presentation" >&lt;</span>
+                </a>
+            </li>
         }
-        @for(pageNum <- (1 to config.numberOfPages)) {
+        @for(pageNum <- 1 to config.numberOfPages) {
             @if(pageNum == config.pageInfo.page) {
                 <li class="selected-pagination-item">@pageNum</li>
             } else {
-                <li><a class="home" href="?page=@pageNum@config.additionalQueryParams"><span class="visually-hidden">Page</span>@pageNum</a></li>
+                <li>
+                    <a href="?page=@pageNum @config.additionalQueryParams">
+                        <span class="govuk-visually-hidden">Page </span>
+                        <span>@pageNum</span>
+                    </a>
+                </li>
             }
         }
 
         @if(config.hasNextPage) {
-          <li class="next"><a class="home" href="?page=@(config.pageInfo.page + 1)@config.additionalQueryParams"><span class="visually-hidden">page</span>Next </a></li>
+          <li class="next">
+              <a href="?page=@(config.pageInfo.page + 1)@config.additionalQueryParams" aria-label="Next page">
+                  <span class="govuk-visually-hidden">Next</span>
+                  <span aria-hidden="true" role="presentation">&gt;</span>
+              </a>
+          </li>
         }
     </ul>
 }

@@ -1177,7 +1177,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start a new request", roleIsButton = true)
+      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start new request", roleIsButton = true)
       checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
     }
   }

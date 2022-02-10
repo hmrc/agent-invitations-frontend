@@ -2477,7 +2477,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       html.select("main p").get(2).text() should include ("/invitation-link/ABC123")
       html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
       html.select("main p").get(2).classNames() contains "govuk-body"
-      html.select("main .govuk-button").text() shouldBe "Start a new request"
+      html.select("main .govuk-button").text() shouldBe "Start new request"
       html.select("main .govuk-button").attr("href") should startWith("/invitations/")
     }
   }
