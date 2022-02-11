@@ -77,12 +77,9 @@ isAgent = false) {
             summary = Text(msgs("action-needed.summary", msgs("action-needed.ters"))),
             content = HtmlContent(s"$otherClientContent")
         ))
-
     }
 
     @a(key = "finish.button",
         id = Some("start-again"),
-        href = externalUrls.signOutUrl(false, None)) + ""))
-
-
+        href = externalUrls.signOutUrl(false, None))
 }

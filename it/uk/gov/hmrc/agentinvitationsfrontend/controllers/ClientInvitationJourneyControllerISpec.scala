@@ -2,15 +2,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import java.util.UUID
 import org.joda.time.LocalDate
+import org.jsoup.Jsoup
 import org.scalatest.Assertion
 import play.api.Application
 import play.api.mvc._
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps}
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, Css}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -585,9 +586,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.showErrorNoOutstandingRequests(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
-
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("no-outstanding-requests.heading"))
-      checkIncludesText(result, "If you think this is wrong, contact the agent who sent you the request or <a href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history</a>")
+
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+      val externalUrlLink = html.select("a[href='someAgentClientManagementFrontendExternalUrl#history']")
+      externalUrlLink.text() shouldBe "view your request history"
+      externalUrlLink.hasClass("govuk-link")
+      html.select("p#no-outstanding").text() contains "If you think this is wrong, contact the agent who sent you the request or "
 
     }
   }
@@ -1352,6 +1358,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(NotFoundInvitation, Nil)
 
       val result = controller.showNotFoundInvitation(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
+
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
@@ -1415,9 +1422,15 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showErrorAuthorisationRequestInvalid(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("agent-cancelled-request.header"))
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+      val externalUrlLink = html.select("a[href='someAgentClientManagementFrontendExternalUrl#history']")
+      externalUrlLink.text() shouldBe "View your request history"
+      externalUrlLink.hasClass("govuk-link")
+      html.select("p#no-outstanding").text() contains "If you think this is wrong, contact the agent who sent you the request or "
+      html.select(Css.H1).text() shouldBe "Your agent cancelled this authorisation request"
+
       checkIncludesText(result, "This request was cancelled on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
-      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None)
 
     }
   }

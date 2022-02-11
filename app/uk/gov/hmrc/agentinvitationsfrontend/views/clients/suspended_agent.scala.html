@@ -57,7 +57,7 @@ isAgent = false) {
     @if(pageConfig.isAllSuspended) {
         @h1("suspended-agent.all.header")
         @pageBody
-        @a(key = "finish.button", href = externalUrls.signOutUrl(false, None)) + ""))
+        @a(key = "finish.button", href = externalUrls.signOutUrl(false, None)) 
 
     } else {
         @if(pageConfig.isOneSuspendedService) {
