@@ -19,19 +19,17 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate,a:a, p:p, h1:h1)
 
 @(serviceMessageKey: String, cancelledOn: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs(s"generic.title", msgs("agent-cancelled-request.header"),
-msgs("service.name.clients")),
-isAgent = false) {
+  bannerTitle = "service.name.clients",
+  title = msgs(s"generic.title", msgs("agent-cancelled-request.header"),
+  msgs("service.name.clients")),
+  isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("agent-cancelled-request.header")</h1>
-
-    <p>@msgs("agent-cancelled-request.p", cancelledOn)</p>
-
-    <a href="@externalUrls.agentClientManagementUrl#history">@msgs("agent-cancelled-request.link-text")</a>
+   @h1("agent-cancelled-request.header")
+   @p(msgs("agent-cancelled-request.p", cancelledOn))
+   @a(key = "agent-cancelled-request.link-text", href = s"${externalUrls.agentClientManagementUrl}#history")
 }

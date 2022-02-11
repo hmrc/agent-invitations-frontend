@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, p:p, a:a, h1:h1)
 
 @(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -29,13 +29,8 @@ bannerTitle = "service.name.clients",
 title = msgs("generic.title", msgs("incorrect-invitation.header"),  msgs("service.name.clients")),
 isAgent = false) {
 
-  <h1 class="govuk-heading-xl">@msgs("incorrect-invitation.header")</h1>
-
-  <p>@msgs("incorrect-invitation.description")</p>
-
-  @linkStyledAsButton(
-    href = externalUrls.signOutUrl(false, Some(false)),
-    messageKey = "finish.button"
-  )
+    @h1("incorrect-invitation.header")
+    @p("incorrect-invitation.description")
+    @a(key = "finish.button", href = externalUrls.signOutUrl(false, None)) + ""))
 
 }
