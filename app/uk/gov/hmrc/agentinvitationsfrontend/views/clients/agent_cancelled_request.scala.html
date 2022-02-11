@@ -23,11 +23,8 @@
 
 @(serviceMessageKey: String, cancelledOn: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(
-  bannerTitle = "service.name.clients",
-  title = msgs(s"generic.title", msgs("agent-cancelled-request.header"),
-  msgs("service.name.clients")),
-  isAgent = false) {
+@mainTemplate(bannerTitle = "service.name.clients", isAgent = false,
+  title = msgs(s"generic.title", msgs("agent-cancelled-request.header"), msgs("service.name.clients")) ) {
 
    @h1("agent-cancelled-request.header")
    @p(msgs("agent-cancelled-request.p", cancelledOn))
