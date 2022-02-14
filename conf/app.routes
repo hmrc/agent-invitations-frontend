@@ -122,8 +122,6 @@ POST        /agents/more-details-vat                                    uk.gov.h
 POST        /agents/more-details-ppt                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitKnownFactPpt
 GET         /agents/select-client-type                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showClientType
 POST        /agents/select-client-type                                  uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientType
-POST        /agents/select-client-type-cgt                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypeCgt
-POST        /agents/select-client-type-ppt                              uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitClientTypePpt
 GET         /agents/sent-invitation                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showInvitationSent
 GET         /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected
 POST        /agents/track/authorisation-detected                        uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected

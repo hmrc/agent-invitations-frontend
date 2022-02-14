@@ -54,6 +54,8 @@ trait TestDataCommonSupport {
   val serviceCgt = "HMRC-CGT-PD"
   val invitationIdCgt = InvitationId("EF99K6PXSBHTF")
 
+  val invitationIdPpt = InvitationId("EF99K6PXSBHTG")
+
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val trustNotFoundJson =
     """{"code": "RESOURCE_NOT_FOUND","reason": "The remote endpoint has indicated that the trust is not found"}"""
@@ -74,6 +76,23 @@ trait TestDataCommonSupport {
 
   val pptDefaultRegDate: LocalDate = new LocalDate(2021, 1, 1)
   def pptSubscription(regDate: LocalDate = pptDefaultRegDate) = PptSubscription("PPT", regDate, None)
+
+  def pptSubscriptionSuccessBodyJson(pptRef: PptRef, registrationDate: LocalDate) =
+    s"""{"pptReference": "${pptRef.value}",
+                                                                               |"legalEntityDetails": {
+                                                                               |"dateOfApplication": "$registrationDate",
+                                                                               |"customerDetails": {
+                                                                               |"customerType": "Organisation",
+                                                                               |"organisationDetails": {
+                                                                               |"organisationName": "Life Insuranco"
+                                                                               |}
+                                                                               |}
+                                                                               |},
+                                                                               |"changeOfCircumstanceDetails": {
+                                                                               |"deregistrationDetails": {
+                                                                               |"deregistrationDate": "2028-01-09"
+                                                                               |}
+                                                                               |}}""".stripMargin
 
   val pptNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 }

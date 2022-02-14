@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, StoredInvitation, SuspensionDetails}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient, StoredInvitation, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
@@ -1446,6 +1446,25 @@ trait ACAStubs {
           aResponse()
             .withStatus(204)
         )
+    )
+
+  def givenPptCheckKnownFactReturns(pptClient: PptClient, status: Int) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/known-facts/ppt/${pptClient.pptRef.value}/${pptClient.registrationDate}"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
+  def givenGetPptCustomerName(pptRef: PptRef, name: String) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/client/ppt-customer-name/pptref/${pptRef.value}"))
+      .willReturn(
+        aResponse()
+          .withBody(
+            s"""{"customerName":"$name"}""".stripMargin)
+          .withStatus(200))
     )
 
 }
