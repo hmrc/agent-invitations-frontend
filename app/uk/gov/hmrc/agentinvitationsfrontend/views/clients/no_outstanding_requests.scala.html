@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate ,a:a, p:p, h1:h1)
+@this(mainTemplate: MainTemplate ,a:a, p:p, h1:h1, span:span)
 
 @(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -28,8 +28,9 @@
   title = msgs("generic.title", msgs("no-outstanding-requests.heading"), msgs("service.name.clients")) ) {
 
     @h1("no-outstanding-requests.heading")
-    @p( id = Some("no-outstanding"),
-        html = Some(Html(msgs("no-outstanding-requests.p", s"${externalUrls.agentClientManagementUrl}#history")))
-    )
 
+    <p id="no-outstanding" class="govuk-body">
+        @span(html = Some(Html(msgs("no-outstanding-requests.p") + " " )))
+        @a(href = s"${externalUrls.agentClientManagementUrl}#history", key = "no-outstanding-requests.link")
+    </p>
 }

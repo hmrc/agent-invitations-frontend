@@ -16,6 +16,13 @@
 
 @this()
 
-@(key: String, classes: Option[String] = None, id: Option[String] = None)(implicit msgs: Messages)
+@(
+   key: String = "",
+   html: Option[Html] = None,
+   classes: Option[String] = None,
+   id: Option[String] = None
+)(implicit msgs: Messages)
 
-<span class="@{classes.getOrElse("")}"@id.map(i =>{ s" id=${i}"})>@Html(msgs(key))</span>
+ @cls = @{if(classes.isDefined) classes.get.concat(" govuk-body") else "govuk-body"}
+
+ <span class ="@cls" @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</span>
