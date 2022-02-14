@@ -19,12 +19,16 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CompletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
 
-@this(mainTemplate: MainTemplate, govukPanel: GovukPanel)
-
+@this(
+    mainTemplate: MainTemplate,
+    govukPanel: GovukPanel,
+    p:p,
+    ul:ul,
+    h2:h2,
+    a:a
+)
 @(config: CompletePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
@@ -63,26 +67,22 @@ scriptElem = Some(gtmScript)
         content = Text(msgs("client-complete.multi.header.p", config.agencyName))
     ))
 
-    <h2>@msgs("client-complete.p.title")</h2>
+    @h2("client-complete.p.title")
     @if(config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
         <p>@msgs(s"client-complete.${config.consents.filter(_.consent == true).map(_.serviceKey).head}.p1", config.agencyName)</p>
     } else {
-        <p>@msgs(s"client-complete.multi.p1.head", config.agencyName)</p>
-        <ul class="govuk-list govuk-list--bullet">
-        @for(key <- config.consents.filter(_.consent == true).map(_.serviceKey)){
-            <li>@msgs(s"client-complete.multi.p1.$key")</li>
-        }
-        </ul>
+        @p(msgs(s"client-complete.multi.p1.head", config.agencyName))
+        @ul(items = config.consents.filter(_.consent == true).map("client-complete.multi.p1." +  _.serviceKey)))
     }
 
-    <h2>@msgs("client-complete.sub-header")</h2>
+    @h2("client-complete.sub-header")
 
-    <p>@Html(msgs("client-complete.whatHappensNext.p1", externalUrls.agentClientManagementUrl))</p>
+    @p(html = Some(Html(msgs("client-complete.whatHappensNext.p1", externalUrls.agentClientManagementUrl))))
 
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@msgs("client-complete.whatHappensNext.l1")</li>
-        <li>@msgs("client-complete.whatHappensNext.l2")</li>
-    </ul>
+    @ul(items = Seq(
+        "client-complete.whatHappensNext.l1",
+        "client-complete.whatHappensNext.l2",
+    ))
 
     @if(config.consents.count(_.consent == false) > 0) {
         <p>@msgs("client-complete.multi.fail", config.agencyName, if(config.consents.count(_.consent == false) == 1){
@@ -92,7 +92,10 @@ scriptElem = Some(gtmScript)
         })</p>
     }
 
-    <p class="govuk-body-s govuk-!-margin-bottom-9">
-        <a href=@externalUrls.signOutUrl(false, None)>@msgs("finish.button")</a>
-    </p>
+    @p( classes= Some("govuk-!-margin-bottom-9"),
+        html= Some(Html(
+            a(key = "finish.button",
+            href = externalUrls.signOutUrl(false, None)) + "")
+        )
+    )
 }

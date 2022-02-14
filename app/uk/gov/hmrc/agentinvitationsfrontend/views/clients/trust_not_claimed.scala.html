@@ -15,31 +15,24 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, a:a, p:p, h1:h1)
 
 @(backLink: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs(s"trust-not-claimed.header"), msgs("service.name.clients")),
-isAgent = false,
-backLinkHref = Some(backLink.url)
+  bannerTitle = "service.name.clients",
+  title = msgs("generic.title", msgs(s"trust-not-claimed.header"), msgs("service.name.clients")),
+  isAgent = false,
+  backLinkHref = Some(backLink.url)
 ) {
 
- <h1 class="govuk-heading-xl">@msgs("trust-not-claimed.header")</h1>
-
- <p>@msgs("trust-not-claimed.client.p1")</p>
-
- <p>@msgs("trust-not-claimed.client.p2")</p>
-
- @linkStyledAsButton(
-  href = externalUrls.companyAuthFrontendSignOutUrl,
-  messageKey = "finish.button"
- )
+    @h1("trust-not-claimed.header")
+    @p("trust-not-claimed.client.p1")
+    @p("trust-not-claimed.client.p2")
+    @a(key = "finish.button", href = externalUrls.companyAuthFrontendSignOutUrl)
 
 }

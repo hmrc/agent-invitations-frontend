@@ -1113,7 +1113,8 @@ error.cannot-view-request.client-type.personal=materion treth personol
 
 #No Outstanding Requests
 no-outstanding-requests.heading=Nid oes unrhyw geisiadau am awdurdodiad dros ben i chi ymateb iddynt
-no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i   
+no-outstanding-requests.link=fwrw golwg dros hanes eich ceisiadau
 
 #Request Expired
 request-expired.header=Mae’r cais am awdurdodiad hwn wedi dod i ben

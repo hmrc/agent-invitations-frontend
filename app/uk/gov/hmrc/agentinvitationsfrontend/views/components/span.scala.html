@@ -17,12 +17,12 @@
 @this()
 
 @(
-  key: String,
-  size:String = "m",
-  classes: Option[String] = None,
-  id: Option[String] = None
+   key: String = "",
+   html: Option[Html] = None,
+   classes: Option[String] = None,
+   id: Option[String] = None
 )(implicit msgs: Messages)
 
-@cls = @{s"govuk-heading-$size ".concat(classes.getOrElse(""))}
+ @cls = @{if(classes.isDefined) classes.get.concat(" govuk-body") else "govuk-body"}
 
-<h2 class ="@cls" @id.map(i => { s"id =${i}"})>@msgs(key)</h2>
+ <span class ="@cls" @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</span>

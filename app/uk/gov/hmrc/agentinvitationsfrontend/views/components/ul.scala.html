@@ -16,13 +16,10 @@
 
 @this()
 
-@(
-  key: String,
-  size:String = "m",
-  classes: Option[String] = None,
-  id: Option[String] = None
-)(implicit msgs: Messages)
+@(items: Seq[String])(implicit msgs: Messages)
 
-@cls = @{s"govuk-heading-$size ".concat(classes.getOrElse(""))}
-
-<h2 class ="@cls" @id.map(i => { s"id =${i}"})>@msgs(key)</h2>
+<ul class="govuk-list govuk-list--bullet">
+ @for(str <- items) {
+ <li class="govuk-list--item">@msgs(str)</li>
+}
+</ul>

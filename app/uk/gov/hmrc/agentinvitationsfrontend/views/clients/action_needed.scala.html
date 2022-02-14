@@ -15,34 +15,41 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukDetails, Details, HtmlContent, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Details, GovukDetails, HtmlContent, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
     mainTemplate: MainTemplate,
-    linkStyledAsButton: LinkStyledAsButton,
-    govukDetails: GovukDetails
+    h1:h1,
+    a:a,
+    p:p,
+    govukDetails: GovukDetails,
 )
 
 @(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
-<p>@msgs("action-needed.details.p1", msgs("action-needed.vat.link-text"))</p>
-<p>@Html(msgs("action-needed.details.p2", Html(msgs("action-needed.details.link", externalUrls.guidanceUrlVatExisting, msgs("action-needed.vat.link-text" )))))</p>
+@p(msgs("action-needed.details.p1", msgs("action-needed.vat.link-text")))
+@p(html = Some(Html(
+    msgs("action-needed.details.p2",
+    Html(msgs("action-needed.details.link", externalUrls.guidanceUrlVatExisting, msgs("action-needed.vat.link-text" )))))
+    )
+)
 }
 
 @personalClientContent = {
-<p>@msgs("action-needed.details.p1", msgs("action-needed.itsa.link-text"))</p>
-<p>@Html(msgs("action-needed.details.p2", Html(msgs("action-needed.details.link", externalUrls.guidanceUrlSaNew, msgs("action-needed.itsa.link-text")))))</p>
+    @p(msgs("action-needed.details.p1", msgs("action-needed.itsa.link-text")))
+    @p(html= Some(Html(msgs("action-needed.details.p2", Html(msgs("action-needed.details.link", externalUrls
+            .guidanceUrlSaNew,
+            msgs("action-needed.itsa.link-text")))))))
 }
 
 @otherClientContent = {
-<p>@msgs("action-needed.details.ters.p1")</p>
-<p>@msgs("action-needed.details.ters.p2")</p>
+    @p("action-needed.details.ters.p1")
+    @p("action-needed.details.ters.p2")
 }
 
 @mainTemplate(
@@ -50,7 +57,7 @@ bannerTitle = "service.name.clients",
 title = msgs("generic.title", msgs("action-needed.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("action-needed.header")</h1>
+     @h1("action-needed.header")
 
     @govukDetails(Details(
         summary = Text(msgs("action-needed.summary", msgs("action-needed.vat"))),
@@ -70,13 +77,9 @@ isAgent = false) {
             summary = Text(msgs("action-needed.summary", msgs("action-needed.ters"))),
             content = HtmlContent(s"$otherClientContent")
         ))
-
     }
 
-    @linkStyledAsButton(
-        id = "start-again",
-        href = externalUrls.signOutUrl(false, Some(false)),
-        messageKey = "finish.button"
-    )
-
+    @a(key = "finish.button",
+        id = Some("start-again"),
+        href = externalUrls.signOutUrl(false, None))
 }
