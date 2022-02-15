@@ -535,7 +535,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           } yield {
             mCustomerName match {
               case Some(customerName) => ConfirmClientPpt(originalFastTrackRequest, fastTrackRequest, continueUrl, customerName)
-              case None               => PptRefNotFound(PptRef(fastTrackRequest.clientIdentifier))
+              case None               => PptRefNotFound(originalFastTrackRequest, fastTrackRequest, continueUrl)
             }
           }
       }
