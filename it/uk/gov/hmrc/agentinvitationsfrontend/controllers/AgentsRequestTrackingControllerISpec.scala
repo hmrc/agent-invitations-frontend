@@ -45,7 +45,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   private def displayDate(dt: LocalDate): String =
     dt.toString(fmt)
 
-  def nowMinus(d: Int) = DateTime.now().minusDays(d)
+  def nowMinus(d: Int): DateTime = DateTime.now().minusDays(d)
 
   "GET /track/" should {
 
@@ -492,6 +492,14 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           arn.value))
 
       status(result) shouldBe 200
+
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      val trackLink = html.select("a[href='/invitations/track']")
+      trackLink.text() shouldBe "Manage your recent authorisation requests"
+      trackLink.hasClass("govuk-link")
+
       checkHtmlResultWithBodyText(
         result,
         "Authorisation request cancelled",
