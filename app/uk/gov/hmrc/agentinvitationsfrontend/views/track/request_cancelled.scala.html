@@ -46,7 +46,8 @@
     </div>
 
     <div class="govuk-!-margin-bottom-6">
-        @a(href="@routes.AgentsRequestTrackingController.showTrackRequests()",
+        @a(
+            href=routes.AgentsRequestTrackingController.showTrackRequests().url,
             key="request-cancelled.track.link",
             classes= Some("govuk-!-margin-bottom-6")
         )
