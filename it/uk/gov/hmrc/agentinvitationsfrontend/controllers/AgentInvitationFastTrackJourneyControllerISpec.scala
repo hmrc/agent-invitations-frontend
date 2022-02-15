@@ -9,7 +9,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, TAXABLETRUST, TRUST}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCCGTPD, HMRCMTDIT, HMRCMTDVAT, HMRCPIR, HMRCPPTORG, TAXABLETRUST, TRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
@@ -286,6 +286,23 @@ class AgentInvitationFastTrackJourneyControllerISpec
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended().url)
     }
 
+    "redirect to check details when service is PPT" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-PPT-ORG",
+            "clientIdentifierType" -> "EtmpRegistrationNumber",
+            "clientIdentifier"     -> pptRef.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
     "redirect to check details when service is ITSA with no postcode" in {
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
@@ -347,6 +364,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-MTD-VAT",
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> vrn),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url)
+    }
+
+    "redirect to check details when service is CGT with no client type or postcode" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "service"              -> "HMRC-CGT-PD",
+            "clientIdentifierType" -> "CGTPDRef",
+            "clientIdentifier"     -> cgtRef.value),
           arn.value
         ))
       status(result) shouldBe 303
@@ -590,6 +623,21 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.client-type.personal")
     }
 
+    "show the check-details page for personal PPT service" in {
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+      journeyState
+        .set(CheckDetailsCompletePpt(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "check-details.heading",
+        "check-details.p.HMRC-PPT-ORG",
+        "check-details.client-type.personal")
+    }
+
     "show the check-details page for ITSA client with no postcode" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", None)
       journeyState.set(CheckDetailsNoPostcode(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
@@ -746,6 +794,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
     }
+
+    "redirect to /identify-client for a PPT service" in {
+      val ftr = AgentFastTrackRequest(Some(Business), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+      journeyState.set(
+        CheckDetailsCompletePpt(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None),
+        List(Prologue(None, None)))
+
+      val result = controller.submitCheckDetails(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient().url)
+    }
   }
 
   "POST /agents/to-known-fact" should {
@@ -809,6 +870,18 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode().url)
+    }
+
+    "redirect to /agents/track/ppt-registration-date for a PPT client" in {
+      givenGetPptSubscriptionReturns(pptRef, 200, pptSubscriptionSuccessBodyJson(pptRef, LocalDate.parse("2019-10-10")))
+      val ftr = AgentFastTrackRequest(Some(Personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+      journeyState.set(CheckDetailsCompletePpt(originalFastTrackRequest = ftr, fastTrackRequest = ftr, None), List())
+
+      val result = controller.progressToKnownFact(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate().url)
     }
   }
 
@@ -909,6 +982,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result.futureValue, "identify-cgt-client.header", "identify-cgt-client.p1", "identify-cgt-client.hint")
+    }
+
+    "show the client-details page for PPT" in {
+      val ftr = AgentFastTrackRequest(Some(Business), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, None)
+      journeyState.set(
+        IdentifyPptClient(ftr, ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-ppt-client.header", "identify-ppt-client.p1", "identify-ppt-client.hint")
     }
 
     "show the client-details page when there is no client type for VAT" in {
@@ -1160,6 +1246,34 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "POST /agents/client-details-ppt" should {
+    val request = FakeRequest("POST", "/agents/fast-track/identify-ppt-client")
+    "redirect to invitation-sent" in {
+      givenPptCheckKnownFactReturns(PptClient(pptRef,pptDefaultRegDate.toString), 200)
+      givenGetPptCustomerName(pptRef, "a ppt customer")
+        val ftr = AgentFastTrackRequest(Some(Personal), HMRCPPTORG, "EtmpRegistrationNumber", pptRef.value, Some(pptDefaultRegDate.toString))
+        journeyState.set(
+          IdentifyPptClient(ftr, ftr, None),
+          List(
+            CheckDetailsCompletePpt(ftr, ftr, None),
+            Prologue(None, None)
+          )
+        )
+        val result = controller.submitIdentifyPptClient(
+          authorisedAsValidAgent(
+            request.withFormUrlEncodedBody(
+              "pptRef" -> "XAPPT0000012345",
+              "registrationDate.year" -> "2021",
+              "registrationDate.month" -> "01",
+              "registrationDate.day" -> "01"),
+            arn.value))
+
+        status(result) shouldBe 303
+        Helpers.redirectLocation(result) shouldBe Some(
+          routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt().url)
+    }
+  }
+
 
   "POST /agents/client-details-cgt" should {
     val request = FakeRequest("POST", "/agents/client-details-cgt")
@@ -1201,7 +1315,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
 
-      val result = controller.submitClientTypeCgt(
+      val result = controller.submitClientType(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
@@ -1223,7 +1337,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
 
-      val result = controller.submitClientTypeCgt(
+      val result = controller.submitClientType(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
@@ -2006,6 +2120,24 @@ class AgentInvitationFastTrackJourneyControllerISpec
       "CGTPDRef",
       HMRCCGTPD,
       "CGTPDRef")
+    givenAgentReferenceRecordExistsForArn(arn, "FOO")
+    givenAgentReference(arn, "uid", Business)
+    givenGetAgencyEmailAgentStub
+  }
+
+  class PPTHappyScenario {
+    givenGetAllPendingInvitationsReturnsEmpty(arn, pptRef.value, HMRCPPTORG)
+    givenGetPptSubscriptionReturns(pptRef, 200, Json.toJson(pptSubscriptionSuccessBodyJson(pptRef,pptDefaultRegDate)).toString())
+    givenCheckRelationshipPptWithStatus(arn, pptRef.value, 404)
+    givenInvitationCreationSucceeds(
+      arn,
+      Some(Business),
+      pptRef.value,
+      invitationIdPpt,
+      pptRef.value,
+      "EtmpRegistrationNumber",
+      HMRCPPTORG,
+      "EtmpRegistrationNumber")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", Business)
     givenGetAgencyEmailAgentStub

@@ -190,6 +190,15 @@ trait ACRStubs {
     )
   }
 
+  def givenCheckRelationshipPptWithStatus(arn: Arn, pptRef: String, status: Int) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-PPT-ORG/client/EtmpRegistrationNumber/$pptRef"))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
   def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: String, status: Int) = {
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"))
