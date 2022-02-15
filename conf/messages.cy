@@ -1060,10 +1060,10 @@ cancel-auth-problem.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 cancel-auth-problem.p=Ni chafodd yr awdurdodiad ei ganslo. Rhowch gynnig arall arni.
 
 #Pending authorisation already exists
-pending-authorisation-exists.header=You already created an authorisation request for this tax service
-pending-authorisation-exists.p=You cannot continue until {0} has accepted the authorisation request link.
-pending-authorisation-exists.p2=Resend the authorisation request link that was created when you originally asked {0} to authorise you:
-pending-authorisation-exists.h2=What you can do next
+pending-authorisation-exists.header=Rydych eisoes wedi creu cais am awdurdodiad ar gyfer y gwasanaeth treth hwn
+pending-authorisation-exists.p=Ni allwch fynd yn eich blaen hyd nes bod {0} wedi derbyn y cysylltiad at y cais am awdurdodiad.
+pending-authorisation-exists.p2=Ail-anfonwch y cysylltiad at y cais am awdurdodiad a grëwyd pan wnaethoch ofyn i {0} eich awdurdodi yn y lle cyntaf:
+pending-authorisation-exists.h2=Yr hyn y gallwch ei wneud nesaf
 pending-authorisation-exists.button=Dychwelyd i’ch ceisiadau am awdurdodiad
 pending-authorisation-exists.track.button=Rheoli eich ceisiadau am awdurdodiad
 
@@ -1116,7 +1116,8 @@ error.cannot-view-request.client-type.personal=materion treth personol
 
 #No Outstanding Requests
 no-outstanding-requests.heading=Nid oes unrhyw geisiadau am awdurdodiad dros ben i chi ymateb iddynt
-no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i <a href="{0}">fwrw golwg dros hanes eich ceisiadau</a>
+no-outstanding-requests.p=Os ydych o’r farn bod hyn yn anghywir, cysylltwch â’r asiant a anfonodd y cais atoch neu ewch ati i   
+no-outstanding-requests.link=fwrw golwg dros hanes eich ceisiadau
 
 #Request Expired
 request-expired.header=Mae’r cais am awdurdodiad hwn wedi dod i ben

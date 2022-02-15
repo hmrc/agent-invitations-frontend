@@ -27,11 +27,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(
-    mainTemplate: MainTemplate,
-    govukPanel: GovukPanel,
-    linkStyledAsButton: LinkStyledAsButton
-)
+@this(mainTemplate: MainTemplate, govukPanel: GovukPanel, a:a, p:p, h1:h1, h2:h2,ul:ul)
 
 @(
     service: String,
@@ -66,22 +62,24 @@ scriptElem = Some(gtmScript)
          content = HtmlContent(s"$panelContent")
      ))
 
-    <h2>@msgs("authorisation-cancelled.subheader")</h2>
-    <p>@Html(msgs(s"authorisation-cancelled.p1.$service", clientName))</p>
+    @h2("authorisation-cancelled.subheader")
+    @p(msgs(s"authorisation-cancelled.p1.$service", clientName))
 
     @if(service=="HMRC-MTD-IT") {
-    <h2>@msgs("authorisation-cancelled.check-sa.subheader")</h2>
+        @h2("authorisation-cancelled.check-sa.subheader")
 
-    <p>@msgs("authorisation-cancelled.check-sa.p1")</p>
-    <ul class="govuk-list govuk-list--bullet govuk-body">
-        <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
-        <li>
-        <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
-        </li>
-        <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
-    </ul>
+        @p("authorisation-cancelled.check-sa.p1")
+
+        <ul class="govuk-list govuk-list--bullet govuk-body">
+            <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
+            <li>
+                <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
+            </li>
+            <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
+        </ul>
     }
 
-    @linkStyledAsButton(href = routes.AgentsRequestTrackingController.showTrackRequests().url, messageKey = "authorisation-cancelled.track.button")
+    @a(href=routes.AgentsRequestTrackingController.showTrackRequests().url,
+        key="authorisation-cancelled.track.button")
 
 }

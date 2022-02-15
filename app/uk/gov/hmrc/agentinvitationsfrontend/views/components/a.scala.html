@@ -17,12 +17,14 @@
 @this()
 
 @(
-  key: String,
-  size:String = "m",
-  classes: Option[String] = None,
-  id: Option[String] = None
-)(implicit msgs: Messages)
+    key: String,
+    href: String,
+    classes: Option[String] = None,
+    id: Option[String] = None,
+    attrs: Map[String, String] = Map.empty
+ )(implicit msgs: Messages)
 
-@cls = @{s"govuk-heading-$size ".concat(classes.getOrElse(""))}
+@cls = @{"govuk-link govuk-body ".concat(classes.getOrElse(""))}
 
-<h2 class ="@cls" @id.map(i => { s"id =${i}"})>@msgs(key)</h2>
+<a href ="@href" class ="@cls"@id.map(i => s"id =$i")
+    @attrs.map(a => a._1 + "=" + a._2)>@Html(msgs(key))</a>

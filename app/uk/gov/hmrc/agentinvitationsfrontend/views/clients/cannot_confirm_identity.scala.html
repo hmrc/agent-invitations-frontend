@@ -21,23 +21,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1:h1, p:p)
 
 @(titleKey: Option[String] = None, html: Option[Html] = None)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs(titleKey.getOrElse("cannot-confirm-identity.header")), msgs("service.name.clients")),
-isAgent = false) {
+ bannerTitle = "service.name.clients",isAgent = false,
+ title = msgs("generic.title", msgs(titleKey.getOrElse("cannot-confirm-identity.header")), msgs("service.name.clients"))) {
 
  @if(html.isDefined) {
      @html.get
  } else {
-  <h1 class="govuk-heading-xl">@msgs("cannot-confirm-identity.header")</h1>
-
-  <p>@msgs("cannot-confirm-identity.p1")</p>
-
-  <p>@msgs("cannot-confirm-identity.p2")</p>
+  @h1("cannot-confirm-identity.header")
+  @p("cannot-confirm-identity.p1")
+  @p("cannot-confirm-identity.p2")
 
   @linkStyledAsButton(
    id="tryAgainButton",

@@ -749,6 +749,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         ))
 
       status(result) shouldBe 200
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
       checkHtmlResultWithBodyText(
         result,
         "Authorisation cancelled",
@@ -759,9 +761,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "sign out of this agent services account",
         "follow the instructions for deleting the client from your client list"
       )
-      checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", "sign in to your HMRC online services for agents account")
-      checkResultContainsLink(result, "/invitations/track", "Return to manage your recent authorisation requests",
-        roleIsButton = true)
+
+      html.select("a[href='https://www.gov.uk/guidance/self-assessment-for-agents-online-service']").text() shouldBe "sign in to your HMRC online services for agents account"
+      html.select("a[href='/invitations/track']").text() shouldBe "Return to manage your recent authorisation requests"
     }
 
     "render a authorisation cancelled page for IRV" in {

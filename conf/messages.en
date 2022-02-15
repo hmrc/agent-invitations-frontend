@@ -1116,7 +1116,8 @@ error.cannot-view-request.client-type.personal=personal tax affairs
 
 #No Outstanding Requests
 no-outstanding-requests.heading=There are no outstanding authorisation requests for you to respond to
-no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or <a href="{0}">view your request history</a>
+no-outstanding-requests.p=If you think this is wrong, contact the agent who sent you the request or  
+no-outstanding-requests.link=view your request history
 
 #Request Expired
 request-expired.header=This authorisation request has expired

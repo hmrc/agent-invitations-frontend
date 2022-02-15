@@ -24,9 +24,13 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
-@this(mainTemplate: MainTemplate,
-linkStyledAsButton: LinkStyledAsButton,
-govukPanel: GovukPanel)
+@this(
+    mainTemplate: MainTemplate,
+    p:p,
+    a:a,
+    h2:h2,
+    govukPanel: GovukPanel,
+)
 
 @(config: InvitationDeclinedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -53,14 +57,12 @@ govukPanel: GovukPanel)
             </ul>
         }
 
-        @linkStyledAsButton(
-            submitClass = Some("govuk-!-margin-top-4 govuk-!-margin-bottom-4"),
-            id= "continue",
-            href = externalUrls.signOutUrl(false, None),
-            messageKey = "finish.button"
-        )
+    @h2("invitation-declined.sub-header", size="s")
+    @p("invitation-declined.p3")
 
-        <h2 class="govuk-heading-s">@msgs("invitation-declined.sub-header")</h2>
-
-        <p>@msgs("invitation-declined.p3")</p>
+    <p class="govuk-!-margin-top-4 govuk-!-margin-bottom-6">
+        @a(key = "finish.button",
+            id = Some("continue"),
+            href = externalUrls.signOutUrl(false, None))
+    </p>
 }

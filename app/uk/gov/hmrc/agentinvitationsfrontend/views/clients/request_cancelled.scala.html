@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, p:p, a:a, h1:h1)
 
 @(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -29,12 +29,8 @@ bannerTitle = "service.name.clients",
 title = msgs(s"generic.title", msgs("client-request-cancelled.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("client-request-cancelled.header")</h1>
+    @h1("client-request-cancelled.header")
+    @p("client-request-cancelled.p")
+    @a(key = "finish.button", href = externalUrls.signOutUrl(false, None))
 
-    <p>@msgs("client-request-cancelled.p")</p>
-
-    @linkStyledAsButton(
-        href = externalUrls.signOutUrl(false, Some(false)),
-        messageKey = "finish.button"
-    )
 }
