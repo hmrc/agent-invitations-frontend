@@ -8,6 +8,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Flash
 import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
@@ -35,7 +36,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
+  private val availableTrustServices = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
@@ -218,7 +219,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result.futureValue,
-        htmlEscapedMessage("select-single-service.TRUST.business.header"),
+        htmlEscapedMessage("select-single-service.HMRC-TERS-ORG.business.header"),
         htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("global.no")
       )
@@ -355,13 +356,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.set(SelectTrustService(availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(TRUST)(
+      val result = controller.submitTrustSelectSingle(TAXABLETRUST)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
 
-     journeyState.get should have[State](IdentifyClient(Trust, TRUST, emptyBasket),
+     journeyState.get should have[State](IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
     }
@@ -474,7 +475,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the identify client page for TRUST service" in {
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
@@ -494,7 +495,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyText(result.futureValue, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
 
       journeyState.get should have[State](
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))

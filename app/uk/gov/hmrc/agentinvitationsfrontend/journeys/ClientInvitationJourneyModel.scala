@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.joda.time.DateTime
 import play.api.Logging
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
@@ -285,14 +286,14 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                             consents.map(consent => consent.service).toSet
                           val nonSuspendedConsents =
                             consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
-                          if (suspensionDetails.isAgentSuspended(consentServices))
+                          if (suspensionDetails.isAnyRegimeSuspendedForServices(consentServices))
                             goto(
                               SuspendedAgent(
                                 clientType,
                                 uid,
                                 agentName,
                                 arn,
-                                suspensionDetails.getSuspendedRegimes(consentServices),
+                                suspensionDetails.suspendedRegimesForServices(consentServices),
                                 nonSuspendedConsents))
                           else {
                             goto(idealTargetState(clientType, uid, agentName, arn, nonSuspendedConsents))

@@ -151,7 +151,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case SelectServiceTrust(enabledServices) =>
           if (enabledServices.contains(service)) {
             service match {
-              case TRUST =>
+              case TAXABLETRUST =>
                 if (showTrustFlag) goto(IdentifyClientTrust)
                 else fail(new Exception(s"Service: $service feature flag is switched off"))
 

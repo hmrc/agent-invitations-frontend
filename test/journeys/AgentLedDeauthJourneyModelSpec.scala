@@ -216,9 +216,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state SelectServiceTrust" should {
-      "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
-          authorisedAgent)(TRUST) should thenGo(IdentifyClientTrust)
+      "transition to IdentifyClientTrust for TAXABLETRUST and when feature flag is on" in {
+        given(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
+          authorisedAgent)(TAXABLETRUST) should thenGo(IdentifyClientTrust)
       }
 
       "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
@@ -228,9 +228,11 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
       "throw an exception when YES is selected but the show trust flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = false, showCgtFlag = true, showPptFlag = true)(
-            authorisedAgent)(TRUST)
-        }.getMessage shouldBe "Service: TRUST feature flag is switched off"
+          given(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))) when chosenTrustService(
+            showTrustFlag = false,
+            showCgtFlag = true,
+            showPptFlag = true)(authorisedAgent)(TAXABLETRUST)
+        }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
       }
     }
 
