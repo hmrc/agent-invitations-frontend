@@ -54,7 +54,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
   private val availableTrustServices = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
-  private val nonAllowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val mockAppConfig = mock(classOf[AppConfig])
 
   def makeBasket(services: Set[String]) = services.map {
@@ -1153,7 +1152,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           clientConfirmed(showCgtFlag = false)(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(hasNoPendingInvitation)(
             hasNoActiveRelationship)(hasNoPartialAuthorisation)(legacySaRelationshipStatusNotFound)(mockAppConfig)(authorisedAgent)(Confirmation(
             false)) should
-          thenGo(IdentifyClient(Trust, TRUST, emptyBasket))
+          thenGo(IdentifyClient(Trust, TAXABLETRUST, emptyBasket))
       }
 
       "transition to InvitationSentBusiness with taxable trust" in {
