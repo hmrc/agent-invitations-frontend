@@ -845,7 +845,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -862,7 +862,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyClient(Trust, TRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -872,7 +872,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, Json.toJson(trustResponse).toString())
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -889,7 +889,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           case ConfirmClientTrust(AuthorisationRequest("some-trust", TrustNTInvitation(_, _, _, _), _, _), _) =>
         },
         List(
-          IdentifyClient(Trust, TRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -927,7 +927,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -942,7 +942,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
-        List(IdentifyClient(Trust, TRUST, emptyBasket),
+        List(IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -952,7 +952,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -967,7 +967,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
-        List(IdentifyClient(Trust, TRUST, emptyBasket),
+        List(IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -978,7 +978,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUtr, 200, invalidTrustJson)
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -994,7 +994,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
         List(
-          IdentifyClient(Trust, TRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
@@ -1005,7 +1005,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenTrustClientReturns(validUrn, 200, invalidTrustJson)
 
       journeyState.set(
-        IdentifyClient(Trust, TRUST, emptyBasket),
+        IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
         List(SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket)))
 
@@ -1021,7 +1021,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         TrustNotFound(emptyBasket),
         List(
-          IdentifyClient(Trust, TRUST, emptyBasket),
+          IdentifyClient(Trust, TAXABLETRUST, emptyBasket),
           SelectTrustService(availableTrustServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
