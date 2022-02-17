@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR, _}
@@ -225,9 +226,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
           } else if (services.contains(service)) {
             val flag = service match {
-              case TRUST      => showTrustsFlag
-              case HMRCCGTPD  => showCgtFlag
-              case HMRCPPTORG => showPptFlag
+              case TAXABLETRUST => showTrustsFlag
+              case HMRCCGTPD    => showCgtFlag
+              case HMRCPPTORG   => showPptFlag
             }
             gotoIdentify(
               flag,

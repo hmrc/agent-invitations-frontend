@@ -487,7 +487,7 @@ class AgentInvitationJourneyController @Inject()(
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Trust)), config))
         }
 
-      case IdentifyClient(Trust, Services.TRUST, _) =>
+      case IdentifyClient(Trust, Services.TAXABLETRUST, _) =>
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),

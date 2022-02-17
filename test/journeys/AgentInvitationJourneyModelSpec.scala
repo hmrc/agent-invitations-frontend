@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import org.mockito.Mockito.{mock, when}
 import play.api.test.Helpers._
 import support.UnitSpec
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{start => _, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
@@ -52,7 +53,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"))
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
-  private val availableTrustServices = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
+  private val availableTrustServices = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
   private val nonAllowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val mockAppConfig = mock(classOf[AppConfig])
 
@@ -339,8 +340,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)(TRUST) should
-          thenGo(IdentifyClient(Trust, TRUST, emptyBasket))
+          selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)(TAXABLETRUST) should
+          thenGo(IdentifyClient(Trust, TAXABLETRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
@@ -365,11 +366,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to AgentSuspended if the agent is suspended for the selected service" in {
-        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("TRS"))))
+        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
-          selectedTrustService(true, true, true, true, suspendedForTrust)(agent = authorisedAgent)(TRUST) should
-          thenGo(AgentSuspended(TRUST, emptyBasket))
+          selectedTrustService(true, true, true, true, suspendedForTrust)(agent = authorisedAgent)(TAXABLETRUST) should
+          thenGo(AgentSuspended(TAXABLETRUST, emptyBasket))
       }
     }
 

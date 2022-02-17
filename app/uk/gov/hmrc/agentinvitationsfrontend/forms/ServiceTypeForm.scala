@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServicesWithAnyTrust
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.normalizedText
 
 object ServiceTypeForm {
@@ -30,7 +30,7 @@ object ServiceTypeForm {
     Form[String](
       single(
         "serviceType" -> optional(text)
-          .verifying("service.type.invalid", serviceOpt => supportedServicesWithAnyTrust.contains(serviceOpt.getOrElse("")))
+          .verifying("service.type.invalid", serviceOpt => supportedServices.contains(serviceOpt.getOrElse("")))
           .transform(_.getOrElse(""), (Some(_)): String => Option[String])
       )
     )
@@ -43,7 +43,7 @@ object ServiceTypeForm {
     val UNDEF = "undefined"
 
     def serviceValidator(errorMessageKey: String): Constraint[String] = Constraint[String] { service: String =>
-      if (service.isEmpty || supportedServicesWithAnyTrust.contains(service))
+      if (service.isEmpty || supportedServices.contains(service))
         Valid
       else
         Invalid(ValidationError(errorMessageKey))

@@ -24,5 +24,5 @@ case class AuthorisedAgent(arn: Arn) {
 
   val businessServices: Set[String] = Set(HMRCMTDVAT, HMRCPPTORG)
 
-  val trustServices: Set[String] = Set(TRUST, HMRCCGTPD, HMRCPPTORG)
+  val trustServices: Set[String] = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
 }

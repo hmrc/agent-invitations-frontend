@@ -4,8 +4,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.joda.time.{DateTime, DateTimeZone, LocalDate}
 import play.api.libs.json.Json
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient, StoredInvitation, SuspensionDetails}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino

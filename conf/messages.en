@@ -100,7 +100,7 @@ service.type.invalid=Select what you want the client to authorise you to do
 select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
 select-service.HMRC-MTD-IT.personal=Manage their Making Tax Digital for Income Tax
 select-service.HMRC-MTD-VAT.personal=Manage their VAT
-select-service.TRUST.business=Maintain their trust or an estate
+select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
 
 select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
 select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
@@ -127,8 +127,8 @@ select-single-service.HMRC-MTD-VAT.trust.header=Do you want to manage this clien
 select-single-service.HMRC-MTD-VAT.trust.error=Select yes if you want to submit this client’s VAT
 
 # Note: trusts are internally treated as "business" client type
-select-single-service.TRUST.business.header=Do you want to maintain a trust or an estate for this client?
-select-single-service.TRUST.business.error=Select yes if you want to maintain a trust or an estate for this client
+select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
+select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client’s PAYE income record?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client’s PAYE income record
@@ -160,7 +160,6 @@ agent-suspended.p1.HMRC-MTD-IT=manage their Making Tax Digital for Income Tax
 agent-suspended.p1.HMRC-MTD-VAT=manage their VAT
 agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
 agent-suspended.p1.HMRC-TERSNT-ORG=maintain their trust or estate
-agent-suspended.p1.TRUST=maintain their trust or estate
 agent-suspended.p1.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account
 agent-suspended.p1.HMRC-PPT-ORG=manage their Plastic Packaging Tax
 agent-suspended.p2.single=You can start a new authorisation request for a different service.

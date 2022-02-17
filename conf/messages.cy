@@ -100,7 +100,7 @@ service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’
 select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
 select-service.HMRC-MTD-IT.personal=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
-select-service.TRUST.business=Cynnal ei ymddiriedolaeth neu ystâd
+select-service.HMRC-TERS-ORG.business=Cynnal ei ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
@@ -127,8 +127,8 @@ select-single-service.HMRC-MTD-VAT.trust.header=A ydych am reoli TAW y cleient h
 select-single-service.HMRC-MTD-VAT.trust.error=Dewiswch ‘Iawn’ os ydych am gyflwyno TAW y cleient hwn
 
 # Note: trusts are internally treated as "business" client type
-select-single-service.TRUST.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
-select-single-service.TRUST.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
+select-single-service.HMRC-TERS-ORG.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
+select-single-service.HMRC-TERS-ORG.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn
@@ -160,7 +160,6 @@ agent-suspended.p1.HMRC-MTD-IT=rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer 
 agent-suspended.p1.HMRC-MTD-VAT=cyflwyno ei Ffurflenni TAW drwy feddalwedd
 agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
-agent-suspended.p1.TRUST=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 agent-suspended.p1.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.

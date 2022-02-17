@@ -33,7 +33,6 @@ object Services {
   val TRUST = "TRUST"
   val HMRCPPTORG = "HMRC-PPT-ORG"
 
-  val supportedServicesWithAnyTrust = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD, HMRCPPTORG)
   val supportedServices = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn", "EtmpRegistrationNumber")
   val supportedEnrolmentKeys = Set(HMRCMTDIT, HMRCNI, HMRCMTDVAT, TAXABLETRUST, NONTAXABLETRUST, HMRCCGTPD)

@@ -221,12 +221,12 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/select-trust-service" should {
     "redirect to identify trust client when trust is selected" in {
-      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      journeyState.set(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =
         controller.submitTrustService(
-          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "TRUST"), arn.value))
+          authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url

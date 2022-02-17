@@ -30,6 +30,7 @@ import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

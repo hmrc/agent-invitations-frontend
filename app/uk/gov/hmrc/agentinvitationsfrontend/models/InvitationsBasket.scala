@@ -66,7 +66,7 @@ class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags
     val seq = collection.mutable.ArrayBuffer[(String, String)]()
 
     if (showServiceTrust) {
-      seq.append(TRUST -> Messages("select-service.TRUST.business"))
+      seq.append(TAXABLETRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
     }
 
     if (showServiceCgt)
