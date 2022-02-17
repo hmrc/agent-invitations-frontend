@@ -243,7 +243,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyClient(Trust, TRUST, basket) =>
+        case IdentifyClient(Trust, TAXABLETRUST, basket) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) => {
