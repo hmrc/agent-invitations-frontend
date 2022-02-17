@@ -676,7 +676,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                            }
                        }
             } yield result
-        } else goto(IdentifyClient(Trust, TRUST, basket))
+        } else goto(IdentifyClient(Trust, TAXABLETRUST, basket))
 
       case ConfirmClientPpt(request, basket) => {
         val (reviewAuthState, state, clientType) = request.invitation.clientType match {
