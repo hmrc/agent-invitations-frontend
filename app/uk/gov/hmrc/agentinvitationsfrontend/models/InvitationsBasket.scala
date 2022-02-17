@@ -32,7 +32,7 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
   def availableServices(implicit messages: Messages): Seq[(String, String)]
 
   protected def showServiceTrust: Boolean =
-    featureFlags.showHmrcTrust && serviceAvailableForSelection(TRUST)
+    featureFlags.showHmrcTrust && serviceAvailableForSelection(TAXABLETRUST)
 
   protected def showServiceCgt: Boolean =
     featureFlags.showHmrcCgt && serviceAvailableForSelection(HMRCCGTPD)
@@ -50,7 +50,7 @@ abstract class InvitationsBasket(services: Set[String], basket: Basket, featureF
     featureFlags.showPlasticPackagingTax && serviceAvailableForSelection(HMRCPPTORG)
 
   protected def serviceAvailableForSelection(service: String): Boolean =
-    if (service == TRUST) {
+    if (service == TAXABLETRUST) {
       services.contains(service) && (!basket.exists(_.invitation.service == TAXABLETRUST) && !basket.exists(_.invitation.service == NONTAXABLETRUST))
     } else
       services.contains(service) && !basket.exists(_.invitation.service == service)

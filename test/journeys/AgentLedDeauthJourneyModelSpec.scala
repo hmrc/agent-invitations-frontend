@@ -216,13 +216,13 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state SelectServiceTrust" should {
-      "transition to IdentifyClientTrust for TAXABLETRUST and when feature flag is on" in {
+      "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
         given(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
           authorisedAgent)(TAXABLETRUST) should thenGo(IdentifyClientTrust)
       }
 
       "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
-        given(SelectServiceTrust(Set(TRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
+        given(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))) when chosenTrustService(showTrustFlag = true, showCgtFlag = true, showPptFlag = true)(
           authorisedAgent)(HMRCCGTPD) should thenGo(IdentifyClientCgt)
       }
 
@@ -623,9 +623,11 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         def getAgencyName(arn: Arn) = Future("Popeye")
         def setRelationshipEnded(arn: Arn, client: String, service: String): Future[Option[Boolean]] = Future(Some(true))
 
-        given(ConfirmCancel(TRUST, Some("some-trust"), utr.value)) when cancelConfirmed(deleteRelationship, getAgencyName, setRelationshipEnded)(
-          authorisedAgent)(Confirmation(true)) should thenGo(
-          AuthorisationCancelled(TRUST, Some("some-trust"), "Popeye")
+        given(ConfirmCancel(TAXABLETRUST, Some("some-trust"), utr.value)) when cancelConfirmed(
+          deleteRelationship,
+          getAgencyName,
+          setRelationshipEnded)(authorisedAgent)(Confirmation(true)) should thenGo(
+          AuthorisationCancelled(TAXABLETRUST, Some("some-trust"), "Popeye")
         )
       }
 

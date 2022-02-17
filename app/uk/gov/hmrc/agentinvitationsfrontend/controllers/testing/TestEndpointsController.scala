@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
-import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, optional, text}
 import play.api.i18n.I18nSupport
@@ -35,6 +34,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
