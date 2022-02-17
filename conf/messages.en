@@ -126,7 +126,6 @@ select-single-service.HMRC-MTD-VAT.personal.error=Select yes if you want to subm
 select-single-service.HMRC-MTD-VAT.trust.header=Do you want to manage this client’s VAT?
 select-single-service.HMRC-MTD-VAT.trust.error=Select yes if you want to submit this client’s VAT
 
-# Note: trusts are internally treated as "business" client type
 select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
 select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
 

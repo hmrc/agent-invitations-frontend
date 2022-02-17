@@ -25,7 +25,7 @@ case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: S
   implicit messages: Messages) {
 
   private val serviceDisplayOrdering: Ordering[String] = new Ordering[String] {
-    val correctOrdering = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TRUST, HMRCCGTPD, HMRCPPTORG)
+    val correctOrdering = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
     override def compare(x: String, y: String): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
   }
 
@@ -65,8 +65,8 @@ case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: S
   val enabledTrustServices: Seq[(String, String)] = {
     val map = collection.mutable.Map[String, String]()
 
-    if (featureFlags.showHmrcTrust && services.contains(TRUST))
-      map.update(TRUST, Messages("cancel-authorisation.select-service.trust"))
+    if (featureFlags.showHmrcTrust && services.contains(TAXABLETRUST))
+      map.update(TAXABLETRUST, Messages("cancel-authorisation.select-service.trust"))
 
     if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
       map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))

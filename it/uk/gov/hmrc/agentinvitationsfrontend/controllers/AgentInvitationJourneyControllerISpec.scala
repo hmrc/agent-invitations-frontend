@@ -213,7 +213,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "show the correct service page content for trust clients" in {
-      journeyState.set(SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket)))
+      journeyState.set(SelectTrustService(Set(TAXABLETRUST), emptyBasket), List(SelectClientType(emptyBasket)))
       val result = controller.showSelectService()(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
@@ -223,7 +223,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         htmlEscapedMessage("global.yes"),
         htmlEscapedMessage("global.no")
       )
-      journeyState.get shouldBe Some((SelectTrustService(Set(TRUST), emptyBasket), List(SelectClientType(emptyBasket))))
+      journeyState.get shouldBe Some((SelectTrustService(Set(TAXABLETRUST), emptyBasket), List(SelectClientType(emptyBasket))))
     }
 
     "go back to the select service page" in {

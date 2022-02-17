@@ -157,7 +157,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "show the select service page for trust service" in {
-      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      journeyState.set(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -233,7 +233,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to identify cgt client when cgt is selected" in {
-      journeyState.set(SelectServiceTrust(Set(TRUST, HMRCCGTPD)), Nil)
+      journeyState.set(SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =

@@ -20,7 +20,6 @@ import org.joda.time.LocalDate
 import org.mockito.Mockito.{mock, when}
 import play.api.test.Helpers._
 import support.UnitSpec
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{start => _, _}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
@@ -29,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model._
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, SuspensionDetails, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -54,6 +53,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   private val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val availableBusinessServices = Set(HMRCMTDVAT, HMRCPPTORG)
   private val availableTrustServices = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
+  private val nonAllowlistedServices = Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
   private val mockAppConfig = mock(classOf[AppConfig])
 
   def makeBasket(services: Set[String]) = services.map {
@@ -365,7 +365,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       }
 
       "transition to AgentSuspended if the agent is suspended for the selected service" in {
-        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("TRS"))))
 
         given(SelectTrustService(availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, true, suspendedForTrust)(agent = authorisedAgent)(TAXABLETRUST) should
