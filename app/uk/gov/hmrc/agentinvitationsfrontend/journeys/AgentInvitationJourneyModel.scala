@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
+import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
@@ -91,9 +92,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
   type Basket = Set[AuthorisationRequest]
 
-  object Transitions {
-    val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
-
+  object TransitionEffects {
     type HasPendingInvitations = (Arn, String, String) => Future[Boolean]
     type CreateInvitationSent = (String, String, Arn, Basket) => Future[State]
     type HasActiveRelationship = (Arn, String, String) => Future[Boolean]
@@ -110,6 +109,28 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
+    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
+  }
+
+  import TransitionEffects._
+
+  case class Transitions(
+    getSuspensionDetails: GetSuspensionDetails,
+    hasPendingInvitationsFor: HasPendingInvitations,
+    hasActiveRelationshipFor: HasActiveRelationship,
+    hasPartialAuthorisationFor: HasPartialAuthorisation,
+    legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
+    hasAltItsaInvitations: HasPartialAuthorisation,
+    checkDobMatches: CheckDOBMatches,
+    checkPostcodeMatches: CheckPostcodeMatches,
+    checkRegDateMatches: CheckRegDateMatches,
+    getClientName: GetClientName,
+    getAgentLink: GetAgentLink,
+    getAgencyEmail: GetAgencyEmail,
+    createMultipleInvitations: CreateMultipleInvitations,
+    createInvitationSent: CreateInvitationSent
+  ) {
+    val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String): Transition = Transition {
       case SelectClientType(basket) =>
@@ -123,7 +144,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def gotoIdentify(
       serviceEnabled: Boolean,
       agentSuspensionEnabled: Boolean,
-      getSuspensionDetails: GetSuspensionDetails,
       arn: Arn,
       service: String,
       identifyClientState: State,
@@ -141,7 +161,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         case (false, _)    => fail(new Exception(s"Service: $service feature flag is switched off"))
       }
 
-    def selectedPersonalService(featureFlags: FeatureFlags, getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
+    def selectedPersonalService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: String) =
       Transition {
 
         case SelectService(ClientType.Personal, services, basket) =>
@@ -158,7 +178,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             gotoIdentify(
               flag,
               featureFlags.agentSuspensionEnabled,
-              getSuspensionDetails,
               agent.arn,
               service,
               IdentifyClient(ClientType.Personal, service, basket),
@@ -167,7 +186,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           } else goto(SelectService(ClientType.Personal, services, basket))
       }
 
-    def selectedBusinessService(featureFlags: FeatureFlags, getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
+    def selectedBusinessService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: String) =
       Transition {
         case SelectService(ClientType.Business, services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
@@ -182,7 +201,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             gotoIdentify(
               flag,
               featureFlags.agentSuspensionEnabled,
-              getSuspensionDetails,
               agent.arn,
               service,
               IdentifyClient(ClientType.Business, service, basket),
@@ -191,7 +209,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           } else goto(SelectService(ClientType.Business, services, basket))
       }
 
-    def selectedTrustService(featureFlags: FeatureFlags, getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
+    def selectedTrustService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: String) =
       Transition {
         case SelectService(ClientType.Trust, services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
@@ -209,7 +227,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             gotoIdentify(
               flag,
               featureFlags.agentSuspensionEnabled,
-              getSuspensionDetails,
               agent.arn,
               service,
               IdentifyClient(ClientType.Trust, service, basket),
@@ -331,14 +348,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       }
 
     // format: off
-    def identifiedItsaClient(checkPostcodeMatches: CheckPostcodeMatches)
-                            (hasPendingInvitationsFor: HasPendingInvitations)
-                            (hasActiveRelationshipFor: HasActiveRelationship)
-                            (getClientName: GetClientName)
-                            (createMultipleInvitations: CreateMultipleInvitations)
-                            (getAgentLink: GetAgentLink)
-                            (getAgencyEmail: GetAgencyEmail)
-                            (appConfig: AppConfig)
+    def identifiedItsaClient(appConfig: AppConfig)
                             (agent: AuthorisedAgent)
                             (itsaClient: ItsaClient) = Transition {
       // format: on
@@ -363,14 +373,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     // format: off
-    def identifiedVatClient(checkRegDateMatches: CheckRegDateMatches)
-                           (hasPendingInvitationsFor: HasPendingInvitations)
-                           (hasActiveRelationshipFor: HasActiveRelationship)
-                           (getClientName: GetClientName)
-                           (createMultipleInvitations: CreateMultipleInvitations)
-                           (getAgentLink: GetAgentLink)
-                           (getAgencyEmail: GetAgencyEmail)
-                           (agent: AuthorisedAgent)
+    def identifiedVatClient(agent: AuthorisedAgent)
                            (vatClient: VatClient) = Transition {
       // format: on
       case IdentifyClient(ClientType.Personal, Service.HMRCMTDVAT, basket) =>
@@ -418,19 +421,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         } yield endState
     }
 
-    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
-
     // format: off
-    def identifiedIrvClient(checkDobMatches: CheckDOBMatches)
-                           (hasPendingInvitationsFor: HasPendingInvitations)
-                           (hasActiveRelationshipFor: HasActiveRelationship)
-                           (hasAltItsaInvitations: HasPartialAuthorisation)
-                           (getClientName: GetClientName)
-                           (createMultipleInvitations: CreateMultipleInvitations)
-                           (getAgentLink: GetAgentLink)
-                           (getAgencyEmail: GetAgencyEmail)
-                           (legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)
-                           (appConfig: AppConfig)
+    def identifiedIrvClient(appConfig: AppConfig)
                            (agent: AuthorisedAgent)
                            (irvClient: IrvClient) = Transition {
       // format: on
@@ -452,13 +444,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                agent.arn,
                                request,
                                Service.HMRCPIR,
-                               basket)(
-                               hasPendingInvitationsFor,
-                               hasActiveRelationshipFor,
-                               hasAltItsaInvitations,
-                               legacySaRelationshipStatusFor,
-                               getAgentLink,
-                               appConfig)
+                               basket)(appConfig)
                            }
                        case Some(false) => goto(KnownFactNotMatched(basket))
                        case None        => goto(KnownFactNotMatched(basket))
@@ -467,16 +453,22 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     private def createAndProcessInvitations(
+      clientType: ClientType,
       agencyEmail: String,
       invitationLink: String,
-      createInvitationSent: CreateInvitationSent,
       someFailedState: Basket => State,
       basket: Basket,
-      createMultipleInvitations: CreateMultipleInvitations,
       arn: Arn) =
       for {
         processedRequests <- createMultipleInvitations(arn, basket)
-        successState      <- createInvitationSent(agencyEmail, invitationLink, arn, basket)
+        successState <- clientType match {
+                         // separate handling for Personal as must look up whether it's an alt-ITSA invitation
+                         case ClientType.Personal => createInvitationSent(agencyEmail, invitationLink, arn, basket)
+                         case ClientType.Business =>
+                           toFuture(InvitationSent(ClientType.Business, invitationLink, None, agencyEmail, basket.map(_.invitation.service.id)))
+                         case ClientType.Trust =>
+                           toFuture(InvitationSent(ClientType.Trust, invitationLink, None, agencyEmail, basket.map(_.invitation.service.id)))
+                       }
         result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
                  else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
                    goto(AllAuthorisationsFailed(processedRequests))
@@ -485,13 +477,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     private def checkIfPendingOrActiveAndGoto(
       successState: State)(clientType: ClientType, arn: Arn, request: AuthorisationRequest, service: String, basket: Basket)(
-      hasPendingInvitationsFor: HasPendingInvitations,
-      hasActiveRelationshipFor: HasActiveRelationship,
-      hasPartialAuthorisationFor: HasPartialAuthorisation,
-      legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
-      getAgentLink: GetAgentLink,
-      appConfig: AppConfig
-    ): Future[State] =
+      appConfig: AppConfig): Future[State] =
       for {
         hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
                                      basket.exists(_.invitation.clientId == request.invitation.clientId))
@@ -528,13 +514,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       * */
     // format: off
     def clientConfirmed(showCgtFlag: Boolean)
-                       (createMultipleInvitations: CreateMultipleInvitations)
-                       (getAgentLink: GetAgentLink)
-                       (getAgencyEmail: GetAgencyEmail)
-                       (hasPendingInvitationsFor: HasPendingInvitations)
-                       (hasActiveRelationshipFor: HasActiveRelationship)
-                       (hasPartialAuthorisationFor: HasPartialAuthorisation)
-                       (legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)
                        (appConfig: AppConfig)
                        (authorisedAgent: AuthorisedAgent)
                        (confirmation: Confirmation) =
@@ -548,13 +527,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request,
             Service.HMRCMTDIT,
-            basket)(
-            hasPendingInvitationsFor,
-            hasActiveRelationshipFor,
-            hasPartialAuthorisationFor,
-            legacySaRelationshipStatusFor,
-            getAgentLink,
-            appConfig)
+            basket)(appConfig)
         } else goto(IdentifyClient(ClientType.Personal, Service.HMRCMTDIT, basket))
 
       case cc @ ConfirmClient(request, basket, _) if cc.service == Service.CapitalGains => {
@@ -573,13 +546,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.HMRCCGTPD, basket)(
-            hasPendingInvitationsFor,
-            hasActiveRelationshipFor,
-            hasPartialAuthorisationFor,
-            legacySaRelationshipStatusFor,
-            getAgentLink,
-            appConfig)
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.HMRCCGTPD, basket)(appConfig)
         } else goto(state)
       }
 
@@ -592,13 +559,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request,
               Service.HMRCMTDVAT,
-              basket)(
-              hasPendingInvitationsFor,
-              hasActiveRelationshipFor,
-              hasPartialAuthorisationFor,
-              legacySaRelationshipStatusFor,
-              getAgentLink,
-              appConfig)
+              basket)(appConfig)
         } else goto(IdentifyClient(ClientType.Personal, Service.HMRCMTDVAT, basket))
 
       case cc @ ConfirmClient(request, basket, isInsolvent) if cc.clientType.contains(ClientType.Business) && cc.service == Service.Vat =>
@@ -609,13 +570,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             authorisedAgent.arn,
             request,
             Service.HMRCMTDVAT,
-            basket)(
-            hasPendingInvitationsFor,
-            hasActiveRelationshipFor,
-            hasPartialAuthorisationFor,
-            legacySaRelationshipStatusFor,
-            getAgentLink,
-            appConfig)
+            basket)(appConfig)
         } else goto(IdentifyClient(ClientType.Business, Service.HMRCMTDVAT, basket))
 
       case cc @ ConfirmClient(request, basket, _) if cc.service == Service.Trust =>
@@ -627,13 +582,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               authorisedAgent.arn,
               request,
               request.invitation.service.id,
-              basket)(
-              hasPendingInvitationsFor,
-              hasActiveRelationshipFor,
-              hasPartialAuthorisationFor,
-              legacySaRelationshipStatusFor,
-              getAgentLink,
-              appConfig)
+              basket)(appConfig)
           else
             // otherwise we go straight to create the invitation (no review necessary - only one service)
             for {
@@ -649,13 +598,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                getAgencyEmail().flatMap(
                                  agencyEmail =>
                                    createAndProcessInvitations(
-                                     agentLink,
+                                     ClientType.Trust,
                                      agencyEmail,
-                                     (_, _, _, _) =>
-                                       toFuture(InvitationSent(ClientType.Trust, agentLink, None, agencyEmail, Set(request.invitation.service.id))),
+                                     agentLink,
                                      (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
-                                     createMultipleInvitations,
                                      authorisedAgent.arn
                                  ))
                            }
@@ -684,13 +631,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.HMRCPPTORG, basket)(
-            hasPendingInvitationsFor,
-            hasActiveRelationshipFor,
-            hasPartialAuthorisationFor,
-            legacySaRelationshipStatusFor,
-            getAgentLink,
-            appConfig)
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.HMRCPPTORG, basket)(appConfig)
         } else goto(state)
       }
 
@@ -713,11 +654,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     // format: off
-    def authorisationsReviewed(createMultipleInvitations: CreateMultipleInvitations)
-                              (getAgentLink: GetAgentLink)
-                              (getAgencyEmail: GetAgencyEmail)
-                              (createInvitationSent: CreateInvitationSent)
-                              (agent: AuthorisedAgent)
+    def authorisationsReviewed(agent: AuthorisedAgent)
                               (confirmation: Confirmation) =
       // format: on
     Transition {
@@ -730,12 +667,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             invitationLink <- getAgentLink(agent.arn, Some(ClientType.Trust))
             services = basket.map(_.invitation.service.id)
             result <- createAndProcessInvitations(
+                       ClientType.Trust,
                        agencyEmail,
                        invitationLink,
-                       (_, _, _, _) => toFuture(InvitationSent(ClientType.Trust, invitationLink, None, agencyEmail, services)),
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
-                       createMultipleInvitations,
                        agent.arn
                      )
           } yield result
@@ -749,12 +685,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             agencyEmail    <- getAgencyEmail()
             invitationLink <- getAgentLink(agent.arn, Some(ClientType.Personal))
             result <- createAndProcessInvitations(
+                       ClientType.Personal,
                        agencyEmail,
                        invitationLink,
-                       createInvitationSent,
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
-                       createMultipleInvitations,
                        agent.arn
                      )
           } yield result
@@ -768,12 +703,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             agencyEmail    <- getAgencyEmail()
             invitationLink <- getAgentLink(agent.arn, Some(ClientType.Business))
             result <- createAndProcessInvitations(
+                       ClientType.Business,
                        agencyEmail,
                        invitationLink,
-                       createInvitationSent,
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
-                       createMultipleInvitations,
                        agent.arn
                      )
           } yield result

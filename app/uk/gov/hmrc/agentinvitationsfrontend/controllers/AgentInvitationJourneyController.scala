@@ -94,7 +94,6 @@ class AgentInvitationJourneyController @Inject()(
   import AgentInvitationJourneyController._
   import acaConnector._
   import authActions._
-  import invitationsService._
   import journeyService.model._
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
@@ -112,12 +111,33 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
+
+  def transitions()(implicit ec: ExecutionContext, request: RequestHeader) = Transitions(
+    getSuspensionDetails = getAgencySuspensionDetails,
+    hasPendingInvitationsFor = invitationsService.hasPendingInvitationsFor,
+    hasActiveRelationshipFor = relationshipsService.hasActiveRelationshipFor,
+    hasPartialAuthorisationFor = invitationsService.hasPartialAuthorisationFor,
+    legacySaRelationshipStatusFor = invitationsService.legacySaRelationshipStatusFor,
+    hasAltItsaInvitations = invitationsService.hasPartialAuthorisationFor,
+    checkDobMatches = invitationsService.checkCitizenRecordMatches,
+    checkPostcodeMatches = invitationsService.checkPostcodeMatches,
+    checkRegDateMatches = invitationsService.checkVatRegistrationDateMatches,
+    getClientName = invitationsService.getClientNameByService,
+    getAgentLink = invitationsService.createAgentLink,
+    getAgencyEmail = getAgencyEmail,
+    createMultipleInvitations = invitationsService.createMultipleInvitations,
+    createInvitationSent = invitationsService.createInvitationSent
+  )
+
   val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
 
   val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType]
 
   val submitClientType: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.authorisationForm).apply(Transitions.selectedClientType)
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(ClientTypeForm.authorisationForm)
+      .applyWithRequest(implicit request => transitions.selectedClientType)
 
   // TODO: Broken using DSL
   val showSelectService: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -128,46 +148,37 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request => Transitions.selectedPersonalService(featureFlags, getAgencySuspensionDetails))
+      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
 
   def submitPersonalSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
-      .applyWithRequest(implicit request => Transitions.selectedPersonalService(featureFlags, getAgencySuspensionDetails))
+      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
 
   val submitBusinessSelectService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedBusinessService(
-            featureFlags,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedBusinessService(featureFlags)
+      )
 
   def submitBusinessSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedBusinessService(
-            featureFlags,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedBusinessService(featureFlags)
+      )
 
   def submitTrustSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Trust))
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedTrustService(
-            featureFlags,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedTrustService(featureFlags)
+      )
 
   // this is only for multi-select option forms
   val submitTrustSelectServiceMultiple: Action[AnyContent] =
@@ -175,11 +186,8 @@ class AgentInvitationJourneyController @Inject()(
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedTrustService(
-            featureFlags,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedTrustService(featureFlags)
+      )
 
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
@@ -192,7 +200,7 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PostcodeForm.form)
-      .applyWithRequest(implicit request => Transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val showConfirmCgtCountryCode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt].orRollback
 
@@ -200,51 +208,43 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CountrycodeForm.form(validCountryCodes))
-      .applyWithRequest(implicit request => Transitions.confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val submitIdentifyItsaClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ItsaClientForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(appConfig))
+      .applyWithRequest(implicit request => transitions.identifiedItsaClient(appConfig))
 
   val submitIdentifyVatClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(VatClientForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail))
+      .applyWithRequest(implicit request => transitions.identifiedVatClient)
 
   val submitIdentifyIrvClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(IrvClientForm.form)
-      .applyWithRequest(
-        implicit request =>
-          Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-            hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            legacySaRelationshipStatusFor)(appConfig))
+      .applyWithRequest(implicit request => transitions.identifiedIrvClient(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(TrustClientForm.form(urnEnabled))
-      .applyWithRequest(implicit request => Transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value)))
+      .applyWithRequest(implicit request => transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value)))
 
   val submitIdentifyCgtClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CgtClientForm.form())
-      .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val submitIdentifyPptClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PptClientForm.form)
-      .applyWithRequest(implicit request => Transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
+      .applyWithRequest(implicit request => transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
 
   val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
@@ -252,11 +252,7 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ConfirmClientForm)
-      .applyWithRequest(
-        implicit request =>
-          Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(
-            appConfig))
+      .applyWithRequest(implicit request => transitions.clientConfirmed(featureFlags.showHmrcCgt)(appConfig))
 
   // TODO review whether we only need one state/page here?
   def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -267,14 +263,19 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ReviewAuthorisationsForm)
-      .applyWithRequest(implicit request =>
-        Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(createInvitationSent))
+      .applyWithRequest(implicit request => transitions.authorisationsReviewed)
 
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(agent => Transitions.deleteAuthorisationRequest(itemId)(agent)).display
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .applyWithRequest(implicit request => (agent => transitions.deleteAuthorisationRequest(itemId)(agent)))
+      .display
 
   val submitDeleteAuthorisation: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(DeleteAuthorisationForm).apply(Transitions.confirmDeleteAuthorisationRequest)
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(DeleteAuthorisationForm)
+      .applyWithRequest(implicit request => transitions.confirmDeleteAuthorisationRequest)
 
   val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent].display
 
@@ -285,7 +286,7 @@ class AgentInvitationJourneyController @Inject()(
   val showSomeAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SomeAuthorisationsFailed]
 
   val submitSomeAuthorisationsFailed: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.continueSomeResponsesFailed).redirect
+    actions.whenAuthorisedWithRetrievals(AsAgent).applyWithRequest(implicit requeest => transitions.continueSomeResponsesFailed).redirect
 
   val showAllAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AllAuthorisationsFailed]
 
@@ -322,7 +323,7 @@ class AgentInvitationJourneyController @Inject()(
               Future successful Redirect(externalUrls.agentMappingFrontendUrl)
                 .addingToSession(toReturnFromMapping)
             else
-              helpers.apply(Transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
+              helpers.apply(transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
           }
         )
     }
