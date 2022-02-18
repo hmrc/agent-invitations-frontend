@@ -394,9 +394,7 @@ class AgentInvitationJourneyController @Inject()(
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
     case _: SelectClientType         => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectPersonalService    => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectBusinessService    => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectTrustService       => routes.AgentInvitationJourneyController.showSelectService()
+    case _: SelectService            => routes.AgentInvitationJourneyController.showSelectService()
     case _: IdentifyClient           => routes.AgentInvitationJourneyController.showIdentifyClient()
     case _: ConfirmClientItsa        => routes.AgentInvitationJourneyController.showConfirmClient()
     case _: ConfirmClientPersonalVat => routes.AgentInvitationJourneyController.showConfirmClient()
@@ -446,7 +444,7 @@ class AgentInvitationJourneyController @Inject()(
             ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType(), featureFlags.showHmrcTrust)
           ))
 
-      case SelectPersonalService(services, basket) =>
+      case SelectService(Personal, services, basket) =>
         val config = PersonalSelectServicePageConfig(
           basket,
           featureFlags,
@@ -460,7 +458,7 @@ class AgentInvitationJourneyController @Inject()(
         else
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Personal)), config))
 
-      case SelectBusinessService(services, basket) =>
+      case SelectService(Business, services, basket) =>
         val config = BusinessSelectServicePageConfig(
           basket,
           featureFlags,
@@ -474,7 +472,7 @@ class AgentInvitationJourneyController @Inject()(
         else
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Business)), config))
 
-      case SelectTrustService(services, basket) =>
+      case SelectService(Trust, services, basket) =>
         val config = TrustSelectServicePageConfig(
           basket,
           featureFlags,

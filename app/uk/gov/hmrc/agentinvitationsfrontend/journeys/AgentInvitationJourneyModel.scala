@@ -40,10 +40,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
   case class SelectClientType(basket: Basket) extends State
 
-  trait SelectService extends State
-  case class SelectPersonalService(services: Set[String], basket: Basket) extends SelectService
-  case class SelectBusinessService(services: Set[String], basket: Basket) extends SelectService
-  case class SelectTrustService(services: Set[String], basket: Basket) extends SelectService
+  case class SelectService(clientType: ClientType, services: Set[String], basket: Basket) extends State
 
   trait Identify extends State
   case class IdentifyClient(clientType: ClientType, service: String, basket: Basket) extends Identify
@@ -126,9 +123,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def selectedClientType(agent: AuthorisedAgent)(clientType: String): Transition = Transition {
       case SelectClientType(basket) =>
         clientType match {
-          case "personal" => goto(SelectPersonalService(agent.personalServices, basket))
-          case "business" => goto(SelectBusinessService(agent.businessServices, basket))
-          case "trust"    => goto(SelectTrustService(agent.trustServices, basket))
+          case "personal" => goto(SelectService(Personal, agent.personalServices, basket))
+          case "business" => goto(SelectService(Business, agent.businessServices, basket))
+          case "trust"    => goto(SelectService(Trust, agent.trustServices, basket))
         }
     }
 
@@ -162,7 +159,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
 
-      case SelectPersonalService(services, basket) =>
+      case SelectService(Personal, services, basket) =>
         if (service.isEmpty) { // user selected "no" to final service
           goto(ReviewAuthorisations(Personal, services, basket))
         } else if (services.contains(service)) {
@@ -181,7 +178,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             service,
             IdentifyClient(Personal, service, basket),
             AgentSuspended(service, basket))
-        } else goto(SelectPersonalService(services, basket))
+        } else goto(SelectService(Personal, services, basket))
     }
 
     def selectedBusinessService(
@@ -189,7 +186,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       showPptFlag: Boolean,
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) = Transition {
-      case SelectBusinessService(services, basket) =>
+      case SelectService(Business, services, basket) =>
         if (service.isEmpty) { // user selected "no" to final service
           if (basket.isEmpty)
             goto(SelectClientType(basket)) // if no services in basket, and user also declined the final service, go back to SelectClientType
@@ -207,7 +204,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             service,
             IdentifyClient(Business, service, basket),
             AgentSuspended(service, basket))
-        } else goto(SelectBusinessService(services, basket))
+        } else goto(SelectService(Business, services, basket))
     }
 
     def selectedTrustService(
@@ -217,7 +214,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       agentSuspensionEnabled: Boolean,
       getSuspensionDetails: GetSuspensionDetails)(agent: AuthorisedAgent)(service: String) =
       Transition {
-        case SelectTrustService(services, basket) =>
+        case SelectService(Trust, services, basket) =>
           if (service.isEmpty) { // user selected "no" to final service
             if (basket.nonEmpty)
               goto(ReviewAuthorisations(Trust, services, basket))
@@ -238,7 +235,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               service,
               IdentifyClient(Trust, service, basket),
               AgentSuspended(service, basket))
-          } else goto(SelectTrustService(services, basket))
+          } else goto(SelectService(Trust, services, basket))
       }
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
@@ -735,7 +732,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     Transition {
       case ReviewAuthorisations(Trust, _, basket) =>
         if (confirmation.choice)
-          goto(SelectTrustService(agent.trustServices, basket))
+          goto(SelectService(Trust, agent.trustServices, basket))
         else {
           for {
             agencyEmail    <- getAgencyEmail()
@@ -755,7 +752,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
       case ReviewAuthorisations(Personal, _, basket) =>
         if (confirmation.choice) {
-          goto(SelectPersonalService(agent.personalServices, basket))
+          goto(SelectService(Personal, agent.personalServices, basket))
         } else {
           for {
             agencyEmail    <- getAgencyEmail()
@@ -774,7 +771,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
       case ReviewAuthorisations(business, _, basket) =>
         if (confirmation.choice) {
-          goto(SelectBusinessService(agent.businessServices, basket))
+          goto(SelectService(Business, agent.businessServices, basket))
         } else {
           for {
             agencyEmail    <- getAgencyEmail()

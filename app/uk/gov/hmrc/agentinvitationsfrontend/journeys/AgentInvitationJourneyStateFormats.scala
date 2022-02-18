@@ -24,9 +24,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   //Happy states
   val SelectClientTypeFormat: OFormat[SelectClientType] = Json.format
-  val SelectPersonalServiceFormat: OFormat[SelectPersonalService] = Json.format
-  val SelectBusinessServiceFormat: OFormat[SelectBusinessService] = Json.format
-  val SelectTrustServiceFormat: OFormat[SelectTrustService] = Json.format
+  val SelectServiceFormat: OFormat[SelectService] = Json.format
   val IdentifyClientFormat: OFormat[IdentifyClient] = Json.format
   val ConfirmClientItsaFormat: OFormat[ConfirmClientItsa] = Json.format
   val ConfirmClientTrustFormat: OFormat[ConfirmClientTrust] = Json.format
@@ -65,9 +63,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
     case s: SelectClientType            => SelectClientTypeFormat.writes(s)
-    case s: SelectPersonalService       => SelectPersonalServiceFormat.writes(s)
-    case s: SelectBusinessService       => SelectBusinessServiceFormat.writes(s)
-    case s: SelectTrustService          => SelectTrustServiceFormat.writes(s)
+    case s: SelectService               => SelectServiceFormat.writes(s)
     case s: IdentifyClient              => IdentifyClientFormat.writes(s)
     case s: ConfirmClientItsa           => ConfirmClientItsaFormat.writes(s)
     case s: ConfirmClientPersonalVat    => ConfirmClientPersonalVatFormat.writes(s)
@@ -102,9 +98,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "SelectClientType"            => SelectClientTypeFormat.reads(properties)
-    case "SelectPersonalService"       => SelectPersonalServiceFormat.reads(properties)
-    case "SelectBusinessService"       => SelectBusinessServiceFormat.reads(properties)
-    case "SelectTrustService"          => SelectTrustServiceFormat.reads(properties)
+    case "SelectService"               => SelectServiceFormat.reads(properties)
     case "IdentifyClient"              => IdentifyClientFormat.reads(properties)
     case "ConfirmClientTrust"          => ConfirmClientTrustFormat.reads(properties)
     case "ConfirmClientCgt"            => ConfirmClientCgtFormat.reads(properties)

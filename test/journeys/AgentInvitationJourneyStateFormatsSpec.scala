@@ -77,38 +77,16 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
           .as[State] shouldBe SelectClientType(Set.empty)
       }
 
-      "SelectPersonalService" in {
-        Json.toJson(SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty): State) shouldBe Json.obj(
-          "state" -> "SelectPersonalService",
+      "SelectService" in {
+        Json.toJson(SelectService(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty): State) shouldBe Json.obj(
+          "state" -> "SelectService",
           "properties" -> Json
-            .obj("basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
+            .obj("clientType" -> "personal", "basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
         )
         Json
           .parse(
-            """{"state":"SelectPersonalService", "properties": {"basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
-          .as[State] shouldBe SelectPersonalService(Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
-      }
-
-      "SelectBusinessService" in {
-        Json.toJson(SelectBusinessService(Set(HMRCMTDVAT, HMRCPPTORG), Set.empty): State) shouldBe Json.obj(
-          "state" -> "SelectBusinessService",
-          "properties" -> Json
-            .obj("basket" -> JsArray(), "services" -> Json.arr("HMRC-MTD-VAT", "HMRC-PPT-ORG"))
-        )
-        Json
-          .parse("""{"state":"SelectBusinessService", "properties": {"basket": [], "services": ["HMRC-MTD-VAT", "HMRC-PPT-ORG"]}}""")
-          .as[State] shouldBe SelectBusinessService(Set(HMRCMTDVAT, HMRCPPTORG), Set.empty)
-      }
-
-      "SelectTrustService" in {
-        Json.toJson(SelectTrustService(Set(TAXABLETRUST, HMRCCGTPD), Set.empty): State) shouldBe Json
-          .obj(
-            "state" -> "SelectTrustService",
-            "properties" -> Json
-              .obj("services" -> Json.arr("HMRC-TERS-ORG", "HMRC-CGT-PD"), "basket" -> JsArray()))
-        Json
-          .parse("""{"state":"SelectTrustService", "properties": {"basket": [], "services": ["HMRC-TERS-ORG", "HMRC-CGT-PD"]}}""")
-          .as[State] shouldBe SelectTrustService(Set(TAXABLETRUST, HMRCCGTPD), Set.empty)
+            """{"state":"SelectService", "properties": {"clientType": "personal", "basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
+          .as[State] shouldBe SelectService(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
       }
 
       "IdentifyClient" in {

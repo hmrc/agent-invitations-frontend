@@ -118,14 +118,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(SelectClientType(emptyBasket)) when
           selectedClientType(authorisedAgent)("personal") should
-          thenGo(SelectPersonalService(availableServices, emptyBasket))
+          thenGo(SelectService(Personal, availableServices, emptyBasket))
       }
 
       "transition to SelectBusinessService" in {
 
         given(SelectClientType(emptyBasket)) when
           selectedClientType(authorisedAgent)("business") should
-          thenGo(SelectBusinessService(availableBusinessServices, emptyBasket))
+          thenGo(SelectService(Business, availableBusinessServices, emptyBasket))
       }
     }
 
@@ -149,58 +149,58 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to SelectClientType" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           start should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for ITSA service" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()(HMRCMTDIT) should
           thenGo(IdentifyClient(Personal, HMRCMTDIT, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for PIR service" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()(HMRCPIR) should
           thenGo(IdentifyClient(Personal, HMRCPIR, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for VAT service" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()(HMRCMTDVAT) should
           thenGo(IdentifyClient(Personal, HMRCMTDVAT, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for CGT service" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()(HMRCCGTPD) should
           thenGo(IdentifyClient(Personal, HMRCCGTPD, emptyBasket))
       }
 
       "transition to IdentifyPersonalClient for PPT service" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()(HMRCPPTORG) should
           thenGo(IdentifyClient(Personal, HMRCPPTORG, emptyBasket))
       }
 
       "transition to ReviewPersonalService when last service selected and user does not confirm" in {
 
-        given(SelectPersonalService(Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
+        given(SelectService(Personal, Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD)))) when
           selectedService()("") should
           thenGo(ReviewAuthorisations(Personal, Set(HMRCPIR), makeBasket(Set(HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD))))
       }
 
       "transition to SelectPersonalService" in {
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when
+        given(SelectService(Personal, availableServices, emptyBasket)) when
           selectedService()("foo") should
-          thenGo(SelectPersonalService(availableServices, emptyBasket))
+          thenGo(SelectService(Personal, availableServices, emptyBasket))
       }
 
       "transition to AgentSuspended when agent is suspended for the selected service" in {
@@ -216,7 +216,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, showPptFlag, agentSuspensionEnabled, suspendedForItsa)(
             authorisedAgent)
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDIT) should thenGo(
+        given(SelectService(Personal, availableServices, emptyBasket)) when selectedService()(HMRCMTDIT) should thenGo(
           AgentSuspended(HMRCMTDIT, emptyBasket))
       }
 
@@ -233,14 +233,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           selectedPersonalService(showItsaFlag, showPirFlag, showVatFlag, showCgtFlag, showPptFlag, agentSuspensionEnabled, suspendedForItsa)(
             authorisedAgent)
 
-        given(SelectPersonalService(availableServices, emptyBasket)) when selectedService()(HMRCMTDVAT) should thenGo(
+        given(SelectService(Personal, availableServices, emptyBasket)) when selectedService()(HMRCMTDVAT) should thenGo(
           IdentifyClient(Personal, HMRCMTDVAT, emptyBasket))
       }
 
       "throw an exception when the show itsa feature flag is off" in {
 
         intercept[Exception] {
-          given(SelectPersonalService(availableServices, emptyBasket)) when
+          given(SelectService(Personal, availableServices, emptyBasket)) when
             selectedService(showItsaFlag = false)(HMRCMTDIT)
         }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
       }
@@ -248,7 +248,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an exception when the show pir feature flag is off" in {
 
         intercept[Exception] {
-          given(SelectPersonalService(availableServices, emptyBasket)) when
+          given(SelectService(Personal, availableServices, emptyBasket)) when
             selectedService(showPirFlag = false)(HMRCPIR)
         }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
       }
@@ -256,7 +256,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an exception when the show vat feature flag is off" in {
 
         intercept[Exception] {
-          given(SelectPersonalService(availableServices, emptyBasket)) when
+          given(SelectService(Personal, availableServices, emptyBasket)) when
             selectedService(showVatFlag = false)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
@@ -264,7 +264,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an exception when the show cgt feature flag is off" in {
 
         intercept[Exception] {
-          given(SelectPersonalService(availableServices, emptyBasket)) when
+          given(SelectService(Personal, availableServices, emptyBasket)) when
             selectedService(showCgtFlag = false)(HMRCCGTPD)
         }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
       }
@@ -272,7 +272,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an exception when the show ppt feature flag is off" in {
 
         intercept[Exception] {
-          given(SelectPersonalService(availableServices, emptyBasket)) when
+          given(SelectService(Personal, availableServices, emptyBasket)) when
             selectedService(showPptFlag = false)(HMRCPPTORG)
         }.getMessage shouldBe "Service: HMRC-PPT-ORG feature flag is switched off"
       }
@@ -287,12 +287,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to SelectClientType" in {
 
-        given(SelectBusinessService(availableServices, emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
+        given(SelectService(Business, availableServices, emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedBusinessService(true)(true) transition to IdentifyBusinessClient" in {
 
-        given(SelectBusinessService(availableBusinessServices, emptyBasket)) when
+        given(SelectService(Business, availableBusinessServices, emptyBasket)) when
           selectedBusinessService(showVatFlag = true, showPptFlag = true, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)(HMRCMTDVAT) should
           thenGo(IdentifyClient(Business, HMRCMTDVAT, emptyBasket))
       }
@@ -300,7 +300,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to AgentSuspended if agent is suspended for the chosen service" in {
         def suspendedForVat() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("VATC"))))
 
-        given(SelectBusinessService(availableBusinessServices, emptyBasket)) when
+        given(SelectService(Business, availableBusinessServices, emptyBasket)) when
           selectedBusinessService(showVatFlag = true, showPptFlag = true, agentSuspensionEnabled = true, suspendedForVat)(authorisedAgent)(HMRCMTDVAT) should
           thenGo(AgentSuspended(HMRCMTDVAT, emptyBasket))
       }
@@ -308,7 +308,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to IdentifyBusinessClient if agent is suspended for a different service" in {
         def suspendedForItsa() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
-        given(SelectBusinessService(availableServices, emptyBasket)) when
+        given(SelectService(Business, availableServices, emptyBasket)) when
           selectedBusinessService(showVatFlag = true, showPptFlag = true, agentSuspensionEnabled = true, suspendedForItsa)(authorisedAgent)(
             HMRCMTDVAT) should
           thenGo(IdentifyClient(Business, HMRCMTDVAT, emptyBasket))
@@ -316,7 +316,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "throw an exception when the show vat feature flag is off" in {
         intercept[Exception] {
-          given(SelectBusinessService(availableServices, emptyBasket)) when
+          given(SelectService(Business, availableServices, emptyBasket)) when
             selectedBusinessService(showVatFlag = false, showPptFlag = true, agentSuspensionEnabled = true, notSuspended)(authorisedAgent)(HMRCMTDVAT)
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
@@ -331,35 +331,35 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to SelectClientType" in {
 
-        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+        given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           start should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
 
-        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+        given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)(TAXABLETRUST) should
           thenGo(IdentifyClient(Trust, TAXABLETRUST, emptyBasket))
       }
 
       "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
 
-        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+        given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
 
-        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+        given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(SelectClientType(emptyBasket))
       }
 
       "after selectedTrustService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
         val basket = makeBasket(Set(HMRCCGTPD))
-        given(SelectTrustService(availableTrustServices, basket)) when
+        given(SelectService(Trust, availableTrustServices, basket)) when
           selectedTrustService(true, true, true, true, notSuspended)(agent = authorisedAgent)("") should
           thenGo(ReviewAuthorisations(Trust, availableTrustServices, basket))
       }
@@ -367,7 +367,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to AgentSuspended if the agent is suspended for the selected service" in {
         def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("TRS"))))
 
-        given(SelectTrustService(availableTrustServices, emptyBasket)) when
+        given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           selectedTrustService(true, true, true, true, suspendedForTrust)(agent = authorisedAgent)(TAXABLETRUST) should
           thenGo(AgentSuspended(TAXABLETRUST, emptyBasket))
       }
@@ -1211,7 +1211,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(ReviewAuthorisations(Trust, availableTrustServices, emptyBasket)) when
           authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
             Confirmation(true)) should
-          thenGo(SelectTrustService(availableTrustServices, emptyBasket))
+          thenGo(SelectService(Trust, availableTrustServices, emptyBasket))
       }
 
       "after authorisationsReviewed(false) transition to InvitationSentTrust" in {
@@ -1326,7 +1326,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(ReviewAuthorisations(Personal, availableServices, emptyBasket)) when
           authorisationsReviewed(createMultipleInvitations)(getAgentLink)(getAgencyEmail)(createInvitationSentMock)(authorisedAgent)(
             Confirmation(true)) should
-          thenGo(SelectPersonalService(availableServices, emptyBasket)) //FIXME check basket has invitation added
+          thenGo(SelectService(Personal, availableServices, emptyBasket)) //FIXME check basket has invitation added
       }
 
       "after authorisationsReviewed(false) transition to InvitationSentPersonal" in {
