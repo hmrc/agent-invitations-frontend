@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.audit
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.Request
+import play.api.mvc.{Request, RequestHeader}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
@@ -44,7 +44,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     uid: String,
     result: String,
     failure: Option[String] = None,
-    altItsa: Option[Boolean] = None)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): Future[Unit] =
+    altItsa: Option[Boolean] = None)(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       "Agent client service authorisation request created",
@@ -69,7 +69,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     clientIdType: String,
     clientId: String,
     service: String,
-    agencyName: String)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): Future[Unit] =
+    agencyName: String)(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientInvitationResponse,
       "agent-client-invitation-response",
@@ -86,13 +86,13 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
 
   private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(
     implicit hc: HeaderCarrier,
-    request: Request[Any],
+    request: RequestHeader,
     ec: ExecutionContext): Future[Unit] =
     send(createEvent(event, transactionName, details: _*))
 
   private def createEvent(event: AgentInvitationEvent, transactionName: String, details: (String, Any)*)(
     implicit hc: HeaderCarrier,
-    request: Request[Any]): DataEvent = {
+    request: RequestHeader): DataEvent = {
 
     val detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     val tags = hc.toAuditTags(transactionName, request.path)

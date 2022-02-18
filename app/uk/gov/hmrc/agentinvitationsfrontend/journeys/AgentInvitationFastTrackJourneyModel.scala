@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetCgtSubscription, GetPptSubscription}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
@@ -286,6 +285,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type IsAltItsa = (Arn, String) => Future[Boolean]
     type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
+    type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
+    type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
+    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))

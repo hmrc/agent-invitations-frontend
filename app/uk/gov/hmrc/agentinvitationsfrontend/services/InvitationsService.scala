@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Logging
-import play.api.mvc.Request
+import play.api.mvc.{Request, RequestHeader}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSentPersonal, State}
@@ -28,6 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -38,7 +39,7 @@ class InvitationsService @Inject()(
   val citizenDetailsConnector: CitizenDetailsConnector,
   val relationshipsConnector: RelationshipsConnector,
   auditService: AuditService)
-    extends GetClientName with Logging {
+    extends GetClientName with FrontendHeaderCarrierProvider with Logging {
 
   def createInvitation(
     arn: Arn,
@@ -70,9 +71,9 @@ class InvitationsService @Inject()(
       }
   }
 
-  def createMultipleInvitations(
-    arn: Arn,
-    requests: Set[AuthorisationRequest])(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Set[AuthorisationRequest]] =
+  def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest])(
+    implicit rh: RequestHeader,
+    ec: ExecutionContext): Future[Set[AuthorisationRequest]] =
     Future.sequence(requests.map(authRequest => {
       val agentInvitation =
         AgentInvitation(
