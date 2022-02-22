@@ -16,138 +16,48 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Urn, Utr, Vrn}
+import play.api.libs.json._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 
-sealed trait Invitation {
-  val clientType: Option[ClientType]
-
-  val service: String
-
-  val clientIdentifier: TaxIdentifier
-
-  val clientIdentifierType: String
-
-  val clientId: String = clientIdentifier.value
+case class Invitation(clientType: Option[ClientType], service: uk.gov.hmrc.agentmtdidentifiers.model.Service, clientIdentifier: TaxIdentifier) {
+  require(
+    service.supportedClientIdType.clazz == clientIdentifier.getClass,
+    s"Expected identifier of type ${service.supportedClientIdType.clazz}, got ${clientIdentifier.getClass}"
+  )
+  def clientId: String = clientIdentifier.value
 }
 
 object Invitation {
-  def apply(clientType: Option[ClientType], service: String, clientIdentifier: String, knownFact: String): Invitation =
-    service match {
-      case Services.HMRCMTDIT       => ItsaInvitation(Nino(clientIdentifier))
-      case Services.HMRCMTDVAT      => VatInvitation(clientType, Vrn(clientIdentifier))
-      case Services.HMRCPIR         => PirInvitation(Nino(clientIdentifier))
-      case Services.TAXABLETRUST    => TrustInvitation(Utr(clientIdentifier))
-      case Services.NONTAXABLETRUST => TrustNTInvitation(Urn(clientIdentifier))
-      case Services.HMRCCGTPD       => CgtInvitation(CgtRef(clientIdentifier), clientType)
-      case Services.HMRCPPTORG      => PptInvitation(PptRef(clientIdentifier), clientType)
+
+  //TODO: Move this format into agent-mtd-identifiers
+  // A simple and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
+  implicit val TaxIdFormat = new Format[TaxIdentifier] {
+    override def writes(o: TaxIdentifier): JsValue = o match {
+      case x: Nino   => JsString(s"Nino|${x.value}")
+      case x: Vrn    => JsString(s"Vrn|${x.value}")
+      case x: Utr    => JsString(s"Utr|${x.value}")
+      case x: Urn    => JsString(s"Urn|${x.value}")
+      case x: CgtRef => JsString(s"CgtRef|${x.value}")
+      case x: PptRef => JsString(s"PptRef|${x.value}")
+      case x         => throw new IllegalArgumentException(s"Unsupported tax identifier: $x")
     }
 
-  implicit val format: Format[Invitation] = new Format[Invitation] {
-
-    override def reads(json: JsValue): JsResult[Invitation] = {
-      val t = (json \ "type").as[String]
-      t match {
-        case "ItsaInvitation"    => JsSuccess((json \ "data").as[ItsaInvitation])
-        case "PirInvitation"     => JsSuccess((json \ "data").as[PirInvitation])
-        case "VatInvitation"     => JsSuccess((json \ "data").as[VatInvitation])
-        case "TrustInvitation"   => JsSuccess((json \ "data").as[TrustInvitation])
-        case "TrustNTInvitation" => JsSuccess((json \ "data").as[TrustNTInvitation])
-        case "CgtInvitation"     => JsSuccess((json \ "data").as[CgtInvitation])
-        case "PptInvitation"     => JsSuccess((json \ "data").as[PptInvitation])
-        case _                   => JsError(s"invalid json type for parsing invitation object, type=$t")
-      }
-    }
-
-    override def writes(invitation: Invitation): JsValue = {
-      val toJson = {
-        Json.parse(s""" {
-                      |"clientType": "${invitation.clientType.getOrElse(throw new RuntimeException("missing clientType from the invitation"))}",
-                      |"service": "${invitation.service}",
-                      |"clientIdentifier": "${invitation.clientIdentifier.value}",
-                      |"clientIdentifierType": "${invitation.clientIdentifierType}"
-                      |}""".stripMargin)
-      }
-
-      Json.obj("type" -> invitation.getClass.getSimpleName, "data" -> toJson)
+    override def reads(json: JsValue): JsResult[TaxIdentifier] = json match {
+      case JsString(str) if str.matches("""\w{3,6}\|[\w\d]+""") =>
+        val idType :: id :: Nil = str.split("""\|""").toList
+        idType match {
+          case "Nino"   => JsSuccess(Nino(id))
+          case "Vrn"    => JsSuccess(Vrn(id))
+          case "Utr"    => JsSuccess(Utr(id))
+          case "Urn"    => JsSuccess(Urn(id))
+          case "CgtRef" => JsSuccess(CgtRef(id))
+          case "PptRef" => JsSuccess(PptRef(id))
+          case x        => JsError(s"Invalid tax identifier type: $x")
+        }
+      case _ => JsError("Invalid tax identifier JSON")
     }
   }
-}
 
-case class ItsaInvitation(
-  clientIdentifier: Nino,
-  clientType: Option[ClientType] = Some(ClientType.Personal),
-  service: String = Services.HMRCMTDIT,
-  clientIdentifierType: String = "ni")
-    extends Invitation
-
-object ItsaInvitation {
-  implicit val format: Format[ItsaInvitation] = Json.format[ItsaInvitation]
-}
-
-case class PirInvitation(
-  clientIdentifier: Nino,
-  clientType: Option[ClientType] = Some(ClientType.Personal),
-  service: String = Services.HMRCPIR,
-  clientIdentifierType: String = "ni")
-    extends Invitation
-
-object PirInvitation {
-  implicit val format: Format[PirInvitation] = Json.format[PirInvitation]
-}
-
-case class VatInvitation(
-  clientType: Option[ClientType],
-  clientIdentifier: Vrn,
-  service: String = Services.HMRCMTDVAT,
-  clientIdentifierType: String = "vrn")
-    extends Invitation
-
-object VatInvitation {
-  implicit val format: Format[VatInvitation] = Json.format[VatInvitation]
-}
-
-case class TrustInvitation(
-  clientIdentifier: Utr,
-  clientType: Option[ClientType] = Some(ClientType.Trust),
-  service: String = Services.TAXABLETRUST,
-  clientIdentifierType: String = "utr")
-    extends Invitation
-
-object TrustInvitation {
-  implicit val format: Format[TrustInvitation] = Json.format[TrustInvitation]
-}
-
-case class TrustNTInvitation(
-  clientIdentifier: Urn,
-  clientType: Option[ClientType] = Some(ClientType.Trust),
-  service: String = Services.NONTAXABLETRUST,
-  clientIdentifierType: String = "urn")
-    extends Invitation
-
-object TrustNTInvitation {
-  implicit val format: Format[TrustNTInvitation] = Json.format[TrustNTInvitation]
-}
-
-case class CgtInvitation(
-  clientIdentifier: CgtRef,
-  clientType: Option[ClientType],
-  service: String = Services.HMRCCGTPD,
-  clientIdentifierType: String = "CGTPDRef")
-    extends Invitation
-
-object CgtInvitation {
-  implicit val format: Format[CgtInvitation] = Json.format
-}
-
-case class PptInvitation(
-  clientIdentifier: PptRef,
-  clientType: Option[ClientType],
-  service: String = Services.HMRCPPTORG,
-  clientIdentifierType: String = "EtmpRegistrationNumber")
-    extends Invitation
-
-object PptInvitation {
-  implicit val format: Format[PptInvitation] = Json.format
+  implicit val format: Format[Invitation] = Json.format[Invitation]
 }

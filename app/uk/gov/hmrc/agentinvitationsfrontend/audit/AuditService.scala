@@ -53,9 +53,9 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "invitationId"         -> invitationId,
         "agentReferenceNumber" -> arn.value,
         "clientType"           -> invitation.clientType.map(_.toString).getOrElse(""),
-        "clientIdType"         -> invitation.clientIdentifierType,
+        "clientIdType"         -> invitation.service.supportedClientIdType.id,
         "clientId"             -> invitation.clientId,
-        "service"              -> invitation.service,
+        "service"              -> invitation.service.id,
         "uid"                  -> uid
       ).filter(_._2.nonEmpty)
         ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)

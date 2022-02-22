@@ -52,7 +52,7 @@ backLinkHref = Some(config.backLinkUrl)
             field = deleteForm("accepted"),
             legend = msgs("delete.heading", config.clientDetail.clientName),
             headingIsLegend = true,
-            hint = Some(msgs(s"delete.subheading.${config.clientDetail.invitation.service}"))
+            hint = Some(msgs(s"delete.subheading.${config.clientDetail.invitation.service.id}"))
         )
 
         @submitButton()

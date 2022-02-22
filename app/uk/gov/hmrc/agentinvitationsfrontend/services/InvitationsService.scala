@@ -45,7 +45,7 @@ class InvitationsService @Inject()(
     invitation: Invitation)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[InvitationId] = {
 
     val agentInvitation =
-      AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
+      AgentInvitation(invitation.clientType, invitation.service.id, invitation.service.supportedClientIdType.id, invitation.clientId)
 
     (for {
       locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
@@ -77,9 +77,10 @@ class InvitationsService @Inject()(
       val agentInvitation =
         AgentInvitation(
           authRequest.invitation.clientType,
-          authRequest.invitation.service,
-          authRequest.invitation.clientIdentifierType,
-          authRequest.invitation.clientId)
+          authRequest.invitation.service.id,
+          authRequest.invitation.service.supportedClientIdType.id,
+          authRequest.invitation.clientId
+        )
 
       (for {
         locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
@@ -242,7 +243,7 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[State] = {
 
-    val services = basket.map(_.invitation.service)
+    val services = basket.map(_.invitation.service.id)
 
     basket
       .find(_.invitation.service == Services.HMRCMTDIT)

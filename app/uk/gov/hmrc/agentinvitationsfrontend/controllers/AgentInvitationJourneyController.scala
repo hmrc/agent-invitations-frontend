@@ -583,7 +583,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -594,7 +594,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -624,7 +624,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -635,7 +635,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -646,7 +646,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -657,7 +657,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 

@@ -21,14 +21,15 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 abstract class ReviewAuthorisationsPageConfig(val basket: Basket, val featureFlags: FeatureFlags, val services: Set[String], val submitCall: Call)(
   implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {
-      case "PERSONAL-INCOME-RECORD" => noNameMessage
-      case _                        => authorisationRequest.clientName.stripSuffix(".")
+      case Service.PersonalIncomeRecord => noNameMessage
+      case _                            => authorisationRequest.clientName.stripSuffix(".")
     }
 
   val basketFull: Boolean
