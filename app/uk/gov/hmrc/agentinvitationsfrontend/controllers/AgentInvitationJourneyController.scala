@@ -128,46 +128,13 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(implicit request => Transitions.selectedPersonalService(featureFlags, getAgencySuspensionDetails))
 
   def submitPersonalSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
-
-  def submitPersonalSelectSingleNew(service: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(implicit request => Transitions.selectedPersonalService(featureFlags, getAgencySuspensionDetails))
 
   val submitBusinessSelectService: Action[AnyContent] =
     actions
@@ -176,9 +143,7 @@ class AgentInvitationJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.selectedBusinessService(
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showPlasticPackagingTax,
-            featureFlags.agentSuspensionEnabled,
+            featureFlags,
             getAgencySuspensionDetails
         ))
 
@@ -189,9 +154,7 @@ class AgentInvitationJourneyController @Inject()(
       .applyWithRequest(
         implicit request =>
           Transitions.selectedBusinessService(
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showPlasticPackagingTax,
-            featureFlags.agentSuspensionEnabled,
+            featureFlags,
             getAgencySuspensionDetails
         ))
 
@@ -199,28 +162,24 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Trust))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedTrustService(
-          featureFlags.showHmrcTrust,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(
+        implicit request =>
+          Transitions.selectedTrustService(
+            featureFlags,
+            getAgencySuspensionDetails
+        ))
 
   // this is only for multi-select option forms
   val submitTrustSelectServiceMultiple: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.selectedTrustService(
-          featureFlags.showHmrcTrust,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(
+        implicit request =>
+          Transitions.selectedTrustService(
+            featureFlags,
+            getAgencySuspensionDetails
+        ))
 
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
