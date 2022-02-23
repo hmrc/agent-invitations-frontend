@@ -421,38 +421,12 @@ class AgentInvitationJourneyController @Inject()(
             showUrnEnabledContent = urnEnabled
           )
         )
-      case IdentifyClient(Trust, Services.HMRCCGTPD, _) =>
-        Ok(
-          identifyClientCgtView(
-            formWithErrors.or(CgtClientForm.form()),
-            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Trust, Services.HMRCPPTORG, _) =>
-        Ok(
-          identifyClientPptView(
-            formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyPptClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
 
       case IdentifyClient(Personal, Services.HMRCMTDIT, _) =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(ItsaClientForm.form),
             routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Personal, Services.HMRCMTDVAT, _) =>
-        Ok(
-          identifyClientVatView(
-            formWithErrors.or(VatClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
             backLinkFor(breadcrumbs).url
           )
         )
@@ -466,25 +440,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Personal, Services.HMRCCGTPD, _) =>
-        Ok(
-          identifyClientCgtView(
-            formWithErrors.or(CgtClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Personal, Services.HMRCPPTORG, _) =>
-        Ok(
-          identifyClientPptView(
-            formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyPptClient,
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Business, Services.HMRCMTDVAT, _) =>
+      case IdentifyClient(_, Services.HMRCMTDVAT, _) =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(VatClientForm.form),
@@ -493,7 +449,16 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Business, Services.HMRCPPTORG, _) =>
+      case IdentifyClient(_, Services.HMRCCGTPD, _) =>
+        Ok(
+          identifyClientCgtView(
+            formWithErrors.or(CgtClientForm.form),
+            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
+            backLinkFor(breadcrumbs).url
+          )
+        )
+
+      case IdentifyClient(_, Services.HMRCPPTORG, _) =>
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
@@ -532,34 +497,15 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             isDeAuth = false))
 
-      case ReviewAuthorisations(Personal, services, basket) =>
+      case ReviewAuthorisations(clientType, services, basket) =>
         Ok(
           reviewAuthView(
-            ReviewAuthorisationsPersonalPageConfig(
+            ReviewAuthorisationsPageConfig(
+              clientType,
               basket,
               featureFlags,
               services,
               routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-            formWithErrors.or(ReviewAuthorisationsForm),
-            backLinkFor(breadcrumbs).url
-          ))
-
-      case ReviewAuthorisations(Business, services, basket) =>
-        Ok(
-          reviewAuthView(
-            ReviewAuthorisationsBusinessPageConfig(
-              basket,
-              featureFlags,
-              services,
-              routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-            formWithErrors.or(ReviewAuthorisationsForm),
-            backLinkFor(breadcrumbs).url
-          ))
-
-      case ReviewAuthorisations(Trust, services, basket) =>
-        Ok(
-          reviewAuthView(
-            ReviewAuthorisationsTrustPageConfig(basket, featureFlags, services, routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
             formWithErrors.or(ReviewAuthorisationsForm),
             backLinkFor(breadcrumbs).url
           ))
