@@ -72,20 +72,16 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
   case class AllAuthorisationsFailed(basket: Basket) extends State
   case class DeleteAuthorisationRequest(clientType: ClientType, authorisationRequest: AuthorisationRequest, basket: Basket) extends State
 
-  trait InvitationSent extends State
-  case class InvitationSentPersonal(
+  case class InvitationSent(
+    clientType: ClientType,
     invitationLink: String,
     continueUrl: Option[String],
     agencyEmail: String,
     services: Set[String],
-    isAltItsa: Boolean)
-      extends InvitationSent
+    isAltItsa: Option[Boolean] = None)
+      extends State
 
-  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String])
-      extends InvitationSent
-  case class InvitationSentTrust(invitationLink: String, continueUrl: Option[String], agencyEmail: String, services: Set[String])
-      extends InvitationSent
-  case class ClientNotSignedUp(service: String, basket: Basket) extends InvitationSent
+  case class ClientNotSignedUp(service: String, basket: Basket) extends State
   case object AllAuthorisationsRemoved extends State
   case class AgentSuspended(suspendedService: String, basket: Basket) extends State
   case class ClientNotRegistered(basket: Basket) extends State
@@ -665,7 +661,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                    createAndProcessInvitations(
                                      agentLink,
                                      agencyEmail,
-                                     (_, _, _, _) => toFuture(InvitationSentTrust(agentLink, None, agencyEmail, Set(request.invitation.service.id))),
+                                     (_, _, _, _) =>
+                                       toFuture(InvitationSent(ClientType.Trust, agentLink, None, agencyEmail, Set(request.invitation.service.id))),
                                      (b: Basket) => SomeAuthorisationsFailed(agentLink, None, agencyEmail, b),
                                      Set(request),
                                      createMultipleInvitations,
@@ -722,7 +719,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
       case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>
         val services = basket.filter(_.state == AuthorisationRequest.CREATED).map(_.invitation.service.id)
-        goto(InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services, isAltItsa = false))
+        goto(InvitationSent(ClientType.Personal, invitationLink, continueUrl, agencyEmail, services, isAltItsa = Some(false)))
     }
 
     // format: off
@@ -745,7 +742,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             result <- createAndProcessInvitations(
                        agencyEmail,
                        invitationLink,
-                       (_, _, _, _) => toFuture(InvitationSentTrust(invitationLink, None, agencyEmail, services)),
+                       (_, _, _, _) => toFuture(InvitationSent(ClientType.Trust, invitationLink, None, agencyEmail, services)),
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
                        basket,
                        createMultipleInvitations,

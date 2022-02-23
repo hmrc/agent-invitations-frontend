@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSentPersonal, State}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSent, State}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
@@ -252,7 +252,7 @@ class InvitationsService @Inject()(
         isAltItsa(arn, clientId)
       }
       .map { hasAltItsa =>
-        InvitationSentPersonal(invitationLink, None, agencyEmail, services, hasAltItsa)
+        InvitationSent(ClientType.Personal, invitationLink, None, agencyEmail, services, Some(hasAltItsa))
       }
 
   }

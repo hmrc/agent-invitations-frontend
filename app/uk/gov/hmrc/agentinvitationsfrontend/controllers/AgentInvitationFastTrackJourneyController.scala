@@ -730,8 +730,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               inferredExpiryDate,
               agencyEmail,
               Set(service),
-              isAltItsa = false,
-              service,
+              isAltItsa = false
             )))
 
       case KnownFactNotMatched(_, _, _) =>

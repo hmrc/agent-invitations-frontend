@@ -225,7 +225,7 @@ class AgentInvitationJourneyController @Inject()(
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Identify].orRollback
+  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   val showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
@@ -402,9 +402,7 @@ class AgentInvitationJourneyController @Inject()(
     case _: ReviewAuthorisations  => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case _: InvitationSentPersonal      => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentBusiness      => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentTrust         => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: InvitationSent              => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched         => routes.AgentInvitationJourneyController.showNotMatched()
     case _: TrustNotFound               => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CgtRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
@@ -644,47 +642,19 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(DeleteAuthorisationForm)
           ))
 
-      case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
+      case InvitationSent(clientType, invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
         Ok(
           invitationSentView(
             InvitationSentPageConfig(
               invitationLink,
               None,
               continueUrl.isDefined,
-              ClientType.fromEnum(Personal),
+              ClientType.fromEnum(clientType),
               inferredExpiryDate,
               agencyEmail,
               services,
-              isAltItsa
+              isAltItsa.getOrElse(false)
             )))
-
-      case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, services) =>
-        Ok(
-          invitationSentView(
-            InvitationSentPageConfig(
-              invitationLink,
-              None,
-              continueUrl.isDefined,
-              ClientType.fromEnum(Business),
-              inferredExpiryDate,
-              agencyEmail,
-              services,
-              isAltItsa = false,
-              services.head)))
-
-      case InvitationSentTrust(invitationLink, continueUrl, agencyEmail, services) =>
-        Ok(
-          invitationSentView(
-            InvitationSentPageConfig(
-              invitationLink,
-              None,
-              continueUrl.isDefined,
-              ClientType.fromEnum(Trust),
-              inferredExpiryDate,
-              agencyEmail,
-              services,
-              isAltItsa = false,
-              services.head)))
 
       case KnownFactNotMatched(basket) =>
         Ok(

@@ -33,9 +33,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val ReviewAuthorisationsFormat: OFormat[ReviewAuthorisations] = Json.format
 
   val DeleteAuthorisationRequestFormat: OFormat[DeleteAuthorisationRequest] = Json.format
-  val InvitationSentPersonalFormat: OFormat[InvitationSentPersonal] = Json.format
-  val InvitationSentBusinessFormat: OFormat[InvitationSentBusiness] = Json.format
-  val InvitationSentTrustFormat: OFormat[InvitationSentTrust] = Json.format
+  val InvitationSentFormat: OFormat[InvitationSent] = Json.format
   val PendingInvitationExistsFormat: OFormat[PendingInvitationExists] = Json.format
   val ActiveAuthorisationExistsFormat: OFormat[ActiveAuthorisationExists] = Json.format
   val PartialAuthorisationExistsFormat: OFormat[PartialAuthorisationExists] = Json.format
@@ -67,9 +65,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case s: TrustNotFound               => TrustNotFoundFormat.writes(s)
     case s: ReviewAuthorisations        => ReviewAuthorisationsFormat.writes(s)
     case s: DeleteAuthorisationRequest  => DeleteAuthorisationRequestFormat.writes(s)
-    case s: InvitationSentPersonal      => InvitationSentPersonalFormat.writes(s)
-    case s: InvitationSentBusiness      => InvitationSentBusinessFormat.writes(s)
-    case s: InvitationSentTrust         => InvitationSentTrustFormat.writes(s)
+    case s: InvitationSent              => InvitationSentFormat.writes(s)
     case s: KnownFactNotMatched         => KnownFactNotMatchedFormat.writes(s)
     case s: CannotCreateRequest         => CannotCreateRequestFormat.writes(s)
     case s: SomeAuthorisationsFailed    => SomeAuthorisationsFailedFormat.writes(s)
@@ -94,9 +90,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
     case "ConfirmCountryCodeCgt"       => ConfirmCgtCountryCodeFormat.reads(properties)
     case "ReviewAuthorisations"        => ReviewAuthorisationsFormat.reads(properties)
     case "DeleteAuthorisationRequest"  => DeleteAuthorisationRequestFormat.reads(properties)
-    case "InvitationSentPersonal"      => InvitationSentPersonalFormat.reads(properties)
-    case "InvitationSentBusiness"      => InvitationSentBusinessFormat.reads(properties)
-    case "InvitationSentTrust"         => InvitationSentTrustFormat.reads(properties)
+    case "InvitationSent"              => InvitationSentFormat.reads(properties)
     case "KnownFactNotMatched"         => KnownFactNotMatchedFormat.reads(properties)
     case "TrustNotFound"               => TrustNotFoundFormat.reads(properties)
     case "CgtRefNotFound"              => CgtRefNotFoundFormat.reads(properties)
