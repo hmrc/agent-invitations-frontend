@@ -16,11 +16,27 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
+import com.google.inject.ImplementedBy
+
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
+@ImplementedBy(classOf[ConfigFeatureFlags])
+trait FeatureFlags {
+  val showHmrcMtdIt: Boolean
+  val showPersonalIncome: Boolean
+  val showHmrcMtdVat: Boolean
+  val showHmrcTrust: Boolean
+  val showHmrcCgt: Boolean
+  val showPlasticPackagingTax: Boolean
+  val enableTrackCancelAuth: Boolean
+  val showAgentLedDeAuth: Boolean
+  val agentSuspensionEnabled: Boolean
+  val acceptTrustURNIdentifier: Boolean
+}
+
 @Singleton
-case class FeatureFlags @Inject()(appConfig: AppConfig) {
+case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFlags {
 
   val showHmrcMtdIt = appConfig.featuresMtdIt
   val showPersonalIncome = appConfig.featuresPersonalIncome

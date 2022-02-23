@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model._
 
 case class Invitation(clientType: Option[ClientType], service: uk.gov.hmrc.agentmtdidentifiers.model.Service, clientIdentifier: TaxIdentifier) {
   require(
-    service.supportedClientIdType.clazz == clientIdentifier.getClass,
+    service.supportedSuppliedClientIdType.clazz == clientIdentifier.getClass,
     s"Expected identifier of type ${service.supportedClientIdType.clazz}, got ${clientIdentifier.getClass}"
   )
   def clientId: String = clientIdentifier.value

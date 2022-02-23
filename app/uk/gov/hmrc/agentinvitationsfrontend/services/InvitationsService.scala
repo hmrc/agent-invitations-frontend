@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.LocalDate
 import play.api.Logging
 import play.api.mvc.{Request, RequestHeader}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -46,7 +46,7 @@ class InvitationsService @Inject()(
     invitation: Invitation)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[InvitationId] = {
 
     val agentInvitation =
-      AgentInvitation(invitation.clientType, invitation.service.id, invitation.service.supportedClientIdType.id, invitation.clientId)
+      AgentInvitation(invitation.clientType, invitation.service.id, invitation.service.supportedSuppliedClientIdType.id, invitation.clientId)
 
     (for {
       locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
@@ -79,7 +79,7 @@ class InvitationsService @Inject()(
         AgentInvitation(
           authRequest.invitation.clientType,
           authRequest.invitation.service.id,
-          authRequest.invitation.service.supportedClientIdType.id,
+          authRequest.invitation.service.supportedSuppliedClientIdType.id,
           authRequest.invitation.clientId
         )
 
@@ -247,7 +247,7 @@ class InvitationsService @Inject()(
     val services = basket.map(_.invitation.service.id)
 
     basket
-      .find(_.invitation.service == Services.HMRCMTDIT)
+      .find(_.invitation.service == Service.MtdIt)
       .map(_.invitation.clientId)
       .fold(toFuture(false)) { clientId =>
         isAltItsa(arn, clientId)

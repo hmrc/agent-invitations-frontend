@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoade
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -153,7 +153,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitPersonalSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
       .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
 
   val submitBusinessSelectService: Action[AnyContent] =
@@ -167,7 +167,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitBusinessSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
       .applyWithRequest(
         implicit request => transitions.selectedBusinessService(featureFlags)
       )
@@ -175,7 +175,7 @@ class AgentInvitationJourneyController @Inject()(
   def submitTrustSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Trust))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Trust))
       .applyWithRequest(
         implicit request => transitions.selectedTrustService(featureFlags)
       )
@@ -412,7 +412,7 @@ class AgentInvitationJourneyController @Inject()(
         else
           Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)), config))
 
-      case IdentifyClient(Trust, Services.TAXABLETRUST, _) =>
+      case IdentifyClient(ClientType.Trust, Services.TAXABLETRUST, _) =>
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
@@ -423,7 +423,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Personal, Services.HMRCMTDIT, _) =>
+      case IdentifyClient(ClientType.Personal, Services.HMRCMTDIT, _) =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(ItsaClientForm.form),
@@ -432,7 +432,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Personal, Services.HMRCPIR, _) =>
+      case IdentifyClient(ClientType.Personal, Services.HMRCPIR, _) =>
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IrvClientForm.form),
@@ -574,10 +574,10 @@ class AgentInvitationJourneyController @Inject()(
         Ok(cannotCreateRequestView(CannotCreateRequestConfig(basket.nonEmpty, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
 
       case SomeAuthorisationsFailed(_, _, _, basket) =>
-        Ok(invitationCreationFailedView(SomeInvitationCreationFailedPageConfig(basket)))
+        Ok(invitationCreationFailedView(InvitationCreationFailedPageConfig(basket, isAll = false)))
 
       case AllAuthorisationsFailed(basket) =>
-        Ok(invitationCreationFailedView(AllInvitationCreationFailedPageConfig(basket)))
+        Ok(invitationCreationFailedView(InvitationCreationFailedPageConfig(basket, isAll = true)))
 
       case ActiveAuthorisationExists(clientType, service, basket) =>
         Ok(

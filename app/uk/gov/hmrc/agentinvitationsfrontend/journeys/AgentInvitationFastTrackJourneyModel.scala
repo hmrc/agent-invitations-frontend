@@ -406,7 +406,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                          hasPartialAuthorisation(arn, fastTrackRequest.clientIdentifier).flatMap {
                            case true => goto(PartialAuthorisationExists(fastTrackRequest, continueUrl))
                            case false =>
-                             if (appConfig.featuresAltItsa && invitation.service == Service.HMRCMTDIT)
+                             if (appConfig.featuresAltItsa && invitation.service == Service.MtdIt)
                                legacySaRelationshipStatusFor(arn, fastTrackRequest.clientIdentifier).flatMap {
                                  case LegacySaRelationshipFoundAndMapped => goto(AlreadyCopiedAcrossItsa)
                                  case LegacySaRelationshipFoundNotMapped =>

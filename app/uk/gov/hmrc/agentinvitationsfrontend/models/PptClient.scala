@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
 import uk.gov.hmrc.agentmtdidentifiers.model.PptRef
 
 case class PptClient(pptRef: PptRef, registrationDate: String)

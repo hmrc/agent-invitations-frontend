@@ -275,15 +275,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     }
 
     def submitIdentifyClientPpt(getPptSubscription: GetPptSubscription)(agent: AuthorisedAgent)(
-      pptClient: PptClient): AgentLedDeauthJourneyModel.Transition = {
-      def handle(showRegDate: PptSubscription => State) =
-        getPptSubscription(pptClient.pptRef).map {
-          case Some(subscription) =>
-            showRegDate(subscription)
-          case None =>
-            PptRefNotFound(pptClient.pptRef)
-        }
-
+      pptClient: PptClient): AgentLedDeauthJourneyModel.Transition =
       Transition {
         case IdentifyClientPersonal(HMRCPPTORG) | IdentifyClientBusiness(HMRCPPTORG) | IdentifyClientTrust | IdentifyClientPpt =>
           getPptSubscription(pptClient.pptRef).map {
@@ -293,7 +285,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
               PptRefNotFound(pptClient.pptRef)
           }
       }
-    }
 
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       postcode: Postcode): AgentLedDeauthJourneyModel.Transition =

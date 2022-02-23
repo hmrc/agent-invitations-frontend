@@ -20,7 +20,7 @@ import com.google.inject.ImplementedBy
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{WarmUp, WarmUpSessionRequired}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.WarmUpSessionRequired
 import uk.gov.hmrc.agentinvitationsfrontend.repository.{SessionCache, SessionCacheRepository}
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.http.HeaderCarrier

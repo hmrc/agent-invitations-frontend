@@ -113,14 +113,13 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request =>
-          chosenPersonalService(
-            featureFlags.showHmrcMtdIt,
-            featureFlags.showPersonalIncome,
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showHmrcCgt,
-            featureFlags.showPlasticPackagingTax))
+      .apply(
+        chosenPersonalService(
+          featureFlags.showHmrcMtdIt,
+          featureFlags.showPersonalIncome,
+          featureFlags.showHmrcMtdVat,
+          featureFlags.showHmrcCgt,
+          featureFlags.showPlasticPackagingTax))
 
   def submitBusinessServiceSingle: Action[AnyContent] =
     actions
@@ -132,11 +131,10 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request =>
-          chosenBusinessService(
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showPlasticPackagingTax
+      .apply(
+        chosenBusinessService(
+          featureFlags.showHmrcMtdVat,
+          featureFlags.showPlasticPackagingTax
         )
       )
 

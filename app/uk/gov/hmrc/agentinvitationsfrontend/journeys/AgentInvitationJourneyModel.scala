@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
-import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
@@ -237,7 +236,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyClient(ClientType.Trust, Service.HMRCTERSORG, basket) =>
+        case IdentifyClient(ClientType.Trust, trustService, basket) if List(Service.HMRCTERSORG, Service.HMRCTERSNTORG).contains(trustService) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
               case Right(TrustName(name)) => {
@@ -245,13 +244,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                   case Utr(_) =>
                     goto(
                       ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.Trust, Utr(trustClient.taxId.value))),
+                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.forId(trustService), Utr(trustClient.taxId.value))),
                         basket)
                     )
                   case Urn(_) =>
                     goto(
                       ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.Trust, Urn(trustClient.taxId.value))),
+                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.forId(trustService), Urn(trustClient.taxId.value))),
                         basket)
                     )
                 }
@@ -479,7 +478,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       successState: State)(clientType: ClientType, arn: Arn, request: AuthorisationRequest, service: String, basket: Basket)(
       appConfig: AppConfig): Future[State] =
       for {
-        hasPendingInvitations <- if (basket.exists(_.invitation.service == service) &&
+        hasPendingInvitations <- if (basket.exists(_.invitation.service.id == service) &&
                                      basket.exists(_.invitation.clientId == request.invitation.clientId))
                                   Future.successful(true)
                                 else
@@ -573,7 +572,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             basket)(appConfig)
         } else goto(IdentifyClient(ClientType.Business, Service.HMRCMTDVAT, basket))
 
-      case cc @ ConfirmClient(request, basket, _) if cc.service == Service.Trust =>
+      case cc @ ConfirmClient(request, basket, _) if List(Service.Trust, Service.TrustNT).contains(cc.service) =>
         if (confirmation.choice) {
           if (showCgtFlag)
             // if CGT is enabled, we need to go to the review page (since we are multi-select)
@@ -650,7 +649,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def continueSomeResponsesFailed(agent: AuthorisedAgent) = Transition {
       case SomeAuthorisationsFailed(invitationLink, continueUrl, agencyEmail, basket) =>
         val services = basket.filter(_.state == AuthorisationRequest.CREATED).map(_.invitation.service.id)
-        goto(InvitationSent(ClientType.Personal, invitationLink, continueUrl, agencyEmail, services, isAltItsa = Some(false)))
+        goto(InvitationSent(ClientType.Personal, invitationLink, continueUrl, agencyEmail, services, isAltItsa = None))
     }
 
     // format: off
