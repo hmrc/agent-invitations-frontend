@@ -396,8 +396,9 @@ class AgentInvitationJourneyController @Inject()(
             ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType(), featureFlags.showHmrcTrust)
           ))
 
-      case SelectService(Personal, services, basket) =>
-        val config = PersonalSelectServicePageConfig(
+      case SelectService(clientType, services, basket) =>
+        val config = SelectServicePageConfig(
+          clientType,
           basket,
           featureFlags,
           services,
@@ -408,34 +409,7 @@ class AgentInvitationJourneyController @Inject()(
         if (config.showMultiSelect)
           Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
         else
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Personal)), config))
-
-      case SelectService(Business, services, basket) =>
-        val config = BusinessSelectServicePageConfig(
-          basket,
-          featureFlags,
-          services,
-          backLink = backLinkFor(breadcrumbs).url,
-          reviewAuthsCall = routes.AgentInvitationJourneyController.showReviewAuthorisations()
-        )
-
-        if (config.showMultiSelect)
-          Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
-        else
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Business)), config))
-
-      case SelectService(Trust, services, basket) =>
-        val config = TrustSelectServicePageConfig(
-          basket,
-          featureFlags,
-          services,
-          backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.showReviewAuthorisations())
-        if (config.showMultiSelect) {
-          Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
-        } else {
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Trust)), config))
-        }
+          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)), config))
 
       case IdentifyClient(Trust, Services.TAXABLETRUST, _) =>
         Ok(
