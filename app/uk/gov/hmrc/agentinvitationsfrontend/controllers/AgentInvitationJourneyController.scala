@@ -287,7 +287,7 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(PptClientForm.form)
       .applyWithRequest(implicit request => Transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
 
-  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm].orRollback
+  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
   val submitConfirmClient: Action[AnyContent] =
     actions
@@ -393,18 +393,13 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case _: SelectClientType         => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectService            => routes.AgentInvitationJourneyController.showSelectService()
-    case _: IdentifyClient           => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case _: ConfirmClientItsa        => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPersonalVat => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientBusinessVat => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientTrust       => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientCgt         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPpt         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmPostcodeCgt       => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
-    case _: ConfirmCountryCodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
-    case _: ReviewAuthorisations     => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case _: SelectClientType      => routes.AgentInvitationJourneyController.showClientType()
+    case _: SelectService         => routes.AgentInvitationJourneyController.showSelectService()
+    case _: IdentifyClient        => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: ConfirmClient         => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmPostcodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
+    case _: ConfirmCountryCodeCgt => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
+    case _: ReviewAuthorisations  => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
     case _: InvitationSentPersonal      => routes.AgentInvitationJourneyController.showInvitationSent()
@@ -576,18 +571,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case ConfirmClientTrust(authorisationRequest, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientCgt(authorisationRequest, _) =>
+      case ConfirmClient(authorisationRequest, _, _) =>
         Ok(
           confirmClientView(
             authorisationRequest.clientName,
@@ -616,50 +600,6 @@ class AgentInvitationJourneyController @Inject()(
             backLinkFor(breadcrumbs).url,
             fromFastTrack = false,
             isDeAuth = false))
-
-      case ConfirmClientItsa(authorisationRequest, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientPersonalVat(authorisationRequest, _, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientBusinessVat(authorisationRequest, _, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientPpt(authorisationRequest, basket) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
-          ))
 
       case ReviewAuthorisations(Personal, services, basket) =>
         Ok(
