@@ -19,6 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, Services}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class CheckDetailsPageConfig(
   fastTrackRequest: AgentFastTrackRequest,
@@ -31,20 +32,19 @@ case class CheckDetailsPageConfig(
 
   val serviceMessageKey: String = {
     fastTrackRequest.service match {
-      case "HMRC-MTD-IT"            => "itsa"
-      case "PERSONAL-INCOME-RECORD" => "afi"
-      case "HMRC-MTD-VAT"           => "vat"
-      case "HMRC-TERS-ORG"          => "trust"
-      case "HMRC-TERSNT-ORG"        => "trust"
-      case "HMRC-CGT-PD"            => "cgt"
-      case "HMRC-PPT-ORG"           => "ppt"
+      case Service.MtdIt                => "itsa"
+      case Service.PersonalIncomeRecord => "afi"
+      case Service.Vat                  => "vat"
+      case Service.Trust                => "trust"
+      case Service.TrustNT              => "trust"
+      case Service.CapitalGains         => "cgt"
+      case Service.Ppt                  => "ppt"
     }
   }
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 
-  val needKnownFact
-    : Boolean = fastTrackRequest.service != Services.TAXABLETRUST && fastTrackRequest.service != Services.NONTAXABLETRUST && fastTrackRequest.knownFact
+  val needKnownFact: Boolean = fastTrackRequest.service != Service.Trust && fastTrackRequest.service != Service.TrustNT && fastTrackRequest.knownFact
     .getOrElse("")
     .isEmpty
 

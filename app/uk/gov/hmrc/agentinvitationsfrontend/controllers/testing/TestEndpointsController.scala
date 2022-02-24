@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -127,7 +127,7 @@ object TestEndpointsController {
     Form(
       mapping(
         "clientType"           -> optional(text.transform(ClientType.toEnum, ClientType.fromEnum)),
-        "service"              -> text,
+        "service"              -> text.transform[Service](Service.forId, _.id),
         "clientIdentifierType" -> text,
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
@@ -141,7 +141,7 @@ object TestEndpointsController {
   val testTrackInformationForm: Form[TrackResendForm] = {
     Form(
       mapping(
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
             .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
@@ -154,7 +154,7 @@ object TestEndpointsController {
     Form(
       mapping(
         "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "service"      -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service"      -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> text
           .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
@@ -165,7 +165,7 @@ object TestEndpointsController {
   val testCancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"  -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service"  -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientId" -> normalizedText.verifying(validateClientId),
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),

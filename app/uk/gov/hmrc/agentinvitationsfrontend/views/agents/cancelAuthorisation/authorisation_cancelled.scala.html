@@ -25,7 +25,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
-
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +34,7 @@
 )
 
 @(
-    service: String,
+    service: Service,
     clientName: String,
     agencyName: String,
     agentServicesAccountUrl: String
@@ -56,9 +56,9 @@ isAgent = true) {
     ))
 
     <h2>@msgs("cancel-authorisation.cancelled.subheader")</h2>
-    <p>@Html(msgs(s"cancel-authorisation.cancelled.p1.$service", agencyName, clientName))</p>
+    <p>@Html(msgs(s"cancel-authorisation.cancelled.p1.${service.id}", agencyName, clientName))</p>
 
-    @if(service=="HMRC-MTD-IT") {
+    @if(service == Service.MtdIt) {
         <h2>@msgs("authorisation-cancelled.check-sa.subheader")</h2>
 
         <p>@msgs("authorisation-cancelled.check-sa.p1")</p>

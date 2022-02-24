@@ -26,11 +26,12 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(mainTemplate: MainTemplate, govukPanel: GovukPanel, a:a, p:p, h1:h1, h2:h2,ul:ul)
 
 @(
-    service: String,
+    service: Service,
     clientId: String,
     clientName: String,
     clientType: ClientType
@@ -63,9 +64,9 @@ scriptElem = Some(gtmScript)
      ))
 
     @h2("authorisation-cancelled.subheader")
-    @p(msgs(s"authorisation-cancelled.p1.$service", clientName))
+    @p(msgs(s"authorisation-cancelled.p1.${service.id}", clientName))
 
-    @if(service=="HMRC-MTD-IT") {
+    @if(service == Service.MtdIt) {
         @h2("authorisation-cancelled.check-sa.subheader")
 
         @p("authorisation-cancelled.check-sa.p1")

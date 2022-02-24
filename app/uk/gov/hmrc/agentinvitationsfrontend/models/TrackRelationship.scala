@@ -17,23 +17,22 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import java.time.LocalDateTime
-
 import org.joda.time.LocalDate
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 
 sealed trait TrackRelationship extends Product with Serializable {
   val arn: Arn
   val clientType: String
   val clientId: String
-  val service: String
+  val service: Service
   val dateTo: Option[LocalDate]
 }
 
-case class InactiveTrackRelationship(arn: Arn, clientType: String, clientId: String, service: String, dateTo: Option[LocalDate])
+case class InactiveTrackRelationship(arn: Arn, clientType: String, clientId: String, service: Service, dateTo: Option[LocalDate])
     extends TrackRelationship
 
 object InactiveTrackRelationship {
@@ -41,7 +40,7 @@ object InactiveTrackRelationship {
 }
 
 case class IrvTrackRelationship(arn: Arn, dateTo: Option[LocalDate], clientId: String) extends TrackRelationship {
-  val service = Services.HMRCPIR
+  val service = Service.PersonalIncomeRecord
   val clientType = "personal"
 }
 

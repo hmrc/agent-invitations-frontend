@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -100,10 +100,10 @@ class TrackService @Inject()(
     val futureInvitations = getRecentAgentInvitations(arn, showLastDays)
       .map(_.map {
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu))
+          TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu))
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb) =>
-          TrackInformationSorted(ct, srv, cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb, Some(lu))
-        case _ => TrackInformationSorted(None, "", "", "", None, "", None, None, None, isRelationshipEnded = false, None, None)
+          TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb, Some(lu))
+        case _ => TrackInformationSorted(None, None, "", "", None, "", None, None, None, isRelationshipEnded = false, None, None)
       })
 
     val futureRelationships = getInactiveClients
@@ -121,9 +121,10 @@ class TrackService @Inject()(
             None,
             isRelationshipEnded = true,
             None,
-            None)
+            None
+          )
         case _ =>
-          TrackInformationSorted(None, "", "", "", None, "", None, None, None, isRelationshipEnded = true, None, None)
+          TrackInformationSorted(None, None, "", "", None, "", None, None, None, isRelationshipEnded = true, None, None)
       })
 
     for {
@@ -135,7 +136,10 @@ class TrackService @Inject()(
       nameRetrieved <- Future.traverse(nameEmpty) { trackInfo =>
                         logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
                           s" status: ${trackInfo.status} date: ${trackInfo.dateTime} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
-                        getClientNameByService(trackInfo.clientId, trackInfo.service).map(name => trackInfo.copy(clientName = name))
+                        trackInfo.service match {
+                          case Some(service) => getClientNameByService(trackInfo.clientId, service).map(name => trackInfo.copy(clientName = name))
+                          case None          => Future.successful(trackInfo.copy(clientName = None))
+                        }
                       }
       finalResults = nameOk ++ nameRetrieved
     } yield finalResults.sorted(TrackInformationSorted.orderingByDate)
@@ -157,25 +161,25 @@ class TrackService @Inject()(
 
       inactiveClients <- Future.traverse(filteredRelationships) {
 
-                          case r if r.service == Services.HMRCMTDIT =>
+                          case r if r.service == Service.MtdIt =>
                             acaConnector
                               .getNinoForMtdItId(MtdItId(r.clientId))
-                              .map(nino => InactiveClient(Some(r.clientType), r.service, nino.fold("")(_.value), "ni", r.dateTo))
+                              .map(nino => InactiveClient(Some(r.clientType), Some(r.service), nino.fold("")(_.value), "ni", r.dateTo))
 
                           case rel: InactiveTrackRelationship =>
                             Future successful InactiveClient(
                               Some(rel.clientType),
-                              rel.service,
+                              Some(rel.service),
                               rel.clientId,
                               Services.clientIdType(rel.service),
                               rel.dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>
-                            Future successful InactiveClient(Some("personal"), "PERSONAL-INCOME-RECORD", clientId, "ni", dateTo)
+                            Future successful InactiveClient(Some("personal"), Some(Service.PersonalIncomeRecord), clientId, "ni", dateTo)
 
-                          case _ => Future successful InactiveClient(None, "", "", "", None)
+                          case _ => Future successful InactiveClient(None, None, "", "", None)
                         }
-    } yield inactiveClients.filter(_.serviceName.nonEmpty)
+    } yield inactiveClients.filter(_.service.nonEmpty)
 
   /*This method will match an Accepted with an Invalid. It is based on the premise that for a given client,
   if there are n Accepted then there must be either n or n-1 Invalids. Revisit once we can depend on the

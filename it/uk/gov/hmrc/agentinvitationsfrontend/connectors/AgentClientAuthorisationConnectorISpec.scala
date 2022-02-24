@@ -8,7 +8,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -62,7 +62,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           invitationIdITSA,
           "AB123456B",
           "ni",
-          serviceITSA,
+          Service.MtdIt,
           identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
@@ -86,7 +86,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           invitationIdPIR,
           "AB123456B",
           "ni",
-          servicePIR,
+          Service.PersonalIncomeRecord,
           identifierPIR)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
@@ -109,7 +109,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           invitationIdVAT,
           validVrn.value,
           "vrn",
-          serviceVAT,
+          Service.Vat,
           identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
@@ -132,7 +132,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           invitationIdTrust,
           validUtr.value,
           "utr",
-          serviceTrust,
+          Service.Trust,
           identifierTrust)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationTrust))
         result.isDefined shouldBe true
@@ -157,9 +157,9 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       result.count(_.clientId == validNino.value) shouldBe 6
       result.count(_.clientId == validVrn.value) shouldBe 6
       result.count(_.clientId == "AB123456B") shouldBe 6
-      result.count(_.service == "HMRC-MTD-IT") shouldBe 6
-      result.count(_.service == "HMRC-MTD-VAT") shouldBe 6
-      result.count(_.service == "PERSONAL-INCOME-RECORD") shouldBe 6
+      result.count(_.service == Service.MtdIt) shouldBe 6
+      result.count(_.service == Service.Vat) shouldBe 6
+      result.count(_.service == Service.PersonalIncomeRecord) shouldBe 6
       result.count(_.status == "Pending") shouldBe 6
       result.count(_.status == "Accepted") shouldBe 3
       result.count(_.status == "Rejected") shouldBe 3
@@ -168,7 +168,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       result(0) shouldBe StoredInvitation(
         arn,
         Some("personal"),
-        "HMRC-MTD-IT",
+        Service.MtdIt,
         "AB123456A",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Pending",
@@ -183,7 +183,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       result(4) shouldBe StoredInvitation(
         arn,
         Some("personal"),
-        "HMRC-MTD-VAT",
+        Service.Vat,
         "101747696",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Accepted",
@@ -198,7 +198,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       result(8) shouldBe StoredInvitation(
         arn,
         Some("personal"),
-        "PERSONAL-INCOME-RECORD",
+        Service.PersonalIncomeRecord,
         "AB123456B",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Rejected",
@@ -227,7 +227,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val getITSAInvitation =
         s"/agent-client-authorisation/clients/MTDITID/${encodePathSegment(mtdItId.value)}/invitations/received/${invitationIdITSA.value}"
       "return an invitation" in {
-        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, serviceITSA, identifierITSA, "Pending")
+        givenInvitationExists(arn, mtdItId.value, invitationIdITSA, Service.MtdIt, identifierITSA, "Pending")
         val result = await(
           connector
             .getInvitation(getITSAInvitation))
@@ -246,7 +246,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val getPIRInvitation =
         s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
       "return PIR Invitation" in {
-        givenInvitationExists(arn, validNino.value, invitationIdPIR, servicePIR, identifierPIR, "Pending")
+        givenInvitationExists(arn, validNino.value, invitationIdPIR, Service.PersonalIncomeRecord, identifierPIR, "Pending")
         val result = await(
           connector
             .getInvitation(getPIRInvitation))
@@ -265,7 +265,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val getVATInvitation =
         s"/agent-client-authorisation/clients/VRN/${encodePathSegment(validVrn.value)}/invitations/received/${invitationIdVAT.value}"
       "return VAT Invitation" in {
-        givenInvitationExists(arn, validVrn.value, invitationIdVAT, serviceVAT, identifierVAT, "Pending")
+        givenInvitationExists(arn, validVrn.value, invitationIdVAT, Service.Vat, identifierVAT, "Pending")
         val result = await(
           connector
             .getInvitation(getVATInvitation))
@@ -768,19 +768,19 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
   "setRelationshipEnded" should {
     "return Some(true) if successful" in {
-      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 204)
+      givenSetRelationshipEndedReturns(arn, "123456789", Service.Vat, 204)
       val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
       result shouldBe Some(true)
     }
 
     "return Some(false) if Not Found" in {
-      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 404)
+      givenSetRelationshipEndedReturns(arn, "123456789", Service.Vat, 404)
       val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
       result shouldBe Some(false)
     }
 
     "return None if Service Unavailable" in {
-      givenSetRelationshipEndedReturns(arn, "123456789", "HMRC-MTD-VAT", 503)
+      givenSetRelationshipEndedReturns(arn, "123456789", Service.Vat, 503)
       val result = await(connector.setRelationshipEnded(arn, "123456789", "HMRC-MTD-VAT"))
       result shouldBe None
     }

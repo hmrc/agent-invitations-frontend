@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -33,7 +34,7 @@
     submitButton: SubmitButton
 )
 
-@(choiceForm: Form[String], submitCall: Call, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[Option[Service]], submitCall: Call, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = msgs("service.name.agents.de-auth"),

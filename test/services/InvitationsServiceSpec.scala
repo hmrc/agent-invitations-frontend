@@ -23,7 +23,7 @@ import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.services.InvitationsService
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, Vrn}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,7 +41,6 @@ class InvitationsServiceSpec extends UnitSpec {
   val vrn = Vrn("101747696")
   val arn = Arn("TARN6169111")
 
-  val vatService = "HMRC-MTD-VAT"
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "InvitationsService" when {
@@ -56,7 +55,7 @@ class InvitationsServiceSpec extends UnitSpec {
           .thenReturn(
             Future successful Some(true)
           )
-        await(tested.setRelationshipEnded(arn, vrn.value, vatService)) shouldBe Some(true)
+        await(tested.setRelationshipEnded(arn, vrn.value, Service.Vat)) shouldBe Some(true)
       }
       "return Some(false) when it fails" in {
 
@@ -67,7 +66,7 @@ class InvitationsServiceSpec extends UnitSpec {
           .thenReturn(
             Future successful Some(false)
           )
-        await(tested.setRelationshipEnded(arn, vrn.value, vatService)) shouldBe Some(false)
+        await(tested.setRelationshipEnded(arn, vrn.value, Service.Vat)) shouldBe Some(false)
       }
     }
   }

@@ -25,6 +25,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, GovukInsetText, InsetText, RadioItem}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -51,7 +52,7 @@
 
     @formHelper(action = config.submitCall) {
 
-        @if(config.service=="HMRC-MTD-IT") {
+        @if(config.service == Service.MtdIt) {
             <h1 class="govuk-heading-xl">@msgs("cancel-authorisation.confirm-cancel.header")</h1>
 
             @govukInsetText(InsetText(
@@ -63,7 +64,7 @@
                 legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
-                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service.id}", config.processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(
@@ -83,7 +84,7 @@
                 field = choiceForm("accepted"),
                 legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 headingIsLegend = true,
-                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service.id}", config.processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(

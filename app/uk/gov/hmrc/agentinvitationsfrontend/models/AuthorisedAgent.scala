@@ -15,14 +15,13 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 
 case class AuthorisedAgent(arn: Arn) {
 
-  val personalServices: Set[String] = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
+  val personalServices: Set[Service] = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
 
-  val businessServices: Set[String] = Set(HMRCMTDVAT, HMRCPPTORG)
+  val businessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
 
-  val trustServices: Set[String] = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
+  val trustServices: Set[Service] = Set(Service.Trust, Service.CapitalGains, Service.Ppt)
 }

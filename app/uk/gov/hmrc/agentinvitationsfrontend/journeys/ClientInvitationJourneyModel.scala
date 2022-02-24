@@ -19,11 +19,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import com.github.nscala_time.time.Imports.DateTimeFormat
 import org.joda.time.DateTime
 import play.api.Logging
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{determineServiceMessageKey, determineServiceMessageKeyFromService}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.fsm.JourneyModel
@@ -268,10 +267,10 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
               getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
                 case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
                 case consents =>
-                  val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(TAXABLETRUST))
-                  val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(NONTAXABLETRUST))
-                  val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == TAXABLETRUST)
-                  val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == NONTAXABLETRUST)
+                  val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(Service.Trust))
+                  val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(Service.TrustNT))
+                  val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == Service.Trust.id)
+                  val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == Service.TrustNT.id)
                   if (containsTrust && butNoTrustEnrolment) {
                     logger.warn("client doesn't have the expected HMRC-TERS-ORG enrolment to accept/reject an invitation")
                     goto(TrustNotClaimed)
@@ -282,18 +281,18 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                     consents match {
                       case _ if consents.nonEmpty && agentSuspensionEnabled =>
                         getSuspensionDetails(arn).flatMap { suspensionDetails =>
-                          val consentServices: Set[String] =
+                          val consentServices: Set[Service] =
                             consents.map(consent => consent.service).toSet
                           val nonSuspendedConsents =
                             consents.filter(consent => !suspensionDetails.isRegimeSuspended(consent.service))
-                          if (suspensionDetails.isAnyRegimeSuspendedForServices(consentServices))
+                          if (suspensionDetails.isAnyRegimeSuspendedForServices(consentServices.map(_.id)))
                             goto(
                               SuspendedAgent(
                                 clientType,
                                 uid,
                                 agentName,
                                 arn,
-                                suspensionDetails.suspendedRegimesForServices(consentServices),
+                                suspensionDetails.suspendedRegimesForServices(consentServices.map(_.id)),
                                 nonSuspendedConsents))
                           else {
                             goto(idealTargetState(clientType, uid, agentName, arn, nonSuspendedConsents))

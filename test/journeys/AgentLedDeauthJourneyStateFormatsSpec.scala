@@ -20,9 +20,7 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import support.UnitSpec
 
@@ -42,22 +40,22 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "SelectServicePersonal" in {
-        val state = SelectServicePersonal(Set("approved", "services"))
-        val json = Json.parse("""{"state":"SelectServicePersonal", "properties": {"enabledServices": ["approved", "services"]}}""")
+        val state = SelectServicePersonal(Set(Service.Vat, Service.MtdIt))
+        val json = Json.parse("""{"state":"SelectServicePersonal", "properties": {"enabledServices": ["HMRC-MTD-VAT", "HMRC-MTD-IT"]}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "SelectServiceBusiness" in {
-        val state = SelectServiceBusiness(enabledServices = Set(HMRCMTDVAT, HMRCPPTORG))
-        val json = Json.parse(s"""{"state":"SelectServiceBusiness", "properties": {"enabledServices": ["$HMRCMTDVAT", "$HMRCPPTORG"]}}""")
+        val state = SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt))
+        val json = Json.parse(s"""{"state":"SelectServiceBusiness", "properties": {"enabledServices": ["HMRC-MTD-VAT", "HMRC-PPT-ORG"]}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
 
       "SelectServiceTrust" in {
-        val state = SelectServiceTrust(Set(TAXABLETRUST, HMRCCGTPD))
+        val state = SelectServiceTrust(Set(Service.Trust, Service.CapitalGains))
         val json = Json.parse("""{"state":"SelectServiceTrust","properties":{"enabledServices":["HMRC-TERS-ORG","HMRC-CGT-PD"]}}""")
 
         Json.toJson(state: State) shouldBe json
@@ -83,15 +81,15 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "IdentifyClientPersonal" in {
-        val state = IdentifyClientPersonal(Services.HMRCMTDIT)
+        val state = IdentifyClientPersonal(Service.MtdIt)
         val json = Json.parse("""{"state":"IdentifyClientPersonal", "properties": {"service": "HMRC-MTD-IT"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "IdentifyClientBusiness" in {
-        val state = IdentifyClientBusiness(Services.HMRCMTDVAT)
-        val json = Json.parse(s"""{"state":"IdentifyClientBusiness", "properties": {"service": "$HMRCMTDVAT"}}""")
+        val state = IdentifyClientBusiness(Service.Vat)
+        val json = Json.parse(s"""{"state":"IdentifyClientBusiness", "properties": {"service": "${Service.Vat}"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -151,7 +149,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ConfirmCancel" in {
-        val state = ConfirmCancel("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "AB123456A")
+        val state = ConfirmCancel(Service.MtdIt, Some("Cersei not KEEPing well"), "AB123456A")
         val json = Json.parse(
           """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A", "isPartialAuth": false}}""")
 
@@ -159,7 +157,7 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "AuthorisationCancelled" in {
-        val state = AuthorisationCancelled("HMRC-MTD-IT", Some("Cersei not KEEPing well"), "agent name")
+        val state = AuthorisationCancelled(Service.MtdIt, Some("Cersei not KEEPing well"), "agent name")
         val json = Json.parse(
           """{"state":"AuthorisationCancelled","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","agencyName": "agent name"}}""")
 
@@ -191,21 +189,21 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "NotSignedUp" in {
-        val state = NotSignedUp("HMRC-MTD-IT")
+        val state = NotSignedUp(Service.MtdIt)
         val json = Json.parse("""{"state":"NotSignedUp", "properties": {"service":"HMRC-MTD-IT"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "NotAuthorised" in {
-        val state = NotAuthorised("HMRC-MTD-IT")
+        val state = NotAuthorised(Service.MtdIt)
         val json = Json.parse("""{"state":"NotAuthorised", "properties": {"service":"HMRC-MTD-IT"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
       "ResponseFailed" in {
-        val state = ResponseFailed("HMRC-MTD-IT", Some("Holly Herndon"), "AB123456A")
+        val state = ResponseFailed(Service.MtdIt, Some("Holly Herndon"), "AB123456A")
         val json =
           Json.parse("""{"state":"ResponseFailed", "properties": {"service": "HMRC-MTD-IT", "clientName":"Holly Herndon","clientId": "AB123456A"}}""")
 

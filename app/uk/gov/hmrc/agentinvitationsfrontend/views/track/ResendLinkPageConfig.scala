@@ -20,15 +20,15 @@ import org.joda.time.LocalDate
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDVAT, HMRCPIR, NONTAXABLETRUST, TAXABLETRUST}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class ResendLinkPageConfig(
   externalUrl: String,
   agentLink: String,
   clientType: String,
   expiryDate: String,
-  service: String,
+  service: Service,
   agencyEmail: String,
   backLinkUrl: String)(implicit externalUrls: ExternalUrls, messages: Messages) {
 
@@ -45,12 +45,12 @@ case class ResendLinkPageConfig(
   val asaUrl = externalUrls.agentServicesAccountUrl
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
-    if (service == HMRCPIR) Some(Messages("invitation-sent.step1.personal.paye"))
-    else if (service == HMRCMTDVAT) Some(Messages("invitation-sent.step1.personal.vat"))
+    if (service == Service.PersonalIncomeRecord) Some(Messages("invitation-sent.step1.personal.paye"))
+    else if (service == Service.Vat) Some(Messages("invitation-sent.step1.personal.vat"))
     else None
   } else if (clientType == "business") {
-    if (service == HMRCMTDVAT) Some(Messages("invitation-sent.step1.business.vat"))
-    else if (service == TAXABLETRUST || service == NONTAXABLETRUST) Some(Messages("invitation-sent.step1.business.trust"))
+    if (service == Service.Vat) Some(Messages("invitation-sent.step1.business.vat"))
+    else if (service == Service.Trust || service == Service.TrustNT) Some(Messages("invitation-sent.step1.business.trust"))
     else None
   } else None
 }

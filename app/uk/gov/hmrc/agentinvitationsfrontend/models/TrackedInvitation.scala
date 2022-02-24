@@ -17,10 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import org.joda.time.{DateTime, LocalDate}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class TrackedInvitation(
   clientType: Option[String],
-  service: String,
+  service: Service,
   clientId: String,
   clientIdType: String,
   clientName: Option[String],

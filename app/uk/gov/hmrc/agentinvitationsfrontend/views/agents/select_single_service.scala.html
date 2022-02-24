@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +35,7 @@
     submitButton: SubmitButton
 )
 
-@(choiceForm: Form[String], config: SelectServicePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[Option[Service]], config: SelectServicePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
 <p id="selectServiceSuggestion">@Html(msgs("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>

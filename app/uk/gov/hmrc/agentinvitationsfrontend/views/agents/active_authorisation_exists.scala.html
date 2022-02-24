@@ -21,12 +21,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(
     authRequestsExist: Boolean,
-    service: String,
+    service: Service,
     clientType: ClientType,
     fromFastTrack: Boolean,
     reviewAuthsCall: Call,
@@ -44,7 +45,7 @@
 
   <h1 class="govuk-heading-xl">@msgs("active-authorisation-exists.header")</h1>
 
-  <p>@msgs(s"active-authorisation-exists.p1.$service")</p>
+  <p>@msgs(s"active-authorisation-exists.p1.${service.id}")</p>
 
   <p>@msgs("active-authorisation-exists.p2")</p>
 

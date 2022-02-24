@@ -38,7 +38,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.check_details
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
@@ -581,7 +581,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ftr.clientIdentifier
           ))
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDIT =>
+      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.MtdIt =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(IdentifyItsaClientForm),
@@ -590,7 +590,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCMTDVAT =>
+      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.Vat =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
@@ -599,7 +599,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == HMRCPIR =>
+      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.PersonalIncomeRecord =>
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IdentifyIrvClientForm),
@@ -845,16 +845,16 @@ object AgentInvitationFastTrackJourneyController {
   val validateFastTrackForm: Constraint[AgentFastTrackRequest] =
     Constraint[AgentFastTrackRequest] { formData: AgentFastTrackRequest =>
       formData match {
-        case AgentFastTrackRequest(Some(ClientType.Personal) | None, HMRCMTDIT, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.Personal) | None, Service.MtdIt, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(Some(ClientType.Personal) | None, HMRCPIR, "ni", clientId, _) if Nino.isValid(clientId) =>
+        case AgentFastTrackRequest(Some(ClientType.Personal) | None, Service.PersonalIncomeRecord, "ni", clientId, _) if Nino.isValid(clientId) =>
           Valid
-        case AgentFastTrackRequest(_, HMRCMTDVAT, "vrn", clientId, _) if Vrn.isValid(clientId)                       => Valid
-        case AgentFastTrackRequest(_, TAXABLETRUST, "utr", clientId, _) if clientId.matches(utrPattern)              => Valid
-        case AgentFastTrackRequest(_, NONTAXABLETRUST, "urn", clientId, _) if clientId.matches(urnPattern)           => Valid
-        case AgentFastTrackRequest(_, HMRCCGTPD, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)                => Valid
-        case AgentFastTrackRequest(_, HMRCPPTORG, "EtmpRegistrationNumber", clientId, _) if PptRef.isValid(clientId) => Valid
-        case _                                                                                                       => Invalid(ValidationError("INVALID_SUBMISSION"))
+        case AgentFastTrackRequest(_, Service.Vat, "vrn", clientId, _) if Vrn.isValid(clientId)                       => Valid
+        case AgentFastTrackRequest(_, Service.Trust, "utr", clientId, _) if clientId.matches(utrPattern)              => Valid
+        case AgentFastTrackRequest(_, Service.TrustNT, "urn", clientId, _) if clientId.matches(urnPattern)            => Valid
+        case AgentFastTrackRequest(_, Service.CapitalGains, "CGTPDRef", clientId, _) if CgtRef.isValid(clientId)      => Valid
+        case AgentFastTrackRequest(_, Service.Ppt, "EtmpRegistrationNumber", clientId, _) if PptRef.isValid(clientId) => Valid
+        case _                                                                                                        => Invalid(ValidationError("INVALID_SUBMISSION"))
       }
     }
 
@@ -865,7 +865,9 @@ object AgentInvitationFastTrackJourneyController {
           lowerCaseText
             .verifying("UNSUPPORTED_CLIENT_TYPE", Set("personal", "business", "trust").contains _)
             .transform(ClientType.toEnum, ClientType.fromEnum)),
-        "service" -> text.verifying("UNSUPPORTED_SERVICE", service => supportedServices.contains(service)),
+        "service" -> text
+          .verifying("UNSUPPORTED_SERVICE", service => supportedServices.exists(_.id == service))
+          .transform[Service](Service.forId, _.id),
         "clientIdentifierType" -> text
           .verifying("UNSUPPORTED_CLIENT_ID_TYPE", clientType => supportedClientIdentifierTypes.contains(clientType)),
         "clientIdentifier" -> uppercaseNormalizedText.verifying(validateClientId),
@@ -928,21 +930,21 @@ object AgentInvitationFastTrackJourneyController {
   def agentFastTrackPptRegDateForm: Form[String] =
     knownFactsForm(DateFieldHelper.dateFieldsMapping("ppt-registration"))
 
-  private def getKnownFactFormForService(service: String) =
+  private def getKnownFactFormForService(service: Service) =
     service match {
-      case HMRCMTDIT  => agentFastTrackPostcodeForm
-      case HMRCPIR    => agentFastTrackDateOfBirthForm
-      case HMRCMTDVAT => agentFastTrackVatRegDateForm
-      case HMRCPPTORG => agentFastTrackPptRegDateForm
-      case p          => throw new Exception(s"invalid service in the cache during fast track journey: $p")
+      case Service.MtdIt                => agentFastTrackPostcodeForm
+      case Service.PersonalIncomeRecord => agentFastTrackDateOfBirthForm
+      case Service.Vat                  => agentFastTrackVatRegDateForm
+      case Service.Ppt                  => agentFastTrackPptRegDateForm
+      case p                            => throw new Exception(s"invalid service in the cache during fast track journey: $p")
     }
 
-  def getSubmitKFFor(service: String) =
+  def getSubmitKFFor(service: Service) =
     service match {
-      case HMRCMTDIT  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactItsa()
-      case HMRCPIR    => routes.AgentInvitationFastTrackJourneyController.submitKnownFactIrv()
-      case HMRCMTDVAT => routes.AgentInvitationFastTrackJourneyController.submitKnownFactVat()
-      case HMRCPPTORG => routes.AgentInvitationFastTrackJourneyController.submitKnownFactPpt()
+      case Service.MtdIt                => routes.AgentInvitationFastTrackJourneyController.submitKnownFactItsa()
+      case Service.PersonalIncomeRecord => routes.AgentInvitationFastTrackJourneyController.submitKnownFactIrv()
+      case Service.Vat                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactVat()
+      case Service.Ppt                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactPpt()
     }
 
 }

@@ -31,13 +31,15 @@
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit msgs: Messages, request: Request[_])
 
+@serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
+
 <a href="@{appConfig.govUkGuidanceSignupUrl}" target="_blank" rel="noreferrer noopener">@signupInfo(invitationOrRelationship)</a>
 
 @formHelper(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
     'id -> s"postToConfirmCancel-$index"
 ) {
-    <input type="hidden" name="service" id="serviceConfirmCancel-@{index}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="service" id="serviceConfirmCancel-@{index}" value="@serviceId">
     <input type="hidden" name="clientType" id="clientTypeConfirmCancel-@{index}" value="@{invitationOrRelationship.clientType.getOrElse(Personal)}">
     <input type="hidden" name="invitationId" id="invitationId-@{index}" value="@{invitationOrRelationship.invitationId}">
     <input type="hidden" name="clientId" id="clientId-@{index}" value="@{invitationOrRelationship.clientId}">
@@ -45,7 +47,7 @@
     <input type="hidden" name="status" id="status-@{index}" value="@{invitationOrRelationship.status}">
     <button class="button--link-style govuk-!-font-size-16" type="submit" id="confirmCancelRequest-@{index}">
         <span aria-hidden="true">@msgs(s"recent-invitations.invitations.actions.partialauth.cancel")</span>
-        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.partialauth.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
+        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.partialauth.cancel.aria-text",invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.$serviceId"))</span>
     </button>
 }
 

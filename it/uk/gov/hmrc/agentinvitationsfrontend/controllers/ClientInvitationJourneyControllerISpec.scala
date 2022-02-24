@@ -8,7 +8,7 @@ import play.api.Application
 import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -948,7 +948,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
-      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
+      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, Service.CapitalGains, "CGTPDRef")
       givenAcceptInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       givenAcceptInvitationSucceeds("AB123456A", invitationIdPIR, identifierPIR)
       givenAcceptInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)
@@ -976,7 +976,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino))
       givenInvitationByIdSuccess(invitationIdPIR, "AB123456A")
       givenInvitationByIdSuccess(invitationIdVAT, "101747696")
-      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, "HMRC-CGT-PD", "CGTPDRef")
+      givenInvitationByIdSuccess(invitationIdCgt, cgtRef.value, Service.CapitalGains, "CGTPDRef")
       givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       givenRejectInvitationSucceeds("AB123456A", invitationIdPIR, identifierPIR)
       givenRejectInvitationSucceeds("101747696", invitationIdVAT, identifierVAT)

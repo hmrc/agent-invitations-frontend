@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, GovukInsetText, InsetText}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 
 @this(
@@ -36,7 +37,7 @@
     submitButton: SubmitButton
 )
 
-@(confirmForm: Form[ConfirmForm], service: String, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(confirmForm: Form[ConfirmForm], service: Service, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 title = msgs("generic.title", msgs("confirm-authorisation-cancelled.header"), msgs("service.name.agents.auth")),
@@ -51,7 +52,7 @@ backLinkHref = Some(backLinkUrl)
 
     @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
-        @if(service=="HMRC-MTD-IT") {
+        @if(service == Service.MtdIt) {
             <h1 class="govuk-heading-xl">@msgs("confirm-authorisation-cancelled.track.header")</h1>
 
             @govukInsetText(InsetText(
@@ -63,7 +64,7 @@ backLinkHref = Some(backLinkUrl)
                 legend = msgs("confirm-authorisation-cancelled.track.header"),
                 legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
-                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.$service"))
+                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.${service.id}"))
             )
 
         } else {
@@ -71,7 +72,7 @@ backLinkHref = Some(backLinkUrl)
                 field = confirmForm("confirmCancelAuthorisation"),
                 legend = msgs("confirm-authorisation-cancelled.track.header"),
                 headingIsLegend = true,
-                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.$service"))
+                hint = Some(msgs(s"confirm-authorisation-cancelled.p1.track.${service.id}"))
             )
         }
 

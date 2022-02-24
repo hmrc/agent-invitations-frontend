@@ -380,7 +380,7 @@ trait ACAStubs {
     invitationId: InvitationId,
     suppliedClientId: String,
     suppliedClientType: String,
-    service: String,
+    service: Service,
     serviceIdentifier: String) = {
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
@@ -388,7 +388,7 @@ trait ACAStubs {
           equalToJson(s"""
                          |{
                          |   "clientType": "${clientType.getOrElse("")}",
-                         |   "service": "$service",
+                         |   "service": "${service.id}",
                          |   "clientIdType": "$suppliedClientType",
                          |   "clientId":"$suppliedClientId"
                          |}""".stripMargin)
@@ -412,7 +412,7 @@ trait ACAStubs {
                                        invitationId: InvitationId,
                                        suppliedClientId: String,
                                        suppliedClientType: String,
-                                       service: String,
+                                       service: Service,
                                        serviceIdentifier: String): StubMapping = {
     stubFor(
       post(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
@@ -420,7 +420,7 @@ trait ACAStubs {
           equalToJson(s"""
                          |{
                          |   "clientType": "${clientType.getOrElse("")}",
-                         |   "service": "$service",
+                         |   "service": "${service.id}",
                          |   "clientIdType": "$suppliedClientType",
                          |   "clientId":"$suppliedClientId"
                          |}""".stripMargin)
@@ -440,7 +440,7 @@ trait ACAStubs {
     arn: Arn,
     clientId: String,
     invitationId: InvitationId,
-    service: String,
+    service: Service,
     serviceIdentifier: String,
     status: String): StubMapping =
     stubFor(
@@ -452,11 +452,11 @@ trait ACAStubs {
             .withBody(s"""
                          |{
                          |  "arn" : "${arn.value}",
-                         |  "service" : "$service",
+                         |  "service" : "${service.id}",
                          |  "clientId" : "$clientId",
-                         |  "clientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "clientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "suppliedClientId" : "$clientId",
-                         |  "suppliedClientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "$status",
                          |  "created" : "2017-10-31T23:22:50.971Z",
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -470,7 +470,7 @@ trait ACAStubs {
                          |  }
                          |}""".stripMargin)))
 
-  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String, service: String = "HMRC-MTD-IT", clientIdType: String = "mtditid", suppliedClientId: Option[String] = None, suppliedClientIdType: Option[String] = None): StubMapping =
+  def givenInvitationByIdSuccess(invitationId: InvitationId, clientId: String, service: Service = Service.MtdIt, clientIdType: String = "mtditid", suppliedClientId: Option[String] = None, suppliedClientIdType: Option[String] = None): StubMapping =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/invitations/${invitationId.value}"))
         .willReturn(
@@ -480,7 +480,7 @@ trait ACAStubs {
               s"""
                  |{
                  |  "arn" : "TARN00001",
-                 |  "service" : "$service",
+                 |  "service" : "${service.id}",
                  |  "clientId" : "$clientId",
                  |  "clientIdType" : "$clientIdType",
                  |  "suppliedClientId" : "${suppliedClientId.getOrElse(clientId)}",
@@ -505,7 +505,7 @@ trait ACAStubs {
     arn: Arn,
     clientId: String,
     invitationId: InvitationId,
-    service: String,
+    service: Service,
     serviceIdentifier: String): StubMapping =
     stubFor(
       get(urlEqualTo(
@@ -516,11 +516,11 @@ trait ACAStubs {
             .withBody(s"""
                          |{
                          |  "arn" : "${arn.value}",
-                         |  "service" : "$service",
+                         |  "service" : "${service.id}",
                          |  "clientId" : "$clientId",
-                         |  "clientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "clientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "suppliedClientId" : "$clientId",
-                         |  "suppliedClientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Expired",
                          |  "created" : "2017-7-31T23:22:50.971Z",
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -538,7 +538,7 @@ trait ACAStubs {
     arn: Arn,
     clientId: String,
     invitationId: InvitationId,
-    service: String,
+    service: Service,
     serviceIdentifier: String): StubMapping =
     stubFor(
       get(urlEqualTo(
@@ -549,11 +549,11 @@ trait ACAStubs {
             .withBody(s"""
                          |{
                          |  "arn" : "${arn.value}",
-                         |  "service" : "$service",
+                         |  "service" : "${service.id}",
                          |  "clientId" : "$clientId",
-                         |  "clientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "clientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "suppliedClientId" : "$clientId",
-                         |  "suppliedClientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Cancelled",
                          |  "created" : "2017-7-31T23:22:50.971Z",
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -571,7 +571,7 @@ trait ACAStubs {
     arn: Arn,
     clientId: String,
     invitationId: InvitationId,
-    service: String,
+    service: Service,
     serviceIdentifier: String) =
     stubFor(
       get(urlEqualTo(
@@ -582,11 +582,11 @@ trait ACAStubs {
             .withBody(s"""
                          |{
                          |  "arn" : "${arn.value}",
-                         |  "service" : "$service",
+                         |  "service" : "${service.id}",
                          |  "clientId" : "$clientId",
-                         |  "clientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "clientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "suppliedClientId" : "$clientId",
-                         |  "suppliedClientIdType" : "${StoredInvitation.clientIdTypeByService(service)}",
+                         |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Accepted",
                          |  "created" : "2017-10-31T23:22:50.971Z",
                          |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
@@ -745,7 +745,7 @@ trait ACAStubs {
         )
     )
 
-  def givenSetRelationshipEndedReturns(arn: Arn, clientId: String, service: String, status: Int) =
+  def givenSetRelationshipEndedReturns(arn: Arn, clientId: String, service: Service, status: Int) =
     stubFor(
       put(
         urlEqualTo(s"/agent-client-authorisation/invitations/set-relationship-ended"))
@@ -753,7 +753,7 @@ trait ACAStubs {
             s"""{
                |"arn": "${arn.value}",
                |"clientId": "$clientId",
-               |"service": "$service",
+               |"service": "${service.id}",
                |"endedBy": "Agent"
                |}""".stripMargin))
         .willReturn(
@@ -947,24 +947,24 @@ trait ACAStubs {
           aResponse()
             .withStatus(200)
             .withBody(halEnvelope(Seq(
-              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2017-12-18", false, None),
-              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18", false, None),
-              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2017-12-18", false, None),
-              invitation(arn, "Accepted", "HMRC-MTD-IT", "ni", "AB123456A", "foo4", "2017-12-18", false, None),
-              invitation(arn, "Accepted", "HMRC-MTD-VAT", "vrn", "101747696", "foo5", "2017-12-18", false, None),
-              invitation(arn, "Accepted", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo6", "2017-12-18", false, None),
-              invitation(arn, "Rejected", "HMRC-MTD-IT", "ni", "AB123456A", "foo7", "2017-12-18", false, None),
-              invitation(arn, "Rejected", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2017-12-18", false, None),
-              invitation(arn, "Rejected", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo8", "2017-12-18", false, None),
-              invitation(arn, "Cancelled", "HMRC-MTD-IT", "ni", "AB123456A", "foo9", "2017-12-18", false, None),
-              invitation(arn, "Cancelled", "HMRC-MTD-VAT", "vrn", "101747696", "fo10", "2017-12-18", false, None),
-              invitation(arn, "Cancelled", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo11", "2017-12-18", false, None),
-              invitation(arn, "Expired", "HMRC-MTD-IT", "ni", "AB123456A", "fo12", "2017-12-18", false, None),
-              invitation(arn, "Expired", "HMRC-MTD-VAT", "vrn", "101747696", "fo13", "2017-12-18", false, None),
-              invitation(arn, "Expired", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "fo14", "2017-12-18", false, None),
-              invitation(arn, "Pending", "HMRC-MTD-IT", "ni", "AB123456A", "foo1", "2099-01-01", false, None),
-              invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", "101747696", "foo2", "2099-01-01", false, None),
-              invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", "AB123456B", "foo3", "2099-01-01", false, None)
+              invitation(arn, "Pending", Service.MtdIt, "ni", "AB123456A", "foo1", "2017-12-18", false, None),
+              invitation(arn, "Pending", Service.Vat, "vrn", "101747696", "foo2", "2017-12-18", false, None),
+              invitation(arn, "Pending", Service.PersonalIncomeRecord, "ni", "AB123456B", "foo3", "2017-12-18", false, None),
+              invitation(arn, "Accepted", Service.MtdIt, "ni", "AB123456A", "foo4", "2017-12-18", false, None),
+              invitation(arn, "Accepted", Service.Vat, "vrn", "101747696", "foo5", "2017-12-18", false, None),
+              invitation(arn, "Accepted", Service.PersonalIncomeRecord, "ni", "AB123456B", "foo6", "2017-12-18", false, None),
+              invitation(arn, "Rejected", Service.MtdIt, "ni", "AB123456A", "foo7", "2017-12-18", false, None),
+              invitation(arn, "Rejected", Service.Vat, "vrn", "101747696", "foo2", "2017-12-18", false, None),
+              invitation(arn, "Rejected", Service.PersonalIncomeRecord, "ni", "AB123456B", "foo8", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", Service.MtdIt, "ni", "AB123456A", "foo9", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", Service.Vat, "vrn", "101747696", "fo10", "2017-12-18", false, None),
+              invitation(arn, "Cancelled", Service.PersonalIncomeRecord, "ni", "AB123456B", "fo11", "2017-12-18", false, None),
+              invitation(arn, "Expired", Service.MtdIt, "ni", "AB123456A", "fo12", "2017-12-18", false, None),
+              invitation(arn, "Expired", Service.Vat, "vrn", "101747696", "fo13", "2017-12-18", false, None),
+              invitation(arn, "Expired", Service.PersonalIncomeRecord, "ni", "AB123456B", "fo14", "2017-12-18", false, None),
+              invitation(arn, "Pending", Service.MtdIt, "ni", "AB123456A", "foo1", "2099-01-01", false, None),
+              invitation(arn, "Pending", Service.Vat, "vrn", "101747696", "foo2", "2099-01-01", false, None),
+              invitation(arn, "Pending", Service.PersonalIncomeRecord, "ni", "AB123456B", "foo3", "2099-01-01", false, None)
             ).mkString("[", ",", "]")))))
 
   def givenGetInvitationsTrack() = {
@@ -977,27 +977,27 @@ trait ACAStubs {
           aResponse()
             .withStatus(200)
             .withBody(halEnvelope(Seq(
-              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-IT", "ni", "Aaa Itsa Trader","AB127456A", "foo1", expiryDate, false, None),
-              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-VAT", "vrn", "Superior Ltd","101747696", "foo2", expiryDate, false, None),
-              invitationTemporal(nowMinus(10), "Pending", "HMRC-MTD-IT", "ni", "Bbb Itsa Trader","AB129456B", "foo3", expiryDate, false, None),
-              invitationTemporal(nowMinus(25), "Accepted", "HMRC-MTD-IT", "ni", "Ccc Itsa Trader","AB123256B", "foo4", expiryDate, false, None),
-              invitationTemporal(nowMinus(5), "Accepted", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo5",expiryDate, true, Some("Agent")),
-              invitationTemporal(nowMinus(12), "Accepted", "HMRC-MTD-VAT", "vrn","Excel Ltd", "101747641", "foo6", expiryDate, true, Some("Client")),
-              invitationTemporal(nowMinus(25), "Accepted", "HMRC-TERS-ORG", "utr", "D Trust","4937455253", "foo7", expiryDate, true, Some("Agent")),
-              invitationTemporal(nowMinus(22), "Accepted", "HMRC-CGT-PD", "cgtRef", "Property Dev","XMCGTP123456789", "foo8", expiryDate, true, Some("Client")),
-              invitationTemporal(nowMinus(30), "Cancelled", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo9", expiryDate, false, None),
-              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-IT", "ni", "Ddd Itsa Trader","AB123456A", "foo10",expiryDate, false, None),
-              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-VAT", "vrn","Excel Ltd", "101747641", "foo11", expiryDate, false, None),
-              invitationTemporal(nowMinus(2), "Accepted", "HMRC-TERS-ORG", "utr", "D Trust","4937455253", "foo12", expiryDate, false, None),
-              invitationTemporal(nowMinus(25), "Accepted", "PERSONAL-INCOME-RECORD", "ni", "John Jones","AB123456A", "foo13", expiryDate, true, Some("HMRC")),
-              invitationTemporal(nowMinus(25), "Accepted", "PERSONAL-INCOME-RECORD", "ni", "Sally Ship","GZ753451B", "foo14", expiryDate, true, Some("HMRC")),
+              invitationTemporal(nowMinus(10), "Pending", Service.MtdIt, "ni", "Aaa Itsa Trader","AB127456A", "foo1", expiryDate, false, None),
+              invitationTemporal(nowMinus(10), "Pending", Service.Vat, "vrn", "Superior Ltd","101747696", "foo2", expiryDate, false, None),
+              invitationTemporal(nowMinus(10), "Pending", Service.MtdIt, "ni", "Bbb Itsa Trader","AB129456B", "foo3", expiryDate, false, None),
+              invitationTemporal(nowMinus(25), "Accepted", Service.MtdIt, "ni", "Ccc Itsa Trader","AB123256B", "foo4", expiryDate, false, None),
+              invitationTemporal(nowMinus(5), "Accepted", Service.MtdIt, "ni", "Ddd Itsa Trader","AB123456A", "foo5",expiryDate, true, Some("Agent")),
+              invitationTemporal(nowMinus(12), "Accepted", Service.Vat, "vrn","Excel Ltd", "101747641", "foo6", expiryDate, true, Some("Client")),
+              invitationTemporal(nowMinus(25), "Accepted", Service.Trust, "utr", "D Trust","4937455253", "foo7", expiryDate, true, Some("Agent")),
+              invitationTemporal(nowMinus(22), "Accepted", Service.CapitalGains, "cgtRef", "Property Dev","XMCGTP123456789", "foo8", expiryDate, true, Some("Client")),
+              invitationTemporal(nowMinus(30), "Cancelled", Service.MtdIt, "ni", "Ddd Itsa Trader","AB123456A", "foo9", expiryDate, false, None),
+              invitationTemporal(nowMinus(0), "Accepted", Service.MtdIt, "ni", "Ddd Itsa Trader","AB123456A", "foo10",expiryDate, false, None),
+              invitationTemporal(nowMinus(0), "Accepted", Service.Vat, "vrn","Excel Ltd", "101747641", "foo11", expiryDate, false, None),
+              invitationTemporal(nowMinus(2), "Accepted", Service.Trust, "utr", "D Trust","4937455253", "foo12", expiryDate, false, None),
+              invitationTemporal(nowMinus(25), "Accepted", Service.PersonalIncomeRecord, "ni", "John Jones","AB123456A", "foo13", expiryDate, true, Some("HMRC")),
+              invitationTemporal(nowMinus(25), "Accepted", Service.PersonalIncomeRecord, "ni", "Sally Ship","GZ753451B", "foo14", expiryDate, true, Some("HMRC")),
             ).mkString("[", ",", "]")))))
   }
 
 
   def givenASingleInvitationWithRelationshipEnded(
                                                    clientId: String,
-                                                   service: String,
+                                                   service: Service,
                                                    clientIdType: String,
                                                    lastUpdated: DateTime) = {
     stubFor(
@@ -1014,7 +1014,7 @@ trait ACAStubs {
   def givenASingleAcceptedInvitation(
                                     arn: Arn,
                                     clientId: String,
-                                    service: String,
+                                    service: Service,
                                     clientIdType: String,
                                     lastUpdated: DateTime,
                                     isPartialAuth: Boolean = false
@@ -1034,7 +1034,7 @@ trait ACAStubs {
   def givenNoAcceptedInvitationFound(
                                       arn: Arn,
                                       clientId: String,
-                                      service: String
+                                      service: Service
                                     ) = {
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?status=Accepted&clientId=$clientId&service=$service"))
@@ -1047,7 +1047,7 @@ trait ACAStubs {
 
   def givenASingleInvitationWithRelationshipStillActive(
                                                    clientId: String,
-                                                   service: String,
+                                                   service: Service,
                                                    clientIdType: String,
                                                    lastUpdated: DateTime) = {
     stubFor(
@@ -1063,7 +1063,7 @@ trait ACAStubs {
 
   def givenTwoInvitationsExistForSameClientOneWithDeauthedStatus(
     clientId: String,
-    service: String,
+    service: Service,
     clientIdType: String,
     accepted: DateTime,
     deauthed: DateTime) = {
@@ -1081,7 +1081,7 @@ trait ACAStubs {
 
   def givenTwoInvitationsExistForSameClientWithOneDeAuthorised(
                                                    clientId: String,
-                                                   service: String,
+                                                   service: Service,
                                                    clientIdType: String,
                                                    accepted1: DateTime,
                                                    accepted2: DateTime) = {
@@ -1106,40 +1106,40 @@ trait ACAStubs {
           aResponse()
             .withStatus(200)
             .withBody(halEnvelope(Seq(
-              invitationTemporal(nowMinus(29), "Pending", "HMRC-MTD-IT", "ni", "Dave","AB127456A", "foo1", "2017-12-18", false, None),
-              invitationTemporal(nowMinus(22), "Pending", "HMRC-MTD-VAT", "vrn", "Doug","101747696", "foo2", "2017-12-18", false, None),
-              invitationTemporal(nowMinus(3), "Pending", "HMRC-MTD-IT", "ni", "Darian","AB129456B", "foo3", "2017-12-18", false, None),
-              invitationTemporal(nowMinus(25), "Accepted", "HMRC-MTD-IT", "ni", "Darian","AB123256B", "foo4", "2017-12-18", false, None),
-              invitationTemporal(nowMinus(0), "Accepted", "HMRC-MTD-IT", "ni", "Don","AB123456A", "foo5","2017-12-18", true, Some("Agent")),
-              invitationTemporal(nowMinus(12), "Accepted", "HMRC-MTD-VAT", "vrn","Diane", "101747641", "foo6", "2017-12-18", true, Some("Client")),
-              invitationTemporal(nowMinus(25), "Accepted", "HMRC-TERS-ORG", "utr", "Doreen","4937455253", "foo7", "2017-12-18", true, Some("Agent")),
-              invitationTemporal(nowMinus(22), "Accepted", "HMRC-CGT-PD", "cgtRef", "Duck","XMCGTP123456789", "foo2", "2017-12-18", true, Some("Client")),
-              invitationTemporal(nowMinus(30), "Cancelled", "HMRC-MTD-IT", "ni", "Dean","AB123456A", "foo9", "2017-12-18", false, None),
-              invitationTemporal(nowMinus(30), "Partialauth", "HMRC-MTD-IT", "ni", "Debby","AB123456C", "foo10", "2017-12-18", false, Some("Client")),
+              invitationTemporal(nowMinus(29), "Pending", Service.MtdIt, "ni", "Dave","AB127456A", "foo1", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(22), "Pending", Service.Vat, "vrn", "Doug","101747696", "foo2", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(3), "Pending", Service.MtdIt, "ni", "Darian","AB129456B", "foo3", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(25), "Accepted", Service.MtdIt, "ni", "Darian","AB123256B", "foo4", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(0), "Accepted", Service.MtdIt, "ni", "Don","AB123456A", "foo5","2017-12-18", true, Some("Agent")),
+              invitationTemporal(nowMinus(12), "Accepted", Service.Vat, "vrn","Diane", "101747641", "foo6", "2017-12-18", true, Some("Client")),
+              invitationTemporal(nowMinus(25), "Accepted", Service.Trust, "utr", "Doreen","4937455253", "foo7", "2017-12-18", true, Some("Agent")),
+              invitationTemporal(nowMinus(22), "Accepted", Service.CapitalGains, "cgtRef", "Duck","XMCGTP123456789", "foo2", "2017-12-18", true, Some("Client")),
+              invitationTemporal(nowMinus(30), "Cancelled", Service.MtdIt, "ni", "Dean","AB123456A", "foo9", "2017-12-18", false, None),
+              invitationTemporal(nowMinus(30), "Partialauth", Service.MtdIt, "ni", "Debby","AB123456C", "foo10", "2017-12-18", false, Some("Client")),
             ).mkString("[", ",", "]")))))
   }
 
-  def givenGetAllPendingInvitationsReturnsSome(arn: Arn, clientId: String, service: String) = {
+  def givenGetAllPendingInvitationsReturnsSome(arn: Arn, clientId: String, service: Service) = {
     val body = halEnvelope(Seq(service match {
-      case  "HMRC-MTD-IT" => invitation(arn, "Pending", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)
-      case  "HMRC-MTD-VAT" => invitation(arn, "Pending", "HMRC-MTD-VAT", "vrn", clientId, "foo2", "2017-12-18", false, None)
-      case  "PERSONAL-INCOME-RECORD" => invitation(arn, "Pending", "PERSONAL-INCOME-RECORD", "ni", clientId, "foo3", "2017-12-18", false, None)
+      case  Service.MtdIt => invitation(arn, "Pending", Service.MtdIt, "ni", clientId, "foo1", "2017-12-18", false, None)
+      case  Service.Vat => invitation(arn, "Pending", Service.Vat, "vrn", clientId, "foo2", "2017-12-18", false, None)
+      case  Service.PersonalIncomeRecord => invitation(arn, "Pending", Service.PersonalIncomeRecord, "ni", clientId, "foo3", "2017-12-18", false, None)
     }).mkString("[", ",", "]"))
 
     stubFor(get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
     .withQueryParam("status", equalTo("Pending"))
     .withQueryParam("clientId", equalTo(clientId))
-    .withQueryParam("service", equalTo(service))
+    .withQueryParam("service", equalTo(service.id))
     .willReturn(aResponse()
       .withStatus(200)
       .withBody(body)))
   }
 
-  def givenGetAllPendingInvitationsReturnsEmpty(arn: Arn, clientId: String, service: String) = {
+  def givenGetAllPendingInvitationsReturnsEmpty(arn: Arn, clientId: String, service: Service) = {
     stubFor(get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
       .withQueryParam("status", equalTo("Pending"))
       .withQueryParam("clientId", equalTo(clientId))
-      .withQueryParam("service", equalTo(service))
+      .withQueryParam("service", equalTo(service.id))
       .willReturn(aResponse()
         .withStatus(200)
         .withBody(halEnvelope("[]"))))
@@ -1157,7 +1157,7 @@ trait ACAStubs {
   val invitation = (
     arn: Arn,
     status: String,
-    service: String,
+    service: Service,
     clientIdType: String,
     clientId: String,
     invitationId: String,
@@ -1167,7 +1167,7 @@ trait ACAStubs {
                               |{
                               |  "arn" : "${arn.value}",
                               |  "clientType" : "personal",
-                              |  "service" : "$service",
+                              |  "service" : "${service.id}",
                               |  "clientId" : "$clientId",
                               |  "clientIdType" : "$clientIdType",
                               |  "suppliedClientId" : "$clientId",
@@ -1194,7 +1194,7 @@ trait ACAStubs {
   val invitationTemporal = (
                      lastUpdated: DateTime,
                      status: String,
-                     service: String,
+                     service: Service,
                      clientIdType: String,
                      clientName: String,
                      clientId: String,
@@ -1205,7 +1205,7 @@ trait ACAStubs {
                                                                 |{
                                                                 |  "arn" : "TARN0000001",
                                                                 |  "clientType" : "personal",
-                                                                |  "service" : "$service",
+                                                                |  "service" : "${service.id}",
                                                                 |  "clientId" : "$clientId",
                                                                 |  "clientIdType" : "$clientIdType",
                                                                 |  "suppliedClientId" : "$clientId",
@@ -1429,7 +1429,7 @@ trait ACAStubs {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(halEnvelope(Seq(invitation(arn, "Partialauth", "HMRC-MTD-IT", "ni", clientId, "foo1", "2017-12-18", false, None)).mkString("[", ",", "]")))))
+            .withBody(halEnvelope(Seq(invitation(arn, "Partialauth", Service.MtdIt, "ni", clientId, "foo1", "2017-12-18", false, None)).mkString("[", ",", "]")))))
 
   def givenPartialAuthNotExists(arn: Arn, clientId: String) =
     stubFor(

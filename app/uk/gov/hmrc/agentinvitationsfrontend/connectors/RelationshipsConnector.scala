@@ -43,42 +43,41 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
   val baseUrl = new URL(appConfig.acrBaseUrl)
 
   // TODO when Service becomes a sealed trait, move these to that class
-  private val serviceShortNames = Map(
-    "HMRC-MTD-IT"     -> "Itsa",
-    "HMRC-MTD-VAT"    -> "VAT",
-    "HMRC-TERS-ORG"   -> "Trust",
-    "HMRC-TERSNT-ORG" -> "TrustNT",
-    "HMRC-CGT-PD"     -> "Cgt",
-    "HMRC-PPT-ORG"    -> "Ppt"
+  private val serviceShortNames: Map[Service, String] = Map(
+    Service.MtdIt        -> "Itsa",
+    Service.Vat          -> "VAT",
+    Service.Trust        -> "Trust",
+    Service.TrustNT      -> "TrustNT",
+    Service.CapitalGains -> "Cgt",
+    Service.Ppt          -> "Ppt"
   )
 
-  private val serviceIdentifierTypes = Map(
-    "HMRC-MTD-IT"     -> "NI",
-    "HMRC-MTD-VAT"    -> "VRN",
-    "HMRC-TERS-ORG"   -> "SAUTR",
-    "HMRC-TERSNT-ORG" -> "URN",
-    "HMRC-CGT-PD"     -> "CGTPDRef",
-    "HMRC-PPT-ORG"    -> "EtmpRegistrationNumber"
+  private val serviceIdentifierTypes: Map[Service, String] = Map(
+    Service.MtdIt        -> "NI",
+    Service.Vat          -> "VRN",
+    Service.Trust        -> "SAUTR",
+    Service.TrustNT      -> "URN",
+    Service.CapitalGains -> "CGTPDRef",
+    Service.Ppt          -> "EtmpRegistrationNumber"
   )
 
-  def isServiceEnabled(service: String): Boolean = service match {
-    case "HMRC-MTD-IT"            => featureFlags.showHmrcMtdIt
-    case "HMRC-MTD-VAT"           => featureFlags.showHmrcMtdVat
-    case "HMRC-TERS-ORG"          => featureFlags.showHmrcTrust
-    case "HMRC-TERSNT-ORG"        => featureFlags.showHmrcTrust
-    case "HMRC-CGT-PD"            => featureFlags.showHmrcCgt
-    case "HMRC-PPT-ORG"           => featureFlags.showPlasticPackagingTax
-    case "PERSONAL-INCOME-RECORD" => featureFlags.showPersonalIncome
-    case _                        => false // unknown service
+  def isServiceEnabled(service: Service): Boolean = service match {
+    case Service.MtdIt                => featureFlags.showHmrcMtdIt
+    case Service.Vat                  => featureFlags.showHmrcMtdVat
+    case Service.Trust                => featureFlags.showHmrcTrust
+    case Service.TrustNT              => featureFlags.showHmrcTrust
+    case Service.CapitalGains         => featureFlags.showHmrcCgt
+    case Service.Ppt                  => featureFlags.showPlasticPackagingTax
+    case Service.PersonalIncomeRecord => featureFlags.showPersonalIncome
   }
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
-  private def getRelationshipUrlFor(service: String, arn: Arn, identifier: TaxIdentifier): String =
+  private def getRelationshipUrlFor(service: Service, arn: Arn, identifier: TaxIdentifier): String =
     new URL(
       baseUrl,
       s"/agent-client-relationships/agent/${arn.value}/service" +
-        s"/$service/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
+        s"/${service.id}/client/${serviceIdentifierTypes(service)}/${identifier.value}").toString
 
   private def hasMappedLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
     s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"
@@ -110,7 +109,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  private def deleteRelationshipForService(service: String, arn: Arn, identifier: TaxIdentifier)(
+  private def deleteRelationshipForService(service: Service, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Option[Boolean]] =
     if (isServiceEnabled(service)) {
@@ -130,24 +129,24 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     }
 
   def deleteRelationshipItsa(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-MTD-IT", arn, nino)
+    deleteRelationshipForService(Service.MtdIt, arn, nino)
 
   def deleteRelationshipVat(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-MTD-VAT", arn, vrn)
+    deleteRelationshipForService(Service.Vat, arn, vrn)
 
   def deleteRelationshipTrust(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-TERS-ORG", arn, utr)
+    deleteRelationshipForService(Service.Trust, arn, utr)
 
   def deleteRelationshipTrustNT(arn: Arn, urn: Urn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-TERSNT-ORG", arn, urn)
+    deleteRelationshipForService(Service.TrustNT, arn, urn)
 
   def deleteRelationshipCgt(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-CGT-PD", arn, ref)
+    deleteRelationshipForService(Service.CapitalGains, arn, ref)
 
   def deleteRelationshipPpt(arn: Arn, ref: PptRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    deleteRelationshipForService("HMRC-PPT-ORG", arn, ref)
+    deleteRelationshipForService(Service.Ppt, arn, ref)
 
-  private def checkRelationship(service: String, arn: Arn, identifier: TaxIdentifier)(
+  private def checkRelationship(service: Service, arn: Arn, identifier: TaxIdentifier)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
     if (isServiceEnabled(service)) {
@@ -168,21 +167,21 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     }
 
   def checkItsaRelationship(arn: Arn, nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-MTD-IT", arn, nino)
+    checkRelationship(Service.MtdIt, arn, nino)
 
   def checkVatRelationship(arn: Arn, vrn: Vrn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-MTD-VAT", arn, vrn)
+    checkRelationship(Service.Vat, arn, vrn)
 
   def checkTrustRelationship(arn: Arn, utr: Utr)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-TERS-ORG", arn, utr)
+    checkRelationship(Service.Trust, arn, utr)
 
   def checkTrustNTRelationship(arn: Arn, urn: Urn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-TERSNT-ORG", arn, urn)
+    checkRelationship(Service.TrustNT, arn, urn)
 
   def checkCgtRelationship(arn: Arn, ref: CgtRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-CGT-PD", arn, ref)
+    checkRelationship(Service.CapitalGains, arn, ref)
 
   def checkPptRelationship(arn: Arn, ref: PptRef)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    checkRelationship("HMRC-PPT-ORG", arn, ref)
+    checkRelationship(Service.Ppt, arn, ref)
 
 }

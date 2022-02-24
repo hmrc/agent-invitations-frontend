@@ -33,16 +33,18 @@ invitationOrRelationship: TrackInformationSorted,
 index: Int
 )(implicit msgs: Messages, request: Request[_], now: LocalDate)
 
+@serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
+
 @formHelper(
     action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
     'id -> s"fastTrackInvitationCreate-${index}"
 ) {
-    <input type="hidden" name="service" id="service-@{index}" value="@{invitationOrRelationship.service}">
+    <input type="hidden" name="service" id="service-@{index}" value="@serviceId">
     <input type="hidden" name="clientIdentifierType" id="clientIdentifierType-@{index}" value="@{invitationOrRelationship.clientIdType}">
     <input type="hidden" name="clientIdentifier" id="clientIdentifier-@{index}" value="@{invitationOrRelationship.clientId}">
     <input type="hidden" name="knownFact" id="knownFact-@{index}" value="">
     <button class="button--link-style govuk-!-font-size-16" type="submit" id="resendRequest-@{index}">
         <span aria-hidden="true">@msgs(s"recent-invitations.invitations.actions.${invitationOrRelationship.status.toLowerCase}")</span>
-        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.aria-text", invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}"))</span>
+        <span class="govuk-visually-hidden">@msgs(s"recent-invitations.invitations.actions.aria-text", invitationOrRelationship.clientName.getOrElse(""), msgs(s"recent-invitations.invitation.service.$serviceId"))</span>
     </button>
 }

@@ -28,13 +28,13 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, NotSignedUpPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_service, business_select_single_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service, trust_select_service}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -124,7 +124,7 @@ class AgentLedDeauthJourneyController @Inject()(
   def submitBusinessServiceSingle: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(HMRCMTDVAT, Business))(
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(
         chosenBusinessService(featureFlags.showHmrcMtdVat, featureFlags.showPlasticPackagingTax))
 
   def submitBusinessService: Action[AnyContent] =
@@ -132,7 +132,7 @@ class AgentLedDeauthJourneyController @Inject()(
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .apply(
-        chosenBusinessService(
+        chosenBusinessServiceMulti(
           featureFlags.showHmrcMtdVat,
           featureFlags.showPlasticPackagingTax
         )
@@ -320,7 +320,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case IdentifyClientPersonal(service) =>
       service match {
-        case HMRCMTDIT =>
+        case Service.MtdIt =>
           Ok(
             identifyClientItsaView(
               formWithErrors.or(ItsaClientForm.form),
@@ -328,7 +328,7 @@ class AgentLedDeauthJourneyController @Inject()(
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
-        case HMRCPIR =>
+        case Service.PersonalIncomeRecord =>
           Ok(
             identifyClientIrvView(
               formWithErrors.or(IrvClientForm.form),
@@ -337,7 +337,7 @@ class AgentLedDeauthJourneyController @Inject()(
               isDeAuthJourney = true
             )
           )
-        case HMRCMTDVAT =>
+        case Service.Vat =>
           Ok(
             identifyClientVatView(
               formWithErrors.or(VatClientForm.form),
@@ -345,7 +345,7 @@ class AgentLedDeauthJourneyController @Inject()(
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
-        case HMRCCGTPD =>
+        case Service.CapitalGains =>
           Ok(
             identifyClientCgtView(
               formWithErrors.or(CgtClientForm.form()),
@@ -353,7 +353,7 @@ class AgentLedDeauthJourneyController @Inject()(
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
-        case HMRCPPTORG =>
+        case Service.Ppt =>
           Ok(
             identifyClientPptView(
               formWithErrors.or(PptClientForm.form),
@@ -365,7 +365,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case IdentifyClientBusiness(service) =>
       service match {
-        case HMRCMTDVAT =>
+        case Service.Vat =>
           Ok(
             identifyClientVatView(
               formWithErrors.or(VatClientForm.form),
@@ -373,7 +373,7 @@ class AgentLedDeauthJourneyController @Inject()(
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
-        case HMRCPPTORG =>
+        case Service.Ppt =>
           Ok(
             identifyClientPptView(
               formWithErrors.or(PptClientForm.form),

@@ -17,10 +17,9 @@
 package models
 
 import java.net.URL
-
 import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{StoredInvitation, TrackedInvitation}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import support.UnitSpec
 
 class TrackedInvitationSpec extends UnitSpec {
@@ -74,10 +73,10 @@ class TrackedInvitationSpec extends UnitSpec {
     }
   }
 
-  val exampleInvitation = StoredInvitation(
+  val exampleInvitation: StoredInvitation = StoredInvitation(
     Arn("TARN0000001"),
     None,
-    "",
+    Service.Vat,
     "",
     "",
     "",

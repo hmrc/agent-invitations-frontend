@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -33,20 +33,20 @@ trait GetClientName extends Logging {
   def getClientNameByService(invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     getClientNameByService(invitation.clientId, invitation.service)
 
-  def getClientNameByService(clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+  def getClientNameByService(clientId: String, service: Service)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     service match {
-      case Services.HMRCMTDIT =>
+      case Service.MtdIt =>
         if (clientId.isEmpty) {
           logger.warn(s"no client Id as Nino available so not calling getTradingName")
           Future successful None
         } else getItsaTradingName(Nino(clientId))
-      case Services.HMRCPIR         => getCitizenName(Nino(clientId))
-      case Services.HMRCMTDVAT      => getVatName(Vrn(clientId))
-      case Services.TAXABLETRUST    => getTrustName(clientId)
-      case Services.NONTAXABLETRUST => getTrustName(clientId)
-      case Services.HMRCCGTPD       => getCgtClientName(CgtRef(clientId))
-      case Services.HMRCPPTORG      => getPptClientName(PptRef(clientId))
-      case _                        => Future successful None
+      case Service.PersonalIncomeRecord => getCitizenName(Nino(clientId))
+      case Service.Vat                  => getVatName(Vrn(clientId))
+      case Service.Trust                => getTrustName(clientId)
+      case Service.TrustNT              => getTrustName(clientId)
+      case Service.CapitalGains         => getCgtClientName(CgtRef(clientId))
+      case Service.Ppt                  => getPptClientName(PptRef(clientId))
+      case _                            => Future successful None
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

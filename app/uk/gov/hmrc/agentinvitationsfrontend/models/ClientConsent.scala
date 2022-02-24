@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, Service}
 import uk.gov.hmrc.http.controllers.RestFormats.localDateFormats
 
 case class ClientConsent(
@@ -29,7 +29,7 @@ case class ClientConsent(
   processed: Boolean = false,
   isAltItsa: Boolean = false) {
 
-  def service: String = Services.determineServiceFromServiceMessageKey(this.serviceKey)
+  def service: Service = Services.determineServiceFromServiceMessageKey(this.serviceKey)
 }
 
 object ClientConsent {

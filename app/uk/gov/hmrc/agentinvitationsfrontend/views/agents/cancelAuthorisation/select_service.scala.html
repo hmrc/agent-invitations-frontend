@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +35,7 @@
     submitButton: SubmitButton
 )
 
-@(agentForm: Form[String], config: SelectServicePageConfigCancel)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentForm: Form[Service], config: SelectServicePageConfigCancel)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 bannerTitle = msgs("service.name.agents.de-auth"),
@@ -53,7 +54,7 @@ backLinkHref = Some(config.backLink)
         field = agentForm("serviceType"),
         legend = msgs("cancel-authorisation.select-service.header"),
         headingIsLegend = true,
-        inputs = mapToRadioItems(agentForm("serviceType"), config.enabledPersonalServices)
+        inputs = mapToRadioItems(agentForm("serviceType"), config.enabledPersonalServices.map { case (svc, x) => (svc.id, x) })
     )
 
     @submitButton()

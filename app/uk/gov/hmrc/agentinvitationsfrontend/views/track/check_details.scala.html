@@ -26,6 +26,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -48,7 +49,7 @@ config: CheckDetailsPageConfig)(implicit request: Request[_], msgs: Messages, co
 }
 
 @knownFactAnswer = {
-    @if(config.fastTrackRequest.service == "HMRC-MTD-IT") {
+    @if(config.fastTrackRequest.service == Service.MtdIt) {
         @if(config.fastTrackRequest.knownFact.get.matches(postcodeRegex)) {
         @config.fastTrackRequest.knownFact.get.replaceAll(" ", "").replaceAll(s"(.{$postcodeSpace})", "$1 ")
         } else {
@@ -71,7 +72,7 @@ backLinkHref = config.backLinkUrl
 
     <h1 class="govuk-heading-xl">@msgs("check-details.heading")</h1>
 
-    <p class="govuk-inset-text">@msgs(s"check-details.p.${config.fastTrackRequest.service}")</p>
+    <p class="govuk-inset-text">@msgs(s"check-details.p.${config.fastTrackRequest.service.id}")</p>
 
     <h2>@msgs("check-details.table.heading")</h2>
 
@@ -82,8 +83,8 @@ backLinkHref = config.backLinkUrl
                 valueId = "client-type",
                 value = config.fastTrackRequest.clientType match {
                         case Some(ClientType.Personal) => msgs("check-details.client-type.personal")
-                        case Some(ClientType.Business) => msgs(s"check-details.client-type.business.${config.fastTrackRequest.service}")
-                        case Some(ClientType.Trust) => msgs(s"check-details.client-type.trust.${config.fastTrackRequest.service}")
+                        case Some(ClientType.Business) => msgs(s"check-details.client-type.business.${config.fastTrackRequest.service.id}")
+                        case Some(ClientType.Trust) => msgs(s"check-details.client-type.trust.${config.fastTrackRequest.service.id}")
                         case _ => throw new IllegalArgumentException("client type not found")
                 }
             )
@@ -101,7 +102,7 @@ backLinkHref = config.backLinkUrl
             },
             valueId = "client-identifier",
             value = config.fastTrackRequest.service match {
-                case "HMRC-MTD-VAT" | "HMRC-TERSNT-ORG" | "HMRC-PPT-ORG" => config.fastTrackRequest.clientIdentifier
+                case Service.Vat | Service.TrustNT | Service.Ppt => config.fastTrackRequest.clientIdentifier
                 case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
             }
         )
@@ -109,11 +110,11 @@ backLinkHref = config.backLinkUrl
         @if(config.showKnownFact) {
             @checkAnswersRow(
                 key = config.fastTrackRequest.service match {
-                    case "HMRC-MTD-IT" => msgs("check-details.postcode")
-                    case "PERSONAL-INCOME-RECORD" => msgs("check-details.dob")
-                    case "HMRC-MTD-VAT" => msgs("check-details.vat-reg-date")
-                    case "HMRC-CGT-PD" => msgs("check-details.postcode")
-                    case "HMRC-PPT-ORG" => msgs("check-details.ppt-reg-date")
+                    case Service.MtdIt => msgs("check-details.postcode")
+                    case Service.PersonalIncomeRecord => msgs("check-details.dob")
+                    case Service.Vat => msgs("check-details.vat-reg-date")
+                    case Service.CapitalGains => msgs("check-details.postcode")
+                    case Service.Ppt => msgs("check-details.ppt-reg-date")
                 },
                 valueId = "known-fact",
                 value = knownFactAnswer.toString

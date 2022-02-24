@@ -21,29 +21,30 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 import uk.gov.hmrc.agentinvitationsfrontend.models.{BusinessInvitationsBasket, ClientType, PersonalInvitationsBasket, TrustInvitationsBasket}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class SelectServicePageConfig(
   clientType: ClientType,
   basket: Basket,
   featureFlags: FeatureFlags,
-  services: Set[String],
+  services: Set[Service],
   backLink: String,
   reviewAuthsCall: Call)(implicit messages: Messages) {
 
   /** Whether to show the multiple service selection form for this client type journey */
   def showMultiSelect: Boolean = availableServices.size > 1
 
-  protected def firstServiceKey: String =
-    availableServices.headOption.map(_._1).getOrElse("notfound")
+  protected def firstService: Service =
+    availableServices.head._1
 
-  def remainingService: String = firstServiceKey
+  def remainingService: Service = firstService
 
   def submitCall: Call = (clientType, showMultiSelect) match {
-    case (ClientType.Personal, false) => routes.AgentInvitationJourneyController.submitPersonalSelectSingle(remainingService)
+    case (ClientType.Personal, false) => routes.AgentInvitationJourneyController.submitPersonalSelectSingle(remainingService.id)
     case (ClientType.Personal, true)  => routes.AgentInvitationJourneyController.submitPersonalSelectService()
-    case (ClientType.Business, false) => routes.AgentInvitationJourneyController.submitBusinessSelectSingle(remainingService)
+    case (ClientType.Business, false) => routes.AgentInvitationJourneyController.submitBusinessSelectSingle(remainingService.id)
     case (ClientType.Business, true)  => routes.AgentInvitationJourneyController.submitBusinessSelectService()
-    case (ClientType.Trust, false)    => routes.AgentInvitationJourneyController.submitTrustSelectSingle(remainingService)
+    case (ClientType.Trust, false)    => routes.AgentInvitationJourneyController.submitTrustSelectSingle(remainingService.id)
     case (ClientType.Trust, true)     => routes.AgentInvitationJourneyController.submitTrustSelectServiceMultiple()
   }
 
@@ -51,7 +52,7 @@ case class SelectServicePageConfig(
     * based on what is available according to feature enablement
     * and what they have already selected in their basket
     * */
-  def availableServices: Seq[(String, String)] = clientType match {
+  def availableServices: Seq[(Service, String)] = clientType match {
     case ClientType.Personal => new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
     case ClientType.Business => new BusinessInvitationsBasket(services, basket, featureFlags).availableServices
     case ClientType.Trust    => new TrustInvitationsBasket(services, basket, featureFlags).availableServices
@@ -62,6 +63,6 @@ case class SelectServicePageConfig(
 
   /** The header to use when only a single service is available or left to choose */
   def selectSingleHeaderMessage: String =
-    Messages(s"select-single-service.$firstServiceKey.$clientType.header")
+    Messages(s"select-single-service.${firstService.id}.$clientType.header")
 
 }

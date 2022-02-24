@@ -27,9 +27,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.HMRCMTDIT
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
@@ -609,7 +608,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "when yes is selected on confirm cancel authorisation page, cancel the authorisation and redirect to authorisation cancelled page for alt-ITSA" in {
-      givenSetRelationshipEndedReturns(arn, validNino.value, HMRCMTDIT, 204)
+      givenSetRelationshipEndedReturns(arn, validNino.value, Service.MtdIt, 204)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
@@ -697,7 +696,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "go to problem page when yes is selected on confirm cancel authorisation page for alt-itsa, but set relationship ended fails" in {
-     givenSetRelationshipEndedReturns(arn, validNino.value, HMRCMTDIT, 500)
+     givenSetRelationshipEndedReturns(arn, validNino.value, Service.MtdIt, 500)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request

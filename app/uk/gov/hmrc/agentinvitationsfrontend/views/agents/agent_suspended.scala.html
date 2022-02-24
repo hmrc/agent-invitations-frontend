@@ -21,10 +21,11 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
-@(basket: Basket, service: String, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(basket: Basket, service: Service, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @heading = @{
   if(basket.isEmpty) msgs("agent-suspended.heading.single")
@@ -36,7 +37,7 @@ title = msgs("generic.title", heading, msgs("service.name.agents.auth")),
 isAgent = true) {
 
     <h1 class="govuk-heading-xl">@heading</h1>
-    <p>@msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.$service"))</p>
+    <p>@msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.${service.id}"))</p>
 
     @if(basket.isEmpty) {
         <p>@msgs("agent-suspended.p2.single")</p>

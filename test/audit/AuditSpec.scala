@@ -96,10 +96,9 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val invitationId: String = "1"
       val clientIdType: String = "ni"
       val mtdItId: MtdItId = MtdItId("mtdItId")
-      val serviceName: String = "HMRC-MTD-IT"
 
       await(
-        service.sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, mtdItId.value, serviceName, agencyName)(
+        service.sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, mtdItId.value, Service.MtdIt, agencyName)(
           hc,
           FakeRequest("GET", "/path"),
           concurrent.ExecutionContext.Implicits.global))
@@ -141,11 +140,10 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val invitationId: String = "2"
       val clientIdType: String = "ni"
       val nino: String = "nino"
-      val serviceName: String = "PERSONAL-INCOME-RECORD"
 
       await(
         service
-          .sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, nino, serviceName, agencyName)(
+          .sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, nino, Service.PersonalIncomeRecord, agencyName)(
             hc,
             FakeRequest("GET", "/path"),
             concurrent.ExecutionContext.Implicits.global))
@@ -187,10 +185,9 @@ class AuditSpec extends UnitSpec with MockitoSugar with Eventually {
       val invitationId: String = "3"
       val clientIdType: String = "vrn"
       val vatRegistrationNumber: String = "vat"
-      val serviceName: String = "HMRC-MTD-VAT"
 
       await(
-        service.sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, vatRegistrationNumber, serviceName, agencyName)(
+        service.sendAgentInvitationResponse(invitationId, arn, clientResponse, clientIdType, vatRegistrationNumber, Service.Vat, agencyName)(
           hc,
           FakeRequest("GET", "/path"),
           concurrent.ExecutionContext.Implicits.global))

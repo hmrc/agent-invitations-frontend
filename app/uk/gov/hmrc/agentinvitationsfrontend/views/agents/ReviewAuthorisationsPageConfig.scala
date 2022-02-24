@@ -23,8 +23,12 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, BusinessInvitationsBasket, ClientType, PersonalInvitationsBasket, TrustInvitationsBasket}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-case class ReviewAuthorisationsPageConfig(clientType: ClientType, basket: Basket, featureFlags: FeatureFlags, services: Set[String], submitCall: Call)(
-  implicit messages: Messages) {
+case class ReviewAuthorisationsPageConfig(
+  clientType: ClientType,
+  basket: Basket,
+  featureFlags: FeatureFlags,
+  services: Set[Service],
+  submitCall: Call)(implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {

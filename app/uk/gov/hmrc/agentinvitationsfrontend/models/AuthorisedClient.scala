@@ -26,14 +26,14 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
     val enrolKeys: Set[String] = this.enrolments.enrolments.map(_.key)
     this.affinityGroup match {
       case Individual => {
-        val coverage = enrolKeys.intersect(allSupportedEnrolmentKeysForIndividual)
+        val coverage = enrolKeys.intersect(allSupportedEnrolmentKeysForIndividual.map(_.id))
         if (coverage.size == allSupportedEnrolmentKeysForIndividual.size) AllSupportedMTDEnrolments
         else if (coverage.isEmpty) NoSupportedMTDEnrolments
         else SomeSupportedMTDEnrolments
       }
       case Organisation => {
-        val businessCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForBusiness)
-        val trustOrEstateCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForTrustOrEstate)
+        val businessCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForBusiness.map(_.id))
+        val trustOrEstateCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForTrustOrEstate.map(_.id))
         if (businessCoverage.isEmpty) {
           if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
           else if (trustOrEstateCoverage.size == allSupportedEnrolmentKeysForTrustOrEstate.size - 1) //not going to have both UTR and URN

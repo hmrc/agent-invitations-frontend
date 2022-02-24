@@ -714,7 +714,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
       ((JsPath \ "arn").read[Arn] and
         (JsPath \ "clientType").readNullable[String] and
-        (JsPath \ "service").read[String] and
+        (JsPath \ "service").read[Service] and
         (JsPath \ "clientId").read[String] and
         (JsPath \ "clientIdType").read[String] and
         (JsPath \ "suppliedClientId").read[String] and

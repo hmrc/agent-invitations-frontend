@@ -19,109 +19,109 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.i18n.Messages
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 /** The set of services available that an agent can choose for authorisation
   *
   */
-abstract class InvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags) {
+abstract class InvitationsBasket(services: Set[Service], basket: Basket, featureFlags: FeatureFlags) {
 
   /** Returns a set of pairs of string which can be used to populate a selection form
     *  depends on what the set of services are, and whether any are in your basket already
     * */
-  def availableServices(implicit messages: Messages): Seq[(String, String)]
+  def availableServices(implicit messages: Messages): Seq[(Service, String)]
 
   protected def showServiceTrust: Boolean =
-    featureFlags.showHmrcTrust && serviceAvailableForSelection(TAXABLETRUST)
+    featureFlags.showHmrcTrust && serviceAvailableForSelection(Service.Trust)
 
   protected def showServiceCgt: Boolean =
-    featureFlags.showHmrcCgt && serviceAvailableForSelection(HMRCCGTPD)
+    featureFlags.showHmrcCgt && serviceAvailableForSelection(Service.CapitalGains)
 
   protected def showServiceMtdVat: Boolean =
-    featureFlags.showHmrcMtdVat && serviceAvailableForSelection(HMRCMTDVAT)
+    featureFlags.showHmrcMtdVat && serviceAvailableForSelection(Service.Vat)
 
   protected def showServicePersonalIncome: Boolean =
-    featureFlags.showPersonalIncome && serviceAvailableForSelection(HMRCPIR)
+    featureFlags.showPersonalIncome && serviceAvailableForSelection(Service.PersonalIncomeRecord)
 
   protected def showServiceHmrcMtdIt: Boolean =
-    featureFlags.showHmrcMtdIt && serviceAvailableForSelection(HMRCMTDIT)
+    featureFlags.showHmrcMtdIt && serviceAvailableForSelection(Service.MtdIt)
 
   protected def showServicePlasticPackagingTax: Boolean =
-    featureFlags.showPlasticPackagingTax && serviceAvailableForSelection(HMRCPPTORG)
+    featureFlags.showPlasticPackagingTax && serviceAvailableForSelection(Service.Ppt)
 
-  protected def serviceAvailableForSelection(service: String): Boolean =
-    if (service == TAXABLETRUST) {
-      services.contains(service) && (!basket.exists(_.invitation.service == TAXABLETRUST) && !basket.exists(_.invitation.service == NONTAXABLETRUST))
+  protected def serviceAvailableForSelection(service: Service): Boolean =
+    if (service == Service.Trust) {
+      services.contains(service) && (!basket.exists(_.invitation.service == Service.Trust) && !basket.exists(_.invitation.service == Service.TrustNT))
     } else
       services.contains(service) && !basket.exists(_.invitation.service == service)
 }
 
-class TrustInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
+class TrustInvitationsBasket(services: Set[Service], basket: Basket, featureFlags: FeatureFlags)
     extends InvitationsBasket(services, basket, featureFlags) {
 
   /** Available service selections for trust clients - based on what is configured and already in basket
     * */
-  def availableServices(implicit messages: Messages): Seq[(String, String)] = {
+  def availableServices(implicit messages: Messages): Seq[(Service, String)] = {
 
-    val seq = collection.mutable.ArrayBuffer[(String, String)]()
+    val seq = collection.mutable.ArrayBuffer[(Service, String)]()
 
     if (showServiceTrust) {
-      seq.append(TAXABLETRUST -> Messages("select-service.HMRC-TERS-ORG.business"))
+      seq.append(Service.Trust -> Messages("select-service.HMRC-TERS-ORG.business"))
     }
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.business"))
+      seq.append(Service.CapitalGains -> Messages("select-service.HMRC-CGT-PD.business"))
 
     if (showServicePlasticPackagingTax)
-      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.trust"))
+      seq.append(Service.Ppt -> Messages("select-service.HMRC-PPT-ORG.trust"))
 
     seq
   }
 
 }
 
-class PersonalInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
+class PersonalInvitationsBasket(services: Set[Service], basket: Basket, featureFlags: FeatureFlags)
     extends InvitationsBasket(services, basket, featureFlags) {
 
   /** Available service selections for personal clients - based on what is configured and already in basket
     * */
-  def availableServices(implicit messages: Messages): Seq[(String, String)] = {
+  def availableServices(implicit messages: Messages): Seq[(Service, String)] = {
 
-    val seq = collection.mutable.ArrayBuffer[(String, String)]()
+    val seq = collection.mutable.ArrayBuffer[(Service, String)]()
 
     if (showServiceHmrcMtdIt)
-      seq.append(HMRCMTDIT -> Messages("select-service.HMRC-MTD-IT.personal"))
+      seq.append(Service.MtdIt -> Messages("select-service.HMRC-MTD-IT.personal"))
 
     if (showServicePersonalIncome)
-      seq.append(HMRCPIR -> Messages("select-service.PERSONAL-INCOME-RECORD.personal"))
+      seq.append(Service.PersonalIncomeRecord -> Messages("select-service.PERSONAL-INCOME-RECORD.personal"))
 
     if (showServiceMtdVat)
-      seq.append(HMRCMTDVAT -> Messages("select-service.HMRC-MTD-VAT.personal"))
+      seq.append(Service.Vat -> Messages("select-service.HMRC-MTD-VAT.personal"))
 
     if (showServiceCgt)
-      seq.append(HMRCCGTPD -> Messages("select-service.HMRC-CGT-PD.personal"))
+      seq.append(Service.CapitalGains -> Messages("select-service.HMRC-CGT-PD.personal"))
 
     if (showServicePlasticPackagingTax)
-      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.personal"))
+      seq.append(Service.Ppt -> Messages("select-service.HMRC-PPT-ORG.personal"))
 
     seq
   }
 }
 
-class BusinessInvitationsBasket(services: Set[String], basket: Basket, featureFlags: FeatureFlags)
+class BusinessInvitationsBasket(services: Set[Service], basket: Basket, featureFlags: FeatureFlags)
     extends InvitationsBasket(services, basket, featureFlags) {
 
   /** Available service selections for personal clients - based on what is configured and already in basket
     * */
-  def availableServices(implicit messages: Messages): Seq[(String, String)] = {
+  def availableServices(implicit messages: Messages): Seq[(Service, String)] = {
 
-    val seq = collection.mutable.ArrayBuffer[(String, String)]()
+    val seq = collection.mutable.ArrayBuffer[(Service, String)]()
 
     if (showServiceMtdVat)
-      seq.append(HMRCMTDVAT -> Messages("select-service.HMRC-MTD-VAT.business"))
+      seq.append(Service.Vat -> Messages("select-service.HMRC-MTD-VAT.business"))
 
     if (showServicePlasticPackagingTax)
-      seq.append(HMRCPPTORG -> Messages("select-service.HMRC-PPT-ORG.business"))
+      seq.append(Service.Ppt -> Messages("select-service.HMRC-PPT-ORG.business"))
 
     seq
   }

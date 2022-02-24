@@ -158,7 +158,7 @@ class InvitationsService @Inject()(
     acaConnector.checkCitizenRecord(nino, dob)
 
   def isAltItsa(i: StoredInvitation): Boolean =
-    i.service == "HMRC-MTD-IT" && i.clientId == i.suppliedClientId
+    i.service == Service.MtdIt && i.clientId == i.suppliedClientId
 
   private def determineInvitationResponse(invitationId: InvitationId, si: StoredInvitation, agentName: String, response: String)(
     implicit request: Request[_],
@@ -230,11 +230,11 @@ class InvitationsService @Inject()(
                         }
     } yield result
 
-  def hasPendingInvitationsFor(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    acaConnector.getAllPendingInvitationsForClient(arn, clientId, service).map(s => s.nonEmpty)
+  def hasPendingInvitationsFor(arn: Arn, clientId: String, service: Service)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
+    acaConnector.getAllPendingInvitationsForClient(arn, clientId, service.id).map(s => s.nonEmpty)
 
   def isAltItsa(arn: Arn, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    acaConnector.getAllPendingInvitationsForClient(arn, clientId, Services.HMRCMTDIT).map { pendingInvitations =>
+    acaConnector.getAllPendingInvitationsForClient(arn, clientId, Service.MtdIt.id).map { pendingInvitations =>
       pendingInvitations.exists { storedInvitation =>
         storedInvitation.clientId == storedInvitation.suppliedClientId && storedInvitation.clientIdType == "ni"
       }
@@ -244,7 +244,7 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[State] = {
 
-    val services = basket.map(_.invitation.service.id)
+    val services = basket.map(_.invitation.service)
 
     basket
       .find(_.invitation.service == Service.MtdIt)
@@ -264,6 +264,6 @@ class InvitationsService @Inject()(
   def legacySaRelationshipStatusFor(arn: Arn, nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[LegacySaRelationshipResult] =
     relationshipsConnector.getLegacySaRelationshipStatusFor(arn, nino)
 
-  def setRelationshipEnded(arn: Arn, clientId: String, service: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    acaConnector.setRelationshipEnded(arn, clientId, service)
+  def setRelationshipEnded(arn: Arn, clientId: String, service: Service)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+    acaConnector.setRelationshipEnded(arn, clientId, service.id)
 }
