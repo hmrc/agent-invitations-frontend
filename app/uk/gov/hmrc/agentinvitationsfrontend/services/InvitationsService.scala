@@ -17,17 +17,18 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.LocalDate
 import play.api.Logging
-import play.api.mvc.Request
+import play.api.mvc.{Request, RequestHeader}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSentPersonal, State}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.{InvitationSent, State}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -38,14 +39,14 @@ class InvitationsService @Inject()(
   val citizenDetailsConnector: CitizenDetailsConnector,
   val relationshipsConnector: RelationshipsConnector,
   auditService: AuditService)
-    extends GetClientName with Logging {
+    extends GetClientName with FrontendHeaderCarrierProvider with Logging {
 
   def createInvitation(
     arn: Arn,
     invitation: Invitation)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[InvitationId] = {
 
     val agentInvitation =
-      AgentInvitation(invitation.clientType, invitation.service, invitation.clientIdentifierType, invitation.clientId)
+      AgentInvitation(invitation.clientType, invitation.service.id, invitation.service.supportedSuppliedClientIdType.id, invitation.clientId)
 
     (for {
       locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
@@ -70,16 +71,17 @@ class InvitationsService @Inject()(
       }
   }
 
-  def createMultipleInvitations(
-    arn: Arn,
-    requests: Set[AuthorisationRequest])(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Set[AuthorisationRequest]] =
+  def createMultipleInvitations(arn: Arn, requests: Set[AuthorisationRequest])(
+    implicit rh: RequestHeader,
+    ec: ExecutionContext): Future[Set[AuthorisationRequest]] =
     Future.sequence(requests.map(authRequest => {
       val agentInvitation =
         AgentInvitation(
           authRequest.invitation.clientType,
-          authRequest.invitation.service,
-          authRequest.invitation.clientIdentifierType,
-          authRequest.invitation.clientId)
+          authRequest.invitation.service.id,
+          authRequest.invitation.service.supportedSuppliedClientIdType.id,
+          authRequest.invitation.clientId
+        )
 
       (for {
         locationOpt <- acaConnector.createInvitation(arn, agentInvitation)
@@ -242,16 +244,16 @@ class InvitationsService @Inject()(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[State] = {
 
-    val services = basket.map(_.invitation.service)
+    val services = basket.map(_.invitation.service.id)
 
     basket
-      .find(_.invitation.service == Services.HMRCMTDIT)
+      .find(_.invitation.service == Service.MtdIt)
       .map(_.invitation.clientId)
       .fold(toFuture(false)) { clientId =>
         isAltItsa(arn, clientId)
       }
       .map { hasAltItsa =>
-        InvitationSentPersonal(invitationLink, None, agencyEmail, services, hasAltItsa)
+        InvitationSent(ClientType.Personal, invitationLink, None, agencyEmail, services, Some(hasAltItsa))
       }
 
   }

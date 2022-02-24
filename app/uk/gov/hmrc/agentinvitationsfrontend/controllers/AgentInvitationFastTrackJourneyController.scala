@@ -27,7 +27,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoade
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.{ConfirmClientForm, LegacyAuthorisationForm}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel.Transitions.CheckPptKnownFact
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
@@ -730,8 +729,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               inferredExpiryDate,
               agencyEmail,
               Set(service),
-              isAltItsa = false,
-              service,
+              isAltItsa = false
             )))
 
       case KnownFactNotMatched(_, _, _) =>

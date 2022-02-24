@@ -18,11 +18,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{GetCgtSubscription, GetPptSubscription, GetTrustName}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -90,6 +89,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type DeleteRelationship = (String, Arn, String) => Future[Option[Boolean]]
     type SetRelationshipEnded = (Arn, String, String) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
+    type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
+    type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
+    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
 
     def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
       case SelectClientType =>
@@ -273,15 +275,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     }
 
     def submitIdentifyClientPpt(getPptSubscription: GetPptSubscription)(agent: AuthorisedAgent)(
-      pptClient: PptClient): AgentLedDeauthJourneyModel.Transition = {
-      def handle(showRegDate: PptSubscription => State) =
-        getPptSubscription(pptClient.pptRef).map {
-          case Some(subscription) =>
-            showRegDate(subscription)
-          case None =>
-            PptRefNotFound(pptClient.pptRef)
-        }
-
+      pptClient: PptClient): AgentLedDeauthJourneyModel.Transition =
       Transition {
         case IdentifyClientPersonal(HMRCPPTORG) | IdentifyClientBusiness(HMRCPPTORG) | IdentifyClientTrust | IdentifyClientPpt =>
           getPptSubscription(pptClient.pptRef).map {
@@ -291,7 +285,6 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
               PptRefNotFound(pptClient.pptRef)
           }
       }
-    }
 
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       postcode: Postcode): AgentLedDeauthJourneyModel.Transition =

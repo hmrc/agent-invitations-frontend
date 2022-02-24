@@ -128,6 +128,8 @@ select-single-service.HMRC-MTD-VAT.trust.error=Select yes if you want to submit 
 
 select-single-service.HMRC-TERS-ORG.business.header=Do you want to maintain a trust or an estate for this client?
 select-single-service.HMRC-TERS-ORG.business.error=Select yes if you want to maintain a trust or an estate for this client
+select-single-service.HMRC-TERS-ORG.trust.header=Do you want to maintain a trust or an estate for this client?
+select-single-service.HMRC-TERS-ORG.trust.error=Select yes if you want to maintain a trust or an estate for this client
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=Do you want to view this client’s PAYE income record?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Select yes if you want to view this client’s PAYE income record

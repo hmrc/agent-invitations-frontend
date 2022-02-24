@@ -129,6 +129,8 @@ select-single-service.HMRC-MTD-VAT.trust.error=Dewiswch ‘Iawn’ os ydych am g
 # Note: trusts are internally treated as "business" client type
 select-single-service.HMRC-TERS-ORG.business.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
 select-single-service.HMRC-TERS-ORG.business.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
+select-single-service.HMRC-TERS-ORG.trust.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
+select-single-service.HMRC-TERS-ORG.trust.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
 
 select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn?
 select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn

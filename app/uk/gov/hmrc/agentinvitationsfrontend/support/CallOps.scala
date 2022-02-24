@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 import java.net.{URI, URLEncoder}
 
 import play.api.{Environment, Mode}
-import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 
 object CallOps {
 

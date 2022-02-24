@@ -12,7 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Persona
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{SuspensionDetails, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
@@ -1973,7 +1973,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "display the content" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
-        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, Nino(nino)), None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)
@@ -1992,7 +1992,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to mapping when agent selects 'yes' (agent has a legacy SA relationship with the client)" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
-        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, Nino(nino)), None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)
@@ -2008,7 +2008,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /invitation-sent when agent selects 'no' (agent does not have a legacy SA relationship with the client)" in {
       val ftr = AgentFastTrackRequest(Some(Personal), HMRCMTDIT, "ni", "AB123456A", Some("BN114AW"))
       journeyState.set(
-        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), HMRCMTDIT, nino, "BN114AW" ), None),
+        LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, Nino(nino)), None),
         List(
           CheckDetailsCompleteItsa(ftr, ftr, None),
           Prologue(None, None)
@@ -2022,7 +2022,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       val result = controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
-      println(bodyOf(result.futureValue))
       status(result.futureValue) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/sent-invitation")
     }

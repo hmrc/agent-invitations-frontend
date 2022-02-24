@@ -19,13 +19,11 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Transitions.{CheckDOBMatches, GetCgtSubscription, GetPptSubscription}
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, PptRef, SuspensionDetails, TrustTaxIdentifier, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, Arn, CgtRef, InvitationId, PptRef, SuspensionDetails, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -186,7 +184,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
   case class InvitationSentPersonal(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String, isAltItsa: Boolean)
       extends InvitationSent
 
-  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String = HMRCMTDVAT)
+  case class InvitationSentBusiness(invitationLink: String, continueUrl: Option[String], agencyEmail: String, service: String = Service.HMRCMTDVAT)
       extends InvitationSent
 
   case class PendingInvitationExists(fastTrackRequest: AgentFastTrackRequest, agentLink: String, clientName: String, continueUrl: Option[String])
@@ -286,6 +284,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type IsAltItsa = (Arn, String) => Future[Boolean]
     type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
+    type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
+    type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
+    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
@@ -306,34 +307,34 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
     def getStateForNonSuspendedAgent(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]): Future[State] =
       fastTrackRequest match {
-        case AgentFastTrackRequest(_, HMRCMTDIT, _, _, knownFact) =>
-          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(Personal))
+        case AgentFastTrackRequest(_, Service.HMRCMTDIT, _, _, knownFact) =>
+          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(ClientType.Personal))
           goto(knownFact.fold(CheckDetailsNoPostcode(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
             CheckDetailsCompleteItsa(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-        case AgentFastTrackRequest(_, HMRCPIR, _, _, knownFact) =>
-          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(Personal))
+        case AgentFastTrackRequest(_, Service.HMRCPIR, _, _, knownFact) =>
+          val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(ClientType.Personal))
           goto(knownFact.fold(CheckDetailsNoDob(updatedPersonalRequest, updatedPersonalRequest, continueUrl): State)(_ =>
             CheckDetailsCompleteIrv(updatedPersonalRequest, updatedPersonalRequest, continueUrl)))
 
-        case AgentFastTrackRequest(Some(ClientType.Personal), HMRCMTDVAT, _, _, knownFact) =>
+        case AgentFastTrackRequest(Some(ClientType.Personal), Service.HMRCMTDVAT, _, _, knownFact) =>
           goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
             CheckDetailsCompletePersonalVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
-        case AgentFastTrackRequest(Some(ClientType.Business), HMRCMTDVAT, _, _, knownFact) =>
+        case AgentFastTrackRequest(Some(ClientType.Business), Service.HMRCMTDVAT, _, _, knownFact) =>
           goto(knownFact.fold(CheckDetailsNoVatRegDate(fastTrackRequest, fastTrackRequest, continueUrl): State)(_ =>
             CheckDetailsCompleteBusinessVat(fastTrackRequest, fastTrackRequest, continueUrl)))
 
-        case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
+        case AgentFastTrackRequest(None, Service.HMRCMTDVAT, _, _, _) =>
           goto(CheckDetailsNoClientTypeVat(fastTrackRequest, fastTrackRequest, continueUrl))
 
-        case AgentFastTrackRequest(_, TAXABLETRUST | NONTAXABLETRUST, _, _, _) =>
+        case AgentFastTrackRequest(_, Service.HMRCTERSORG | Service.HMRCTERSNTORG, _, _, _) =>
           goto(CheckDetailsCompleteTrust(fastTrackRequest, fastTrackRequest.copy(clientType = Some(ClientType.Trust)), continueUrl))
 
-        case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
+        case AgentFastTrackRequest(_, Service.HMRCCGTPD, _, _, _) =>
           goto(CheckDetailsCompleteCgt(fastTrackRequest, fastTrackRequest, continueUrl))
 
-        case AgentFastTrackRequest(_, HMRCPPTORG, _, _, _) =>
+        case AgentFastTrackRequest(_, Service.HMRCPPTORG, _, _, _) =>
           goto(CheckDetailsCompletePpt(fastTrackRequest, fastTrackRequest, continueUrl))
 
         case fastTrackRequest =>
@@ -405,7 +406,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                          hasPartialAuthorisation(arn, fastTrackRequest.clientIdentifier).flatMap {
                            case true => goto(PartialAuthorisationExists(fastTrackRequest, continueUrl))
                            case false =>
-                             if (appConfig.featuresAltItsa && invitation.service == HMRCMTDIT)
+                             if (appConfig.featuresAltItsa && invitation.service == Service.MtdIt)
                                legacySaRelationshipStatusFor(arn, fastTrackRequest.clientIdentifier).flatMap {
                                  case LegacySaRelationshipFoundAndMapped => goto(AlreadyCopiedAcrossItsa)
                                  case LegacySaRelationshipFoundNotMapped =>
@@ -542,9 +543,9 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition = {
       def gotoIdentifyClient(originalFtr: AgentFastTrackRequest, ftRequest: AgentFastTrackRequest, continueUrl: Option[String]) =
-        if (ftRequest.clientType.contains(Personal)) {
+        if (ftRequest.clientType.contains(ClientType.Personal)) {
           goto(IdentifyPersonalClient(originalFtr, ftRequest, continueUrl))
-        } else if (ftRequest.clientType.contains(Business)) {
+        } else if (ftRequest.clientType.contains(ClientType.Business)) {
           goto(IdentifyBusinessClient(originalFtr, ftRequest, continueUrl))
         } else {
           goto(IdentifyNoClientTypeClient(originalFtr, ftRequest, continueUrl))
@@ -602,7 +603,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
-                    ItsaInvitation(Nino(fastTrackRequest.clientIdentifier)),
+                    Invitation(fastTrackRequest.clientType, Service.MtdIt, Nino(fastTrackRequest.clientIdentifier)),
                     continueUrl
                   )(
                     hasPendingInvitations,
@@ -628,7 +629,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
-                    PirInvitation(Nino(fastTrackRequest.clientIdentifier)),
+                    Invitation(fastTrackRequest.clientType, Service.PersonalIncomeRecord, Nino(fastTrackRequest.clientIdentifier)),
                     continueUrl
                   )(
                     hasPendingInvitations,
@@ -650,7 +651,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
-                    VatInvitation(Some(Personal), Vrn(fastTrackRequest.clientIdentifier)),
+                    Invitation(Some(ClientType.Personal), Service.Vat, Vrn(fastTrackRequest.clientIdentifier)),
                     continueUrl
                   )(
                     hasPendingInvitations,
@@ -675,7 +676,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
-                    VatInvitation(Some(ClientType.Business), Vrn(fastTrackRequest.clientIdentifier)),
+                    Invitation(Some(ClientType.Business), Service.Vat, Vrn(fastTrackRequest.clientIdentifier)),
                     continueUrl
                   )(
                     hasPendingInvitations,
@@ -696,8 +697,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             getClientName(fastTrackRequest.clientIdentifier, fastTrackRequest.service).flatMap {
               case Some(_) =>
                 val trustInvitation = fastTrackRequest.clientIdentifier match {
-                  case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
-                  case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+                  case utr if utr.matches(utrPattern) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
+                  case urn if urn.matches(urnPattern) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
                 }
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
@@ -735,7 +736,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                         checkIfPendingOrActiveAndGoto(
                           fastTrackRequest,
                           agent.arn,
-                          CgtInvitation(CgtRef(fastTrackRequest.clientIdentifier), fastTrackRequest.clientType),
+                          Invitation(fastTrackRequest.clientType, Service.CapitalGains, CgtRef(fastTrackRequest.clientIdentifier)),
                           continueUrl
                         )(
                           hasPendingInvitations,
@@ -759,7 +760,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   checkIfPendingOrActiveAndGoto(
                     fastTrackRequest,
                     agent.arn,
-                    PptInvitation(PptRef(fastTrackRequest.clientIdentifier), fastTrackRequest.clientType),
+                    Invitation(fastTrackRequest.clientType, Service.Ppt, PptRef(fastTrackRequest.clientIdentifier)),
                     continueUrl
                   )(
                     hasPendingInvitations,
@@ -863,8 +864,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case ConfirmClientTrust(originalFtr, ftr, continueUrl, trustName) =>
           if (confirmation.choice) {
             val trustInvitation = ftr.clientIdentifier match {
-              case utr if utr.matches(utrPattern) => TrustInvitation(Utr(utr))
-              case urn if urn.matches(urnPattern) => TrustNTInvitation(Urn(urn))
+              case utr if utr.matches(utrPattern) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
+              case urn if urn.matches(urnPattern) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
             }
             checkIfPendingOrActiveAndGoto(
               ftr,
@@ -893,7 +894,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             checkIfPendingOrActiveAndGoto(
               ftr,
               agent.arn,
-              CgtInvitation(CgtRef(ftr.clientIdentifier), ftr.clientType),
+              Invitation(ftr.clientType, Service.CapitalGains, CgtRef(ftr.clientIdentifier)),
               continueUrl
             )(
               hasPendingInvitations,
@@ -917,7 +918,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             checkIfPendingOrActiveAndGoto(
               ftr,
               agent.arn,
-              PptInvitation(PptRef(ftr.clientIdentifier), ftr.clientType),
+              Invitation(ftr.clientType, Service.Ppt, PptRef(ftr.clientIdentifier)),
               continueUrl
             )(
               hasPendingInvitations,
@@ -968,7 +969,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       Transition {
         case NoVatRegDate(originalFtr, ftRequest, continueUrl) => {
           val checkDetailsState =
-            if (ftRequest.clientType.contains(Personal))
+            if (ftRequest.clientType.contains(ClientType.Personal))
               CheckDetailsCompletePersonalVat
             else
               CheckDetailsCompleteBusinessVat
@@ -1009,17 +1010,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
           def stateForMissingKnownFact(forService: String) =
             forService match {
-              case HMRCMTDVAT | HMRCMTDIT | HMRCPIR => IdentifyPersonalClient(originalFtr, ftrWithoutKF, continueUrl)
+              case Service.HMRCMTDVAT | Service.HMRCMTDIT | Service.HMRCPIR => IdentifyPersonalClient(originalFtr, ftrWithoutKF, continueUrl)
             }
 
           val tryAgainState = fastTrackRequest match {
-            case AgentFastTrackRequest(None, HMRCMTDVAT, _, _, _) =>
+            case AgentFastTrackRequest(None, Service.HMRCMTDVAT, _, _, _) =>
               SelectClientTypeVat(originalFtr, fastTrackRequest, continueUrl)
 
-            case AgentFastTrackRequest(_, HMRCCGTPD, _, _, _) =>
+            case AgentFastTrackRequest(_, Service.HMRCCGTPD, _, _, _) =>
               IdentifyCgtClient(originalFtr, fastTrackRequest, continueUrl)
 
-            case AgentFastTrackRequest(_, HMRCPPTORG, _, _, _) =>
+            case AgentFastTrackRequest(_, Service.HMRCPPTORG, _, _, _) =>
               IdentifyPptClient(originalFtr, fastTrackRequest, continueUrl)
 
             case AgentFastTrackRequest(_, service, _, _, _) =>
@@ -1049,7 +1050,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           val isKnownFactRequired = ftr.knownFact.isDefined
           if (isKnownFactRequired) {
             val completeState =
-              if (ftr.clientType.contains(Personal)) CheckDetailsCompletePersonalVat
+              if (ftr.clientType.contains(ClientType.Personal)) CheckDetailsCompletePersonalVat
               else CheckDetailsCompleteBusinessVat
             val newState =
               completeState(originalFtr, ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))), continueUrl)
@@ -1065,7 +1066,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
 
         case SelectClientTypeCgt(originalFtr, ftr, continueUrl, isChanging) =>
-          val newFtr = ftr.copy(clientType = Some(if (suppliedClientType == "trust") Trust else Personal))
+          val newFtr = ftr.copy(clientType = Some(if (suppliedClientType == "trust") ClientType.Trust else ClientType.Personal))
           getCgtSubscription(CgtRef(ftr.clientIdentifier)).map {
             case Some(subscription) =>
               if (isChanging) {

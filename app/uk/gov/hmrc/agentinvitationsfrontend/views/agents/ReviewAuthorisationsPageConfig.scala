@@ -20,24 +20,28 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.AuthorisationRequest
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, BusinessInvitationsBasket, ClientType, PersonalInvitationsBasket, TrustInvitationsBasket}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-abstract class ReviewAuthorisationsPageConfig(val basket: Basket, val featureFlags: FeatureFlags, val services: Set[String], val submitCall: Call)(
+case class ReviewAuthorisationsPageConfig(clientType: ClientType, basket: Basket, featureFlags: FeatureFlags, services: Set[String], submitCall: Call)(
   implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {
-      case "PERSONAL-INCOME-RECORD" => noNameMessage
-      case _                        => authorisationRequest.clientName.stripSuffix(".")
+      case Service.PersonalIncomeRecord => noNameMessage
+      case _                            => authorisationRequest.clientName.stripSuffix(".")
     }
-
-  val basketFull: Boolean
 
   val numberOfItems: Int = basket.size
 
   val clientNamesAreDifferent: Boolean = basket.toSeq.map(_.clientName).distinct.length != 1
 
+  val basketFull: Boolean = clientType match {
+    case ClientType.Personal => new PersonalInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
+    case ClientType.Business => new BusinessInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
+    case ClientType.Trust    => new TrustInvitationsBasket(services, basket, featureFlags).availableServices.isEmpty
+  }
+
   def showDeleteCall(itemId: String): Call =
     routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
-
 }

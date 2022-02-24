@@ -56,7 +56,7 @@ isAgent = true) {
             @request.clientName
             </dt>
             <dd class="govuk-summary-list__value" id="client-identifier">
-            @msgs(s"create-auth-failed.${request.invitation.service}")
+            @msgs(s"create-auth-failed.${request.invitation.service.id}")
             </dd>
         </div>
     }

@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoade
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyService
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -94,7 +94,6 @@ class AgentInvitationJourneyController @Inject()(
   import AgentInvitationJourneyController._
   import acaConnector._
   import authActions._
-  import invitationsService._
   import journeyService.model._
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
@@ -112,12 +111,33 @@ class AgentInvitationJourneyController @Inject()(
   }
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
+
+  def transitions()(implicit ec: ExecutionContext, request: RequestHeader) = Transitions(
+    getSuspensionDetails = getAgencySuspensionDetails,
+    hasPendingInvitationsFor = invitationsService.hasPendingInvitationsFor,
+    hasActiveRelationshipFor = relationshipsService.hasActiveRelationshipFor,
+    hasPartialAuthorisationFor = invitationsService.hasPartialAuthorisationFor,
+    legacySaRelationshipStatusFor = invitationsService.legacySaRelationshipStatusFor,
+    hasAltItsaInvitations = invitationsService.hasPartialAuthorisationFor,
+    checkDobMatches = invitationsService.checkCitizenRecordMatches,
+    checkPostcodeMatches = invitationsService.checkPostcodeMatches,
+    checkRegDateMatches = invitationsService.checkVatRegistrationDateMatches,
+    getClientName = invitationsService.getClientNameByService,
+    getAgentLink = invitationsService.createAgentLink,
+    getAgencyEmail = getAgencyEmail,
+    createMultipleInvitations = invitationsService.createMultipleInvitations,
+    createInvitationSent = invitationsService.createInvitationSent
+  )
+
   val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
 
   val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType]
 
   val submitClientType: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.authorisationForm).apply(Transitions.selectedClientType)
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(ClientTypeForm.authorisationForm)
+      .applyWithRequest(implicit request => transitions.selectedClientType)
 
   // TODO: Broken using DSL
   val showSelectService: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -128,104 +148,51 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
 
   def submitPersonalSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
-
-  def submitPersonalSelectSingleNew(service: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
+      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
 
   val submitBusinessSelectService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedBusinessService(
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showPlasticPackagingTax,
-            featureFlags.agentSuspensionEnabled,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedBusinessService(featureFlags)
+      )
 
   def submitBusinessSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Personal))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
       .applyWithRequest(
-        implicit request =>
-          Transitions.selectedBusinessService(
-            featureFlags.showHmrcMtdVat,
-            featureFlags.showPlasticPackagingTax,
-            featureFlags.agentSuspensionEnabled,
-            getAgencySuspensionDetails
-        ))
+        implicit request => transitions.selectedBusinessService(featureFlags)
+      )
 
   def submitTrustSelectSingle(service: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, Trust))
-      .applyWithRequest(implicit request =>
-        Transitions.selectedTrustService(
-          featureFlags.showHmrcTrust,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Trust))
+      .applyWithRequest(
+        implicit request => transitions.selectedTrustService(featureFlags)
+      )
 
   // this is only for multi-select option forms
   val submitTrustSelectServiceMultiple: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.selectedTrustService(
-          featureFlags.showHmrcTrust,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax,
-          featureFlags.agentSuspensionEnabled,
-          getAgencySuspensionDetails
-      ))
+      .applyWithRequest(
+        implicit request => transitions.selectedTrustService(featureFlags)
+      )
 
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
 
-  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Identify].orRollback
+  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   val showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
@@ -233,7 +200,7 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PostcodeForm.form)
-      .applyWithRequest(implicit request => Transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val showConfirmCgtCountryCode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt].orRollback
 
@@ -241,63 +208,51 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CountrycodeForm.form(validCountryCodes))
-      .applyWithRequest(implicit request => Transitions.confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val submitIdentifyItsaClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ItsaClientForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.identifiedItsaClient(checkPostcodeMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(appConfig))
+      .applyWithRequest(implicit request => transitions.identifiedItsaClient(appConfig))
 
   val submitIdentifyVatClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(VatClientForm.form)
-      .applyWithRequest(implicit request =>
-        Transitions.identifiedVatClient(checkVatRegistrationDateMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-          getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail))
+      .applyWithRequest(implicit request => transitions.identifiedVatClient)
 
   val submitIdentifyIrvClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(IrvClientForm.form)
-      .applyWithRequest(
-        implicit request =>
-          Transitions.identifiedIrvClient(checkCitizenRecordMatches)(hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(
-            hasPartialAuthorisationFor)(getClientNameByService)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            legacySaRelationshipStatusFor)(appConfig))
+      .applyWithRequest(implicit request => transitions.identifiedIrvClient(appConfig))
 
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(TrustClientForm.form(urnEnabled))
-      .applyWithRequest(implicit request => Transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value)))
+      .applyWithRequest(implicit request => transitions.identifiedTrustClient(taxId => acaConnector.getTrustName(taxId.value)))
 
   val submitIdentifyCgtClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CgtClientForm.form())
-      .applyWithRequest(implicit request => Transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => transitions.identifyCgtClient(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
 
   val submitIdentifyPptClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PptClientForm.form)
-      .applyWithRequest(implicit request => Transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
+      .applyWithRequest(implicit request => transitions.identifyPptClient(acaConnector.checkKnownFactPPT(_), acaConnector.getPptCustomerName(_)))
 
-  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[Confirm].orRollback
+  val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
   val submitConfirmClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ConfirmClientForm)
-      .applyWithRequest(
-        implicit request =>
-          Transitions.clientConfirmed(featureFlags.showHmrcCgt)(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(
-            hasPendingInvitationsFor)(relationshipsService.hasActiveRelationshipFor)(hasPartialAuthorisationFor)(legacySaRelationshipStatusFor)(
-            appConfig))
+      .applyWithRequest(implicit request => transitions.clientConfirmed(featureFlags.showHmrcCgt)(appConfig))
 
   // TODO review whether we only need one state/page here?
   def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
@@ -308,14 +263,19 @@ class AgentInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ReviewAuthorisationsForm)
-      .applyWithRequest(implicit request =>
-        Transitions.authorisationsReviewed(createMultipleInvitations)(invitationsService.createAgentLink)(getAgencyEmail)(createInvitationSent))
+      .applyWithRequest(implicit request => transitions.authorisationsReviewed)
 
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(agent => Transitions.deleteAuthorisationRequest(itemId)(agent)).display
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .applyWithRequest(implicit request => (agent => transitions.deleteAuthorisationRequest(itemId)(agent)))
+      .display
 
   val submitDeleteAuthorisation: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(DeleteAuthorisationForm).apply(Transitions.confirmDeleteAuthorisationRequest)
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(DeleteAuthorisationForm)
+      .applyWithRequest(implicit request => transitions.confirmDeleteAuthorisationRequest)
 
   val showInvitationSent: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[InvitationSent].display
 
@@ -326,7 +286,7 @@ class AgentInvitationJourneyController @Inject()(
   val showSomeAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SomeAuthorisationsFailed]
 
   val submitSomeAuthorisationsFailed: Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsAgent).apply(Transitions.continueSomeResponsesFailed).redirect
+    actions.whenAuthorisedWithRetrievals(AsAgent).applyWithRequest(implicit requeest => transitions.continueSomeResponsesFailed).redirect
 
   val showAllAuthorisationsFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[AllAuthorisationsFailed]
 
@@ -363,7 +323,7 @@ class AgentInvitationJourneyController @Inject()(
               Future successful Redirect(externalUrls.agentMappingFrontendUrl)
                 .addingToSession(toReturnFromMapping)
             else
-              helpers.apply(Transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
+              helpers.apply(transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
           }
         )
     }
@@ -393,25 +353,16 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case _: SelectClientType         => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectPersonalService    => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectBusinessService    => routes.AgentInvitationJourneyController.showSelectService()
-    case _: SelectTrustService       => routes.AgentInvitationJourneyController.showSelectService()
-    case _: IdentifyClient           => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case _: ConfirmClientItsa        => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPersonalVat => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientBusinessVat => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientTrust       => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientCgt         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmClientPpt         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmPostcodeCgt       => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
-    case _: ConfirmCountryCodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
-    case _: ReviewAuthorisations     => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case _: SelectClientType      => routes.AgentInvitationJourneyController.showClientType()
+    case _: SelectService         => routes.AgentInvitationJourneyController.showSelectService()
+    case _: IdentifyClient        => routes.AgentInvitationJourneyController.showIdentifyClient()
+    case _: ConfirmClient         => routes.AgentInvitationJourneyController.showConfirmClient()
+    case _: ConfirmPostcodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
+    case _: ConfirmCountryCodeCgt => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
+    case _: ReviewAuthorisations  => routes.AgentInvitationJourneyController.showReviewAuthorisations()
     case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case _: InvitationSentPersonal      => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentBusiness      => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: InvitationSentTrust         => routes.AgentInvitationJourneyController.showInvitationSent()
+    case _: InvitationSent              => routes.AgentInvitationJourneyController.showInvitationSent()
     case _: KnownFactNotMatched         => routes.AgentInvitationJourneyController.showNotMatched()
     case _: TrustNotFound               => routes.AgentInvitationJourneyController.showNotMatched()
     case _: CgtRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
@@ -446,8 +397,9 @@ class AgentInvitationJourneyController @Inject()(
             ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType(), featureFlags.showHmrcTrust)
           ))
 
-      case SelectPersonalService(services, basket) =>
-        val config = PersonalSelectServicePageConfig(
+      case SelectService(clientType, services, basket) =>
+        val config = SelectServicePageConfig(
+          clientType,
           basket,
           featureFlags,
           services,
@@ -458,36 +410,9 @@ class AgentInvitationJourneyController @Inject()(
         if (config.showMultiSelect)
           Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
         else
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Personal)), config))
+          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)), config))
 
-      case SelectBusinessService(services, basket) =>
-        val config = BusinessSelectServicePageConfig(
-          basket,
-          featureFlags,
-          services,
-          backLink = backLinkFor(breadcrumbs).url,
-          reviewAuthsCall = routes.AgentInvitationJourneyController.showReviewAuthorisations()
-        )
-
-        if (config.showMultiSelect)
-          Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
-        else
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Business)), config))
-
-      case SelectTrustService(services, basket) =>
-        val config = TrustSelectServicePageConfig(
-          basket,
-          featureFlags,
-          services,
-          backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.showReviewAuthorisations())
-        if (config.showMultiSelect) {
-          Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
-        } else {
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, Trust)), config))
-        }
-
-      case IdentifyClient(Trust, Services.TAXABLETRUST, _) =>
+      case IdentifyClient(ClientType.Trust, Services.TAXABLETRUST, _) =>
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
@@ -497,25 +422,8 @@ class AgentInvitationJourneyController @Inject()(
             showUrnEnabledContent = urnEnabled
           )
         )
-      case IdentifyClient(Trust, Services.HMRCCGTPD, _) =>
-        Ok(
-          identifyClientCgtView(
-            formWithErrors.or(CgtClientForm.form()),
-            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
 
-      case IdentifyClient(Trust, Services.HMRCPPTORG, _) =>
-        Ok(
-          identifyClientPptView(
-            formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyPptClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Personal, Services.HMRCMTDIT, _) =>
+      case IdentifyClient(ClientType.Personal, Services.HMRCMTDIT, _) =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(ItsaClientForm.form),
@@ -524,16 +432,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Personal, Services.HMRCMTDVAT, _) =>
-        Ok(
-          identifyClientVatView(
-            formWithErrors.or(VatClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Personal, Services.HMRCPIR, _) =>
+      case IdentifyClient(ClientType.Personal, Services.HMRCPIR, _) =>
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IrvClientForm.form),
@@ -542,25 +441,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Personal, Services.HMRCCGTPD, _) =>
-        Ok(
-          identifyClientCgtView(
-            formWithErrors.or(CgtClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Personal, Services.HMRCPPTORG, _) =>
-        Ok(
-          identifyClientPptView(
-            formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyPptClient,
-            backLinkFor(breadcrumbs).url
-          )
-        )
-
-      case IdentifyClient(Business, Services.HMRCMTDVAT, _) =>
+      case IdentifyClient(_, Services.HMRCMTDVAT, _) =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(VatClientForm.form),
@@ -569,7 +450,16 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(Business, Services.HMRCPPTORG, _) =>
+      case IdentifyClient(_, Services.HMRCCGTPD, _) =>
+        Ok(
+          identifyClientCgtView(
+            formWithErrors.or(CgtClientForm.form),
+            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
+            backLinkFor(breadcrumbs).url
+          )
+        )
+
+      case IdentifyClient(_, Services.HMRCPPTORG, _) =>
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
@@ -578,25 +468,14 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case ConfirmClientTrust(authorisationRequest, _) =>
+      case ConfirmClient(authorisationRequest, _, _) =>
         Ok(
           confirmClientView(
             authorisationRequest.clientName,
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientCgt(authorisationRequest, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
+            authorisationRequest.invitation.service.supportedClientIdType.id,
             authorisationRequest.invitation.clientId
           ))
 
@@ -619,78 +498,15 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             isDeAuth = false))
 
-      case ConfirmClientItsa(authorisationRequest, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientPersonalVat(authorisationRequest, _, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientBusinessVat(authorisationRequest, _, _) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ConfirmClientPpt(authorisationRequest, basket) =>
-        Ok(
-          confirmClientView(
-            authorisationRequest.clientName,
-            formWithErrors.or(ConfirmClientForm),
-            backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.clientIdentifierType,
-            authorisationRequest.invitation.clientId
-          ))
-
-      case ReviewAuthorisations(Personal, services, basket) =>
+      case ReviewAuthorisations(clientType, services, basket) =>
         Ok(
           reviewAuthView(
-            ReviewAuthorisationsPersonalPageConfig(
+            ReviewAuthorisationsPageConfig(
+              clientType,
               basket,
               featureFlags,
               services,
               routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-            formWithErrors.or(ReviewAuthorisationsForm),
-            backLinkFor(breadcrumbs).url
-          ))
-
-      case ReviewAuthorisations(Business, services, basket) =>
-        Ok(
-          reviewAuthView(
-            ReviewAuthorisationsBusinessPageConfig(
-              basket,
-              featureFlags,
-              services,
-              routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
-            formWithErrors.or(ReviewAuthorisationsForm),
-            backLinkFor(breadcrumbs).url
-          ))
-
-      case ReviewAuthorisations(Trust, services, basket) =>
-        Ok(
-          reviewAuthView(
-            ReviewAuthorisationsTrustPageConfig(basket, featureFlags, services, routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
             formWithErrors.or(ReviewAuthorisationsForm),
             backLinkFor(breadcrumbs).url
           ))
@@ -706,47 +522,19 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(DeleteAuthorisationForm)
           ))
 
-      case InvitationSentPersonal(invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
+      case InvitationSent(clientType, invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
         Ok(
           invitationSentView(
             InvitationSentPageConfig(
               invitationLink,
               None,
               continueUrl.isDefined,
-              ClientType.fromEnum(Personal),
+              ClientType.fromEnum(clientType),
               inferredExpiryDate,
               agencyEmail,
               services,
-              isAltItsa
+              isAltItsa.getOrElse(false)
             )))
-
-      case InvitationSentBusiness(invitationLink, continueUrl, agencyEmail, services) =>
-        Ok(
-          invitationSentView(
-            InvitationSentPageConfig(
-              invitationLink,
-              None,
-              continueUrl.isDefined,
-              ClientType.fromEnum(Business),
-              inferredExpiryDate,
-              agencyEmail,
-              services,
-              isAltItsa = false,
-              services.head)))
-
-      case InvitationSentTrust(invitationLink, continueUrl, agencyEmail, services) =>
-        Ok(
-          invitationSentView(
-            InvitationSentPageConfig(
-              invitationLink,
-              None,
-              continueUrl.isDefined,
-              ClientType.fromEnum(Trust),
-              inferredExpiryDate,
-              agencyEmail,
-              services,
-              isAltItsa = false,
-              services.head)))
 
       case KnownFactNotMatched(basket) =>
         Ok(
@@ -786,10 +574,10 @@ class AgentInvitationJourneyController @Inject()(
         Ok(cannotCreateRequestView(CannotCreateRequestConfig(basket.nonEmpty, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
 
       case SomeAuthorisationsFailed(_, _, _, basket) =>
-        Ok(invitationCreationFailedView(SomeInvitationCreationFailedPageConfig(basket)))
+        Ok(invitationCreationFailedView(InvitationCreationFailedPageConfig(basket, isAll = false)))
 
       case AllAuthorisationsFailed(basket) =>
-        Ok(invitationCreationFailedView(AllInvitationCreationFailedPageConfig(basket)))
+        Ok(invitationCreationFailedView(InvitationCreationFailedPageConfig(basket, isAll = true)))
 
       case ActiveAuthorisationExists(clientType, service, basket) =>
         Ok(
