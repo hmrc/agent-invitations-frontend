@@ -145,50 +145,17 @@ class AgentInvitationJourneyController @Inject()(
     case _: SelectService =>
   }
 
-  val submitPersonalSelectService: Action[AnyContent] =
+  val submitSelectServiceMulti: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request => transitions.selectedPersonalServiceMulti(featureFlags))
+      .applyWithRequest(implicit request => transitions.selectedServiceMulti(featureFlags))
 
-  def submitPersonalSelectSingle(serviceId: String): Action[AnyContent] =
+  def submitSelectServiceSingle(serviceId: String, clientType: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.Personal))
-      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
-
-  val submitBusinessSelectService: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request => transitions.selectedBusinessServiceMulti(featureFlags)
-      )
-
-  def submitBusinessSelectSingle(serviceId: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.Personal))
-      .applyWithRequest(
-        implicit request => transitions.selectedBusinessService(featureFlags)
-      )
-
-  def submitTrustSelectSingle(serviceId: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.Trust))
-      .applyWithRequest(
-        implicit request => transitions.selectedTrustService(featureFlags)
-      )
-
-  // this is only for multi-select option forms
-  val submitTrustSelectServiceMultiple: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request => transitions.selectedTrustServiceMulti(featureFlags)
-      )
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.toEnum(clientType)))
+      .applyWithRequest(implicit request => transitions.selectedService(featureFlags))
 
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))

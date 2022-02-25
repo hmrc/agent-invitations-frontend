@@ -40,12 +40,8 @@ case class SelectServicePageConfig(
   def remainingService: Service = firstService
 
   def submitCall: Call = (clientType, showMultiSelect) match {
-    case (ClientType.Personal, false) => routes.AgentInvitationJourneyController.submitPersonalSelectSingle(remainingService.id)
-    case (ClientType.Personal, true)  => routes.AgentInvitationJourneyController.submitPersonalSelectService()
-    case (ClientType.Business, false) => routes.AgentInvitationJourneyController.submitBusinessSelectSingle(remainingService.id)
-    case (ClientType.Business, true)  => routes.AgentInvitationJourneyController.submitBusinessSelectService()
-    case (ClientType.Trust, false)    => routes.AgentInvitationJourneyController.submitTrustSelectSingle(remainingService.id)
-    case (ClientType.Trust, true)     => routes.AgentInvitationJourneyController.submitTrustSelectServiceMultiple()
+    case (clientType, false) => routes.AgentInvitationJourneyController.submitSelectServiceSingle(remainingService.id, clientType.toString)
+    case (clientType, true)  => routes.AgentInvitationJourneyController.submitSelectServiceMulti()
   }
 
   /** The list of available services for the user to select,

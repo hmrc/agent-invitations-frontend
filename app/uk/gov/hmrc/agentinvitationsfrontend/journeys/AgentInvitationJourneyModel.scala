@@ -160,93 +160,29 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         case (false, _)    => fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
       }
 
-    def selectedPersonalServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
-      selectedPersonalService(featureFlags)(agent)(Some(service))
-
-    def selectedPersonalService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
+    def selectedService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
       Transition {
-
-        case SelectService(ClientType.Personal, services, basket) =>
-          mService match { // user selected "no" to final service
-            case None => goto(ReviewAuthorisations(ClientType.Personal, services, basket))
-            case Some(service) if services.contains(service) =>
-              val flag = service match {
-                case Service.MtdIt                => featureFlags.showHmrcMtdIt
-                case Service.PersonalIncomeRecord => featureFlags.showPersonalIncome
-                case Service.Vat                  => featureFlags.showHmrcMtdVat
-                case Service.CapitalGains         => featureFlags.showHmrcCgt
-                case Service.Ppt                  => featureFlags.showPlasticPackagingTax
-              }
-              gotoIdentify(
-                flag,
-                featureFlags.agentSuspensionEnabled,
-                agent.arn,
-                service,
-                IdentifyClient(ClientType.Personal, service, basket),
-                AgentSuspended(service, basket)
-              )
-            case _ => goto(SelectService(ClientType.Personal, services, basket))
-          }
-      }
-
-    def selectedBusinessServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
-      selectedBusinessService(featureFlags)(agent)(Some(service))
-
-    def selectedBusinessService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
-      Transition {
-        case SelectService(ClientType.Business, services, basket) =>
+        case SelectService(clientType, services, basket) =>
           mService match {
             case None => // user selected "no" to final service
               if (basket.isEmpty)
                 goto(SelectClientType(basket)) // if no services in basket, and user also declined the final service, go back to SelectClientType
-              else goto(ReviewAuthorisations(ClientType.Business, services, basket)) // otherwise proceed to review
+              else goto(ReviewAuthorisations(clientType, services, basket)) // otherwise proceed to review
             case Some(service) if services.contains(service) =>
-              val flag = service match {
-                case Service.Vat => featureFlags.showHmrcMtdVat
-                case Service.Ppt => featureFlags.showPlasticPackagingTax
-              }
               gotoIdentify(
-                flag,
+                featureFlags.isServiceEnabled(service),
                 featureFlags.agentSuspensionEnabled,
                 agent.arn,
                 service,
-                IdentifyClient(ClientType.Business, service, basket),
+                IdentifyClient(clientType, service, basket),
                 AgentSuspended(service, basket)
               )
-            case _ => goto(SelectService(ClientType.Business, services, basket))
+            case _ => goto(SelectService(clientType, services, basket))
           }
       }
 
-    def selectedTrustServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
-      selectedTrustService(featureFlags)(agent)(Some(service))
-
-    def selectedTrustService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
-      Transition {
-        case SelectService(ClientType.Trust, services, basket) =>
-          mService match {
-            case None => // user selected "no" to final service
-              if (basket.nonEmpty)
-                goto(ReviewAuthorisations(ClientType.Trust, services, basket))
-              else {
-                goto(root)
-              }
-            case Some(service) if services.contains(service) =>
-              val flag = service match {
-                case Service.Trust        => featureFlags.showHmrcTrust
-                case Service.CapitalGains => featureFlags.showHmrcCgt
-                case Service.Ppt          => featureFlags.showPlasticPackagingTax
-              }
-              gotoIdentify(
-                flag,
-                featureFlags.agentSuspensionEnabled,
-                agent.arn,
-                service,
-                IdentifyClient(ClientType.Trust, service, basket),
-                AgentSuspended(service, basket)
-              )
-            case _ => goto(SelectService(ClientType.Trust, services, basket))
-          }
-      }
+    def selectedServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
+      selectedService(featureFlags)(agent)(Some(service))
 
     def identifiedTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {

@@ -256,7 +256,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.set(SelectService(Personal, availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitPersonalSelectService(
+      val result = controller.submitSelectServiceMulti(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
@@ -271,7 +271,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
       journeyState.set(SelectService(Personal, availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitPersonalSelectService(
+      val result = controller.submitSelectServiceMulti(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
@@ -286,7 +286,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("AGSV"))))
       journeyState.set(SelectService(Personal, availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitPersonalSelectService(
+      val result = controller.submitSelectServiceMulti(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
@@ -301,7 +301,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
       journeyState.set(SelectService(Personal, availableServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitPersonalSelectService(
+      val result = controller.submitSelectServiceMulti(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
 
       status(result) shouldBe 303
@@ -320,7 +320,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.set(SelectService(Business, Set(Service.Vat), emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitBusinessSelectSingle(Service.Vat.id)(
+      val result = controller.submitSelectServiceSingle(Service.Vat.id, ClientType.Business.toString)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
@@ -335,7 +335,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.set(SelectService(Business, Set(Service.Vat), Set.empty), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitBusinessSelectSingle(Service.Vat.id)(
+      val result = controller.submitSelectServiceSingle(Service.Vat.id, ClientType.Business.toString)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -355,7 +355,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.set(SelectService(Trust, availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(Service.Trust.id)(
+      val result = controller.submitSelectServiceSingle(Service.Trust.id, ClientType.Trust.toString)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
@@ -370,7 +370,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.set(SelectService(Trust, availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(Service.Trust.id)(
+      val result = controller.submitSelectServiceSingle(Service.Trust.id, ClientType.Trust.toString)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
@@ -385,7 +385,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.set(SelectService(Trust, availableTrustServices, emptyBasket), List(SelectClientType(emptyBasket)))
 
-      val result = controller.submitTrustSelectSingle(Service.Trust.id)(
+      val result = controller.submitSelectServiceSingle(Service.Trust.id, ClientType.Trust.toString)(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "foo"), arn.value))
 
       status(result) shouldBe 303

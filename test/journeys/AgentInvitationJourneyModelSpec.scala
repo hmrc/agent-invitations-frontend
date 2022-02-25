@@ -193,7 +193,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           showPlasticPackagingTax = showPptFlag,
           agentSuspensionEnabled = agentSuspensionEnabled
         )
-        transitions.selectedPersonalService(featureFlags)(authorisedAgent)
+        transitions.selectedService(featureFlags)(authorisedAgent)
       }
 
       "transition to SelectClientType" in {
@@ -251,7 +251,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Personal, availableServices, emptyBasket)) when
           transitions
             .copy(getSuspensionDetails = suspendedForItsa)
-            .selectedPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.MtdIt)) should thenGo(
+            .selectedService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.MtdIt)) should thenGo(
           AgentSuspended(Service.MtdIt, emptyBasket))
       }
 
@@ -261,7 +261,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Personal, availableServices, emptyBasket)) when
           transitions
             .copy(getSuspensionDetails = suspendedForItsa)
-            .selectedPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should thenGo(
+            .selectedService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should thenGo(
           IdentifyClient(Personal, Service.Vat, emptyBasket))
       }
 
@@ -317,10 +317,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Business, availableServices, emptyBasket)) when start should thenGo(SelectClientType(emptyBasket))
       }
 
-      "after selectedBusinessService(true)(true) transition to IdentifyBusinessClient" in {
+      "after selectedService(true)(true) transition to IdentifyBusinessClient" in {
 
         given(SelectService(Business, availableBusinessServices, emptyBasket)) when
-          transitions.selectedBusinessService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
+          transitions.selectedService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
           thenGo(IdentifyClient(Business, Service.Vat, emptyBasket))
       }
 
@@ -330,7 +330,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Business, availableBusinessServices, emptyBasket)) when
           transitions
             .copy(getSuspensionDetails = suspendedForVat)
-            .selectedBusinessService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
+            .selectedService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
           thenGo(AgentSuspended(Service.Vat, emptyBasket))
       }
 
@@ -340,14 +340,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Business, availableServices, emptyBasket)) when
           transitions
             .copy(getSuspensionDetails = suspendedForItsa)
-            .selectedBusinessService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
+            .selectedService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
           thenGo(IdentifyClient(Business, Service.Vat, emptyBasket))
       }
 
       "throw an exception when the show vat feature flag is off" in {
         intercept[Exception] {
           given(SelectService(Business, availableServices, emptyBasket)) when
-            transitions.selectedBusinessService(TestFeatureFlags.allEnabled.copy(showHmrcMtdVat = false))(authorisedAgent)(Some(Service.Vat))
+            transitions.selectedService(TestFeatureFlags.allEnabled.copy(showHmrcMtdVat = false))(authorisedAgent)(Some(Service.Vat))
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
     }
@@ -365,31 +365,31 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "after selectedTrustService(false)(true)(true) transition to IdentifyTrustClient" in {
+      "after selectedService(false)(true)(true) transition to IdentifyTrustClient" in {
 
         given(SelectService(Trust, availableTrustServices, emptyBasket)) when
-          transitions.selectedTrustService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(Some(Service.Trust)) should
+          transitions.selectedService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(Some(Service.Trust)) should
           thenGo(IdentifyClient(Trust, Service.Trust, emptyBasket))
       }
 
-      "after selectedTrustService(false)(true)(false) transition to SelectClientType" in {
+      "after selectedService(false)(true)(false) transition to SelectClientType" in {
 
         given(SelectService(Trust, availableTrustServices, emptyBasket)) when
-          transitions.selectedTrustService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
+          transitions.selectedService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "after selectedTrustService(true)(true)(false) transition to SelectClientType" in {
+      "after selectedService(true)(true)(false) transition to SelectClientType" in {
 
         given(SelectService(Trust, availableTrustServices, emptyBasket)) when
-          transitions.selectedTrustService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
+          transitions.selectedService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
           thenGo(SelectClientType(emptyBasket))
       }
 
-      "after selectedTrustService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
+      "after selectedService(true)(true)(false) with non-empty basket transition to ReviewAuthorisationsTrust" in {
         val basket = makeBasket(Set(Service.CapitalGains))
         given(SelectService(Trust, availableTrustServices, basket)) when
-          transitions.selectedTrustService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
+          transitions.selectedService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(None) should
           thenGo(ReviewAuthorisations(Trust, availableTrustServices, basket))
       }
 
@@ -399,7 +399,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectService(Trust, availableTrustServices, emptyBasket)) when
           transitions
             .copy(getSuspensionDetails = suspendedForTrust)
-            .selectedTrustService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(Some(Service.Trust)) should
+            .selectedService(TestFeatureFlags.allEnabled)(agent = authorisedAgent)(Some(Service.Trust)) should
           thenGo(AgentSuspended(Service.Trust, emptyBasket))
       }
     }
