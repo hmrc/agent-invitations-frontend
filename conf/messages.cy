@@ -101,9 +101,11 @@ select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm T
 select-service.HMRC-MTD-IT.personal=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ei ymddiriedolaeth neu ystâd
+select-service.HMRC-TERS-ORG.trust=Cynnal ei ymddiriedolaeth neu ystâd
 
-select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
+select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
+select-service.HMRC-CGT-PD.trust=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-PPT-ORG.personal=Rheoli ei Dreth Deunydd Pacio Plastig
 select-service.HMRC-PPT-ORG.business=Rheoli ei Dreth Deunydd Pacio Plastig
 select-service.HMRC-PPT-ORG.trust=Rheoli ei Treth Deunydd Pacio Plastig ymddiriedolaeth
@@ -333,11 +335,12 @@ error.cancel-authorisation.client-type.empty=Dewiswch y math o gleient y mae ang
 error.fast-track.client-type.empty=Dewiswch y math o gleient y mae angen i chi ganslo’ch awdurdodiad ar ei gyfer
 
 cancel-authorisation.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
-cancel-authorisation.select-service.itsa=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-cancel-authorisation.select-service.vat=Rheoli ei TAW
-cancel-authorisation.select-service.trust=Cynnal ymddiriedolaeth neu ystâd
-cancel-authorisation.select-service.cgt=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
-cancel-authorisation.select-service.ppt=Rheoli ei Dreth Deunydd Pacio Plastig
+cancel-authorisation.select-service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+cancel-authorisation.select-service.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
+cancel-authorisation.select-service.HMRC-MTD-VAT=Rheoli ei TAW
+cancel-authorisation.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
+cancel-authorisation.select-service.HMRC-CGT-PD=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
+cancel-authorisation.select-service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
 cancel-authorisation.select-service.hint=Dewiswch opsiwn.
 
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?

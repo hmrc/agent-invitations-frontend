@@ -20,7 +20,7 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.{BusinessInvitationsBasket, ClientType, PersonalInvitationsBasket, TrustInvitationsBasket}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, InvitationsBasket, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class SelectServicePageConfig(
@@ -48,11 +48,8 @@ case class SelectServicePageConfig(
     * based on what is available according to feature enablement
     * and what they have already selected in their basket
     * */
-  def availableServices: Seq[(Service, String)] = clientType match {
-    case ClientType.Personal => new PersonalInvitationsBasket(services, basket, featureFlags).availableServices
-    case ClientType.Business => new BusinessInvitationsBasket(services, basket, featureFlags).availableServices
-    case ClientType.Trust    => new TrustInvitationsBasket(services, basket, featureFlags).availableServices
-  }
+  def availableServices: Seq[(Service, String)] =
+    InvitationsBasket(clientType, services, basket, featureFlags).availableServices.toSeq.sortBy(_._1)(Services.serviceDisplayOrdering)
 
   /** The header to use when multiple trust service selections available */
   def selectHeaderMessage(implicit messages: Messages): String = Messages("select-service.header")

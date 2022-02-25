@@ -54,7 +54,7 @@ backLinkHref = Some(config.backLink)
         field = agentForm("serviceType"),
         legend = msgs("cancel-authorisation.select-service.header"),
         headingIsLegend = true,
-        inputs = mapToRadioItems(agentForm("serviceType"), config.enabledPersonalServices.map { case (svc, x) => (svc.id, x) })
+        inputs = mapToRadioItems(agentForm("serviceType"), config.enabledServices.map { case (svc, x) => (svc.id, x) })
     )
 
     @submitButton()

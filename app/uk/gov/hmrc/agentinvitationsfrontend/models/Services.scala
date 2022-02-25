@@ -28,6 +28,23 @@ object Services {
   val allSupportedEnrolmentKeysForBusiness: Set[Service] = Set(Service.Vat, Service.Ppt)
   val allSupportedEnrolmentKeysForTrustOrEstate: Set[Service] = Set(Service.CapitalGains, Service.Trust, Service.TrustNT, Service.Ppt)
 
+  // These are the options that the user will be shown on the 'select service' page.
+  // TODO: Can they be merged with the 'all supported enrolment keys' above?
+  val supportedPersonalServices: Set[Service] = Set(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.CapitalGains, Service.Ppt)
+  val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
+  val supportedTrustServices: Set[Service] = Set(Service.CapitalGains, Service.Trust, Service.Ppt)
+  def supportedServicesFor(clientType: ClientType): Set[Service] = clientType match {
+    case ClientType.Personal => supportedPersonalServices
+    case ClientType.Business => supportedBusinessServices
+    case ClientType.Trust    => supportedTrustServices
+  }
+
+  // This is the order in which the services are to be displayed on the 'select service' page.
+  val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
+    val correctOrdering = List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt)
+    override def compare(x: Service, y: Service): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
+  }
+
   def determineServiceMessageKey(invitationId: InvitationId): String =
     invitationId.value.head match {
       case 'A' => "itsa"

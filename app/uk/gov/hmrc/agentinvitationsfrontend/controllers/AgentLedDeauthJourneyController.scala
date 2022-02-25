@@ -273,6 +273,7 @@ class AgentLedDeauthJourneyController @Inject()(
         selectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfigCancel(
+            ClientType.Personal,
             featureFlags,
             enabledServices,
             routes.AgentLedDeauthJourneyController.submitPersonalService(),
@@ -282,12 +283,13 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case SelectServiceBusiness(enabledServices) =>
       val pageConfig = SelectServicePageConfigCancel(
+        ClientType.Business,
         featureFlags,
         enabledServices,
         routes.AgentLedDeauthJourneyController.submitBusinessService(),
         backLinkFor(breadcrumbs).url
       )
-      pageConfig.enabledBusinessServices.size match {
+      pageConfig.enabledServices.size match {
         case 1 =>
           Ok(
             businessSelectSingleServiceView(
@@ -310,6 +312,7 @@ class AgentLedDeauthJourneyController @Inject()(
         trustSelectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
           SelectServicePageConfigCancel(
+            ClientType.Trust,
             featureFlags,
             enabledServices,
             routes.AgentLedDeauthJourneyController.submitTrustService(),
