@@ -100,6 +100,7 @@ service.type.invalid=Select what you want the client to authorise you to do
 select-service.PERSONAL-INCOME-RECORD.personal=View their PAYE income record
 select-service.HMRC-MTD-IT.personal=Manage their Making Tax Digital for Income Tax
 select-service.HMRC-MTD-VAT.personal=Manage their VAT
+select-service.HMRC-MTD-VAT.business=Manage their VAT
 select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
 select-service.HMRC-TERS-ORG.trust=Maintain their trust or an estate
 
