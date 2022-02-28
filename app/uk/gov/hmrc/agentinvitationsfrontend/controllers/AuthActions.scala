@@ -173,7 +173,7 @@ class AuthActionsImpl @Inject()(
     //APB-4856: Clients with only CGT enrol dont need to go through IV
     val isCgtOnlyClient: Boolean = {
       val enrolKeys: Set[String] = enrols.enrolments.map(_.key)
-      enrolKeys.intersect(Services.supportedEnrolmentKeys.map(_.id)) == Set(Service.CapitalGains.id)
+      enrolKeys.intersect(Services.supportedEnrolmentKeys) == Set(Service.CapitalGains.id)
     }
 
     if (currentLevel >= requiredCL || isCgtOnlyClient) {

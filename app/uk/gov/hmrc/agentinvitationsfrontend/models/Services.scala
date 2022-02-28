@@ -23,10 +23,6 @@ object Services {
   val supportedServices =
     List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.TrustNT, Service.CapitalGains, Service.Ppt)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn", "EtmpRegistrationNumber")
-  val supportedEnrolmentKeys: Set[Service] = Set(Service.MtdIt, Service.Vat, Service.Trust, Service.TrustNT, Service.CapitalGains)
-  val allSupportedEnrolmentKeysForIndividual: Set[Service] = Set(Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
-  val allSupportedEnrolmentKeysForBusiness: Set[Service] = Set(Service.Vat, Service.Ppt)
-  val allSupportedEnrolmentKeysForTrustOrEstate: Set[Service] = Set(Service.CapitalGains, Service.Trust, Service.TrustNT, Service.Ppt)
 
   // These are the options that the user will be shown on the 'select service' page.
   // TODO: Can they be merged with the 'all supported enrolment keys' above?
@@ -38,6 +34,9 @@ object Services {
     case ClientType.Business => supportedBusinessServices
     case ClientType.Trust    => supportedTrustServices
   }
+
+  def supportedEnrolmentKeys: Set[String] = supportedServices.map(_.enrolmentKey).toSet
+  def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = supportedServicesFor(clientType).map(_.enrolmentKey)
 
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
