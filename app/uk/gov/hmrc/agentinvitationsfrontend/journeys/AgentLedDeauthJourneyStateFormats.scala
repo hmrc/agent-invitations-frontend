@@ -22,9 +22,7 @@ import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
 
-  val SelectServicePersonalFormats: OFormat[SelectServicePersonal] = Json.format
-  val SelectServiceBusinessFormats: OFormat[SelectServiceBusiness] = Json.format
-  val SelectServiceTrustFormats: OFormat[SelectServiceTrust] = Json.format
+  val SelectServiceFormats: OFormat[SelectService] = Json.format
   val IdentifyClientPersonalFormats: OFormat[IdentifyClientPersonal] = Json.format
   val IdentifyClientBusinessFormats: OFormat[IdentifyClientBusiness] = Json.format
   val ConfirmClientsItsaFormats: OFormat[ConfirmClientItsa] = Json.format
@@ -46,9 +44,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
   val PptRefNotFoundFormats: OFormat[PptRefNotFound] = Json.format
 
   override val serializeStateProperties: PartialFunction[State, JsValue] = {
-    case s: SelectServicePersonal    => SelectServicePersonalFormats.writes(s)
-    case s: SelectServiceBusiness    => SelectServiceBusinessFormats.writes(s)
-    case s: SelectServiceTrust       => SelectServiceTrustFormats.writes(s)
+    case s: SelectService            => SelectServiceFormats.writes(s)
     case s: IdentifyClientPersonal   => IdentifyClientPersonalFormats.writes(s)
     case s: IdentifyClientBusiness   => IdentifyClientBusinessFormats.writes(s)
     case s: ConfirmPostcodeCgt       => ConfirmPostcodeCgtFormats.writes(s)
@@ -73,9 +69,7 @@ object AgentLedDeauthJourneyStateFormats extends JsonStateFormats[State] {
 
   override def deserializeState(stateName: String, properties: JsValue): JsResult[State] = stateName match {
     case "SelectClientType"         => JsSuccess(SelectClientType)
-    case "SelectServicePersonal"    => SelectServicePersonalFormats.reads(properties)
-    case "SelectServiceBusiness"    => SelectServiceBusinessFormats.reads(properties)
-    case "SelectServiceTrust"       => SelectServiceTrustFormats.reads(properties)
+    case "SelectService"            => SelectServiceFormats.reads(properties)
     case "IdentifyClientPersonal"   => IdentifyClientPersonalFormats.reads(properties)
     case "IdentifyClientBusiness"   => IdentifyClientBusinessFormats.reads(properties)
     case "IdentifyClientTrust"      => JsSuccess(IdentifyClientTrust)

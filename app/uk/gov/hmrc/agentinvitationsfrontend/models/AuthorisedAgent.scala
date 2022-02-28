@@ -15,13 +15,6 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
+import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class AuthorisedAgent(arn: Arn) {
-
-  val personalServices: Set[Service] = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
-
-  val businessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
-
-  val trustServices: Set[Service] = Set(Service.Trust, Service.CapitalGains, Service.Ppt)
-}
+case class AuthorisedAgent(arn: Arn)

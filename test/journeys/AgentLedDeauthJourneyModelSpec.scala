@@ -77,16 +77,17 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
       "transition to SelectServicePersonal when personal is selected" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)("personal") should thenGo(SelectServicePersonal(availableServices))
+        given(SelectClientType) when selectedClientType(authorisedAgent)("personal") should thenGo(
+          SelectService(ClientType.Personal, availableServices))
       }
       "transition to SelectServiceBusiness when business is selected" in {
         given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(
-          SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt)))
+          SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt)))
       }
     }
     "at state SelectServicePersonal" should {
       "transition to IdentifyClientPersonal when service is ITSA and feature flag is on" in {
-        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
@@ -98,7 +99,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
       "throw an exception when service is ITSA and the show itsa flag is switched off" in {
         intercept[Exception] {
-          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
             showItsaFlag = false,
             showPirFlag = true,
             showVatFlag = true,
@@ -108,7 +109,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is PIR and feature flag is on" in {
-        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
@@ -120,7 +121,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
       "throw an exception when service is IRV and the show irv flag is switched off" in {
         intercept[Exception] {
-          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = false,
             showVatFlag = true,
@@ -130,7 +131,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
       }
       "transition to IdentifyClientPersonal when service is VAT and feature flag is on" in {
-        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
@@ -142,7 +143,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
       "throw an exception when service is VAT and the show vat flag is switched off" in {
         intercept[Exception] {
-          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = true,
             showVatFlag = false,
@@ -153,7 +154,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to IdentifyClientPersonal when service is CGT and feature flag is on" in {
-        given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
           showItsaFlag = true,
           showPirFlag = true,
           showVatFlag = true,
@@ -165,7 +166,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
       "throw an exception when service is CGT and the show cgt flag is switched off" in {
         intercept[Exception] {
-          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = true,
             showVatFlag = false,
@@ -176,7 +177,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
       "throw an exception when service is PPT and the show ppt flag is switched off" in {
         intercept[Exception] {
-          given(SelectServicePersonal(availableServices)) when chosenPersonalService(
+          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
             showItsaFlag = true,
             showPirFlag = true,
             showVatFlag = false,
@@ -188,18 +189,18 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
     "at state SelectServiceBusiness" should {
       "transition to IdentifyClientBusiness when YES is selected and feature flag is on" in {
-        given(SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt))) when
+        given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
           chosenBusinessService(showVatFlag = true, showPptFlag = true)(authorisedAgent)(Some(Service.Vat)) should
           thenGo(IdentifyClientBusiness(Service.Vat))
       }
       "transition to ClientType when NO is selected and feature flag is on" in {
-        given(SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt))) when
+        given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
           chosenBusinessService(showVatFlag = true, showPptFlag = true)(authorisedAgent)(None) should
           thenGo(SelectClientType)
       }
       "throw an exception when YES is selected but the show vat flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt))) when
+          given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
             chosenBusinessService(showVatFlag = false, showPptFlag = true)(authorisedAgent)(Some(Service.Vat))
         }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
       }
@@ -207,14 +208,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
     "at state SelectServiceTrust" should {
       "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
-        given(SelectServiceTrust(Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
+        given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
           showTrustFlag = true,
           showCgtFlag = true,
           showPptFlag = true)(authorisedAgent)(Service.Trust) should thenGo(IdentifyClientTrust)
       }
 
       "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
-        given(SelectServiceTrust(Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
+        given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
           showTrustFlag = true,
           showCgtFlag = true,
           showPptFlag = true)(authorisedAgent)(Service.CapitalGains) should thenGo(IdentifyClientCgt)
@@ -222,7 +223,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
       "throw an exception when YES is selected but the show trust flag is switched off" in {
         intercept[Exception] {
-          given(SelectServiceTrust(Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
+          given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
             showTrustFlag = false,
             showCgtFlag = true,
             showPptFlag = true)(authorisedAgent)(Service.Trust)

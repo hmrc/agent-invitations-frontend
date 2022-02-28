@@ -36,10 +36,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
   object State {
     case object SelectClientType extends State
 
-    trait SelectService extends State
-    case class SelectServicePersonal(enabledServices: Set[Service]) extends SelectService
-    case class SelectServiceBusiness(enabledServices: Set[Service]) extends SelectService
-    case class SelectServiceTrust(enabledServices: Set[Service]) extends SelectService
+    case class SelectService(clientType: ClientType, enabledServices: Set[Service]) extends State
 
     trait IdentifyClient extends State
     case class IdentifyClientPersonal(service: Service) extends IdentifyClient
@@ -92,21 +89,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
 
-    def selectedClientType(agent: AuthorisedAgent)(clientType: String) = Transition {
+    def selectedClientType(agent: AuthorisedAgent)(clientTypeStr: String) = Transition {
       case SelectClientType =>
-        clientType match {
-          case "personal" =>
-            val enabledPersonalServices: Set[Service] =
-              Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
-            goto(SelectServicePersonal(enabledPersonalServices))
-          case "business" => goto(SelectServiceBusiness(agent.businessServices))
-          case "trust"    => goto(SelectServiceTrust(agent.trustServices))
-        }
+        val clientType = ClientType.toEnum(clientTypeStr)
+        goto(SelectService(clientType, Services.supportedServicesFor(clientType)))
     }
 
     def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean, showPptFlag: Boolean)(
       agent: AuthorisedAgent)(service: Service) = Transition {
-      case SelectServicePersonal(enabledServices) =>
+      case SelectService(ClientType.Personal, enabledServices) =>
         if (enabledServices.contains(service)) {
           service match {
             case Service.MtdIt =>
@@ -129,14 +120,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
               if (showPptFlag) goto(IdentifyClientPersonal(service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
           }
-        } else goto(SelectServicePersonal(enabledServices))
+        } else goto(SelectService(ClientType.Personal, enabledServices))
     }
 
     def chosenBusinessServiceMulti(showVatFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(service: Service) =
       chosenBusinessService(showVatFlag, showPptFlag)(agent)(Some(service))
 
     def chosenBusinessService(showVatFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(mService: Option[Service]) = Transition {
-      case SelectServiceBusiness(enabledServices) =>
+      case SelectService(ClientType.Business, enabledServices) =>
         mService match {
           case Some(service) if enabledServices.contains(service) =>
             service match {
@@ -154,7 +145,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def chosenTrustService(showTrustFlag: Boolean, showCgtFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(service: Service) =
       Transition {
-        case SelectServiceTrust(enabledServices) =>
+        case SelectService(ClientType.Trust, enabledServices) =>
           if (enabledServices.contains(service)) {
             service match {
               case Service.Trust =>

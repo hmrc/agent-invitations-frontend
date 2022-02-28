@@ -23,6 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateF
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import support.UnitSpec
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
@@ -39,24 +40,10 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }
-      "SelectServicePersonal" in {
-        val state = SelectServicePersonal(Set(Service.Vat, Service.MtdIt))
-        val json = Json.parse("""{"state":"SelectServicePersonal", "properties": {"enabledServices": ["HMRC-MTD-VAT", "HMRC-MTD-IT"]}}""")
-
-        Json.toJson(state: State) shouldBe json
-        json.as[State] shouldBe state
-      }
-      "SelectServiceBusiness" in {
-        val state = SelectServiceBusiness(enabledServices = Set(Service.Vat, Service.Ppt))
-        val json = Json.parse(s"""{"state":"SelectServiceBusiness", "properties": {"enabledServices": ["HMRC-MTD-VAT", "HMRC-PPT-ORG"]}}""")
-
-        Json.toJson(state: State) shouldBe json
-        json.as[State] shouldBe state
-      }
-
-      "SelectServiceTrust" in {
-        val state = SelectServiceTrust(Set(Service.Trust, Service.CapitalGains))
-        val json = Json.parse("""{"state":"SelectServiceTrust","properties":{"enabledServices":["HMRC-TERS-ORG","HMRC-CGT-PD"]}}""")
+      "SelectService" in {
+        val state = SelectService(ClientType.Personal, Set(Service.Vat, Service.MtdIt))
+        val json =
+          Json.parse("""{"state":"SelectService", "properties": {"clientType": "personal", "enabledServices": ["HMRC-MTD-VAT", "HMRC-MTD-IT"]}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

@@ -226,9 +226,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
     case SelectClientType            => routes.AgentLedDeauthJourneyController.showClientType()
-    case _: SelectServicePersonal    => routes.AgentLedDeauthJourneyController.showSelectService()
-    case _: SelectServiceBusiness    => routes.AgentLedDeauthJourneyController.showSelectService()
-    case _: SelectServiceTrust       => routes.AgentLedDeauthJourneyController.showSelectService()
+    case _: SelectService            => routes.AgentLedDeauthJourneyController.showSelectService()
     case _: IdentifyClientPersonal   => routes.AgentLedDeauthJourneyController.showIdentifyClient()
     case _: IdentifyClientBusiness   => routes.AgentLedDeauthJourneyController.showIdentifyClient()
     case IdentifyClientTrust         => routes.AgentLedDeauthJourneyController.showIdentifyClient()
@@ -268,7 +266,7 @@ class AgentLedDeauthJourneyController @Inject()(
           ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType(), featureFlags.showHmrcTrust)
         ))
 
-    case SelectServicePersonal(enabledServices) =>
+    case SelectService(ClientType.Personal, enabledServices) =>
       Ok(
         selectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
@@ -281,7 +279,7 @@ class AgentLedDeauthJourneyController @Inject()(
           )
         ))
 
-    case SelectServiceBusiness(enabledServices) =>
+    case SelectService(ClientType.Business, enabledServices) =>
       val pageConfig = SelectServicePageConfigCancel(
         ClientType.Business,
         featureFlags,
@@ -307,7 +305,7 @@ class AgentLedDeauthJourneyController @Inject()(
           )
       }
 
-    case SelectServiceTrust(enabledServices) =>
+    case SelectService(ClientType.Trust, enabledServices) =>
       Ok(
         trustSelectServiceView(
           formWithErrors.or(ServiceTypeForm.form),
