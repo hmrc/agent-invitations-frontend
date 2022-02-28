@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
-import uk.gov.hmrc.agentmtdidentifiers.model._
+import uk.gov.hmrc.agentinvitationsfrontend.models.TaxIdFormat._
 
 case class Invitation(clientType: Option[ClientType], service: uk.gov.hmrc.agentmtdidentifiers.model.Service, clientIdentifier: TaxIdentifier) {
   require(
@@ -29,35 +29,5 @@ case class Invitation(clientType: Option[ClientType], service: uk.gov.hmrc.agent
 }
 
 object Invitation {
-
-  //TODO: Move this format into agent-mtd-identifiers
-  // A simple and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
-  implicit val TaxIdFormat = new Format[TaxIdentifier] {
-    override def writes(o: TaxIdentifier): JsValue = o match {
-      case x: Nino   => JsString(s"Nino|${x.value}")
-      case x: Vrn    => JsString(s"Vrn|${x.value}")
-      case x: Utr    => JsString(s"Utr|${x.value}")
-      case x: Urn    => JsString(s"Urn|${x.value}")
-      case x: CgtRef => JsString(s"CgtRef|${x.value}")
-      case x: PptRef => JsString(s"PptRef|${x.value}")
-      case x         => throw new IllegalArgumentException(s"Unsupported tax identifier: $x")
-    }
-
-    override def reads(json: JsValue): JsResult[TaxIdentifier] = json match {
-      case JsString(str) if str.matches("""\w{3,6}\|[\w\d]+""") =>
-        val idType :: id :: Nil = str.split("""\|""").toList
-        idType match {
-          case "Nino"   => JsSuccess(Nino(id))
-          case "Vrn"    => JsSuccess(Vrn(id))
-          case "Utr"    => JsSuccess(Utr(id))
-          case "Urn"    => JsSuccess(Urn(id))
-          case "CgtRef" => JsSuccess(CgtRef(id))
-          case "PptRef" => JsSuccess(PptRef(id))
-          case x        => JsError(s"Invalid tax identifier type: $x")
-        }
-      case _ => JsError("Invalid tax identifier JSON")
-    }
-  }
-
   implicit val format: Format[Invitation] = Json.format[Invitation]
 }

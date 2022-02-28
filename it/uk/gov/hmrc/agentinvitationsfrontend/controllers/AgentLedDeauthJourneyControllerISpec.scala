@@ -247,7 +247,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation/identify-client" should {
     "display the identify client page for itsa service" in {
-      journeyState.set(IdentifyClientPersonal(Service.MtdIt), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -257,7 +257,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("identify-client.postcode.label"))
     }
     "display the identify client page for irv service" in {
-      journeyState.set(IdentifyClientPersonal(Service.PersonalIncomeRecord), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -267,7 +267,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("identify-client.irv-date-of-birth.label"))
     }
     "display the identify client page for personal vat service" in {
-      journeyState.set(IdentifyClientPersonal(Service.Vat), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.Vat), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -278,7 +278,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the identify client page for personal cgt service" in {
-      journeyState.set(IdentifyClientPersonal(Service.CapitalGains), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.CapitalGains), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -289,7 +289,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the identify client page for business service" in {
-      journeyState.set(IdentifyClientBusiness(Service.Vat), Nil)
+      journeyState.set(IdentifyClient(ClientType.Business, Service.Vat), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -300,7 +300,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the identify client page for trust service" in {
-      journeyState.set(IdentifyClientTrust, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.Trust), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
@@ -319,7 +319,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the identify client page for cgt trust service" in {
-      journeyState.set(IdentifyClientCgt, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.CapitalGains), Nil)
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-client")
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -332,7 +332,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   "GET /agents/identify-itsa-client" should {
     val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-itsa-client")
     "redirect to the identify client page" in {
-      journeyState.set(IdentifyClientPersonal(Service.MtdIt), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
 
       val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
 
@@ -342,7 +342,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "POST /agents/cancel-authorisation/identify-itsa-client" should {
     "redirect to confirm client" in {
-      journeyState.set(IdentifyClientPersonal(Service.MtdIt), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-itsa-client")
 
       givenMatchingClientIdAndPostcode(validNino, validPostcode)
@@ -357,7 +357,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
     "redirect to not matched when the clientId and postcode don't match" in {
-      journeyState.set(IdentifyClientPersonal(Service.MtdIt), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-itsa-client")
 
       givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
@@ -373,7 +373,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         .url
     }
     "redirect to not signed up when the client is not enrolled for ITSA" in {
-      journeyState.set(IdentifyClientPersonal(Service.MtdIt), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-itsa-client")
 
       givenNotEnrolledClientITSA(validNino, validPostcode)
@@ -391,7 +391,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "POST /agents/cancel-authorisation/identify-irv-client" should {
     "redirect to confirm cancel" in {
-      journeyState.set(IdentifyClientPersonal(Service.PersonalIncomeRecord), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord), Nil)
       val request = FakeRequest("POST", "agents/cancel-authorisation/identify-irv-client")
 
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
@@ -414,7 +414,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "POST /agents/cancel-authorisation/identify-vat-client" should {
     "redirect to confirm client for personal VAT" in {
-      journeyState.set(IdentifyClientPersonal(Service.Vat), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.Vat), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
 
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
@@ -436,7 +436,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to confirm client for personal VAT when client insolvent" in {
-      journeyState.set(IdentifyClientPersonal(Service.Vat), Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.Vat), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
 
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 403, true)
@@ -457,7 +457,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
     }
     "redirect to confirm client for business VAT" in {
-      journeyState.set(IdentifyClientBusiness(Service.Vat), Nil)
+      journeyState.set(IdentifyClient(ClientType.Business, Service.Vat), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-vat-client")
 
       givenVatRegisteredClientReturns(validVrn, LocalDate.parse(validRegistrationDate), 204)
@@ -483,7 +483,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to confirm client for trust" in {
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
-      journeyState.set(IdentifyClientTrust, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.Trust), Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
 
@@ -499,7 +499,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "redirect to confirm client for trust with urn" in {
       givenTrustClientReturns(validUrn, 200, Json.toJson(trustResponse).toString())
-      journeyState.set(IdentifyClientTrust, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.TrustNT), Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
 
@@ -515,7 +515,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "redirect to /not-found for trust if trust details are not found for given utr" in {
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
-      journeyState.set(IdentifyClientTrust, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.Trust), Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
 
@@ -531,7 +531,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "redirect to /not-found for trust if trust details are not found for given urn" in {
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
-      journeyState.set(IdentifyClientTrust, Nil)
+      journeyState.set(IdentifyClient(ClientType.Trust, Service.TrustNT), Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-trust-client")
 
@@ -551,7 +551,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to ConfirmPostcodeCgt for UK based clients" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
-      journeyState.set(IdentifyClientCgt, Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.CapitalGains), Nil)
 
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/identify-cgt-client")
 
@@ -568,7 +568,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to ConfirmCountryCodeCgt for UK based clients" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("FR")).toString())
-      journeyState.set(IdentifyClientCgt, Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.CapitalGains), Nil)
 
       val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-cgt-client")
 
@@ -586,7 +586,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     "redirect to /agents/not-matched when cgtRef passed in does not match to any cgt client" in {
       givenGetCgtSubscriptionReturns(cgtRef, 404, cgtNotFoundJson)
 
-      journeyState.set(IdentifyClientCgt, Nil)
+      journeyState.set(IdentifyClient(ClientType.Personal, Service.CapitalGains), Nil)
 
       val request = FakeRequest("POST", "/agents/cancel-authorisation/identify-cgt-client")
 
@@ -609,7 +609,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "display the page as expected" in {
 
-      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
+      journeyState.set(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
 
       val result = controller.showPostcodeCgt()(authorisedAsValidAgent(request, arn.value))
 
@@ -630,7 +630,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to /confirm-client if postcode matches for a UK client" in {
 
-      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
+      journeyState.set(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName"), Nil)
 
       val result = controller.submitConfirmCgtPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody("postcode" -> "BN13 1FN"), arn.value))
 
@@ -641,7 +641,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to /not-matched if postcode does not match for a UK client" in {
 
-      journeyState.set(ConfirmPostcodeCgt(cgtRef, Some("BN13 1FN"), "firstName lastName"),Nil)
+      journeyState.set(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName"),Nil)
 
       val result = controller.submitConfirmCgtPostcode(authorisedAsValidAgent(request.withFormUrlEncodedBody("postcode" -> "BN13 1XX"), arn.value))
 
@@ -657,7 +657,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "display the page as expected" in {
 
-      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+      journeyState.set(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName"),Nil)
 
       val result = controller.showCountryCodeCgt()(authorisedAsValidAgent(request, arn.value))
 
@@ -678,7 +678,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to /confirm-client if country code matches for a non UK client" in {
 
-      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+      journeyState.set(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName"),Nil)
 
       val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "FR"), arn.value))
 
@@ -689,7 +689,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
     "redirect to /not-matched if country code does not match for a non UK client" in {
 
-      journeyState.set(ConfirmCountryCodeCgt(cgtRef, "FR", "firstName lastName"),Nil)
+      journeyState.set(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName"),Nil)
 
       val result = controller.submitConfirmCgtCountryCode(authorisedAsValidAgent(request.withFormUrlEncodedBody("countryCode" -> "IN"), arn.value))
 
@@ -701,7 +701,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation/confirm-client" should {
     "display the confirm client page for ITSA" in {
-      journeyState.set(ConfirmClientItsa(Some("Barry Block"), validNino), List(IdentifyClientPersonal(Service.MtdIt)))
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Barry Block"), validNino), List(IdentifyClient(ClientType.Personal, Service.MtdIt)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -714,7 +714,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "display the confirm client page for IRV" in {
       journeyState
-        .set(ConfirmClientIrv(Some("Barry Block"), validNino), List(IdentifyClientPersonal(Service.PersonalIncomeRecord)))
+        .set(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, Some("Barry Block"), validNino), List(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -727,7 +727,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
     "display the confirm client page for personal VAT" in {
       journeyState
-        .set(ConfirmClientPersonalVat(Some("Barry Block"), validVrn), List(IdentifyClientPersonal(Service.Vat)))
+        .set(ConfirmClient(ClientType.Personal, Service.Vat, Some("Barry Block"), validVrn), List(IdentifyClient(ClientType.Personal, Service.Vat)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -739,7 +739,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/identify-client")
     }
     "display the confirm client page for business VAT" in {
-      journeyState.set(ConfirmClientBusiness(Some("Barry Block"), validVrn), List(IdentifyClientBusiness(Service.Vat)))
+      journeyState.set(ConfirmClient(ClientType.Business, Service.Vat, Some("Barry Block"), validVrn), List(IdentifyClient(ClientType.Business, Service.Vat)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -752,7 +752,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the confirm client page for Trust - UTR" in {
-      journeyState.set(ConfirmClientTrust("some-trust", validUtr), List(IdentifyClientTrust))
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), validUtr), List(IdentifyClient(ClientType.Trust, Service.Trust)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -765,7 +765,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the confirm client page for Trust - URN" in {
-      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), List(IdentifyClientTrust))
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.TrustNT, Some("some-trust"), validUrn), List(IdentifyClient(ClientType.Trust, Service.TrustNT)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -778,7 +778,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "display the confirm client page for CGT" in {
-      journeyState.set(ConfirmClientCgt(cgtRef, "some-cgt-client"), List(IdentifyClientCgt))
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.CapitalGains, Some("some-cgt-client"), cgtRef), List(IdentifyClient(ClientType.Personal, Service.CapitalGains)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-client")
       val result = controller.showConfirmClient(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -794,7 +794,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/confirm-client" should {
     "redirect to confirm cancel when YES is selected" in {
-      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 200)
@@ -810,7 +810,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
     "redirect to confirm cancel when YES is selected for alt-itsa" in {
-      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
@@ -827,7 +827,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
     "redirect to not authorised when there are is no active relationship or partial auth to de-authorise" in {
-      journeyState.set(ConfirmClientItsa(Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
@@ -845,7 +845,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to confirm cancel when YES is selected for trust - UTR" in {
-      journeyState.set(ConfirmClientTrust("some-trust", validUtr), Nil)
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), validUtr), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipTrustWithStatus(arn, validUtr, 200)
@@ -862,7 +862,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to confirm cancel when YES is selected for trust - URN" in {
-      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), Nil)
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.TrustNT, Some("some-trust"), validUrn), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipTrustWithStatus(arn, validUrn, 200)
@@ -879,7 +879,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to not authorised when there are is no active relationship to de-authorise for trusts - UTR" in {
-      journeyState.set(ConfirmClientTrust("some-trust", validUtr), Nil)
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), validUtr), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipTrustWithStatus(arn, validUtr, 404)
@@ -896,7 +896,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to not authorised when there are is no active relationship to de-authorise for trusts - URN" in {
-      journeyState.set(ConfirmClientTrustNT("some-trust", validUrn), Nil)
+      journeyState.set(ConfirmClient(ClientType.Trust, Service.TrustNT, Some("some-trust"), validUrn), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipTrustWithStatus(arn, validUtr, 404)
@@ -916,7 +916,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     "display the confirm cancel page with additional panel content for ITSA" in {
       journeyState.set(
         ConfirmCancel(Service.MtdIt, Some("Barry Block"), validNino.value),
-        List(ConfirmClientItsa(Some("Barry Block"), validNino)))
+        List(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Barry Block"), validNino)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
       val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -932,7 +932,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     "display the confirm cancel page without additional panel content when service is not ITSA" in {
       journeyState.set(
         ConfirmCancel(Service.Vat, Some("Barry Block"), validVrn.value),
-        List(ConfirmClientPersonalVat(Some("Barry Block"), validVrn)))
+        List(ConfirmClient(ClientType.Personal, Service.Vat, Some("Barry Block"), validVrn)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
       val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -949,7 +949,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     "display the confirm cancel page for alt-itsa" in {
       journeyState.set(
         ConfirmCancel(Service.MtdIt, Some("Barry Block"), validNino.value, isPartialAuth = true),
-        List(ConfirmClientItsa(Some("Barry Block"), validNino)))
+        List(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Barry Block"), validNino)))
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/confirm-cancel")
       val result = controller.showConfirmCancel(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200

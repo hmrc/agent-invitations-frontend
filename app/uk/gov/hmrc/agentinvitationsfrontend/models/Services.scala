@@ -38,6 +38,11 @@ object Services {
   def supportedEnrolmentKeys: Set[String] = supportedServices.map(_.enrolmentKey).toSet
   def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = supportedServicesFor(clientType).map(_.enrolmentKey)
 
+  def isSupported(clientType: ClientType, service: Service): Boolean = (clientType, service) match {
+    case (ClientType.Trust, Service.TrustNT) => true // must check this separately as it is not separately listed in the supported services
+    case _                                   => supportedServicesFor(clientType).contains(service)
+  }
+
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
     val correctOrdering = List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt)

@@ -225,18 +225,11 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         }
 
       Transition {
-        case IdentifyClient(ClientType.Trust, Service.CapitalGains, basket) =>
+        case IdentifyClient(clientType, Service.CapitalGains, basket) =>
+          require(Services.isSupported(clientType, Service.CapitalGains))
           handle(
-            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, ClientType.Trust, basket, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, ClientType.Trust, basket, cgtSubscription.countryCode, cgtSubscription.name),
-            basket
-          )
-
-        case IdentifyClient(ClientType.Personal, Service.CapitalGains, basket) =>
-          handle(
-            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, ClientType.Personal, basket, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription =>
-              ConfirmCountryCodeCgt(cgtClient.cgtRef, ClientType.Personal, basket, cgtSubscription.countryCode, cgtSubscription.name),
+            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, clientType, basket, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, clientType, basket, cgtSubscription.countryCode, cgtSubscription.name),
             basket
           )
       }
@@ -411,10 +404,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         successState <- clientType match {
                          // separate handling for Personal as must look up whether it's an alt-ITSA invitation
                          case ClientType.Personal => createInvitationSent(agencyEmail, invitationLink, arn, basket)
-                         case ClientType.Business =>
-                           toFuture(InvitationSent(ClientType.Business, invitationLink, None, agencyEmail, basket.map(_.invitation.service)))
-                         case ClientType.Trust =>
-                           toFuture(InvitationSent(ClientType.Trust, invitationLink, None, agencyEmail, basket.map(_.invitation.service)))
+                         case otherClientType =>
+                           toFuture(InvitationSent(otherClientType, invitationLink, None, agencyEmail, basket.map(_.invitation.service)))
                        }
         result <- if (AuthorisationRequest.eachHasBeenCreatedIn(processedRequests)) goto(successState)
                  else if (AuthorisationRequest.noneHaveBeenCreatedIn(processedRequests))
@@ -479,23 +470,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         } else goto(IdentifyClient(ClientType.Personal, Service.MtdIt, basket))
 
       case cc @ ConfirmClient(request, basket, _) if cc.service == Service.CapitalGains => {
-        val (reviewAuthState, state, clientType) = request.invitation.clientType match {
-          case Some(ClientType.Trust) =>
-            (
-              ReviewAuthorisations(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust), basket + request),
-              IdentifyClient(ClientType.Trust, Service.CapitalGains, basket),
-              ClientType.Trust)
-          case Some(ClientType.Personal) =>
-            (
-              ReviewAuthorisations(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal), basket + request),
-              IdentifyClient(ClientType.Personal, Service.CapitalGains, basket),
-              ClientType.Personal)
-          case x => throw new RuntimeException("unexpected clientType in the AuthorisationRequest: " + x) //TODO
-        }
+        require(
+          Services.isSupported(request.invitation.clientType.get, request.invitation.service),
+          "unexpected clientType/service combination: " + request.invitation)
+        val Some(clientType) = request.invitation.clientType
+        val reviewAuthState = ReviewAuthorisations(clientType, Services.supportedServicesFor(clientType), basket + request)
 
         if (confirmation.choice) {
           checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.CapitalGains, basket)(appConfig)
-        } else goto(state)
+        } else goto(IdentifyClient(clientType, Service.CapitalGains, basket))
       }
 
       case cc @ ConfirmClient(request, basket, clientInsolvent) if cc.clientType.contains(ClientType.Personal) && cc.service == Service.Vat =>
@@ -598,52 +581,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                               (confirmation: Confirmation) =
       // format: on
     Transition {
-      case ReviewAuthorisations(ClientType.Trust, _, basket) =>
+      case ReviewAuthorisations(clientType, _, basket) =>
         if (confirmation.choice)
-          goto(SelectService(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust), basket))
+          goto(SelectService(clientType, Services.supportedServicesFor(clientType), basket))
         else {
           for {
             agencyEmail    <- getAgencyEmail()
-            invitationLink <- getAgentLink(agent.arn, Some(ClientType.Trust))
-            services = basket.map(_.invitation.service.id)
+            invitationLink <- getAgentLink(agent.arn, Some(clientType))
             result <- createAndProcessInvitations(
-                       ClientType.Trust,
-                       agencyEmail,
-                       invitationLink,
-                       (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
-                       basket,
-                       agent.arn
-                     )
-          } yield result
-        }
-
-      case ReviewAuthorisations(ClientType.Personal, _, basket) =>
-        if (confirmation.choice) {
-          goto(SelectService(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal), basket))
-        } else {
-          for {
-            agencyEmail    <- getAgencyEmail()
-            invitationLink <- getAgentLink(agent.arn, Some(ClientType.Personal))
-            result <- createAndProcessInvitations(
-                       ClientType.Personal,
-                       agencyEmail,
-                       invitationLink,
-                       (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),
-                       basket,
-                       agent.arn
-                     )
-          } yield result
-        }
-
-      case ReviewAuthorisations(ClientType.Business, _, basket) =>
-        if (confirmation.choice) {
-          goto(SelectService(ClientType.Business, Services.supportedServicesFor(ClientType.Business), basket))
-        } else {
-          for {
-            agencyEmail    <- getAgencyEmail()
-            invitationLink <- getAgentLink(agent.arn, Some(ClientType.Business))
-            result <- createAndProcessInvitations(
-                       ClientType.Business,
+                       clientType,
                        agencyEmail,
                        invitationLink,
                        (b: Basket) => SomeAuthorisationsFailed(invitationLink, None, agencyEmail, b),

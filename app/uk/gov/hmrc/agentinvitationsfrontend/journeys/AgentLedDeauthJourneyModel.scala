@@ -21,7 +21,7 @@ import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, TrustTaxIdentifier, Urn, Utr, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -38,25 +38,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     case class SelectService(clientType: ClientType, enabledServices: Set[Service]) extends State
 
-    trait IdentifyClient extends State
-    case class IdentifyClientPersonal(service: Service) extends IdentifyClient
-    case class IdentifyClientBusiness(service: Service) extends IdentifyClient
-    case object IdentifyClientTrust extends IdentifyClient
-    case object IdentifyClientCgt extends IdentifyClient
-    case object IdentifyClientPpt extends IdentifyClient
+    case class IdentifyClient(clientType: ClientType, service: Service) extends State
 
-    case class ConfirmPostcodeCgt(cgtRef: CgtRef, postcode: Option[String], clientName: String) extends State
-    case class ConfirmCountryCodeCgt(cgtRef: CgtRef, countryCode: String, clientName: String) extends State
+    case class ConfirmPostcodeCgt(clientType: ClientType, cgtRef: CgtRef, postcode: Option[String], clientName: String) extends State
+    case class ConfirmCountryCodeCgt(clientType: ClientType, cgtRef: CgtRef, countryCode: String, clientName: String) extends State
 
-    trait ConfirmClient extends State
-    case class ConfirmClientItsa(clientName: Option[String], nino: Nino) extends ConfirmClient
-    case class ConfirmClientIrv(clientName: Option[String], nino: Nino) extends ConfirmClient
-    case class ConfirmClientPersonalVat(clientName: Option[String], vrn: Vrn) extends ConfirmClient
-    case class ConfirmClientBusiness(clientName: Option[String], vrn: Vrn) extends ConfirmClient
-    case class ConfirmClientTrust(clientName: String, utr: Utr) extends ConfirmClient
-    case class ConfirmClientTrustNT(clientName: String, urn: Urn) extends ConfirmClient
-    case class ConfirmClientCgt(cgtRef: CgtRef, clientName: String) extends ConfirmClient
-    case class ConfirmClientPpt(pptRef: PptRef, clientName: String) extends ConfirmClient
+    case class ConfirmClient(clientType: ClientType, service: Service, clientName: Option[String], clientId: TaxIdentifier) extends State {
+      require(Services.isSupported(clientType, service))
+      require(service.supportedSuppliedClientIdType.clazz == clientId.getClass)
+    }
 
     case class ConfirmCancel(service: Service, clientName: Option[String], clientId: String, isPartialAuth: Boolean = false) extends State
     case class AuthorisationCancelled(service: Service, clientName: Option[String], agencyName: String) extends State
@@ -101,23 +91,23 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         if (enabledServices.contains(service)) {
           service match {
             case Service.MtdIt =>
-              if (showItsaFlag) goto(IdentifyClientPersonal(service))
+              if (showItsaFlag) goto(IdentifyClient(ClientType.Personal, service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
             case Service.PersonalIncomeRecord =>
-              if (showPirFlag) goto(IdentifyClientPersonal(service))
+              if (showPirFlag) goto(IdentifyClient(ClientType.Personal, service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
             case Service.Vat =>
-              if (showVatFlag) goto(IdentifyClientPersonal(service))
+              if (showVatFlag) goto(IdentifyClient(ClientType.Personal, service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
             case Service.CapitalGains =>
-              if (showCgtFlag) goto(IdentifyClientPersonal(service))
+              if (showCgtFlag) goto(IdentifyClient(ClientType.Personal, service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
             case Service.Ppt =>
-              if (showPptFlag) goto(IdentifyClientPersonal(service))
+              if (showPptFlag) goto(IdentifyClient(ClientType.Personal, service))
               else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
           }
         } else goto(SelectService(ClientType.Personal, enabledServices))
@@ -132,11 +122,11 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           case Some(service) if enabledServices.contains(service) =>
             service match {
               case Service.Vat =>
-                if (showVatFlag) goto(IdentifyClientBusiness(service))
+                if (showVatFlag) goto(IdentifyClient(ClientType.Business, service))
                 else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
               case Service.Ppt =>
-                if (showPptFlag) goto(IdentifyClientBusiness(service))
+                if (showPptFlag) goto(IdentifyClient(ClientType.Business, service))
                 else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
             }
           case _ => goto(root)
@@ -149,15 +139,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           if (enabledServices.contains(service)) {
             service match {
               case Service.Trust =>
-                if (showTrustFlag) goto(IdentifyClientTrust)
+                if (showTrustFlag) goto(IdentifyClient(ClientType.Trust, Service.Trust))
                 else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
               case Service.CapitalGains =>
-                if (showCgtFlag) goto(IdentifyClientCgt)
+                if (showCgtFlag) goto(IdentifyClient(ClientType.Trust, Service.CapitalGains))
                 else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
 
               case Service.Ppt =>
-                if (showPptFlag) goto(IdentifyClientPpt)
+                if (showPptFlag) goto(IdentifyClient(ClientType.Trust, Service.Ppt))
                 else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
             }
           } else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
@@ -175,14 +165,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           finalState <- kfcResult match {
                          case Some(true) =>
                            getClientName(itsaClient.clientIdentifier, Service.MtdIt).flatMap(name =>
-                             goto(ConfirmClientItsa(name, Nino(itsaClient.clientIdentifier))))
+                             goto(ConfirmClient(ClientType.Personal, Service.MtdIt, name, Nino(itsaClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(Service.MtdIt))
                        }
         } yield finalState
 
       Transition {
-        case IdentifyClientPersonal(Service.MtdIt) =>
+        case IdentifyClient(ClientType.Personal, Service.MtdIt) =>
           for {
             postcodeMatches <- if (itsaClient.postcode.nonEmpty)
                                 checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
@@ -205,14 +195,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                            getClientName(irvClient.clientIdentifier, Service.PersonalIncomeRecord).flatMap(
                              name =>
                                clientConfirmed(hasActiveRelationship)(hasPartialAuthorisation)(agent)(Confirmation(true))
-                                 .apply(ConfirmClientIrv(name, Nino(irvClient.clientIdentifier))))
+                                 .apply(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, name, Nino(irvClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(Service.PersonalIncomeRecord))
                        }
         } yield finalState
 
       Transition {
-        case IdentifyClientPersonal(Service.PersonalIncomeRecord) =>
+        case IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord) =>
           for {
             dobMatches <- if (irvClient.dob.nonEmpty)
                            checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
@@ -224,16 +214,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
-        case IdentifyClientTrust =>
+        case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
             trustResponse.response match {
-              case Right(TrustName(name)) => {
+              case Right(TrustName(name)) =>
                 trustClient.taxId match {
-                  case Utr(_) => goto(ConfirmClientTrust(name, Utr(trustClient.taxId.value)))
-                  case Urn(_) => goto(ConfirmClientTrustNT(name, Urn(trustClient.taxId.value)))
+                  case Utr(_) => goto(ConfirmClient(ClientType.Trust, Service.Trust, Some(name), Utr(trustClient.taxId.value)))
+                  case Urn(_) => goto(ConfirmClient(ClientType.Trust, Service.TrustNT, Some(name), Urn(trustClient.taxId.value)))
                 }
-
-              }
               case Left(invalidTrust) =>
                 logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
                 goto(TrustNotFound)
@@ -256,11 +244,12 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         }
 
       Transition {
-        case IdentifyClientPersonal(Service.CapitalGains) | IdentifyClientCgt =>
+        case IdentifyClient(clientType, Service.CapitalGains) =>
           handle(
-            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, cgtSubscription.postCode, cgtSubscription.name),
+            cgtSubscription => ConfirmPostcodeCgt(clientType, cgtClient.cgtRef, cgtSubscription.postCode, cgtSubscription.name),
             cgtSubscription =>
               ConfirmCountryCodeCgt(
+                clientType,
                 cgtClient.cgtRef,
                 cgtSubscription.countryCode,
                 cgtSubscription.name
@@ -272,10 +261,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def submitIdentifyClientPpt(getPptSubscription: GetPptSubscription)(agent: AuthorisedAgent)(
       pptClient: PptClient): AgentLedDeauthJourneyModel.Transition =
       Transition {
-        case IdentifyClientPersonal(Service.Ppt) | IdentifyClientBusiness(Service.Ppt) | IdentifyClientTrust | IdentifyClientPpt =>
+        case IdentifyClient(clientType, Service.Ppt) =>
           getPptSubscription(pptClient.pptRef).map {
             case Some(subscription) =>
-              ConfirmClientPpt(pptClient.pptRef, subscription.customerName)
+              ConfirmClient(clientType, Service.Ppt, Some(subscription.customerName), pptClient.pptRef)
             case None =>
               PptRefNotFound(pptClient.pptRef)
           }
@@ -284,9 +273,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       postcode: Postcode): AgentLedDeauthJourneyModel.Transition =
       Transition {
-        case ConfirmPostcodeCgt(cgtRef, postcodeFromDes, name) =>
+        case ConfirmPostcodeCgt(clientType, cgtRef, postcodeFromDes, name) =>
           if (postcodeFromDes.contains(postcode.value)) {
-            goto(ConfirmClientCgt(cgtRef, name))
+            goto(ConfirmClient(clientType, Service.CapitalGains, Some(name), cgtRef))
           } else {
             goto(KnownFactNotMatched)
           }
@@ -295,9 +284,9 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
       countryCode: CountryCode): AgentLedDeauthJourneyModel.Transition =
       Transition {
-        case ConfirmCountryCodeCgt(cgtRef, countryCodeFromDes, name) =>
+        case ConfirmCountryCodeCgt(clientType, cgtRef, countryCodeFromDes, name) =>
           if (countryCodeFromDes.contains(countryCode.value)) {
-            goto(ConfirmClientCgt(cgtRef, name))
+            goto(ConfirmClient(clientType, Service.CapitalGains, Some(name), cgtRef))
           } else {
             goto(KnownFactNotMatched)
           }
@@ -329,15 +318,15 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         } yield finalState
 
       Transition {
-        case IdentifyClientPersonal(Service.Vat) =>
+        case IdentifyClient(ClientType.Personal, Service.Vat) =>
           def nameToState(name: Option[String]) =
-            ConfirmClientPersonalVat(name, Vrn(vatClient.clientIdentifier))
+            ConfirmClient(ClientType.Personal, Service.Vat, name, Vrn(vatClient.clientIdentifier))
 
           checkVatRegDateAndGoToState(nameToState)
 
-        case IdentifyClientBusiness(Service.Vat) =>
+        case IdentifyClient(ClientType.Business, Service.Vat) =>
           def nameToState(name: Option[String]) =
-            ConfirmClientBusiness(name, Vrn(vatClient.clientIdentifier))
+            ConfirmClient(ClientType.Business, Service.Vat, name, Vrn(vatClient.clientIdentifier))
 
           checkVatRegDateAndGoToState(nameToState)
       }
@@ -359,14 +348,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         } else goto(root)
 
       Transition {
-        case ConfirmClientItsa(name, nino)       => gotoFinalState(nino.value, Service.MtdIt, name)
-        case ConfirmClientIrv(name, nino)        => gotoFinalState(nino.value, Service.PersonalIncomeRecord, name)
-        case ConfirmClientPersonalVat(name, vrn) => gotoFinalState(vrn.value, Service.Vat, name)
-        case ConfirmClientBusiness(name, vrn)    => gotoFinalState(vrn.value, Service.Vat, name)
-        case ConfirmClientTrust(name, utr)       => gotoFinalState(utr.value, Service.Trust, Some(name))
-        case ConfirmClientTrustNT(name, urn)     => gotoFinalState(urn.value, Service.TrustNT, Some(name))
-        case ConfirmClientCgt(cgtRef, name)      => gotoFinalState(cgtRef.value, Service.CapitalGains, Some(name))
-        case ConfirmClientPpt(pptRef, name)      => gotoFinalState(pptRef.value, Service.Ppt, Some(name))
+        case ConfirmClient(clientType, service, name, taxId) => gotoFinalState(taxId.value, service, name)
       }
     }
 
