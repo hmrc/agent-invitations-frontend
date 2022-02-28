@@ -459,22 +459,22 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
       case s: Prologue => Redirect(getCallFor(s))
 
-      case CheckDetailsComplete(_, ftr, _) =>
+      case CheckDetailsComplete(ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-      case CheckDetailsNoPostcode(_, ftr, _) =>
+      case CheckDetailsNoPostcode(ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-      case CheckDetailsNoDob(_, ftr, _) =>
+      case CheckDetailsNoDob(ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-      case CheckDetailsNoVatRegDate(_, ftr, _) =>
+      case CheckDetailsNoVatRegDate(ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-      case CheckDetailsNoClientTypeVat(_, ftr, _) =>
+      case CheckDetailsNoClientTypeVat(ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
-      case NoPostcode(_, ftr, _) =>
+      case NoPostcode(ftr, _) =>
         Ok(
           knownFactsView(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
@@ -486,7 +486,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case NoDob(_, ftr, _) =>
+      case NoDob(ftr, _) =>
         Ok(
           knownFactsView(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
@@ -498,7 +498,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case NoVatRegDate(_, ftr, _) =>
+      case NoVatRegDate(ftr, _) =>
         Ok(
           knownFactsView(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
@@ -510,7 +510,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case SelectClientTypeVat(_, _, _, _) =>
+      case SelectClientTypeVat(_, _, _) =>
         Ok(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.fastTrackForm),
@@ -522,7 +522,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case SelectClientTypeCgt(_, _, _, _) =>
+      case SelectClientTypeCgt(_, _, _) =>
         Ok(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.cgtClientTypeForm),
@@ -534,7 +534,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case SelectClientTypePpt(_, _, _, _) =>
+      case SelectClientTypePpt(_, _, _) =>
         Ok(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.pptClientTypeForm),
@@ -546,7 +546,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             )
           ))
 
-      case ConfirmClientTrust(_, ftr, _, trustName) =>
+      case ConfirmClientTrust(ftr, _, trustName) =>
         Ok(
           confirmClientView(
             trustName,
@@ -557,7 +557,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ftr.clientIdentifier
           ))
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.MtdIt =>
+      case IdentifyPersonalClient(ftr, _) if ftr.service == Service.MtdIt =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(IdentifyItsaClientForm),
@@ -566,7 +566,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.Vat =>
+      case IdentifyPersonalClient(ftr, _) if ftr.service == Service.Vat =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
@@ -575,7 +575,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyPersonalClient(_, ftr, _) if ftr.service == Service.PersonalIncomeRecord =>
+      case IdentifyPersonalClient(ftr, _) if ftr.service == Service.PersonalIncomeRecord =>
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IdentifyIrvClientForm),
@@ -584,7 +584,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyBusinessClient(_, _, _) =>
+      case IdentifyBusinessClient(_, _) =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
@@ -593,7 +593,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyTrustClient(_, _, _) =>
+      case IdentifyTrustClient(_, _) =>
         Ok(
           identifyClientTrustView(
             formWithErrors.or(TrustClientForm.form(urnEnabled)),
@@ -602,7 +602,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyCgtClient(_, _, _) =>
+      case IdentifyCgtClient(_, _) =>
         Ok(
           identifyClientCgtView(
             formWithErrors.or(CgtClientForm.form()),
@@ -611,7 +611,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyPptClient(_, ftr, _) =>
+      case IdentifyPptClient(ftr, _) =>
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
@@ -620,7 +620,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case IdentifyNoClientTypeClient(_, _, _) =>
+      case IdentifyNoClientTypeClient(_, _) =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
@@ -629,7 +629,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           )
         )
 
-      case ConfirmClientCgt(_, ftr, _, name) =>
+      case ConfirmClientCgt(ftr, _, name) =>
         Ok(
           confirmClientView(
             name,
@@ -640,7 +640,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ftr.clientIdentifier
           ))
 
-      case ConfirmPostcodeCgt(_, ftr, _, _, _) =>
+      case ConfirmPostcodeCgt(ftr, _, _, _) =>
         Ok(
           confirmPostcodeCgtView(
             ftr.clientType.getOrElse(Personal),
@@ -649,7 +649,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             fromFastTrack = true,
             isDeAuth = false))
 
-      case ConfirmCountryCodeCgt(_, ftr, _, _, _) =>
+      case ConfirmCountryCodeCgt(ftr, _, _, _) =>
         Ok(
           confirmCountryCodeCgtView(
             ftr.clientType.getOrElse(Personal),
@@ -660,7 +660,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             isDeAuth = false
           ))
 
-      case ConfirmRegDatePpt(_, _, _, _, _) =>
+      case ConfirmRegDatePpt(_, _, _, _) =>
         Ok(
           confirmRegDatePptView(
             formWithErrors.or(agentFastTrackPptRegDateForm),
@@ -669,7 +669,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             isDeAuth = false
           ))
 
-      case ConfirmClientPpt(_, ftr, _, name) =>
+      case ConfirmClientPpt(ftr, _, name) =>
         Ok(
           confirmClientView(
             name,
@@ -708,7 +708,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               isAltItsa = false
             )))
 
-      case KnownFactNotMatched(_, _, _) =>
+      case KnownFactNotMatched(_, _) =>
         Ok(
           notMatchedView(
             hasJourneyCache = false,
@@ -716,7 +716,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
           ))
 
-      case TrustNotFound(_, _, _) =>
+      case TrustNotFound(_, _) =>
         Ok(
           notMatchedView(
             hasJourneyCache = false,
@@ -724,7 +724,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
           ))
 
-      case CgtRefNotFound(originalFtr, fastTrackRequest, _) =>
+      case CgtRefNotFound(fastTrackRequest, _) =>
         Ok(
           cgtRefNotFoundView(
             false,
@@ -733,7 +733,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             fastTrackRequest.clientIdentifier
           ))
 
-      case PptRefNotFound(_, ftr, _) =>
+      case PptRefNotFound(ftr, _) =>
         Ok(
           pptRefNotFoundView(
             false,
