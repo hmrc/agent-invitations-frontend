@@ -100,6 +100,7 @@ service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’
 select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
 select-service.HMRC-MTD-IT.personal=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
+select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ei ymddiriedolaeth neu ystâd
 
 select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
