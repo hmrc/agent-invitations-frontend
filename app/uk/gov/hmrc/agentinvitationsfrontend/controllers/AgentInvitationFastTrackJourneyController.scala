@@ -384,40 +384,34 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           Call("GET", failureUrl + s"?issue=${agentFastTrackForm.bindFromRequest.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
         case None => routes.AgentInvitationFastTrackJourneyController.showClientType()
       }
-    case _: SelectClientTypeVat             => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case _: SelectClientTypeCgt             => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case _: SelectClientTypePpt             => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case _: NoPostcode                      => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: NoDob                           => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: NoVatRegDate                    => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: CheckDetailsCompleteItsa        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompleteIrv         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompletePersonalVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompleteBusinessVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompleteTrust       => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompleteCgt         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsCompletePpt         => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoPostcode          => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoDob               => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoVatRegDate        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoClientTypeVat     => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: IdentifyPersonalClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: IdentifyBusinessClient          => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: IdentifyTrustClient             => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: IdentifyCgtClient               => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: IdentifyPptClient               => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: IdentifyNoClientTypeClient      => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: ConfirmClientTrust              => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
-    case _: ConfirmPostcodeCgt              => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
-    case _: ConfirmCountryCodeCgt           => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode()
-    case _: ConfirmRegDatePpt               => routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate()
-    case _: ConfirmClientCgt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt()
-    case _: ConfirmClientPpt                => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt()
-    case _: InvitationSentPersonal          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
-    case _: InvitationSentBusiness          => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
-    case _: KnownFactNotMatched             => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
-    case TryAgainWithoutFastTrack           => routes.AgentInvitationJourneyController.agentsRoot()
-    case _: ClientNotSignedUp               => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
+    case _: SelectClientTypeVat         => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case _: SelectClientTypeCgt         => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case _: SelectClientTypePpt         => routes.AgentInvitationFastTrackJourneyController.showClientType()
+    case _: NoPostcode                  => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case _: NoDob                       => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case _: NoVatRegDate                => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
+    case _: CheckDetailsComplete        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsNoPostcode      => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsNoDob           => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsNoVatRegDate    => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: CheckDetailsNoClientTypeVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
+    case _: IdentifyPersonalClient      => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyBusinessClient      => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyTrustClient         => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyCgtClient           => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyPptClient           => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: IdentifyNoClientTypeClient  => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
+    case _: ConfirmClientTrust          => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
+    case _: ConfirmPostcodeCgt          => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
+    case _: ConfirmCountryCodeCgt       => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode()
+    case _: ConfirmRegDatePpt           => routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate()
+    case _: ConfirmClientCgt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt()
+    case _: ConfirmClientPpt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt()
+    case _: InvitationSentPersonal      => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
+    case _: InvitationSentBusiness      => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
+    case _: KnownFactNotMatched         => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
+    case TryAgainWithoutFastTrack       => routes.AgentInvitationJourneyController.agentsRoot()
+    case _: ClientNotSignedUp           => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
     case _: PendingInvitationExists =>
       routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
     case _: ActiveAuthorisationExists =>
@@ -465,25 +459,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
       case s: Prologue => Redirect(getCallFor(s))
 
-      case CheckDetailsCompleteItsa(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompleteIrv(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompletePersonalVat(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompleteBusinessVat(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompleteTrust(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompleteCgt(_, ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
-
-      case CheckDetailsCompletePpt(_, ftr, _) =>
+      case CheckDetailsComplete(_, ftr, _) =>
         gotoCheckDetailsWithRequest(ftr, breadcrumbs)
 
       case CheckDetailsNoPostcode(_, ftr, _) =>
