@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, utrPattern}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Service, Arn, CgtRef, InvitationId, PptRef, SuspensionDetails, TrustTaxIdentifier, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, InvitationId, PptRef, Service, SuspensionDetails, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -40,23 +40,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   trait CheckDetails extends State
 
-  case class CheckDetailsNoPostcode(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends CheckDetails
+  case class CheckDetailsNoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends CheckDetails
 
-  case class CheckDetailsNoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends CheckDetails
+  case class CheckDetailsNoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends CheckDetails
 
-  case class CheckDetailsNoVatRegDate(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends CheckDetails
+  case class CheckDetailsNoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends CheckDetails
 
-  case class CheckDetailsNoClientTypeVat(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends CheckDetails
+  case class CheckDetailsNoClientTypeVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends CheckDetails
 
   case class CheckDetailsComplete(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends CheckDetails {
     def service: Service = fastTrackRequest.service
@@ -65,24 +55,17 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   trait MissingDetail extends State
 
-  case class NoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends MissingDetail
+  case class NoPostcode(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends MissingDetail
 
-  case class NoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends MissingDetail
+  case class NoDob(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends MissingDetail
 
-  case class NoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends MissingDetail
+  case class NoVatRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends MissingDetail
 
-  case class NoPptRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends MissingDetail
+  case class NoPptRegDate(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends MissingDetail
 
   trait ClientTypeState extends State
 
-  case class SelectClientTypeVat(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    isChanging: Boolean = false)
+  case class SelectClientTypeVat(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], isChanging: Boolean = false)
       extends ClientTypeState
 
   case class SelectClientTypeCgt(
@@ -99,37 +82,19 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   trait Identify extends State
 
-  case class IdentifyPersonalClient(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends Identify
+  case class IdentifyPersonalClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class IdentifyBusinessClient(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends Identify
+  case class IdentifyBusinessClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class IdentifyNoClientTypeClient(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends Identify
+  case class IdentifyNoClientTypeClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class IdentifyTrustClient(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends Identify
+  case class IdentifyTrustClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class IdentifyCgtClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends Identify
+  case class IdentifyCgtClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class IdentifyPptClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends Identify
+  case class IdentifyPptClient(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends Identify
 
-  case class ConfirmClientTrust(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    trustName: String)
-      extends State
+  case class ConfirmClientTrust(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], trustName: String) extends State
 
   trait InvitationSent extends State
 
@@ -148,17 +113,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
   trait NotMatched extends State
 
-  case class KnownFactNotMatched(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String])
-      extends NotMatched
+  case class KnownFactNotMatched(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends NotMatched
 
   case class ClientNotSignedUp(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
   case class ClientNotRegistered(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends State
 
-  case class TrustNotFound(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String])
-      extends NotMatched
+  case class TrustNotFound(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends NotMatched
 
   case object TryAgainWithoutFastTrack extends State
 
@@ -169,39 +130,21 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     clientName: String)
       extends State
 
-  case class ConfirmCountryCodeCgt(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    countryCode: String,
-    clientName: String)
+  case class ConfirmCountryCodeCgt(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], countryCode: String, clientName: String)
       extends State
 
-  case class ConfirmClientCgt(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    clientName: String)
+  case class ConfirmClientCgt(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], clientName: String) extends State
+
+  case class ConfirmRegDatePpt(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], registrationDate: LocalDate, clientName: String)
       extends State
 
-  case class ConfirmRegDatePpt(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    registrationDate: LocalDate,
-    clientName: String)
-      extends State
-
-  case class ConfirmClientPpt(
-    fastTrackRequest: AgentFastTrackRequest,
-    continueUrl: Option[String],
-    clientName: String)
-      extends State
+  case class ConfirmClientPpt(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String], clientName: String) extends State
 
   case class SuspendedAgent(service: Service, continueUrl: Option[String]) extends State
 
-  case class CgtRefNotFound(fastTrackRequest: AgentFastTrackRequest,
-                            continueUrl: Option[String]) extends NotMatched
+  case class CgtRefNotFound(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends NotMatched
 
-  case class PptRefNotFound(fastTrackRequest: AgentFastTrackRequest,
-                            continueUrl: Option[String]) extends NotMatched
+  case class PptRefNotFound(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]) extends NotMatched
 
   case object AlreadyCopiedAcrossItsa extends State
 
@@ -211,57 +154,80 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
   case class LegacyAuthorisationDetected(fastTrackRequest: AgentFastTrackRequest, arn: Arn, invitation: Invitation, continueUrl: Option[String])
       extends State
 
-  object Transitions {
+  object TransitionEffects {
     type HasPendingInvitations = (Arn, String, Service) => Future[Boolean]
     type HasActiveRelationship = (Arn, String, Service) => Future[Boolean]
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, Service) => Future[Option[String]]
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type CheckRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
-    type CheckPptKnownFact = (PptRef, LocalDate) => Future[Boolean]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
-    type CreateInvitation =
-      (Arn, Invitation) => Future[InvitationId]
     type GetAgencyEmail = () => Future[String]
-
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
-    type GetSuspensionDetails = () => Future[SuspensionDetails]
-    type IsAltItsa = (Arn, String) => Future[Boolean]
-    type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
+    type GetSuspensionDetails = () => Future[SuspensionDetails]
+    type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
     type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
+    type CheckPptKnownFact = (PptRef, LocalDate) => Future[Boolean]
+    type CreateInvitation =
+      (Arn, Invitation) => Future[InvitationId]
+    type IsAltItsa = (Arn, String) => Future[Boolean]
+
+  }
+
+  import TransitionEffects._
+
+  case class Transitions(
+    getSuspensionDetails: GetSuspensionDetails,
+    hasPendingInvitationsFor: HasPendingInvitations,
+    hasActiveRelationshipFor: HasActiveRelationship,
+    hasPartialAuthorisationFor: HasPartialAuthorisation,
+    legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
+    checkDobMatches: CheckDOBMatches,
+    checkPostcodeMatches: CheckPostcodeMatches,
+    checkRegDateMatches: CheckRegDateMatches,
+    getClientName: GetClientName,
+    getTrustName: GetTrustName,
+    getAgentLink: GetAgentLink,
+    getAgencyEmail: GetAgencyEmail,
+    getCgtSubscription: GetCgtSubscription,
+    getPptSubscription: GetPptSubscription,
+    checkPptKnownFact: CheckPptKnownFact,
+    createInvitation: CreateInvitation,
+    isAltItsa: IsAltItsa
+  ) {
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
     }
 
-    def start(agentSuspensionEnabled: Boolean, getSuspensionDetails: GetSuspensionDetails)(continueUrl: Option[String])(agent: AuthorisedAgent)(
-      fastTrackRequest: AgentFastTrackRequest) = Transition {
-      case _ =>
-        if (agentSuspensionEnabled) getSuspensionDetails().flatMap { suspensionDetails =>
-          suspensionDetails.isRegimeSuspended(fastTrackRequest.service) match {
-            case true  => goto(SuspendedAgent(fastTrackRequest.service, continueUrl))
-            case false => getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
+    def start(agentSuspensionEnabled: Boolean)(continueUrl: Option[String])(agent: AuthorisedAgent)(fastTrackRequest: AgentFastTrackRequest) =
+      Transition {
+        case _ =>
+          if (agentSuspensionEnabled) getSuspensionDetails().flatMap { suspensionDetails =>
+            suspensionDetails.isRegimeSuspended(fastTrackRequest.service) match {
+              case true  => goto(SuspendedAgent(fastTrackRequest.service, continueUrl))
+              case false => getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
+            }
+          } else {
+            getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
           }
-        } else {
-          getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
-        }
-    }
+      }
 
     def getStateForNonSuspendedAgent(fastTrackRequest: AgentFastTrackRequest, continueUrl: Option[String]): Future[State] =
       fastTrackRequest match {
         case AgentFastTrackRequest(_, Service.MtdIt, _, _, knownFact) =>
           val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(ClientType.Personal))
           knownFact match {
-            case None => goto(CheckDetailsNoPostcode(updatedPersonalRequest, continueUrl))
+            case None    => goto(CheckDetailsNoPostcode(updatedPersonalRequest, continueUrl))
             case Some(_) => goto(CheckDetailsComplete(updatedPersonalRequest, continueUrl))
           }
 
         case AgentFastTrackRequest(_, Service.PersonalIncomeRecord, _, _, knownFact) =>
           val updatedPersonalRequest = fastTrackRequest.copy(clientType = Some(ClientType.Personal))
           knownFact match {
-            case None => goto(CheckDetailsNoDob(updatedPersonalRequest, continueUrl))
+            case None    => goto(CheckDetailsNoDob(updatedPersonalRequest, continueUrl))
             case Some(_) => goto(CheckDetailsComplete(updatedPersonalRequest, continueUrl))
           }
 
@@ -270,7 +236,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
         case AgentFastTrackRequest(_, Service.Vat, _, _, knownFact) =>
           knownFact match {
-            case None => goto(CheckDetailsNoVatRegDate(fastTrackRequest, continueUrl))
+            case None    => goto(CheckDetailsNoVatRegDate(fastTrackRequest, continueUrl))
             case Some(_) => goto(CheckDetailsComplete(fastTrackRequest, continueUrl))
           }
 
@@ -281,11 +247,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           goto(CheckDetailsComplete(fastTrackRequest, continueUrl))
       }
 
-    private def invitationSentState(fastTrackRequest: AgentFastTrackRequest, arn: Arn, invitation: Invitation, continueUrl: Option[String])(
-      isAltItsa: IsAltItsa,
-      createInvitation: CreateInvitation,
-      getAgentLink: GetAgentLink,
-      getAgencyEmail: GetAgencyEmail) =
+    private def invitationSentState(fastTrackRequest: AgentFastTrackRequest, arn: Arn, invitation: Invitation, continueUrl: Option[String]) =
       for {
         agencyEmail    <- getAgencyEmail()
         _              <- createInvitation(arn, invitation)
@@ -304,46 +266,36 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                  }
       } yield result
 
-    def confirmedLegacyAuthorisation(
-      isAltItsa: IsAltItsa,
-      createInvitation: CreateInvitation,
-      getAgentLink: GetAgentLink,
-      getAgencyEmail: GetAgencyEmail): Transition =
+    def confirmedLegacyAuthorisation: Transition =
       Transition {
         case LegacyAuthorisationDetected(fastTrackRequest, arn, invitation, continueUrl) =>
-          invitationSentState(fastTrackRequest, arn, invitation, continueUrl)(isAltItsa, createInvitation, getAgentLink, getAgencyEmail)
+          invitationSentState(fastTrackRequest, arn, invitation, continueUrl)
       }
 
     def checkIfPendingOrActiveAndGoto(fastTrackRequest: AgentFastTrackRequest, arn: Arn, invitation: Invitation, continueUrl: Option[String])(
-      hasPendingInvitationsFor: HasPendingInvitations,
-      hasActiveRelationshipFor: HasActiveRelationship,
-      hasPartialAuthorisation: HasPartialAuthorisation,
-      isAltItsa: IsAltItsa,
-      legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
-      appConfig: AppConfig
-    )(createInvitation: CreateInvitation, getAgentLink: GetAgentLink, getAgencyEmail: GetAgencyEmail, getClientName: GetClientName): Future[State] = {
+      appConfig: AppConfig): Future[State] = {
 
       def invitationSent =
-        invitationSentState(fastTrackRequest, arn, invitation, continueUrl)(
-          isAltItsa: IsAltItsa,
-          createInvitation: CreateInvitation,
-          getAgentLink: GetAgentLink,
-          getAgencyEmail: GetAgencyEmail)
-
+        invitationSentState(fastTrackRequest, arn, invitation, continueUrl)
       for {
         hasPendingInvitations <- hasPendingInvitationsFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
         result <- if (hasPendingInvitations) {
                    for {
-                     agentLink <- getAgentLink(arn, fastTrackRequest.clientType)
+                     agentLink  <- getAgentLink(arn, fastTrackRequest.clientType)
                      clientName <- getClientName(fastTrackRequest.clientIdentifier, fastTrackRequest.service)
-                     newState <- goto(PendingInvitationExists(fastTrackRequest, agentLink, clientName.getOrElse(fastTrackRequest.clientIdentifier), continueUrl))
+                     newState <- goto(
+                                  PendingInvitationExists(
+                                    fastTrackRequest,
+                                    agentLink,
+                                    clientName.getOrElse(fastTrackRequest.clientIdentifier),
+                                    continueUrl))
                    } yield newState
                  } else {
                    hasActiveRelationshipFor(arn, fastTrackRequest.clientIdentifier, fastTrackRequest.service)
                      .flatMap {
                        case true => goto(ActiveAuthorisationExists(fastTrackRequest, continueUrl))
                        case false =>
-                         hasPartialAuthorisation(arn, fastTrackRequest.clientIdentifier).flatMap {
+                         hasPartialAuthorisationFor(arn, fastTrackRequest.clientIdentifier).flatMap {
                            case true => goto(PartialAuthorisationExists(fastTrackRequest, continueUrl))
                            case false =>
                              if (appConfig.featuresAltItsa && invitation.service == Service.MtdIt)
@@ -364,13 +316,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         goto(SelectClientTypeVat(fastTrackRequest, continueUrl))
       case NoVatRegDate(fastTrackRequest, continueUrl) =>
         goto(SelectClientTypeVat(fastTrackRequest, continueUrl))
-      case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
+      case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
         goto(SelectClientTypeCgt(fastTrackRequest, continueUrl))
-      case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
+      case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
         goto(SelectClientTypePpt(fastTrackRequest, continueUrl))
     }
 
-    def checkedDetailsNoKnownFact(getCgtSubscription: GetCgtSubscription, getPptSubscription: GetPptSubscription)(agent: AuthorisedAgent) =
+    def checkedDetailsNoKnownFact(agent: AuthorisedAgent) =
       Transition {
         case CheckDetailsNoPostcode(fastTrackRequest, continueUrl) =>
           goto(NoPostcode(fastTrackRequest, continueUrl))
@@ -381,7 +333,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case CheckDetailsNoVatRegDate(fastTrackRequest, continueUrl) =>
           goto(NoVatRegDate(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
           val cgtRef = CgtRef(fastTrackRequest.clientIdentifier)
 
           getCgtSubscription(cgtRef).map {
@@ -395,7 +347,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               CgtRefNotFound(fastTrackRequest, continueUrl)
           }
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
           val pptRef = PptRef(fastTrackRequest.clientIdentifier)
 
           getPptSubscription(pptRef).map {
@@ -428,11 +380,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
       }
 
-
     private def withSpacesRemoved(postcode: String): String =
       postcode.replace(" ", "")
 
-    def identifyCgtClient(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(cgtClient: CgtClient): Transition =
+    def identifyCgtClient(agent: AuthorisedAgent)(cgtClient: CgtClient): Transition =
       Transition {
         case IdentifyCgtClient(fastTrackRequest, continueUrl) =>
           getCgtSubscription(CgtRef(cgtClient.cgtRef.value)) map {
@@ -441,16 +392,14 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               val newFtr = fastTrackRequest.copy(clientIdentifier = cgtClient.cgtRef.value)
               if (subscription.isUKBasedClient) {
                 val desPostcode = subscription.postCode.map(withSpacesRemoved)
-                if(ftrKnownFact.contains(desPostcode.getOrElse("no_postcode"))) {
+                if (ftrKnownFact.contains(desPostcode.getOrElse("no_postcode"))) {
                   ConfirmClientCgt(newFtr, continueUrl, subscription.name)
-                }
-                else ConfirmPostcodeCgt(newFtr, continueUrl, subscription.postCode, subscription.name)
+                } else ConfirmPostcodeCgt(newFtr, continueUrl, subscription.postCode, subscription.name)
               } else {
                 val desCountryCode = withSpacesRemoved(subscription.countryCode)
-                if(ftrKnownFact.contains(desCountryCode)) {
+                if (ftrKnownFact.contains(desCountryCode)) {
                   ConfirmClientCgt(newFtr, continueUrl, subscription.name)
-                }
-                else ConfirmCountryCodeCgt(newFtr, continueUrl, subscription.countryCode, subscription.name)
+                } else ConfirmCountryCodeCgt(newFtr, continueUrl, subscription.countryCode, subscription.name)
               }
             case None => CgtRefNotFound(fastTrackRequest, continueUrl)
           }
@@ -492,11 +441,11 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         }
 
       Transition {
-        case cdc@CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.CapitalGains =>
+        case cdc @ CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.CapitalGains =>
           if (ftr.clientType.isEmpty) goto(SelectClientTypeCgt(ftr, continueUrl, isChanging = true))
           else goto(IdentifyCgtClient(ftr, continueUrl))
 
-        case cdc@CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.Ppt =>
+        case cdc @ CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.Ppt =>
           if (ftr.clientType.isEmpty) goto(SelectClientTypePpt(ftr, continueUrl, isChanging = true))
           else goto(IdentifyPptClient(ftr, continueUrl))
 
@@ -512,22 +461,18 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case CheckDetailsNoClientTypeVat(ftr, continueUrl) =>
           goto(SelectClientTypeVat(ftr, continueUrl, isChanging = true))
 
-        case cdc@CheckDetailsComplete(ftr, continueUrl) =>
+        case cdc @ CheckDetailsComplete(ftr, continueUrl) =>
           cdc.clientType match {
             case Some(ClientType.Personal) => goto(IdentifyPersonalClient(ftr, continueUrl))
             case Some(ClientType.Business) => goto(IdentifyBusinessClient(ftr, continueUrl))
-            case Some(ClientType.Trust) => goto(IdentifyTrustClient(ftr, continueUrl))
+            case Some(ClientType.Trust)    => goto(IdentifyTrustClient(ftr, continueUrl))
           }
       }
     }
 
-    def checkedDetailsAllInformation(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(
-      checkRegDateMatches: CheckRegDateMatches)(checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(
-      getAgencyEmail: GetAgencyEmail)(hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(
-      hasPartialAuthorisation: HasPartialAuthorisation)(hasPendingAltItsaInvitation: IsAltItsa)(
-      legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def checkedDetailsAllInformation(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.MtdIt => {
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.MtdIt => {
           if (confirmation.choice) {
             checkPostcodeMatches(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.getOrElse(""))
               .flatMap {
@@ -537,13 +482,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     agent.arn,
                     Invitation(fastTrackRequest.clientType, Service.MtdIt, Nino(fastTrackRequest.clientIdentifier)),
                     continueUrl
-                  )(
-                    hasPendingInvitations,
-                    hasActiveRelationship,
-                    hasPartialAuthorisation,
-                    hasPendingAltItsaInvitation,
-                    legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                  )(appConfig)
                 case Some(false) => goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
                 case None =>
                   if (appConfig.featuresAltItsa) goto(ClientNotRegistered(fastTrackRequest, continueUrl))
@@ -552,7 +491,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
         }
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.PersonalIncomeRecord =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.PersonalIncomeRecord =>
           if (confirmation.choice) {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkDobMatches(Nino(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
@@ -563,18 +502,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     agent.arn,
                     Invitation(fastTrackRequest.clientType, Service.PersonalIncomeRecord, Nino(fastTrackRequest.clientIdentifier)),
                     continueUrl
-                  )(
-                    hasPendingInvitations,
-                    hasActiveRelationship,
-                    hasPartialAuthorisation,
-                    hasPendingAltItsaInvitation,
-                    legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                  )(appConfig)
                 case _ => goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if (cdc.service == Service.Vat && cdc.clientType.contains(ClientType.Personal)) =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl)
+            if (cdc.service == Service.Vat && cdc.clientType.contains(ClientType.Personal)) =>
           if (confirmation.choice) {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkRegDateMatches(Vrn(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
@@ -585,13 +519,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     agent.arn,
                     Invitation(Some(ClientType.Personal), Service.Vat, Vrn(fastTrackRequest.clientIdentifier)),
                     continueUrl
-                  )(
-                    hasPendingInvitations,
-                    hasActiveRelationship,
-                    hasPartialAuthorisation,
-                    hasPendingAltItsaInvitation,
-                    legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                  )(appConfig)
                 case VatKnownFactNotMatched       => goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
                 case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
                 case VatRecordMigrationInProgress => goto(CannotCreateFastTrackRequest)
@@ -599,7 +527,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               }
           } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if (cdc.service == Service.Vat && cdc.clientType.contains(ClientType.Business)) =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl)
+            if (cdc.service == Service.Vat && cdc.clientType.contains(ClientType.Business)) =>
           if (confirmation.choice) {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkRegDateMatches(Vrn(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
@@ -610,13 +539,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     agent.arn,
                     Invitation(Some(ClientType.Business), Service.Vat, Vrn(fastTrackRequest.clientIdentifier)),
                     continueUrl
-                  )(
-                    hasPendingInvitations,
-                    hasActiveRelationship,
-                    hasPartialAuthorisation,
-                    hasPendingAltItsaInvitation,
-                    legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                  )(appConfig)
                 case VatKnownFactNotMatched       => goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
                 case VatDetailsNotFound           => goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
                 case VatRecordClientInsolvent     => goto(ClientInsolventFastTrack)
@@ -624,7 +547,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               }
           } else goto(IdentifyBusinessClient(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if List(Service.Trust, Service.TrustNT).contains(cdc.service) =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if List(Service.Trust, Service.TrustNT).contains(cdc.service) =>
           if (confirmation.choice) {
             getClientName(fastTrackRequest.clientIdentifier, fastTrackRequest.service).flatMap {
               case Some(_) =>
@@ -637,53 +560,37 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   agent.arn,
                   trustInvitation,
                   continueUrl
-                )(
-                  hasPendingInvitations,
-                  hasActiveRelationship,
-                  hasPartialAuthorisation,
-                  hasPendingAltItsaInvitation,
-                  legacySaRelationshipStatusFor,
-                  appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                )(appConfig)
               case None => goto(TrustNotFound(fastTrackRequest, continueUrl))
             }
           } else goto(IdentifyTrustClient(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.CapitalGains =>
           if (confirmation.choice) {
             getCgtSubscription(CgtRef(fastTrackRequest.clientIdentifier)).flatMap {
               case Some(subscription) =>
                 val (knownFactEmptyState, field) = if (subscription.isUKBasedClient) {
-                  (ConfirmPostcodeCgt(fastTrackRequest, continueUrl, subscription.postCode, subscription.name),
-                  subscription.postCode)
+                  (ConfirmPostcodeCgt(fastTrackRequest, continueUrl, subscription.postCode, subscription.name), subscription.postCode)
                 } else
-                  (ConfirmCountryCodeCgt(fastTrackRequest, continueUrl, subscription.countryCode, subscription.name),
-                    Some(subscription.countryCode))
-                fastTrackRequest
-                  .knownFact
-                  .fold(goto(knownFactEmptyState): Future[State]) {
-                    knownFact =>
-                      val ftrKnownFact = withSpacesRemoved(knownFact)
-                      val desKNownFact = field.map(withSpacesRemoved)
-                      if (ftrKnownFact == desKNownFact.getOrElse("no_postcode"))
-                        checkIfPendingOrActiveAndGoto(
-                          fastTrackRequest,
-                          agent.arn,
-                          Invitation(fastTrackRequest.clientType, Service.CapitalGains, CgtRef(fastTrackRequest.clientIdentifier)),
-                          continueUrl
-                        )(
-                          hasPendingInvitations,
-                          hasActiveRelationship,
-                          hasPartialAuthorisation,
-                          hasPendingAltItsaInvitation,
-                          legacySaRelationshipStatusFor,
-                          appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
-                      else goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
+                  (ConfirmCountryCodeCgt(fastTrackRequest, continueUrl, subscription.countryCode, subscription.name), Some(subscription.countryCode))
+                fastTrackRequest.knownFact
+                  .fold(goto(knownFactEmptyState): Future[State]) { knownFact =>
+                    val ftrKnownFact = withSpacesRemoved(knownFact)
+                    val desKNownFact = field.map(withSpacesRemoved)
+                    if (ftrKnownFact == desKNownFact.getOrElse("no_postcode"))
+                      checkIfPendingOrActiveAndGoto(
+                        fastTrackRequest,
+                        agent.arn,
+                        Invitation(fastTrackRequest.clientType, Service.CapitalGains, CgtRef(fastTrackRequest.clientIdentifier)),
+                        continueUrl
+                      )(appConfig)
+                    else goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
                   }
               case None => goto(CgtRefNotFound(fastTrackRequest, continueUrl))
-          }
+            }
           } else goto(IdentifyCgtClient(fastTrackRequest, continueUrl))
 
-        case cdc@CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.Ppt =>
           if (confirmation.choice) {
             val knownFact = fastTrackRequest.knownFact.getOrElse("")
             checkPptKnownFact(PptRef(fastTrackRequest.clientIdentifier), LocalDate.parse(knownFact))
@@ -694,72 +601,56 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                     agent.arn,
                     Invitation(fastTrackRequest.clientType, Service.Ppt, PptRef(fastTrackRequest.clientIdentifier)),
                     continueUrl
-                  )(
-                    hasPendingInvitations,
-                    hasActiveRelationship,
-                    hasPartialAuthorisation,
-                    hasPendingAltItsaInvitation,
-                    legacySaRelationshipStatusFor,
-                    appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+                  )(appConfig)
                 case false => goto(KnownFactNotMatched(fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPptClient(fastTrackRequest, continueUrl))
       }
 
-    def identifiedClientItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPendingAltItsaInvitation: IsAltItsa)(
-      hasPartialAuthorisation: HasPartialAuthorisation)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(itsaClient: ItsaClient) =
+    def identifiedClientItsa(appConfig: AppConfig)(agent: AuthorisedAgent)(itsaClient: ItsaClient) =
       Transition {
         case IdentifyPersonalClient(ftr, continueUrl) =>
           val newState = CheckDetailsComplete(
             ftr.copy(service = Service.MtdIt, clientIdentifier = itsaClient.clientIdentifier, knownFact = Some(itsaClient.postcode)),
             continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
-    def identifiedClientIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPendingAltItsaInvitation: IsAltItsa)(
-      hasPartialAuthorisation: HasPartialAuthorisation)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(irvClient: IrvClient) =
+    def identifiedClientIrv(appConfig: AppConfig)(agent: AuthorisedAgent)(irvClient: IrvClient) =
       Transition {
         case IdentifyPersonalClient(ftr, continueUrl) =>
           val newState =
             CheckDetailsComplete(
               ftr.copy(service = Service.PersonalIncomeRecord, clientIdentifier = irvClient.clientIdentifier, knownFact = Some(irvClient.dob)),
               continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
-    def identifiedClientVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(vatClient: VatClient) =
+    def identifiedClientVat(appConfig: AppConfig)(agent: AuthorisedAgent)(vatClient: VatClient) =
       Transition {
         case IdentifyPersonalClient(ftr, continueUrl) =>
           val newState = CheckDetailsComplete(
-            ftr.copy(service = Service.Vat, clientType = Some(ClientType.Personal), clientIdentifier = vatClient.clientIdentifier, knownFact = Some(vatClient.registrationDate)),
-            continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+            ftr.copy(
+              service = Service.Vat,
+              clientType = Some(ClientType.Personal),
+              clientIdentifier = vatClient.clientIdentifier,
+              knownFact = Some(vatClient.registrationDate)),
+            continueUrl
+          )
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
         case IdentifyBusinessClient(ftr, continueUrl) =>
           val newState = CheckDetailsComplete(
-            ftr.copy(service = Service.Vat, clientType = Some(ClientType.Business), clientIdentifier = vatClient.clientIdentifier, knownFact = Some(vatClient.registrationDate)),
-            continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+            ftr.copy(
+              service = Service.Vat,
+              clientType = Some(ClientType.Business),
+              clientIdentifier = vatClient.clientIdentifier,
+              knownFact = Some(vatClient.registrationDate)),
+            continueUrl
+          )
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
 
         case IdentifyNoClientTypeClient(ftr, continueUrl) =>
@@ -769,7 +660,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           checkedDetailsNoClientType(agent).apply(newState)
       }
 
-    def showConfirmTrustClient(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def showConfirmTrustClient(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyTrustClient(ftr, continueUrl) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
@@ -783,10 +674,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitConfirmTrustClient(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def submitConfirmTrustClient(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmClientTrust(ftr, continueUrl, trustName) =>
           if (confirmation.choice) {
@@ -799,22 +687,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               agent.arn,
               trustInvitation,
               continueUrl
-            )(
-              hasPendingInvitations,
-              hasActiveRelationship,
-              hasPartialAuthorisation,
-              hasPendingAltItsaInvitation,
-              legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+            )(appConfig)
           } else {
             goto(IdentifyTrustClient(ftr, continueUrl))
           }
       }
 
-    def submitConfirmClientCgt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def submitConfirmClientCgt(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmClientCgt(ftr, continueUrl, cgtName) =>
           if (confirmation.choice) {
@@ -823,22 +702,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               agent.arn,
               Invitation(ftr.clientType, Service.CapitalGains, CgtRef(ftr.clientIdentifier)),
               continueUrl
-            )(
-              hasPendingInvitations,
-              hasActiveRelationship,
-              hasPartialAuthorisation,
-              hasPendingAltItsaInvitation,
-              legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+            )(appConfig)
           } else {
             goto(IdentifyCgtClient(ftr, continueUrl))
           }
       }
 
-    def submitConfirmClientPpt(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def submitConfirmClientPpt(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmClientPpt(ftr, continueUrl, pptName) =>
           if (confirmation.choice) {
@@ -847,52 +717,30 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               agent.arn,
               Invitation(ftr.clientType, Service.Ppt, PptRef(ftr.clientIdentifier)),
               continueUrl
-            )(
-              hasPendingInvitations,
-              hasActiveRelationship,
-              hasPartialAuthorisation,
-              hasPendingAltItsaInvitation,
-              legacySaRelationshipStatusFor,
-              appConfig)(createInvitation, getAgentLink, getAgencyEmail, getClientName)
+            )(appConfig)
           } else {
             goto(IdentifyPptClient(ftr, continueUrl))
           }
       }
 
-    def moreDetailsItsa(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(suppliedKnownFact: String) =
+    def moreDetailsItsa(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
         case NoPostcode(ftr, continueUrl) =>
           val newState = CheckDetailsComplete(ftr.copy(service = Service.MtdIt, knownFact = Some(suppliedKnownFact)), continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
-    def moreDetailsIrv(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(suppliedKnownFact: String) =
+    def moreDetailsIrv(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
         case NoDob(ftr, continueUrl) =>
           val newState =
             CheckDetailsComplete(ftr.copy(service = Service.PersonalIncomeRecord, knownFact = Some(suppliedKnownFact)), continueUrl)
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
       }
 
-    def moreDetailsVat(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(suppliedKnownFact: String) =
+    def moreDetailsVat(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
         case NoVatRegDate(ftRequest, continueUrl) => {
           val clientType =
@@ -902,28 +750,22 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               ClientType.Business
 
           val newState =
-            CheckDetailsComplete(ftRequest.copy(service = Service.Vat, clientType = Some(clientType), knownFact = Some(suppliedKnownFact)), continueUrl)
+            CheckDetailsComplete(
+              ftRequest.copy(service = Service.Vat, clientType = Some(clientType), knownFact = Some(suppliedKnownFact)),
+              continueUrl)
 
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
         }
       }
 
-    def moreDetailsPpt(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(getCgtSubscription: GetCgtSubscription)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(appConfig: AppConfig)(
-      agent: AuthorisedAgent)(suppliedKnownFact: String) =
+    def moreDetailsPpt(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
         case NoPptRegDate(ftRequest, continueUrl) => {
           val newState =
             CheckDetailsComplete(ftRequest.copy(service = Service.Ppt, knownFact = Some(suppliedKnownFact)), continueUrl)
 
-          checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(getAgentLink)(getClientName)(
-            getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-            legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+          checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
         }
       }
@@ -964,27 +806,20 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           goto(IdentifyPptClient(fastTrackRequest, continueUrl))
       }
 
-    def selectedClientType(checkPostcodeMatches: CheckPostcodeMatches)(checkDobMatches: CheckDOBMatches)(checkRegDateMatches: CheckRegDateMatches)(
-      checkPptKnownFact: CheckPptKnownFact)(createInvitation: CreateInvitation)(getAgentLink: GetAgentLink)(getClientName: GetClientName)(getAgencyEmail: GetAgencyEmail)(
-      hasPendingInvitations: HasPendingInvitations)(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(
-      hasPendingAltItsaInvitation: IsAltItsa)(legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor)(
-      getCgtSubscription: GetCgtSubscription,
-      getPptSubscription: GetPptSubscription)(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedClientType: String) =
+    def selectedClientType(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedClientType: String) =
       Transition {
         case SelectClientTypeVat(ftr, continueUrl, isChanging) =>
           val isKnownFactRequired = ftr.knownFact.isDefined
           if (isKnownFactRequired) {
             val newState =
               CheckDetailsComplete(ftr.copy(service = Service.Vat, clientType = Some(ClientType.toEnum(suppliedClientType))), continueUrl)
-            checkedDetailsAllInformation(checkPostcodeMatches)(checkDobMatches)(checkRegDateMatches)(checkPptKnownFact)(getCgtSubscription)(createInvitation)(
-              getAgentLink)(getClientName)(getAgencyEmail)(hasPendingInvitations)(hasActiveRelationship)(hasPartialAuthorisation)(hasPendingAltItsaInvitation)(
-              legacySaRelationshipStatusFor)(appConfig)(agent)(Confirmation(true))
+            checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
               .apply(newState)
           } else {
             val newState =
               CheckDetailsNoVatRegDate(ftr.copy(clientType = Some(ClientType.toEnum(suppliedClientType))), continueUrl)
             if (isChanging) checkedDetailsChangeInformation(agent).apply(newState)
-            else checkedDetailsNoKnownFact(getCgtSubscription, getPptSubscription)(agent).apply(newState)
+            else checkedDetailsNoKnownFact(agent).apply(newState)
           }
 
         case SelectClientTypeCgt(ftr, continueUrl, isChanging) =>
@@ -994,10 +829,10 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
               if (isChanging) {
                 IdentifyCgtClient(newFtr, continueUrl)
               } else if (subscription.isUKBasedClient) {
-                ftr.knownFact.fold(ConfirmPostcodeCgt(newFtr, continueUrl, subscription.postCode, subscription.name): State){
-                  postcode => val desPostcode = withSpacesRemoved(subscription.postCode.getOrElse(""))
-                    if(withSpacesRemoved(postcode) == desPostcode) ConfirmClientCgt(newFtr, continueUrl, subscription.name)
-                    else KnownFactNotMatched(newFtr, continueUrl)
+                ftr.knownFact.fold(ConfirmPostcodeCgt(newFtr, continueUrl, subscription.postCode, subscription.name): State) { postcode =>
+                  val desPostcode = withSpacesRemoved(subscription.postCode.getOrElse(""))
+                  if (withSpacesRemoved(postcode) == desPostcode) ConfirmClientCgt(newFtr, continueUrl, subscription.name)
+                  else KnownFactNotMatched(newFtr, continueUrl)
                 }
               } else {
                 ConfirmCountryCodeCgt(newFtr, continueUrl, subscription.countryCode, subscription.name)
@@ -1012,12 +847,13 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             case Some(subscription) =>
               if (isChanging)
                 IdentifyPptClient(newFtr, continueUrl)
-              else newFtr.knownFact
-                .fold(ConfirmRegDatePpt(newFtr, continueUrl, subscription.dateOfApplication, subscription.customerName): State){
-                  regDate => if(subscription.dateOfApplication == LocalDate.parse(regDate))
-                    ConfirmClientPpt(newFtr, continueUrl, subscription.customerName)
-                  else KnownFactNotMatched(newFtr, continueUrl)
-                }
+              else
+                newFtr.knownFact
+                  .fold(ConfirmRegDatePpt(newFtr, continueUrl, subscription.dateOfApplication, subscription.customerName): State) { regDate =>
+                    if (subscription.dateOfApplication == LocalDate.parse(regDate))
+                      ConfirmClientPpt(newFtr, continueUrl, subscription.customerName)
+                    else KnownFactNotMatched(newFtr, continueUrl)
+                  }
             case None =>
               PptRefNotFound(newFtr, continueUrl)
           }

@@ -43,7 +43,7 @@ class InvitationsService @Inject()(
 
   def createInvitation(
     arn: Arn,
-    invitation: Invitation)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[InvitationId] = {
+    invitation: Invitation)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: RequestHeader): Future[InvitationId] = {
 
     val agentInvitation =
       AgentInvitation(invitation.clientType, invitation.service.id, invitation.service.supportedSuppliedClientIdType.id, invitation.clientId)
