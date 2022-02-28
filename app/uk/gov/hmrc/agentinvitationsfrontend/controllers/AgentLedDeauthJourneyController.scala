@@ -113,35 +113,25 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .apply(
-        chosenPersonalService(
-          featureFlags.showHmrcMtdIt,
-          featureFlags.showPersonalIncome,
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showHmrcCgt,
-          featureFlags.showPlasticPackagingTax))
+      .apply(chosenPersonalService(featureFlags))
 
   def submitBusinessServiceSingle: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(
-        chosenBusinessService(featureFlags.showHmrcMtdVat, featureFlags.showPlasticPackagingTax))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(chosenBusinessService(featureFlags))
 
   def submitBusinessService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .apply(
-        chosenBusinessServiceMulti(
-          featureFlags.showHmrcMtdVat,
-          featureFlags.showPlasticPackagingTax
-        )
+        chosenBusinessServiceMulti(featureFlags)
       )
 
   def submitTrustService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)(chosenTrustService(featureFlags.showHmrcTrust, featureFlags.showHmrcCgt, featureFlags.showPlasticPackagingTax))
+      .bindForm(ServiceTypeForm.form)(chosenTrustService(featureFlags))
 
   val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 

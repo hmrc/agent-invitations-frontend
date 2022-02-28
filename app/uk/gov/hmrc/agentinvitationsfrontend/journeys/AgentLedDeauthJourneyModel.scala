@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import org.joda.time.LocalDate
 import play.api.Logging
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, TrustTaxIdentifier, Urn, Utr, Vrn}
@@ -85,73 +86,35 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         goto(SelectService(clientType, Services.supportedServicesFor(clientType)))
     }
 
-    def chosenPersonalService(showItsaFlag: Boolean, showPirFlag: Boolean, showVatFlag: Boolean, showCgtFlag: Boolean, showPptFlag: Boolean)(
-      agent: AuthorisedAgent)(service: Service) = Transition {
+    def chosenPersonalService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) = Transition {
       case SelectService(ClientType.Personal, enabledServices) =>
         if (enabledServices.contains(service)) {
-          service match {
-            case Service.MtdIt =>
-              if (showItsaFlag) goto(IdentifyClient(ClientType.Personal, service))
-              else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-            case Service.PersonalIncomeRecord =>
-              if (showPirFlag) goto(IdentifyClient(ClientType.Personal, service))
-              else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-            case Service.Vat =>
-              if (showVatFlag) goto(IdentifyClient(ClientType.Personal, service))
-              else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-            case Service.CapitalGains =>
-              if (showCgtFlag) goto(IdentifyClient(ClientType.Personal, service))
-              else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-            case Service.Ppt =>
-              if (showPptFlag) goto(IdentifyClient(ClientType.Personal, service))
-              else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-          }
+          if (featureFlags.isServiceEnabled(service))
+            goto(IdentifyClient(ClientType.Personal, service))
+          else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
         } else goto(SelectService(ClientType.Personal, enabledServices))
     }
 
-    def chosenBusinessServiceMulti(showVatFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(service: Service) =
-      chosenBusinessService(showVatFlag, showPptFlag)(agent)(Some(service))
+    def chosenBusinessServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
+      chosenBusinessService(featureFlags)(agent)(Some(service))
 
-    def chosenBusinessService(showVatFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(mService: Option[Service]) = Transition {
+    def chosenBusinessService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) = Transition {
       case SelectService(ClientType.Business, enabledServices) =>
         mService match {
           case Some(service) if enabledServices.contains(service) =>
-            service match {
-              case Service.Vat =>
-                if (showVatFlag) goto(IdentifyClient(ClientType.Business, service))
-                else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-              case Service.Ppt =>
-                if (showPptFlag) goto(IdentifyClient(ClientType.Business, service))
-                else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-            }
+            if (featureFlags.isServiceEnabled(service))
+              goto(IdentifyClient(ClientType.Business, service))
+            else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
           case _ => goto(root)
         }
     }
 
-    def chosenTrustService(showTrustFlag: Boolean, showCgtFlag: Boolean, showPptFlag: Boolean)(agent: AuthorisedAgent)(service: Service) =
+    def chosenTrustService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
       Transition {
         case SelectService(ClientType.Trust, enabledServices) =>
-          if (enabledServices.contains(service)) {
-            service match {
-              case Service.Trust =>
-                if (showTrustFlag) goto(IdentifyClient(ClientType.Trust, Service.Trust))
-                else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-              case Service.CapitalGains =>
-                if (showCgtFlag) goto(IdentifyClient(ClientType.Trust, Service.CapitalGains))
-                else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
-              case Service.Ppt =>
-                if (showPptFlag) goto(IdentifyClient(ClientType.Trust, Service.Ppt))
-                else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-            }
-          } else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-
+          if (enabledServices.contains(service) && featureFlags.isServiceEnabled(service))
+            goto(IdentifyClient(ClientType.Trust, service))
+          else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
         case _ => goto(root)
       }
 
