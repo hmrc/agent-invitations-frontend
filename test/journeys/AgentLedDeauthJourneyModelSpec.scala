@@ -190,36 +190,27 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmClientItsa when postcode matches" in {
         def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
 
-        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(
-          postcodeMatches,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.MtdIt, Some("John Smith"), Nino(nino)))
+        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(postcodeMatches, getClientName)(authorisedAgent)(
+          itsaClient) should thenGo(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("John Smith"), Nino(nino)))
       }
       "transition to KnownFactNotMatched when postcode does not match" in {
         def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
 
-        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(
-          postcodeDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(KnownFactNotMatched)
+        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(postcodeDoesNotMatch, getClientName)(authorisedAgent)(
+          itsaClient) should thenGo(KnownFactNotMatched)
       }
       "transition to NotSignedUp when client is not enrolled for itsa" in {
         def clientNotSignedUp(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
 
-        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(
-          clientNotSignedUp,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(itsaClient) should thenGo(NotSignedUp(Service.MtdIt))
+        given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(clientNotSignedUp, getClientName)(authorisedAgent)(
+          itsaClient) should thenGo(NotSignedUp(Service.MtdIt))
       }
       "throw an Exception when the client has no postcode" in {
         def postcodeNotMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
 
         intercept[Exception] {
-          given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(
-            postcodeNotMatches,
-            getClientName,
-            hasActiveRelationships)(authorisedAgent)(ItsaClient(nino, ""))
+          given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when submitIdentifyClientItsa(postcodeNotMatches, getClientName)(authorisedAgent)(
+            ItsaClient(nino, ""))
         }.getMessage shouldBe "Postcode expected but none found"
       }
       "transition to ConfirmCancel when dob matches" in {
@@ -263,56 +254,42 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmClientVat when vat reg date matches" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactCheckOk)
 
-        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-          vatRegDateMatches,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn(vrn)))
+        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(vatRegDateMatches, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when vat reg date does not match" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactNotMatched)
 
-        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to ConfirmClientPersonalVat when vat reg date matches but client is insolvent" in {
         def vatClientInsolvent(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatRecordClientInsolvent)
 
-        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-          vatClientInsolvent,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn("123456")))
+        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(vatClientInsolvent, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn("123456")))
       }
 
       "transition to Not signed up when vat record is being migrated" in {
         def vatRecordMigration(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatRecordMigrationInProgress)
 
-        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-          vatRecordMigration,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
+        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(vatRecordMigration, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
 
       "transition to NotSignedUp when client is not enrolled for VAT" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
-        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-          clientNotSignedUp,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
+        given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(clientNotSignedUp, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
       "throw an Exception when the client has no vat reg date" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
         intercept[Exception] {
-          given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(
-            vatRegDateDoesNotMatch,
-            getClientName,
-            hasActiveRelationships)(authorisedAgent)(VatClient(vrn, ""))
+          given(IdentifyClient(ClientType.Personal, Service.Vat)) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName)(
+            authorisedAgent)(VatClient(vrn, ""))
         }.getMessage shouldBe "Vat registration date expected but none found"
       }
 
@@ -334,28 +311,21 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       "transition to ConfirmClientVat when known fact matches" in {
         def vatRegDateMatches(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactCheckOk)
 
-        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(
-          vatRegDateMatches,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Business, Service.Vat, Some("John Smith"), Vrn(vrn)))
+        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(vatRegDateMatches, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(ConfirmClient(ClientType.Business, Service.Vat, Some("John Smith"), Vrn(vrn)))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         def vatRegDateDoesNotMatch(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatKnownFactNotMatched)
 
-        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(
-          vatRegDateDoesNotMatch,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
+        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(vatRegDateDoesNotMatch, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to NotSignedUp when client is not enrolled" in {
         def clientNotSignedUp(vrn: Vrn, vatRegDate: LocalDate): Future[VatKnownFactCheckResult] = Future(VatDetailsNotFound)
 
-        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(
-          clientNotSignedUp,
-          getClientName,
-          hasActiveRelationships)(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
+        given(IdentifyClient(ClientType.Business, Service.Vat)) when submitIdentifyClientVat(clientNotSignedUp, getClientName)(authorisedAgent)(
+          vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
     }
 
@@ -376,27 +346,25 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
     "at state ConfirmPostcodeCgt" should {
       "transition to ConfirmClientCgt for cgt" in {
-        given(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(getCgtSubscription())(
-          authorisedAgent)(Postcode("BN13 1FN")) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.CapitalGains, Some("firstName lastName"), cgtRef))
+        given(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(authorisedAgent)(
+          Postcode("BN13 1FN")) should thenGo(ConfirmClient(ClientType.Personal, Service.CapitalGains, Some("firstName lastName"), cgtRef))
       }
 
       "transition to KnownFactNotMatched if postcodes do not match" in {
-        given(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(getCgtSubscription())(
-          authorisedAgent)(Postcode("AAA")) should thenGo(KnownFactNotMatched)
+        given(ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "firstName lastName")) when confirmPostcodeCgt(authorisedAgent)(
+          Postcode("AAA")) should thenGo(KnownFactNotMatched)
       }
     }
 
     "at state ConfirmCountryCodeCgt" should {
       "transition to ConfirmClientCgt for cgt" in {
-        given(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(getCgtSubscription())(
-          authorisedAgent)(CountryCode("FR")) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.CapitalGains, Some("firstName lastName"), cgtRef))
+        given(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(authorisedAgent)(
+          CountryCode("FR")) should thenGo(ConfirmClient(ClientType.Personal, Service.CapitalGains, Some("firstName lastName"), cgtRef))
       }
 
       "transition to KnownFactNotMatched if country codes do not match" in {
-        given(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(getCgtSubscription())(
-          authorisedAgent)(CountryCode("FRX")) should thenGo(KnownFactNotMatched)
+        given(ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "FR", "firstName lastName")) when confirmCountryCodeCgt(authorisedAgent)(
+          CountryCode("FRX")) should thenGo(KnownFactNotMatched)
       }
     }
 

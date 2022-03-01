@@ -252,10 +252,9 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State
     ) => {
       client.enrolmentCoverage match {
-        case NoSupportedMTDEnrolments => {
+        case NoSupportedMTDEnrolments =>
           logger.warn(s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
           goto(CannotFindRequest(clientType, agentName))
-        }
         case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty) {

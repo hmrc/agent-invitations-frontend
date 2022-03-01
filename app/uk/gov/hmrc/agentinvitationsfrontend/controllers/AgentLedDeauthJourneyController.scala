@@ -141,7 +141,7 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ItsaClientForm.form)
-      .applyWithRequest(implicit request => submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService, hasActiveRelationshipFor))
+      .applyWithRequest(implicit request => submitIdentifyClientItsa(checkPostcodeMatches, getClientNameByService))
 
   def submitIdentifyIrvClient: Action[AnyContent] =
     actions
@@ -154,8 +154,7 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(VatClientForm.form)
-      .applyWithRequest(implicit request =>
-        submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService, hasActiveRelationshipFor))
+      .applyWithRequest(implicit request => submitIdentifyClientVat(checkVatRegistrationDateMatches, getClientNameByService))
 
   val submitIdentifyTrustClient: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsAgent)
@@ -178,7 +177,7 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PostcodeForm.form)
-      .applyWithRequest(implicit request => confirmPostcodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => confirmPostcodeCgt)
 
   def showCountryCodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmCountryCodeCgt].orRollback
 
@@ -186,7 +185,7 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CountrycodeForm.form(validCountryCodes))
-      .applyWithRequest(implicit request => confirmCountryCodeCgt(cgtRef => acaConnector.getCgtSubscription(cgtRef)))
+      .applyWithRequest(implicit request => confirmCountryCodeCgt)
 
   def showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
@@ -391,70 +390,13 @@ class AgentLedDeauthJourneyController @Inject()(
           isDeAuthJourney = true
         ))
 
-    case ConfirmClient(_, Service.MtdIt, clientName, nino) =>
+    case ConfirmClient(_, _, clientName, _) =>
       Ok(
         confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "nino",
-          nino.value
-        ))
-
-    case ConfirmClient(_, Service.PersonalIncomeRecord, clientName, nino) =>
-      Ok(
-        confirmClientView(
-          clientName.getOrElse(""),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "nino",
-          nino.value
-        ))
-
-    case ConfirmClient(ClientType.Personal, Service.Vat, clientName, vrn) =>
-      Ok(
-        confirmClientView(
-          clientName.getOrElse(""),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "vrn",
-          vrn.value
-        ))
-
-    case ConfirmClient(ClientType.Business, Service.Vat, clientName, vrn) =>
-      Ok(
-        confirmClientView(
-          clientName.getOrElse(""),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "vrn",
-          vrn.value
-        ))
-
-    case ConfirmClient(ClientType.Trust, Service.Trust, trustName, utr) =>
-      Ok(
-        confirmClientView(
-          trustName.getOrElse(utr.value),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "utr",
-          utr.value
-        ))
-
-    case ConfirmClient(ClientType.Trust, Service.TrustNT, trustName, urn) =>
-      Ok(
-        confirmClientView(
-          trustName.getOrElse(urn.value),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "urn",
-          urn.value
+          backLinkFor(breadcrumbs).url
         ))
 
     case _: ConfirmCountryCodeCgt =>
@@ -469,28 +411,6 @@ class AgentLedDeauthJourneyController @Inject()(
 
     case _: ConfirmPostcodeCgt =>
       Ok(confirmPostcodeCgtView(Personal, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, fromFastTrack = false, isDeAuth = true))
-
-    case ConfirmClient(_, Service.CapitalGains, clientName, cgtRef) =>
-      Ok(
-        confirmClientView(
-          clientName.getOrElse(cgtRef.value),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "CGTPDRef",
-          cgtRef.value
-        ))
-
-    case ConfirmClient(_, Service.Ppt, clientName, pptRef) =>
-      Ok(
-        confirmClientView(
-          clientName.getOrElse(pptRef.value),
-          formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
-          backLinkFor(breadcrumbs).url,
-          "EtmpRegistrationNumber",
-          pptRef.value
-        ))
 
     case ConfirmCancel(service, clientName, _, _) =>
       Ok(

@@ -222,11 +222,10 @@ class AgentsRequestTrackingController @Inject()(
   def showConfirmCancel: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
       request.session.get("service") match {
-        case Some(service) => {
+        case Some(service) =>
           val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
           Future successful Ok(
             confirmCancelView(service, clientType, confirmCancelForm, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
-        }
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
       }
     }
@@ -239,7 +238,7 @@ class AgentsRequestTrackingController @Inject()(
         case Some(id) =>
           val invitationId = InvitationId(id)
           request.session.get("service") match {
-            case Some(service) => {
+            case Some(service) =>
               val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
               confirmCancelForm
                 .bindFromRequest()
@@ -262,7 +261,6 @@ class AgentsRequestTrackingController @Inject()(
                     }
                   }
                 )
-            }
             case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
           }
       }

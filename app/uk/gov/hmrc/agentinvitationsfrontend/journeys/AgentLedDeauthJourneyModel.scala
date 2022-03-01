@@ -118,10 +118,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case _ => goto(root)
       }
 
-    def submitIdentifyClientItsa(
-      checkPostcodeMatches: CheckPostcodeMatches,
-      getClientName: GetClientName,
-      hasActiveRelationship: HasActiveRelationship)(agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientItsa(checkPostcodeMatches: CheckPostcodeMatches, getClientName: GetClientName)(agent: AuthorisedAgent)(
+      itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(kfcResult: Option[Boolean]): Future[State] =
         for {
@@ -233,8 +231,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def confirmPostcodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      postcode: Postcode): AgentLedDeauthJourneyModel.Transition =
+    def confirmPostcodeCgt(agent: AuthorisedAgent)(postcode: Postcode): AgentLedDeauthJourneyModel.Transition =
       Transition {
         case ConfirmPostcodeCgt(clientType, cgtRef, postcodeFromDes, name) =>
           if (postcodeFromDes.contains(postcode.value)) {
@@ -244,8 +241,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def confirmCountryCodeCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      countryCode: CountryCode): AgentLedDeauthJourneyModel.Transition =
+    def confirmCountryCodeCgt(agent: AuthorisedAgent)(countryCode: CountryCode): AgentLedDeauthJourneyModel.Transition =
       Transition {
         case ConfirmCountryCodeCgt(clientType, cgtRef, countryCodeFromDes, name) =>
           if (countryCodeFromDes.contains(countryCode.value)) {
@@ -255,8 +251,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitIdentifyClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName, hasActiveRelationship: HasActiveRelationship)(
-      agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName)(agent: AuthorisedAgent)(
+      vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
 
       def vatRegDateMatchResult: Future[VatKnownFactCheckResult] =
         if (vatClient.registrationDate.nonEmpty)
