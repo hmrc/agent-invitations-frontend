@@ -18,9 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientIdentifierTypes, supportedServices}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.normalizedText
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 

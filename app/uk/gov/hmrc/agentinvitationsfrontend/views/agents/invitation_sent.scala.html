@@ -20,13 +20,14 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationSentPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import views.html.helper.CSPNonce
 
 @this(mainTemplate: MainTemplate)
 
 @(config: InvitationSentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
-    <script>
+    <script @{CSPNonce.attr}>
            @for(service <- config.services){
                window.dataLayer.push({
                    'event': 'custom_agents_request',
