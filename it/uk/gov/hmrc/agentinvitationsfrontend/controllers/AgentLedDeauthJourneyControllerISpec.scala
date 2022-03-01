@@ -6,6 +6,7 @@ import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -22,6 +23,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder
+    .overrides(new TestAgentLedDeauthJourneyModule)
+    .build()
+
+  def app(extraConfig: Map[String, Any]): Application = appBuilder
+    .configure(extraConfig)
     .overrides(new TestAgentLedDeauthJourneyModule)
     .build()
 
@@ -109,7 +115,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation/select-service" should {
     "show the select service page for personal services" in {
-      journeyState.set(SelectService(ClientType.Personal, enabledServices), Nil)
+      journeyState.set(SelectService(ClientType.Personal), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -117,31 +123,35 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result.futureValue,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("cancel-authorisation.select-service.header"),
+          htmlEscapedMessage("cancel-authorisation.personal.select-service.header"),
           htmlEscapedMessage("service.name.agents.de-auth")),
-        htmlEscapedMessage("cancel-authorisation.select-service.header")
+        htmlEscapedMessage("cancel-authorisation.personal.select-service.header")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
     "show the select service page for business service (single service version when only one service is available)" in {
-      journeyState.set(SelectService(ClientType.Business, enabledServices = Set(Service.Vat)), Nil)
+      val myApp = app(Map("features.show-plastic-packaging-tax" -> false))
+      val myController: AgentLedDeauthJourneyController = myApp.injector.instanceOf[AgentLedDeauthJourneyController]
+      val myJourneyState = myApp.injector.instanceOf[TestAgentLedDeauthJourneyService]
+
+      myJourneyState.set(SelectService(ClientType.Business), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-business-service")
-      val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
+      val result = myController.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result.futureValue,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("cancel-authorisation.business-select-service.single.header"),
+          htmlEscapedMessage("cancel-authorisation.business.select-service.single.header"),
           htmlEscapedMessage("service.name.agents.de-auth")),
-        htmlEscapedMessage("cancel-authorisation.business-select-service.single.header"),
+        htmlEscapedMessage("cancel-authorisation.business.select-service.single.header"),
         hasMessage("global.yes"),
         hasMessage("global.no")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
     "show the select service page for business service (multiple service version when more than one service is available)" in {
-      journeyState.set(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt)), Nil)
+      journeyState.set(SelectService(ClientType.Business), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -149,15 +159,15 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result.futureValue,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("cancel-authorisation.business-select-service.header"),
+          htmlEscapedMessage("cancel-authorisation.business.select-service.header"),
           htmlEscapedMessage("service.name.agents.de-auth")),
-        htmlEscapedMessage("cancel-authorisation.business-select-service.header")
+        htmlEscapedMessage("cancel-authorisation.business.select-service.header")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
 
     "show the select service page for trust service" in {
-      journeyState.set(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains)), Nil)
+      journeyState.set(SelectService(ClientType.Trust), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -165,11 +175,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         result.futureValue,
         hasMessage(
           "generic.title",
-          htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
+          htmlEscapedMessage("cancel-authorisation.trust.select-service.header"),
           htmlEscapedMessage("service.name.agents.de-auth")),
-        htmlEscapedMessage("cancel-authorisation.trust-select-service.header"),
-        hasMessage("cancel-authorisation.select-service.HMRC-TERS-ORG"),
-        hasMessage("cancel-authorisation.select-service.HMRC-CGT-PD")
+        htmlEscapedMessage("cancel-authorisation.trust.select-service.header"),
+        hasMessage("cancel-authorisation.personal.select-service.HMRC-TERS-ORG"),
+        hasMessage("cancel-authorisation.personal.select-service.HMRC-CGT-PD")
       )
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
@@ -177,11 +187,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/select-personal-service" should {
     "redirect to identify client for personal service" in {
-      journeyState.set(SelectService(ClientType.Personal, enabledServices), Nil)
+      journeyState.set(SelectService(ClientType.Personal), Nil)
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
 
       val result =
-        controller.submitPersonalService(
+        controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
 
@@ -192,11 +202,15 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   // Business service select when only one service available
   "POST /agents/cancel-authorisation/select-business-service-single" should {
     "redirect to identify client for business service when yes is selected" in {
-      journeyState.set(SelectService(ClientType.Business, enabledServices = Set(Service.Vat)), Nil)
+      val myApp = app(Map("features.show-plastic-packaging-tax" -> false))
+      val myController: AgentLedDeauthJourneyController = myApp.injector.instanceOf[AgentLedDeauthJourneyController]
+      val myJourneyState = myApp.injector.instanceOf[TestAgentLedDeauthJourneyService]
+
+      myJourneyState.set(SelectService(ClientType.Business), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-business-service-single")
 
       val result =
-        controller.submitBusinessServiceSingle(
+        myController.submitBusinessServiceSingle(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
       status(result) shouldBe 303
 
@@ -207,11 +221,12 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   // Business service select when more than one service available
   "POST /agents/cancel-authorisation/select-business-service" should {
     "redirect to identify client for business service when a valid service is selected" in {
-      journeyState.set(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt)), Nil)
+      // there should be two services enabled for Business by default so no config change is required
+      journeyState.set(SelectService(ClientType.Business), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-business-service")
 
       val result =
-        controller.submitBusinessService(
+        controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-VAT"), arn.value))
       status(result) shouldBe 303
 
@@ -221,11 +236,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/select-trust-service" should {
     "redirect to identify trust client when trust is selected" in {
-      journeyState.set(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains)), Nil)
+      journeyState.set(SelectService(ClientType.Trust), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =
-        controller.submitTrustService(
+        controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
       status(result) shouldBe 303
 
@@ -233,11 +248,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to identify cgt client when cgt is selected" in {
-      journeyState.set(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains)), Nil)
+      journeyState.set(SelectService(ClientType.Trust), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =
-        controller.submitTrustService(
+        controller.submitSelectService(
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-CGT-PD"), arn.value))
       status(result) shouldBe 303
 

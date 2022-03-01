@@ -18,23 +18,14 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation
 
 import play.api.i18n.Messages
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
-case class SelectServicePageConfigCancel(
-  clientType: ClientType,
-  featureFlags: FeatureFlags,
-  services: Set[Service],
-  submitCall: Call,
-  backLink: String) {
+case class SelectServicePageConfigCancel(clientType: ClientType, availableServices: Set[Service], submitCall: Call, backLink: String) {
 
-  def enabledServices(implicit messages: Messages): Seq[(Service, String)] =
-    Services
-      .supportedServicesFor(clientType)
-      .filter(svc => featureFlags.isServiceEnabled(svc) && services.contains(svc))
-      .toSeq
+  def orderedServices(implicit messages: Messages): Seq[(Service, String)] =
+    availableServices.toSeq
       .sorted(Services.serviceDisplayOrdering)
-      .map(service => service -> Messages(s"cancel-authorisation.select-service.${service.id}"))
-
+      .map(service => service -> Messages(s"cancel-authorisation.personal.select-service.${service.id}"))
 }

@@ -20,7 +20,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, Service}
 
 object Services {
 
-  val supportedServices =
+  val supportedServices: List[Service] =
     List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.TrustNT, Service.CapitalGains, Service.Ppt)
   val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn", "EtmpRegistrationNumber")
 

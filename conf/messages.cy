@@ -335,14 +335,14 @@ cancel-authorisation.client-type.p1=Os oes angen i chi ganslo’ch awdurdodiad a
 error.cancel-authorisation.client-type.empty=Dewiswch y math o gleient y mae angen i chi ganslo’ch awdurdodiad ar ei gyfer
 error.fast-track.client-type.empty=Dewiswch y math o gleient y mae angen i chi ganslo’ch awdurdodiad ar ei gyfer
 
-cancel-authorisation.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
-cancel-authorisation.select-service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
-cancel-authorisation.select-service.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-cancel-authorisation.select-service.HMRC-MTD-VAT=Rheoli ei TAW
-cancel-authorisation.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
-cancel-authorisation.select-service.HMRC-CGT-PD=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
-cancel-authorisation.select-service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
-cancel-authorisation.select-service.hint=Dewiswch opsiwn.
+cancel-authorisation.personal.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
+cancel-authorisation.personal.select-service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+cancel-authorisation.personal.select-service.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
+cancel-authorisation.personal.select-service.HMRC-MTD-VAT=Rheoli ei TAW
+cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
+cancel-authorisation.personal.select-service.HMRC-CGT-PD=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
+cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
+cancel-authorisation.personal.select-service.hint=Dewiswch opsiwn.
 
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
 cancel-authorisation.confirm-client.header=Ai {0} yw’r cleient rydych am ganslo’ch awdurdodiad ar ei gyfer?
@@ -374,11 +374,11 @@ cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi 
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Deunydd Pacio Plastig ar ran {1}.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
-cancel-authorisation.business-select-service.header=Which authorisation do you want to cancel for this client?
-cancel-authorisation.business-select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
+cancel-authorisation.business.select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.business.select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
 cancel-authorisation.error.business-service.required=Dewiswch ‘Iawn’ os ydych am ganslo rheoli TAW y cleient hwn
 
-cancel-authorisation.trust-select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
+cancel-authorisation.trust.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
 cancel-authorisation.error.trust-service.required=Dewiswch ‘Iawn’ os hoffech ganslo Ffurflenni Treth y cleient hwn drwy feddalwedd
 
 cancel-authorisation.not-matched.header=Nid oeddem yn gallu dod o hyd i’ch cleient

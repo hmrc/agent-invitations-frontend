@@ -37,7 +37,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
   object State {
     case object SelectClientType extends State
 
-    case class SelectService(clientType: ClientType, enabledServices: Set[Service]) extends State
+    case class SelectService(clientType: ClientType) extends State
 
     case class IdentifyClient(clientType: ClientType, service: Service) extends State
 
@@ -83,7 +83,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def selectedClientType(agent: AuthorisedAgent)(clientTypeStr: String) = Transition {
       case SelectClientType =>
         val clientType = ClientType.toEnum(clientTypeStr)
-        goto(SelectService(clientType, Services.supportedServicesFor(clientType)))
+        goto(SelectService(clientType))
     }
 
     def chosenServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
@@ -91,10 +91,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def chosenService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
       Transition {
-        case SelectService(clientType, enabledServices) =>
+        case SelectService(clientType) =>
           mService match {
             case Some(service) =>
-              if (enabledServices.contains(service) && featureFlags.isServiceEnabled(service))
+              if (featureFlags.isServiceEnabled(service))
                 goto(IdentifyClient(clientType, service))
               else fail(new Exception(s"Service: ${service.id} is not enabled"))
             case _ => goto(root)

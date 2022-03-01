@@ -76,8 +76,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     "at state ClientType" should {
       ClientType.clientTypes.foreach { clientType =>
         s"transition to SelectService ($clientType) when $clientType is selected" in {
-          given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.fromEnum(clientType)) should thenGo(
-            SelectService(clientType, Services.supportedServicesFor(clientType)))
+          given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.fromEnum(clientType)) should thenGo(SelectService(clientType))
         }
       }
     }
@@ -88,30 +87,31 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
           s"throw an exception when service is $service and the corresponding flag is switched off" in {
             intercept[Exception] {
               val flags = TestFeatureFlags.allEnabled.disable(service)
-              given(SelectService(clientType, availableServices)) when chosenServiceMulti(flags)(authorisedAgent)(service)
+              given(SelectService(clientType)) when chosenServiceMulti(flags)(authorisedAgent)(service)
             }.getMessage shouldBe s"Service: $service is not enabled"
           }
           s"transition to IdentifyClient ($clientType) when service is $service and feature flag is on" in {
-            given(SelectService(clientType, availableServices)) when chosenServiceMulti(TestFeatureFlags.allEnabled)(authorisedAgent)(service) should thenGo(
+            given(SelectService(clientType)) when chosenServiceMulti(TestFeatureFlags.allEnabled)(authorisedAgent)(service) should thenGo(
               IdentifyClient(clientType, service)
             )
           }
         }
         val singleService = availableServices.head
+        val singleServiceFeatureFlags = (availableServices - singleService).foldLeft(TestFeatureFlags.allEnabled)(_.disable(_)) // all services disabled except the first
         s"(when only one service is available) transition to IdentifyClient ($clientType) when YES is selected" in {
-          given(SelectService(clientType, enabledServices = Set(singleService))) when
-            chosenService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(singleService)) should
+          given(SelectService(clientType)) when
+            chosenService(singleServiceFeatureFlags)(authorisedAgent)(Some(singleService)) should
             thenGo(IdentifyClient(clientType, singleService))
         }
         "(when only one service is available) transition to ClientType when NO is selected" in {
-          given(SelectService(clientType, Set(singleService))) when
-            chosenService(TestFeatureFlags.allEnabled)(authorisedAgent)(None) should
+          given(SelectService(clientType)) when
+            chosenService(singleServiceFeatureFlags)(authorisedAgent)(None) should
             thenGo(SelectClientType)
         }
         "(when only one service is available) throw an exception when YES is selected but the service is not enabled" in {
           intercept[Exception] {
-            given(SelectService(clientType, enabledServices = Set(singleService))) when
-              chosenService(TestFeatureFlags.allEnabled.disable(singleService))(authorisedAgent)(Some(singleService))
+            given(SelectService(clientType)) when
+              chosenService(singleServiceFeatureFlags.disable(singleService))(authorisedAgent)(Some(singleService))
           }.getMessage shouldBe s"Service: $singleService is not enabled"
         }
       }

@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, Relati
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, NotSignedUpPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_service, business_select_single_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service, trust_select_service}
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_single_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
@@ -51,7 +51,6 @@ class AgentLedDeauthJourneyController @Inject()(
   notSignedUpPageConfig: NotSignedUpPageConfig,
   clientTypeView: client_type,
   businessSelectSingleServiceView: business_select_single_service,
-  businessSelectServiceView: business_select_service,
   identifyClientItsaView: identify_client_itsa,
   identifyClientIrvView: identify_client_irv,
   identifyClientVatView: identify_client_vat,
@@ -65,7 +64,6 @@ class AgentLedDeauthJourneyController @Inject()(
   notAuthorisedView: not_authorised,
   selectServiceView: select_service,
   noClientFoundView: no_client_found,
-  trustSelectServiceView: trust_select_service,
   notSignedupView: not_signed_up,
   responseFailedView: response_failed,
   confirmCancelView: confirm_cancel,
@@ -109,7 +107,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def showSelectService: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectService].orRollback
 
-  def submitPersonalService: Action[AnyContent] =
+  val submitSelectService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
@@ -119,19 +117,6 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(chosenService(featureFlags))
-
-  def submitBusinessService: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)
-      .apply(
-        chosenServiceMulti(featureFlags)
-      )
-
-  def submitTrustService: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)(chosenServiceMulti(featureFlags))
 
   val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 
@@ -244,58 +229,31 @@ class AgentLedDeauthJourneyController @Inject()(
           ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType(), featureFlags.showHmrcTrust)
         ))
 
-    case SelectService(ClientType.Personal, enabledServices) =>
-      Ok(
-        selectServiceView(
-          formWithErrors.or(ServiceTypeForm.form),
-          SelectServicePageConfigCancel(
-            ClientType.Personal,
-            featureFlags,
-            enabledServices,
-            routes.AgentLedDeauthJourneyController.submitPersonalService(),
-            backLinkFor(breadcrumbs).url
-          )
-        ))
-
-    case SelectService(ClientType.Business, enabledServices) =>
+    case SelectService(clientType) =>
+      val enabledServices = featureFlags.enabledServicesFor(clientType)
       val pageConfig = SelectServicePageConfigCancel(
-        ClientType.Business,
-        featureFlags,
+        clientType,
         enabledServices,
-        routes.AgentLedDeauthJourneyController.submitBusinessService(),
+        routes.AgentLedDeauthJourneyController.submitSelectService,
         backLinkFor(breadcrumbs).url
       )
-      pageConfig.enabledServices.size match {
+      enabledServices.size match {
         case 1 =>
           Ok(
             businessSelectSingleServiceView(
-              formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(enabledServices.head, Business)),
+              formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(Services.supportedServicesFor(clientType).head, clientType)),
               routes.AgentLedDeauthJourneyController.submitBusinessServiceSingle(),
               backLinkFor(breadcrumbs).url
             )
           )
         case x if x > 1 =>
           Ok(
-            businessSelectServiceView(
+            selectServiceView(
               formWithErrors.or(ServiceTypeForm.form),
               pageConfig
             )
           )
       }
-
-    case SelectService(ClientType.Trust, enabledServices) =>
-      Ok(
-        trustSelectServiceView(
-          formWithErrors.or(ServiceTypeForm.form),
-          SelectServicePageConfigCancel(
-            ClientType.Trust,
-            featureFlags,
-            enabledServices,
-            routes.AgentLedDeauthJourneyController.submitTrustService(),
-            backLinkFor(breadcrumbs).url
-          )
-        )
-      )
 
     case IdentifyClient(ClientType.Personal, service) =>
       service match {

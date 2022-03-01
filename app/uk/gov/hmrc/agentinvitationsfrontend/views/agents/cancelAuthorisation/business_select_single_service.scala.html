@@ -38,7 +38,7 @@
 
 @mainTemplate(
 bannerTitle = msgs("service.name.agents.de-auth"),
-title = errorPrefix(choiceForm) + msgs("generic.title", msgs("cancel-authorisation.business-select-service.single.header"), msgs("service.name.agents.de-auth")),
+title = errorPrefix(choiceForm) + msgs("generic.title", msgs("cancel-authorisation.business.select-service.single.header"), msgs("service.name.agents.de-auth")),
 isAgent = true,
 backLinkHref = Some(backLink)
 ) {
@@ -51,7 +51,7 @@ backLinkHref = Some(backLink)
 
         @inputYesNoRadio(
             field = choiceForm("accepted"),
-            legend = msgs("cancel-authorisation.business-select-service.single.header"),
+            legend = msgs("cancel-authorisation.business.select-service.single.header"),
             headingIsLegend = true
         )
 

@@ -39,7 +39,7 @@
 
 @mainTemplate(
 bannerTitle = msgs("service.name.agents.de-auth"),
-title = errorPrefix(agentForm) + msgs("generic.title", msgs("cancel-authorisation.select-service.header"), msgs("service.name.agents.de-auth")),
+title = errorPrefix(agentForm) + msgs("generic.title", msgs(s"cancel-authorisation.${config.clientType}.select-service.header"), msgs("service.name.agents.de-auth")),
 isAgent = true,
 backLinkHref = Some(config.backLink)
 ) {
@@ -52,9 +52,9 @@ backLinkHref = Some(config.backLink)
 
     @inputRadio(
         field = agentForm("serviceType"),
-        legend = msgs("cancel-authorisation.select-service.header"),
+        legend = msgs(s"cancel-authorisation.${config.clientType}.select-service.header"),
         headingIsLegend = true,
-        inputs = mapToRadioItems(agentForm("serviceType"), config.enabledServices.map { case (svc, x) => (svc.id, x) })
+        inputs = mapToRadioItems(agentForm("serviceType"), config.orderedServices.map { case (svc, x) => (svc.id, x) })
     )
 
     @submitButton()
