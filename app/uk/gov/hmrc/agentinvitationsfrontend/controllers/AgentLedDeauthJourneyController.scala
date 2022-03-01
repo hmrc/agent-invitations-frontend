@@ -113,25 +113,25 @@ class AgentLedDeauthJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .apply(chosenPersonalService(featureFlags))
+      .apply(chosenServiceMulti(featureFlags))
 
   def submitBusinessServiceSingle: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(chosenBusinessService(featureFlags))
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))(chosenService(featureFlags))
 
   def submitBusinessService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
       .apply(
-        chosenBusinessServiceMulti(featureFlags)
+        chosenServiceMulti(featureFlags)
       )
 
   def submitTrustService: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)(chosenTrustService(featureFlags))
+      .bindForm(ServiceTypeForm.form)(chosenServiceMulti(featureFlags))
 
   val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
 

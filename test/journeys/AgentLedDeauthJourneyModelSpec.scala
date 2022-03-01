@@ -74,107 +74,46 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   "AgentLedDeauthJourneyModel" when {
     "at state ClientType" should {
-      "transition to SelectServicePersonal when personal is selected" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)("personal") should thenGo(
-          SelectService(ClientType.Personal, availableServices))
-      }
-      "transition to SelectServiceBusiness when business is selected" in {
-        given(SelectClientType) when selectedClientType(authorisedAgent)("business") should thenGo(
-          SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt)))
+      ClientType.clientTypes.foreach { clientType =>
+        s"transition to SelectService ($clientType) when $clientType is selected" in {
+          given(SelectClientType) when selectedClientType(authorisedAgent)(ClientType.fromEnum(clientType)) should thenGo(
+            SelectService(clientType, Services.supportedServicesFor(clientType)))
+        }
       }
     }
-    "at state SelectServicePersonal" should {
-      "transition to IdentifyClientPersonal when service is ITSA and feature flag is on" in {
-        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(
-          Service.MtdIt) should thenGo(
-          IdentifyClient(ClientType.Personal, Service.MtdIt)
-        )
-      }
-      "throw an exception when service is ITSA and the show itsa flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
-            TestFeatureFlags.allEnabled.copy(showHmrcMtdIt = false))(authorisedAgent)(Service.MtdIt)
-        }.getMessage shouldBe "Service: HMRC-MTD-IT feature flag is switched off"
-      }
-      "transition to IdentifyClientPersonal when service is PIR and feature flag is on" in {
-        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(
-          Service.PersonalIncomeRecord) should thenGo(
-          IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)
-        )
-      }
-      "throw an exception when service is IRV and the show irv flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
-            TestFeatureFlags.allEnabled.copy(showPersonalIncome = false))(authorisedAgent)(Service.PersonalIncomeRecord)
-        }.getMessage shouldBe "Service: PERSONAL-INCOME-RECORD feature flag is switched off"
-      }
-      "transition to IdentifyClientPersonal when service is VAT and feature flag is on" in {
-        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(
-          Service.Vat) should thenGo(
-          IdentifyClient(ClientType.Personal, Service.Vat)
-        )
-      }
-      "throw an exception when service is VAT and the show vat flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
-            TestFeatureFlags.allEnabled.copy(showHmrcMtdVat = false))(authorisedAgent)(Service.Vat)
-        }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
-      }
-
-      "transition to IdentifyClientPersonal when service is CGT and feature flag is on" in {
-        given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(TestFeatureFlags.allEnabled)(authorisedAgent)(
-          Service.CapitalGains) should thenGo(
-          IdentifyClient(ClientType.Personal, Service.CapitalGains)
-        )
-      }
-      "throw an exception when service is CGT and the show cgt flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
-            TestFeatureFlags.allEnabled.copy(showHmrcCgt = false))(authorisedAgent)(Service.CapitalGains)
-        }.getMessage shouldBe "Service: HMRC-CGT-PD feature flag is switched off"
-      }
-      "throw an exception when service is PPT and the show ppt flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Personal, availableServices)) when chosenPersonalService(
-            TestFeatureFlags.allEnabled.copy(showPlasticPackagingTax = false))(authorisedAgent)(Service.Ppt)
-        }.getMessage shouldBe "Service: HMRC-PPT-ORG feature flag is switched off"
-      }
-    }
-    "at state SelectServiceBusiness" should {
-      "transition to IdentifyClientBusiness when YES is selected and feature flag is on" in {
-        given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
-          chosenBusinessService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(Service.Vat)) should
-          thenGo(IdentifyClient(ClientType.Business, Service.Vat))
-      }
-      "transition to ClientType when NO is selected and feature flag is on" in {
-        given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
-          chosenBusinessService(TestFeatureFlags.allEnabled)(authorisedAgent)(None) should
-          thenGo(SelectClientType)
-      }
-      "throw an exception when YES is selected but the show vat flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Business, enabledServices = Set(Service.Vat, Service.Ppt))) when
-            chosenBusinessService(TestFeatureFlags.allEnabled.copy(showHmrcMtdVat = false))(authorisedAgent)(Some(Service.Vat))
-        }.getMessage shouldBe "Service: HMRC-MTD-VAT feature flag is switched off"
-      }
-    }
-
-    "at state SelectServiceTrust" should {
-      "transition to IdentifyClientTrust for TRUST and when feature flag is on" in {
-        given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(TestFeatureFlags.allEnabled)(
-          authorisedAgent)(Service.Trust) should thenGo(IdentifyClient(ClientType.Trust, Service.Trust))
-      }
-
-      "transition to IdentifyClientCgt when YES is selected and feature flag is on" in {
-        given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(TestFeatureFlags.allEnabled)(
-          authorisedAgent)(Service.CapitalGains) should thenGo(IdentifyClient(ClientType.Trust, Service.CapitalGains))
-      }
-
-      "throw an exception when YES is selected but the show trust flag is switched off" in {
-        intercept[Exception] {
-          given(SelectService(ClientType.Trust, Set(Service.Trust, Service.CapitalGains))) when chosenTrustService(
-            TestFeatureFlags.allEnabled.copy(showHmrcTrust = false))(authorisedAgent)(Service.Trust)
-        }.getMessage shouldBe "Service: HMRC-TERS-ORG feature flag is switched off"
+    ClientType.clientTypes.foreach { clientType =>
+      s"at state SelectService ($clientType)" should {
+        val availableServices = Services.supportedServicesFor(clientType)
+        availableServices.foreach { service =>
+          s"throw an exception when service is $service and the corresponding flag is switched off" in {
+            intercept[Exception] {
+              val flags = TestFeatureFlags.allEnabled.disable(service)
+              given(SelectService(clientType, availableServices)) when chosenServiceMulti(flags)(authorisedAgent)(service)
+            }.getMessage shouldBe s"Service: $service is not enabled"
+          }
+          s"transition to IdentifyClient ($clientType) when service is $service and feature flag is on" in {
+            given(SelectService(clientType, availableServices)) when chosenServiceMulti(TestFeatureFlags.allEnabled)(authorisedAgent)(service) should thenGo(
+              IdentifyClient(clientType, service)
+            )
+          }
+        }
+        val singleService = availableServices.head
+        s"(when only one service is available) transition to IdentifyClient ($clientType) when YES is selected" in {
+          given(SelectService(clientType, enabledServices = Set(singleService))) when
+            chosenService(TestFeatureFlags.allEnabled)(authorisedAgent)(Some(singleService)) should
+            thenGo(IdentifyClient(clientType, singleService))
+        }
+        "(when only one service is available) transition to ClientType when NO is selected" in {
+          given(SelectService(clientType, Set(singleService))) when
+            chosenService(TestFeatureFlags.allEnabled)(authorisedAgent)(None) should
+            thenGo(SelectClientType)
+        }
+        "(when only one service is available) throw an exception when YES is selected but the service is not enabled" in {
+          intercept[Exception] {
+            given(SelectService(clientType, enabledServices = Set(singleService))) when
+              chosenService(TestFeatureFlags.allEnabled.disable(singleService))(authorisedAgent)(Some(singleService))
+          }.getMessage shouldBe s"Service: $singleService is not enabled"
+        }
       }
     }
 

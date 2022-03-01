@@ -86,35 +86,19 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         goto(SelectService(clientType, Services.supportedServicesFor(clientType)))
     }
 
-    def chosenPersonalService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) = Transition {
-      case SelectService(ClientType.Personal, enabledServices) =>
-        if (enabledServices.contains(service)) {
-          if (featureFlags.isServiceEnabled(service))
-            goto(IdentifyClient(ClientType.Personal, service))
-          else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-        } else goto(SelectService(ClientType.Personal, enabledServices))
-    }
+    def chosenServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
+      chosenService(featureFlags)(agent)(Some(service))
 
-    def chosenBusinessServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
-      chosenBusinessService(featureFlags)(agent)(Some(service))
-
-    def chosenBusinessService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) = Transition {
-      case SelectService(ClientType.Business, enabledServices) =>
-        mService match {
-          case Some(service) if enabledServices.contains(service) =>
-            if (featureFlags.isServiceEnabled(service))
-              goto(IdentifyClient(ClientType.Business, service))
-            else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
-          case _ => goto(root)
-        }
-    }
-
-    def chosenTrustService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
+    def chosenService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
       Transition {
-        case SelectService(ClientType.Trust, enabledServices) =>
-          if (enabledServices.contains(service) && featureFlags.isServiceEnabled(service))
-            goto(IdentifyClient(ClientType.Trust, service))
-          else fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
+        case SelectService(clientType, enabledServices) =>
+          mService match {
+            case Some(service) =>
+              if (enabledServices.contains(service) && featureFlags.isServiceEnabled(service))
+                goto(IdentifyClient(clientType, service))
+              else fail(new Exception(s"Service: ${service.id} is not enabled"))
+            case _ => goto(root)
+          }
         case _ => goto(root)
       }
 
