@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
 trait ServiceAndClient {
 
-  def service: String
+  def service: Service
   def clientId: String
   def clientIdType: String
 }

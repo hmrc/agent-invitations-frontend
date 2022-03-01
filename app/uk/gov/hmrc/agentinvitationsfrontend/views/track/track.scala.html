@@ -112,13 +112,13 @@ isAgent = true) {
             </thead>
             <tbody class="govuk-table__body govuk-body-s">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
-            <tr class="govuk-table__row" id="row-@index">
+                <tr class="govuk-table__row" id="row-@index">
                 <td class="govuk-table__cell" id="taxpayerName-@index">
                     <span>@invitationOrRelationship.clientName.getOrElse(msgs("recent-invitations.table-row-header.clientNameUnknown"))</span>
                 </td>
                 <td  class="govuk-table__cell" id="serviceInfo-@index">
                     <span>
-                       @msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service}")
+                       @msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}")
                     </span>
                 </td>
                 <td class="govuk-table__cell" id="track-status-@index">

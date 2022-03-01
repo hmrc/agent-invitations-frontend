@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, TrustTaxIdentifier, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 import java.time.LocalDate
@@ -53,7 +53,7 @@ trait ACRStubs {
         )
     )
 
-  def givenASingleInactiveRelationship(service: String, clientId: String, dateFrom: String, dateTo: String) =
+  def givenASingleInactiveRelationship(service: Service, clientId: String, dateFrom: String, dateTo: String) =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive"))
         .willReturn(
@@ -67,7 +67,7 @@ trait ACRStubs {
                  |   "dateTo":"$dateTo",
                  |   "dateFrom":"$dateFrom",
                  |   "clientId":"$clientId",
-                 |   "service":"$service"
+                 |   "service":"${service.id}"
                  |}]""".stripMargin
             )
         )

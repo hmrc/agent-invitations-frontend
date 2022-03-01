@@ -535,8 +535,8 @@ class ClientInvitationJourneyController @Inject()(
           else Call("GET", externalUrls.agentClientManagementUrl)
         Ok(trustNotClaimedView(backLink))
 
-      case SuspendedAgent(_, _, _, _, suspendedServices, nonSuspendedConsents) =>
-        Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedServices, nonSuspendedConsents.map(_.service).toSet)))
+      case SuspendedAgent(_, _, _, _, suspendedRegimes, nonSuspendedConsents) =>
+        Ok(suspendedAgentView(SuspendedAgentPageConfig(suspendedRegimes, nonSuspendedConsents.map(_.service.id).toSet)))
     }
 
   def fromSession(implicit request: Request[_]): String =

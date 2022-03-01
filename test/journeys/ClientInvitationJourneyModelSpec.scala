@@ -22,15 +22,13 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyMode
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{HMRCMTDIT, HMRCMTDVAT, HMRCPIR}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, SuspensionDetails}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -75,7 +73,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
   val authorisedOrganisationClientWithoutRelevantEnrolments =
     AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("some-key"))))
-  val availableServices = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT)
+  val availableServices = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat)
 
   val nino = "AB123456A"
   val arn = Arn("TARN0000001")
@@ -348,13 +346,14 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       }
       "submitting from suspension" should {
         "transition to MultiConsent with the nonsuspended consents" in {
-          given(SuspendedAgent(
-            Personal,
-            uid,
-            agentName,
-            arn,
-            Set(HMRCMTDVAT),
-            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))) when submitSuspension(authorisedIndividualClient) should
+          given(
+            SuspendedAgent(
+              Personal,
+              uid,
+              agentName,
+              arn,
+              Set("HMRC-MTD-VAT"),
+              Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))) when submitSuspension(authorisedIndividualClient) should
             thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
         }
       }

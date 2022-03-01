@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation
 import play.api.mvc.Call
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-case class ConfirmCancelPageConfig(service: String, clientName: String, submitCall: Call, backLink: String) {
+case class ConfirmCancelPageConfig(service: Service, clientName: String, submitCall: Call, backLink: String) {
   val processedClientName: String = clientName.stripSuffix(".")
 }

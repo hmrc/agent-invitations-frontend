@@ -18,7 +18,7 @@ package services
 
 import support.TrackServiceStubsAndData
 import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, InactiveTrackRelationship, PageInfo, TrackInformationSorted}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import support.UnitSpec
 import play.api.test.Helpers._
 
@@ -35,9 +35,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, Service.MtdIt, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, Service.Vat, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, Service.CapitalGains, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -48,7 +48,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
         results = Seq(
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCMTDVAT,
+            service = Some(Service.Vat),
             clientId = vrn2.value,
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
@@ -62,7 +62,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCMTDIT,
+            service = Some(Service.MtdIt),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
@@ -76,7 +76,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCMTDIT,
+            service = Some(Service.MtdIt),
             clientId = nino2.value,
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
@@ -90,7 +90,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCMTDIT,
+            service = Some(Service.MtdIt),
             clientId = nino2.value,
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
@@ -104,7 +104,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCPIR,
+            service = Some(Service.PersonalIncomeRecord),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("John Jones"),
@@ -118,7 +118,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCMTDVAT,
+            service = Some(Service.Vat),
             clientId = vrn1.value,
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
@@ -132,7 +132,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCPIR,
+            service = Some(Service.PersonalIncomeRecord),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("John Jones"),
@@ -146,7 +146,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCCGTPD,
+            service = Some(Service.CapitalGains),
             clientId = cgtRef1.value,
             clientIdType = "CGTPDRef",
             clientName = Some("A Trust or an Estate"),
@@ -160,7 +160,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCCGTPD,
+            service = Some(Service.CapitalGains),
             clientId = cgtRef1.value,
             clientIdType = "CGTPDRef",
             clientName = Some("A Trust or an Estate"),
@@ -189,9 +189,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, Service.MtdIt, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, Service.Vat, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, Service.CapitalGains, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -207,7 +207,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
         results = Seq(
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCPIR,
+            service = Some(Service.PersonalIncomeRecord),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("John Jones"),
@@ -221,7 +221,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCPIR,
+            service = Some(Service.PersonalIncomeRecord),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("John Jones"),
@@ -249,9 +249,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, Service.MtdIt, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, Service.Vat, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, Service.CapitalGains, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitations()
 
@@ -268,7 +268,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
         results = Seq(
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCMTDVAT,
+            service = Some(Service.Vat),
             clientId = vrn2.value,
             clientIdType = "vrn",
             clientName = Some("Superior Ltd"),
@@ -282,7 +282,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
-            service = HMRCMTDIT,
+            service = Some(Service.MtdIt),
             clientId = nino1.value,
             clientIdType = "ni",
             clientName = Some("Aaa Itsa Trader"),
@@ -309,9 +309,9 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
       givenGetNinoForMtdit()
       givenGetInactiveIrvRelationships()
       givenGetGivenInactiveRelationships(
-        InactiveTrackRelationship(Arn(""), "personal", nino2.value, HMRCMTDIT, Some(now.minusDays(2).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", vrn1.value, HMRCMTDVAT, Some(now.minusDays(6).toLocalDate)),
-        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, HMRCCGTPD, Some(now.minusDays(35).toLocalDate)) //won't count
+        InactiveTrackRelationship(Arn(""), "personal", nino2.value, Service.MtdIt, Some(now.minusDays(2).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", vrn1.value, Service.Vat, Some(now.minusDays(6).toLocalDate)),
+        InactiveTrackRelationship(Arn(""), "business", cgtRef1.value, Service.CapitalGains, Some(now.minusDays(35).toLocalDate)) //won't count
       )
       givenGetAllInvitationsWithDetailsAvailable()
 
@@ -328,7 +328,7 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
         results = Seq(
           TrackInformationSorted(
             clientType = Some("business"),
-            service = HMRCMTDVAT,
+            service = Some(Service.Vat),
             clientId = vrn2.value,
             clientIdType = "vrn",
             clientName = Some("Perihelion"),

@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -38,13 +39,13 @@
 @(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = errorPrefix(knownFactForm) + msgs("generic.title", msgs(s"known-fact.${config.service}.heading"), msgs("service.name.agents.auth")),
+title = errorPrefix(knownFactForm) + msgs("generic.title", msgs(s"known-fact.${config.service.id}.heading"), msgs("service.name.agents.auth")),
 isAgent = true,
 backLinkHref = Some(s"${config.backLinkUrl}")
 ) {
 
     @if(knownFactForm.hasErrors) {
-        @if(config.service == "HMRC-MTD-IT") {
+        @if(config.service == Service.MtdIt) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
         } else {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = dateErrorMapping("knownFact", knownFactForm)))
@@ -53,17 +54,17 @@ backLinkHref = Some(s"${config.backLinkUrl}")
 
     @formHelper(action = config.submitKFCall) {
 
-    <h1 class="govuk-heading-xl">@msgs(s"known-fact.${config.service}.heading")</h1>
+    <h1 class="govuk-heading-xl">@msgs(s"known-fact.${config.service.id}.heading")</h1>
 
     <p>@msgs("known-fact.p1")</p>
 
-    @if(config.service == "HMRC-MTD-IT") {
+    @if(config.service == Service.MtdIt) {
 
         @inputText(
             field = knownFactForm("knownFact"),
-            label = msgs(s"known-fact.${config.service}.heading"),
+            label = msgs(s"known-fact.${config.service.id}.heading"),
             labelClass = Some("govuk-visually-hidden"),
-            hint = Some(msgs(s"known-fact.${config.service}.helper")),
+            hint = Some(msgs(s"known-fact.${config.service.id}.helper")),
             inputClass = Some("govuk-input--width-10")
         )
 
@@ -71,9 +72,9 @@ backLinkHref = Some(s"${config.backLinkUrl}")
 
          @inputDate(
              field = knownFactForm("knownFact"),
-             legend = msgs(s"known-fact.${config.service}.heading"),
+             legend = msgs(s"known-fact.${config.service.id}.heading"),
              legendClass = "govuk-visually-hidden",
-             hint = Some(msgs(s"known-fact.${config.service}.helper"))
+             hint = Some(msgs(s"known-fact.${config.service.id}.helper"))
          )
 
     }

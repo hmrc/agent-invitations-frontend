@@ -20,6 +20,7 @@ import com.google.inject.ImplementedBy
 
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
 trait FeatureFlags {
@@ -33,6 +34,16 @@ trait FeatureFlags {
   val showAgentLedDeAuth: Boolean
   val agentSuspensionEnabled: Boolean
   val acceptTrustURNIdentifier: Boolean
+
+  def isServiceEnabled(service: Service): Boolean = service match {
+    case Service.MtdIt                => showHmrcMtdIt
+    case Service.PersonalIncomeRecord => showPersonalIncome
+    case Service.Vat                  => showHmrcMtdVat
+    case Service.Trust                => showHmrcTrust
+    case Service.CapitalGains         => showHmrcCgt
+    case Service.Ppt                  => showPlasticPackagingTax
+  }
+
 }
 
 @Singleton

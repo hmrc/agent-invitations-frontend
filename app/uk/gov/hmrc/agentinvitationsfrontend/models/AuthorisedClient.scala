@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{allSupportedEnrolmentKeysForBusiness, allSupportedEnrolmentKeysForIndividual, allSupportedEnrolmentKeysForTrustOrEstate}
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolments}
 
@@ -26,21 +25,21 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
     val enrolKeys: Set[String] = this.enrolments.enrolments.map(_.key)
     this.affinityGroup match {
       case Individual => {
-        val coverage = enrolKeys.intersect(allSupportedEnrolmentKeysForIndividual)
-        if (coverage.size == allSupportedEnrolmentKeysForIndividual.size) AllSupportedMTDEnrolments
+        val coverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Personal))
+        if (coverage.size == Services.supportedEnrolmentKeysFor(ClientType.Personal).size) AllSupportedMTDEnrolments
         else if (coverage.isEmpty) NoSupportedMTDEnrolments
         else SomeSupportedMTDEnrolments
       }
       case Organisation => {
-        val businessCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForBusiness)
-        val trustOrEstateCoverage = enrolKeys.intersect(allSupportedEnrolmentKeysForTrustOrEstate)
+        val businessCoverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Business))
+        val trustOrEstateCoverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Trust))
         if (businessCoverage.isEmpty) {
           if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
-          else if (trustOrEstateCoverage.size == allSupportedEnrolmentKeysForTrustOrEstate.size - 1) //not going to have both UTR and URN
+          else if (trustOrEstateCoverage.size == Services.supportedEnrolmentKeysFor(ClientType.Trust).size - 1) //not going to have both UTR and URN
             AllSupportedMTDEnrolments
           else SomeSupportedMTDEnrolments
         } else {
-          if (businessCoverage.size == allSupportedEnrolmentKeysForBusiness.size) AllSupportedMTDEnrolments
+          if (businessCoverage.size == Services.supportedEnrolmentKeysFor(ClientType.Business).size) AllSupportedMTDEnrolments
           else SomeSupportedMTDEnrolments
         }
       }

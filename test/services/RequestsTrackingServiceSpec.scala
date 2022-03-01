@@ -17,14 +17,13 @@
 package services
 
 import java.net.URL
-
 import org.joda.time.{DateTime, LocalDate}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{mock, when}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, IndividualDetails, StoredInvitation, TrackedInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import support.UnitSpec
@@ -160,18 +159,24 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(Future.successful(Citizen(Some("Aa1"), Some("Aa2"))))
 
         await(tested.getClientNameByService(
-          TrackedInvitation(Some("personal"), "HMRC-MTD-IT", nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe Some(
+          TrackedInvitation(Some("personal"), Service.MtdIt, nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe Some(
           "Aaa Itsa Trader")
 
-        await(
-          tested.getClientNameByService(
-            TrackedInvitation(Some("personal"), "HMRC-MTD-VAT", vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe Some("Aaa Ltd.")
+        await(tested.getClientNameByService(
+          TrackedInvitation(Some("personal"), Service.Vat, vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe Some("Aaa Ltd.")
 
         await(
           tested
-            .getClientNameByService(
-              TrackedInvitation(Some("personal"), "PERSONAL-INCOME-RECORD", nino.value, "ni", None, "Expired", dateTime, now, "foo"))) shouldBe Some(
-          "Aa1 Aa2")
+            .getClientNameByService(TrackedInvitation(
+              Some("personal"),
+              Service.PersonalIncomeRecord,
+              nino.value,
+              "ni",
+              None,
+              "Expired",
+              dateTime,
+              now,
+              "foo"))) shouldBe Some("Aa1 Aa2")
       }
     }
 
@@ -224,9 +229,9 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(
             Future.successful(
               Seq(
-                invitationForService("HMRC-MTD-IT"),
-                invitationForService("HMRC-MTD-VAT"),
-                invitationForService("PERSONAL-INCOME-RECORD")
+                invitationForService(Service.MtdIt),
+                invitationForService(Service.Vat),
+                invitationForService(Service.PersonalIncomeRecord)
               )))
 
         val result = await(tested.getRecentAgentInvitations(Arn(""), 30))
@@ -238,12 +243,12 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
     }
 
-    def invitationForService(service: String) =
+    def invitationForService(service: Service) =
       StoredInvitation(
         Arn(""),
         Some("personal"),
         service,
-        if (service == "HMRC-MTD-VAT") vrn.value else nino.value,
+        if (service == Service.Vat) vrn.value else nino.value,
         None,
         "Pending",
         dateTime.minusDays(10),

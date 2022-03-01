@@ -17,14 +17,13 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import java.net.URL
-
 import org.joda.time.{DateTime, LocalDate}
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 
 case class StoredInvitation(
   arn: Arn,
   clientType: Option[String],
-  service: String,
+  service: Service,
   clientId: String,
   clientIdType: String,
   suppliedClientId: String,
@@ -39,26 +38,15 @@ case class StoredInvitation(
   relationshipEndedBy: Option[String] = None,
   selfUrl: URL)
     extends ServiceAndClient {
-  val altItsa: Option[Boolean] = if (service == Services.HMRCMTDIT) Some(clientId == suppliedClientId) else None
+  val altItsa: Option[Boolean] = if (service == Service.MtdIt) Some(clientId == suppliedClientId) else None
 }
 
 object StoredInvitation {
 
-  val clientIdTypeByService: String => String = {
-    case "HMRC-MTD-IT"            => "ni"
-    case "HMRC-MTD-VAT"           => "vrn"
-    case "PERSONAL-INCOME-RECORD" => "ni"
-    case "HMRC-TERS-ORG"          => "utr"
-    case "HMRC-TERSNT-ORG"        => "urn"
-    case "HMRC-CGT-PD"            => "CGTPDRef"
-    case "HMRC-PPT-ORG"           => "EtmpRegistrationNumber"
-    case _                        => throw new IllegalArgumentException()
-  }
-
   def apply(
     arn: Arn,
     clientType: Option[String],
-    service: String,
+    service: Service,
     clientId: String,
     detailsForEmail: Option[DetailsForEmail],
     status: String,
@@ -74,9 +62,9 @@ object StoredInvitation {
       clientType,
       service,
       clientId,
-      clientIdTypeByService(service),
+      service.supportedSuppliedClientIdType.id,
       clientId,
-      clientIdTypeByService(service),
+      service.supportedSuppliedClientIdType.id,
       detailsForEmail,
       status,
       created,

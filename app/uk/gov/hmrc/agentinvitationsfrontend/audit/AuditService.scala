@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AgentInvitationEvent.AgentInvitationEvent
 import uk.gov.hmrc.agentinvitationsfrontend.models.Invitation
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -68,7 +68,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     clientResponse: String,
     clientIdType: String,
     clientId: String,
-    service: String,
+    service: Service,
     agencyName: String)(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientInvitationResponse,

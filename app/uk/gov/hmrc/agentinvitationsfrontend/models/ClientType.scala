@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 sealed trait ClientType {
   override def toString = ClientType.fromEnum(this)
@@ -49,12 +50,12 @@ object ClientType {
     }
   }
 
-  def clientTypeFor(clientType: Option[ClientType], service: String): Option[ClientType] =
+  def clientTypeFor(clientType: Option[ClientType], service: Service): Option[ClientType] =
     clientType.orElse(service match {
-      case "HMRC-MTD-IT"            => Some(ClientType.Personal)
-      case "PERSONAL-INCOME-RECORD" => Some(ClientType.Personal)
-      case "HMRC-TERS-ORG"          => Some(ClientType.Trust)
-      case "HMRC-TERSNT-ORG"        => Some(ClientType.Trust)
-      case _                        => None
+      case Service.MtdIt                => Some(ClientType.Personal)
+      case Service.PersonalIncomeRecord => Some(ClientType.Personal)
+      case Service.Trust                => Some(ClientType.Trust)
+      case Service.TrustNT              => Some(ClientType.Trust)
+      case _                            => None
     })
 }

@@ -19,62 +19,22 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-case class SelectServicePageConfigCancel(featureFlags: FeatureFlags, services: Set[String], submitCall: Call, backLink: String)(
-  implicit messages: Messages) {
+case class SelectServicePageConfigCancel(
+  clientType: ClientType,
+  featureFlags: FeatureFlags,
+  services: Set[Service],
+  submitCall: Call,
+  backLink: String) {
 
-  private val serviceDisplayOrdering: Ordering[String] = new Ordering[String] {
-    val correctOrdering = List(HMRCMTDIT, HMRCPIR, HMRCMTDVAT, TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
-    override def compare(x: String, y: String): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
-  }
-
-  val enabledPersonalServices: Seq[(String, String)] = {
-    val map = collection.mutable.Map[String, String]()
-
-    if (featureFlags.showPersonalIncome && services.contains(HMRCPIR))
-      map.update(HMRCPIR, Messages("select-service.PERSONAL-INCOME-RECORD.personal"))
-
-    if (featureFlags.showHmrcMtdIt && services.contains(HMRCMTDIT))
-      map.update(HMRCMTDIT, Messages("cancel-authorisation.select-service.itsa"))
-
-    if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
-      map.update(HMRCMTDVAT, Messages("cancel-authorisation.select-service.vat"))
-
-    if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
-      map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
-
-    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
-      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
-
-    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
-  }
-
-  val enabledBusinessServices: Seq[(String, String)] = {
-    val map = collection.mutable.Map[String, String]()
-
-    if (featureFlags.showHmrcMtdVat && services.contains(HMRCMTDVAT))
-      map.update(HMRCMTDVAT, Messages("cancel-authorisation.select-service.vat"))
-
-    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
-      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
-
-    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
-  }
-
-  val enabledTrustServices: Seq[(String, String)] = {
-    val map = collection.mutable.Map[String, String]()
-
-    if (featureFlags.showHmrcTrust && services.contains(TAXABLETRUST))
-      map.update(TAXABLETRUST, Messages("cancel-authorisation.select-service.trust"))
-
-    if (featureFlags.showHmrcCgt && services.contains(HMRCCGTPD))
-      map.update(HMRCCGTPD, Messages("cancel-authorisation.select-service.cgt"))
-
-    if (featureFlags.showPlasticPackagingTax && services.contains(HMRCPPTORG))
-      map.update(HMRCPPTORG, Messages("cancel-authorisation.select-service.ppt"))
-
-    map.toSeq.sortBy(_._1)(serviceDisplayOrdering)
-  }
+  def enabledServices(implicit messages: Messages): Seq[(Service, String)] =
+    Services
+      .supportedServicesFor(clientType)
+      .filter(svc => featureFlags.isServiceEnabled(svc) && services.contains(svc))
+      .toSeq
+      .sorted(Services.serviceDisplayOrdering)
+      .map(service => service -> Messages(s"cancel-authorisation.select-service.${service.id}"))
 
 }

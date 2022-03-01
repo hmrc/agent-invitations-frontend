@@ -17,7 +17,6 @@
 package support
 
 import java.net.URL
-
 import org.joda.time.{DateTime, LocalDate}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
@@ -25,7 +24,7 @@ import org.xbill.DNS.Options
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, MtdItId, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -45,14 +44,7 @@ trait TrackServiceStubsAndData {
   val nino2 = Nino("RS652949D")
   val cgtRef1 = CgtRef("XMCGTP704066305")
 
-  val HMRCMTDIT = "HMRC-MTD-IT"
-  val HMRCPIR = "PERSONAL-INCOME-RECORD"
-  val HMRCMTDVAT = "HMRC-MTD-VAT"
-  val TRUST = "HMRC-TERS-ORG"
-  val TRUSTNT = "HMRC-TERSNT-ORG"
   val ANYTRUST = Options.set("TRUST", "TRUSTNT")
-  val HMRCCGTPD = "HMRC-CGT-PD"
-  val HMRCNI = "HMRC-NI"
 
   val dateTime = DateTime.now.minusDays(10).withTimeAtStartOfDay()
 
@@ -125,7 +117,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("personal"),
-          service = HMRCMTDIT,
+          service = Service.MtdIt,
           clientId = nino1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "Aaa Itsa Trader")),
           status = "Pending",
@@ -140,7 +132,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("personal"),
-          service = HMRCPIR,
+          service = Service.PersonalIncomeRecord,
           clientId = nino1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "John Jones")),
           status = "Expired",
@@ -155,7 +147,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("personal"),
-          service = HMRCPIR,
+          service = Service.PersonalIncomeRecord,
           clientId = nino1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "John Jones")),
           status = "Cancelled",
@@ -170,7 +162,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("personal"),
-          service = HMRCMTDIT,
+          service = Service.MtdIt,
           clientId = nino2.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "Aaa Itsa Trader")),
           status = "Accepted",
@@ -185,7 +177,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("personal"),
-          service = HMRCMTDIT,
+          service = Service.MtdIt,
           clientId = nino2.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "Aaa Itsa Trader")),
           status = "Accepted",
@@ -200,7 +192,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("business"),
-          service = HMRCMTDVAT,
+          service = Service.Vat,
           clientId = vrn1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "Superior Ltd")),
           status = "Accepted",
@@ -215,7 +207,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("business"),
-          service = HMRCMTDVAT,
+          service = Service.Vat,
           clientId = vrn2.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "Superior Ltd")),
           status = "Pending",
@@ -230,7 +222,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("business"),
-          service = HMRCCGTPD,
+          service = Service.CapitalGains,
           clientId = cgtRef1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "A Trust or an Estate")),
           status = "Rejected",
@@ -245,7 +237,7 @@ trait TrackServiceStubsAndData {
         StoredInvitation(
           arn = Arn(""),
           clientType = Some("business"),
-          service = HMRCCGTPD,
+          service = Service.CapitalGains,
           clientId = cgtRef1.value,
           detailsForEmail = Some(DetailsForEmail(agencyName = "agentName", agencyEmail = "agent@agent.com", clientName = "A Trust or an Estate")),
           status = "Accepted",
@@ -264,7 +256,7 @@ trait TrackServiceStubsAndData {
       .thenReturn(Future.successful(Seq(StoredInvitation(
         arn = Arn(""),
         clientType = Some("business"),
-        service = HMRCMTDVAT,
+        service = Service.Vat,
         clientId = vrn2.value,
         detailsForEmail = Some(DetailsForEmail("aphelion@mail.com", "Aphelion Ltd", "Perihelion")),
         status = "Pending",

@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class AgentFastTrackRequest(
   clientType: Option[ClientType],
-  service: String,
+  service: Service,
   clientIdentifierType: String,
   clientIdentifier: String,
   knownFact: Option[String])

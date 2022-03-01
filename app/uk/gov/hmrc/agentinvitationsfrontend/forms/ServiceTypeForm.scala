@@ -20,47 +20,33 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{supportedClientIdentifierTypes, supportedServices}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.normalizedText
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 object ServiceTypeForm {
 
   /** Multiple choice service selection form */
-  val form: Form[String] =
-    Form[String](
+  val form: Form[Service] =
+    Form[Service](
       single(
-        "serviceType" -> optional(text)
-          .verifying("service.type.invalid", serviceOpt => supportedServices.contains(serviceOpt.getOrElse("")))
-          .transform(_.getOrElse(""), (Some(_)): String => Option[String])
+        "serviceType" -> normalizedText
+          .verifying("service.type.invalid", serviceId => supportedServices.exists(_.id == serviceId))
+          .transform[Service](Service.forId, _.id)
       )
     )
 
   /** Single select - returns String to be compatible with the above form
     * empty string denotes selecting "No"
     * */
-  def selectSingleServiceForm(service: String, clientType: ClientType): Form[String] = {
-
-    val UNDEF = "undefined"
-
-    def serviceValidator(errorMessageKey: String): Constraint[String] = Constraint[String] { service: String =>
-      if (service.isEmpty || supportedServices.contains(service))
-        Valid
-      else
-        Invalid(ValidationError(errorMessageKey))
-    }
-
-    Form[String](
+  def selectSingleServiceForm(service: Service, clientType: ClientType): Form[Option[Service]] =
+    Form[Option[Service]](
       single(
-        "accepted" -> optional(normalizedText)
-          .transform[String](
-            maybeChoice =>
-              maybeChoice.fold(UNDEF) {
-                case "true"  => service
-                case "false" => ""
-                case _       => UNDEF
-            },
-            service => if (service == UNDEF) None else Some(service))
-          .verifying(serviceValidator(s"select-single-service.$service.$clientType.error"))
+        "accepted" -> normalizedText
+          .verifying(s"select-single-service.${service.id}.$clientType.error", List("true", "false").contains(_))
+          .transform[Option[Service]]({
+            case "true"  => Some(service)
+            case "false" => None
+          }, _.fold("")(_.id))
       ))
-  }
 }

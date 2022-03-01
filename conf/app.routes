@@ -11,14 +11,8 @@ POST        /agents/client-type                                         uk.gov.h
 GET         /agents/select-service                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showSelectService
 
 # multi-select endpoint
-POST        /agents/select-personal-service                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectService
-POST        /agents/select-personal-service-single                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitPersonalSelectSingle(service: String)
-
-POST        /agents/select-business-service                             uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectService
-POST        /agents/select-business-service-single                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitBusinessSelectSingle(service: String)
-
-POST        /agents/select-trust-services                               uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectServiceMultiple
-POST        /agents/select-trust-service-single                         uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitTrustSelectSingle(service: String)
+POST        /agents/select-service                                      uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSelectServiceMulti
+POST        /agents/select-service-single                               uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.submitSelectServiceSingle(serviceId: String, clientType: String)
 
 GET         /agents/identify-client                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showIdentifyClient
 

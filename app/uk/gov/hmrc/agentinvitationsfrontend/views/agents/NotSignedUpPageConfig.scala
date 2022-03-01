@@ -21,17 +21,17 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.twirl.api.Html
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.models.NotSignedUpPageUrls
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.not_signed_up_partial
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 class NotSignedUpPageConfig @Inject()(notSignedUpPartial: not_signed_up_partial)(implicit externalUrls: ExternalUrls, messages: MessagesApi) {
 
-  def render(serviceId: String)(implicit externalUrls: ExternalUrls, messages: Messages): Option[Html] = {
-    val urls = serviceId match {
-      case HMRCMTDVAT => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew))
-      case HMRCMTDIT  => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew))
-      case _          => None
+  def render(service: Service)(implicit externalUrls: ExternalUrls, messages: Messages): Option[Html] = {
+    val urls = service match {
+      case Service.Vat   => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlVatExisting, externalUrls.guidanceUrlVatNew))
+      case Service.MtdIt => Some(NotSignedUpPageUrls(externalUrls.guidanceUrlSaExisting, externalUrls.guidanceUrlSaNew))
+      case _             => None
     }
-    urls.map(v => notSignedUpPartial(serviceId, v))
+    urls.map(v => notSignedUpPartial(service, v))
   }
 }

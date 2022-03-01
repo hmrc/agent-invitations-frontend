@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
@@ -107,7 +107,7 @@ class AuthActionsImpl @Inject()(
                 body(AuthorisedClient(affinity, enrols))
               }
             case (AffinityGroup.Organisation, cl) => {
-              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, enrols) {
+              if (enrols.enrolments.map(_.key).contains(Service.MtdIt.id)) withConfidenceLevelUplift(cl, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               } else body(AuthorisedClient(affinity, enrols))
             }
@@ -138,7 +138,7 @@ class AuthActionsImpl @Inject()(
                 body(Some(AuthorisedClient(affinity, enrols)))
               }
             case (AffinityGroup.Organisation, cl) => {
-              if (enrols.enrolments.map(_.key).contains(Services.HMRCMTDIT)) withConfidenceLevelUplift(cl, enrols) {
+              if (enrols.enrolments.map(_.key).contains(Service.MtdIt.id)) withConfidenceLevelUplift(cl, enrols) {
                 body(Some(AuthorisedClient(affinity, enrols)))
               } else body(Some(AuthorisedClient(affinity, enrols)))
             }
@@ -173,7 +173,7 @@ class AuthActionsImpl @Inject()(
     //APB-4856: Clients with only CGT enrol dont need to go through IV
     val isCgtOnlyClient: Boolean = {
       val enrolKeys: Set[String] = enrols.enrolments.map(_.key)
-      enrolKeys.intersect(Services.supportedEnrolmentKeys) == Set(Services.HMRCCGTPD)
+      enrolKeys.intersect(Services.supportedEnrolmentKeys) == Set(Service.CapitalGains.id)
     }
 
     if (currentLevel >= requiredCL || isCgtOnlyClient) {

@@ -85,7 +85,7 @@ class FilterFormStatusSpec extends UnitSpec {
     relationshipEndedBy: Option[String] = None): TrackInformationSorted =
     TrackInformationSorted(
       None,
-      "service",
+      None,
       "clientId",
       "clientIdType",
       None,

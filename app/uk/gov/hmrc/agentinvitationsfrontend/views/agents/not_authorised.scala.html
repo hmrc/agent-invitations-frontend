@@ -22,6 +22,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
   mainTemplate: MainTemplate,
@@ -31,7 +32,7 @@
   linkStyledAsButton: LinkStyledAsButton
 )
 
-@(service: String, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(service: Service, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
@@ -42,7 +43,7 @@ isAgent = true) {
 
     <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs("not-authorised.h1")</h1>
 
-    <p id="notMatched">@msgs(s"not-authorised.$service.p")</p>
+    <p id="notMatched">@msgs(s"not-authorised.${service.id}.p")</p>
 
     @linkStyledAsButton(href = clientTypeCall.url, messageKey = "start-again.button")
 }

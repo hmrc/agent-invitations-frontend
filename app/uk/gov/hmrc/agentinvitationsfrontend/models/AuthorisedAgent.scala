@@ -15,14 +15,6 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class AuthorisedAgent(arn: Arn) {
-
-  val personalServices: Set[String] = Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT, HMRCCGTPD, HMRCPPTORG)
-
-  val businessServices: Set[String] = Set(HMRCMTDVAT, HMRCPPTORG)
-
-  val trustServices: Set[String] = Set(TAXABLETRUST, HMRCCGTPD, HMRCPPTORG)
-}
+case class AuthorisedAgent(arn: Arn)

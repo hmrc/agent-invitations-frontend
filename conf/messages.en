@@ -102,9 +102,11 @@ select-service.HMRC-MTD-IT.personal=Manage their Making Tax Digital for Income T
 select-service.HMRC-MTD-VAT.personal=Manage their VAT
 select-service.HMRC-MTD-VAT.business=Manage their VAT
 select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
+select-service.HMRC-TERS-ORG.trust=Maintain their trust or an estate
 
-select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
 select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
+select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
+select-service.HMRC-CGT-PD.trust=Manage their trust’s Capital Gains Tax on UK property account
 select-service.HMRC-PPT-ORG.personal=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.business=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.trust=Manage their trust’s Plastic Packaging Tax
@@ -333,11 +335,12 @@ error.cancel-authorisation.client-type.empty=Select the type of client you need 
 error.fast-track.client-type.empty=Select the type of client you need to cancel your authorisation for
 
 cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
-cancel-authorisation.select-service.itsa=Manage their Making Tax Digital for Income Tax
-cancel-authorisation.select-service.vat=Manage their VAT
-cancel-authorisation.select-service.trust=Maintain a trust or an estate
-cancel-authorisation.select-service.cgt=Manage their Capital Gains Tax on UK property account
-cancel-authorisation.select-service.ppt=Manage their Plastic Packaging Tax
+cancel-authorisation.select-service.PERSONAL-INCOME-RECORD=View their PAYE income record
+cancel-authorisation.select-service.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
+cancel-authorisation.select-service.HMRC-MTD-VAT=Manage their VAT
+cancel-authorisation.select-service.HMRC-TERS-ORG=Maintain a trust or an estate
+cancel-authorisation.select-service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
+cancel-authorisation.select-service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 cancel-authorisation.select-service.hint=Select an option.
 
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?

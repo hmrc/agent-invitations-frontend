@@ -72,7 +72,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "SelectService" in {
-        Json.toJson(SelectService(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty): State) shouldBe Json.obj(
+        Json.toJson(SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), Set.empty): State) shouldBe Json.obj(
           "state" -> "SelectService",
           "properties" -> Json
             .obj("clientType" -> "personal", "basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
@@ -80,17 +80,17 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         Json
           .parse(
             """{"state":"SelectService", "properties": {"clientType": "personal", "basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
-          .as[State] shouldBe SelectService(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
+          .as[State] shouldBe SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), Set.empty)
       }
 
       "IdentifyClient" in {
-        Json.toJson(IdentifyClient(Business, HMRCMTDVAT, Set.empty): State) shouldBe Json.obj(
+        Json.toJson(IdentifyClient(Business, Service.Vat, Set.empty): State) shouldBe Json.obj(
           "state"      -> "IdentifyClient",
           "properties" -> Json.obj("clientType" -> "business", "service" -> "HMRC-MTD-VAT", "basket" -> JsArray())
         )
         Json
           .parse("""{"state":"IdentifyClient", "properties": {"clientType": "business", "basket": [], "service": "HMRC-MTD-VAT"}}""")
-          .as[State] shouldBe IdentifyClient(Business, HMRCMTDVAT, Set.empty)
+          .as[State] shouldBe IdentifyClient(Business, Service.Vat, Set.empty)
       }
 
       "ConfirmPostcodeCgt" in {
@@ -110,22 +110,29 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ReviewAuthorisations" in {
-        Json.toJson(ReviewAuthorisations(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty): State) shouldBe Json.obj(
-          "state" -> "ReviewAuthorisations",
-          "properties" -> Json
-            .obj("clientType" -> "personal", "basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
-        )
+        Json.toJson(ReviewAuthorisations(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), Set.empty): State) shouldBe Json
+          .obj(
+            "state" -> "ReviewAuthorisations",
+            "properties" -> Json
+              .obj("clientType" -> "personal", "basket" -> JsArray(), "services" -> Json.arr("PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"))
+          )
         Json
           .parse(
             """{"state":"ReviewAuthorisations", "properties": {"clientType": "personal", "basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
-          .as[State] shouldBe ReviewAuthorisations(Personal, Set(HMRCPIR, HMRCMTDIT, HMRCMTDVAT), Set.empty)
+          .as[State] shouldBe ReviewAuthorisations(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), Set.empty)
       }
 
       "InvitationSent" in {
         for {
           clientType <- List(ClientType.Personal, ClientType.Business, ClientType.Trust)
         } yield {
-          val state = InvitationSent(clientType, "invitation/link", Some("continue/url"), "abc@xyz.com", Set(HMRCMTDIT, HMRCPIR), isAltItsa = None)
+          val state = InvitationSent(
+            clientType,
+            "invitation/link",
+            Some("continue/url"),
+            "abc@xyz.com",
+            Set(Service.MtdIt, Service.PersonalIncomeRecord),
+            isAltItsa = None)
           Json.toJson(state: State).as[State] shouldBe state
         }
       }
@@ -196,7 +203,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ClientNotSignedUp" in {
-        val state = ClientNotSignedUp(HMRCMTDIT, Set.empty)
+        val state = ClientNotSignedUp(Service.MtdIt, Set.empty)
         val json = Json.parse("""{"state":"ClientNotSignedUp","properties":{"service": "HMRC-MTD-IT", "basket": []}}""")
 
         Json.toJson(state: State) shouldBe json
@@ -216,7 +223,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "ActiveAuthorisationExists" in {
-        val state = ActiveAuthorisationExists(Personal, HMRCMTDIT, Set.empty)
+        val state = ActiveAuthorisationExists(Personal, Service.MtdIt, Set.empty)
         val json =
           Json.parse("""{"state":"ActiveAuthorisationExists","properties":{"clientType": "personal", "service": "HMRC-MTD-IT", "basket": []}}""")
 
@@ -243,7 +250,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
       }
 
       "AgentSuspended" in {
-        val state = AgentSuspended(HMRCMTDIT, Set.empty)
+        val state = AgentSuspended(Service.MtdIt, Set.empty)
         val json =
           Json.parse("""{"state":"AgentSuspended","properties":{"suspendedService": "HMRC-MTD-IT", "basket": []}}""")
 

@@ -165,7 +165,7 @@ class AgentsRequestTrackingController @Inject()(
             request.session.get("agentLink").getOrElse(""),
             request.session.get("clientType").getOrElse(""),
             request.session.get("expiryDate").getOrElse(""),
-            request.session.get("service").getOrElse(""),
+            Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session"))),
             request.session.get("agencyEmail").getOrElse(""),
             routes.AgentsRequestTrackingController.showTrackRequests(1).url
           )))
@@ -303,7 +303,7 @@ class AgentsRequestTrackingController @Inject()(
 
   def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      val service = request.session.get("service").getOrElse("")
+      val service = Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session")))
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       Future successful Ok(
         confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
@@ -313,7 +313,7 @@ class AgentsRequestTrackingController @Inject()(
   def submitCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { agent =>
       val clientId = request.session.get("clientId").getOrElse("")
-      val service = request.session.get("service").getOrElse("")
+      val service = Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session")))
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       val status = request.session.get("status").getOrElse("Accepted")
       val isAltItsa = status == "Partialauth"
@@ -326,7 +326,7 @@ class AgentsRequestTrackingController @Inject()(
           data =>
             if (data.value.getOrElse(true)) {
               for {
-                response <- if (isAltItsa) acaConnector.setRelationshipEnded(agent.arn, clientId, service)
+                response <- if (isAltItsa) acaConnector.setRelationshipEnded(agent.arn, clientId, service.id)
                            else deleteRelationshipForService(service, agent.arn, clientId)
                 success = if (isAltItsa) response.exists(x => x) else response.isDefined
               } yield {
@@ -342,7 +342,7 @@ class AgentsRequestTrackingController @Inject()(
 
   def showAuthorisationCancelled: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      val service = request.session.get("service").getOrElse("")
+      val service = Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session")))
       val clientName = request.session.get("clientName").getOrElse("")
       val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
       val clientId = request.session.get("clientId").getOrElse("")
@@ -350,22 +350,21 @@ class AgentsRequestTrackingController @Inject()(
     }
   }
 
-  def deleteRelationshipForService(service: String, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
+  def deleteRelationshipForService(service: Service, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
     service match {
-      case "HMRC-MTD-IT"            => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
-      case "PERSONAL-INCOME-RECORD" => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case "HMRC-MTD-VAT"           => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
-      case "HMRC-TERS-ORG"          => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
-      case "HMRC-TERSNT-ORG"        => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
-      case "HMRC-CGT-PD"            => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
-      case "HMRC-PPT-ORG"           => relationshipsConnector.deleteRelationshipPpt(arn, PptRef(clientId))
-      case _                        => throw new Error("Service not supported")
+      case Service.MtdIt                => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
+      case Service.PersonalIncomeRecord => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
+      case Service.Vat                  => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
+      case Service.Trust                => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
+      case Service.TrustNT              => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
+      case Service.CapitalGains         => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
+      case Service.Ppt                  => relationshipsConnector.deleteRelationshipPpt(arn, PptRef(clientId))
     }
 
   val trackInformationForm: Form[TrackResendForm] = {
     Form(
       mapping(
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
             .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
@@ -379,7 +378,7 @@ class AgentsRequestTrackingController @Inject()(
       mapping(
         "invitationId" -> text
           .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
         "clientName" -> text
@@ -404,7 +403,7 @@ class AgentsRequestTrackingController @Inject()(
   val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"  -> text.verifying("Unsupported Service", service => supportedServices.contains(service)),
+        "service"  -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientId" -> normalizedText.verifying(validateClientId),
         "clientType" -> text
           .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),

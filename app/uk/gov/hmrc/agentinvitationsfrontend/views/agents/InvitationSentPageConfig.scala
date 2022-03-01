@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import org.joda.time.LocalDate
-import play.api.i18n.{Messages, MessagesApi}
+import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class InvitationSentPageConfig(
   relativeInvitationUrl: String,
@@ -29,7 +29,7 @@ case class InvitationSentPageConfig(
   clientType: String,
   expiryDate: LocalDate,
   agencyEmail: String,
-  services: Set[String],
+  services: Set[Service],
   isAltItsa: Boolean)(implicit externalUrls: ExternalUrls, messages: Messages) {
 
   val continueUrl: String = continueUrlOpt match {
@@ -42,13 +42,13 @@ case class InvitationSentPageConfig(
   val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType()
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
-    if (services(HMRCPIR) && services(HMRCMTDVAT)) Some(Messages("invitation-sent.step1.personal.paye-vat"))
-    else if (services(HMRCPIR)) Some(Messages("invitation-sent.step1.personal.paye"))
-    else if (services(HMRCMTDVAT)) Some(Messages("invitation-sent.step1.personal.vat"))
+    if (services(Service.PersonalIncomeRecord) && services(Service.Vat)) Some(Messages("invitation-sent.step1.personal.paye-vat"))
+    else if (services(Service.PersonalIncomeRecord)) Some(Messages("invitation-sent.step1.personal.paye"))
+    else if (services(Service.Vat)) Some(Messages("invitation-sent.step1.personal.vat"))
     else None
   } else if (clientType == "business") {
-    if (services(HMRCMTDVAT)) Some(Messages("invitation-sent.step1.business.vat"))
-    else if (services(TAXABLETRUST)) Some(Messages("invitation-sent.step1.business.trust"))
+    if (services(Service.Vat)) Some(Messages("invitation-sent.step1.business.vat"))
+    else if (services(Service.Trust)) Some(Messages("invitation-sent.step1.business.trust"))
     else None
   } else None
 

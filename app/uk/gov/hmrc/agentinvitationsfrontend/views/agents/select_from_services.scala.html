@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
     mainTemplate: MainTemplate,
@@ -36,7 +37,7 @@
 )
 
 @(
-agentInvitationsForm: Form[String],
+agentInvitationsForm: Form[Service],
 config: SelectServicePageConfig
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -63,7 +64,7 @@ config: SelectServicePageConfig
             legend = config.selectHeaderMessage,
             headingIsLegend = true,
             hint = Some(msgs("select-service.p1")),
-            inputs = mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices)
+            inputs = mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices.map { case (svc, x) => (svc.id, x) })
         )
 
         @govukDetails(Details(

@@ -33,6 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.localFriendlyUrl
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -144,50 +145,17 @@ class AgentInvitationJourneyController @Inject()(
     case _: SelectService =>
   }
 
-  val submitPersonalSelectService: Action[AnyContent] =
+  val submitSelectServiceMulti: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
+      .applyWithRequest(implicit request => transitions.selectedServiceMulti(featureFlags))
 
-  def submitPersonalSelectSingle(service: String): Action[AnyContent] =
+  def submitSelectServiceSingle(serviceId: String, clientType: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
-      .applyWithRequest(implicit request => transitions.selectedPersonalService(featureFlags))
-
-  val submitBusinessSelectService: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request => transitions.selectedBusinessService(featureFlags)
-      )
-
-  def submitBusinessSelectSingle(service: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Personal))
-      .applyWithRequest(
-        implicit request => transitions.selectedBusinessService(featureFlags)
-      )
-
-  def submitTrustSelectSingle(service: String): Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.selectSingleServiceForm(service, ClientType.Trust))
-      .applyWithRequest(
-        implicit request => transitions.selectedTrustService(featureFlags)
-      )
-
-  // this is only for multi-select option forms
-  val submitTrustSelectServiceMultiple: Action[AnyContent] =
-    actions
-      .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(ServiceTypeForm.form)
-      .applyWithRequest(
-        implicit request => transitions.selectedTrustService(featureFlags)
-      )
+      .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.toEnum(clientType)))
+      .applyWithRequest(implicit request => transitions.selectedService(featureFlags))
 
   val identifyClientRedirect: Action[AnyContent] =
     Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
@@ -408,11 +376,16 @@ class AgentInvitationJourneyController @Inject()(
         )
 
         if (config.showMultiSelect)
-          Ok(selectFromServicesView(formWithErrors.or(ServiceTypeForm.form), config))
+          Ok(selectFromServicesView(formWithErrors.asInstanceOf[Option[Form[Service]]].or(ServiceTypeForm.form), config))
         else
-          Ok(selectSingleServiceView(formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)), config))
+          Ok(
+            selectSingleServiceView(
+              formWithErrors
+                .asInstanceOf[Option[Form[Option[Service]]]]
+                .or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)),
+              config))
 
-      case IdentifyClient(ClientType.Trust, Services.TAXABLETRUST, _) =>
+      case IdentifyClient(ClientType.Trust, Service.Trust, _) =>
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
@@ -423,7 +396,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(ClientType.Personal, Services.HMRCMTDIT, _) =>
+      case IdentifyClient(ClientType.Personal, Service.MtdIt, _) =>
         Ok(
           identifyClientItsaView(
             formWithErrors.or(ItsaClientForm.form),
@@ -432,7 +405,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(ClientType.Personal, Services.HMRCPIR, _) =>
+      case IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord, _) =>
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IrvClientForm.form),
@@ -441,7 +414,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(_, Services.HMRCMTDVAT, _) =>
+      case IdentifyClient(_, Service.Vat, _) =>
         Ok(
           identifyClientVatView(
             formWithErrors.or(VatClientForm.form),
@@ -450,7 +423,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(_, Services.HMRCCGTPD, _) =>
+      case IdentifyClient(_, Service.CapitalGains, _) =>
         Ok(
           identifyClientCgtView(
             formWithErrors.or(CgtClientForm.form),
@@ -459,7 +432,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(_, Services.HMRCPPTORG, _) =>
+      case IdentifyClient(_, Service.Ppt, _) =>
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),

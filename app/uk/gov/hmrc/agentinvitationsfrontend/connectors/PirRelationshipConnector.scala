@@ -17,9 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.http.Status._
@@ -27,7 +27,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvTrackRelationship
-import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
@@ -52,9 +52,9 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
         .map(_.status)
     }
 
-  def deleteRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationship(arn: Arn, service: Service, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor(s"ConsumedAPI-Delete-TestOnlyRelationship-DELETE") {
-      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
+      val url = craftUrl(createAndDeleteRelationshipUrl(arn, service.id, clientId))
       http.DELETE[HttpResponse](url.toString).map { r =>
         r.status match {
           case OK                => Some(true)

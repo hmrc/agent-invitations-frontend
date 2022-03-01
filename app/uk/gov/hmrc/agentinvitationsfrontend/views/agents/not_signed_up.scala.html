@@ -20,11 +20,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
 
 @(
-    serviceId: String,
+    service: Service,
     hasRequests: Boolean,
     isDeAuthJourney: Boolean = false,
     htmlPartial: Option[Html]
@@ -36,14 +37,14 @@
 
 @mainTemplate(
     bannerTitle = msgs(banner),
-    title = msgs("generic.title", msgs("not-enrolled.title", msgs(s"not-enrolled.title.$serviceId")), msgs(banner)),
+    title = msgs("generic.title", msgs("not-enrolled.title", msgs(s"not-enrolled.title.${service.id}")), msgs(banner)),
     isAgent = true,
     backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("not-enrolled.title", msgs(s"not-enrolled.title.$serviceId"))</h1>
+    <h1 class="govuk-heading-xl">@msgs("not-enrolled.title", msgs(s"not-enrolled.title.${service.id}"))</h1>
 
-    <p>@msgs("not-enrolled.p", msgs(s"not-enrolled.p.$serviceId"))</p>
+    <p>@msgs("not-enrolled.p", msgs(s"not-enrolled.p.${service.id}"))</p>
 
     @htmlPartial.getOrElse("")
 
