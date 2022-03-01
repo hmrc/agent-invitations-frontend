@@ -185,21 +185,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       behave like anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(request(), controller.submitWarmUp)
     }
 
-    "user is authenticated as individual with NINO, but confidence level 200" should {
-      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anIndividualWithConfidenceLevel200AndNinoGetEndpoint(request(), controller.submitWarmUp)
-    }
-
-    "user is authenticated as individual without NINO, and confidence level 200" should {
-      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anIndividualWithConfidenceLevel200AndNinoGetEndpoint(request(), controller.submitWarmUp)
-    }
-
-    "user is authenticated as Organisation with ITSA enrolment and without NINO, and confidence level 200" should {
-      val request = () => requestWithJourneyIdInQuery("GET", "/warm-up")
-      behave like anIndividualWithConfidenceLevel200AndNinoGetEndpoint(request(), controller.submitWarmUp)
-    }
-
     "user is authenticated as CGT individual and low confidence level" should {
       "not go through IV and redirect to consent page if the invitation is found" in {
         val request = () => requestWithJourneyIdInQuery("POST", "/warm-up")
