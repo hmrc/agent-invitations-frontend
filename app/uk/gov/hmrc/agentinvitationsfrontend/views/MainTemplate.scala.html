@@ -16,14 +16,12 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html
-@import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.{ExternalUrls}
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsMainContent
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcLayout, HmrcTimeoutDialogHelper}
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.{HmrcReportTechnicalIssue, ReportTechnicalIssue}
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
 @import views.html.helper.CSPNonce
 
@@ -77,12 +75,12 @@
 }
 
 @additionalScripts = {
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")"></script>
-<script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")"></script>
-    @if(scriptElem != None) {
-        @scriptElem
-    }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous" @{CSPNonce.attr}></script>
+    <script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")" @{CSPNonce.attr}></script>
+    <script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")" @{CSPNonce.attr}></script>
+    @if(scriptElem != None) { @scriptElem }
 }
 
 
@@ -110,4 +108,5 @@
     serviceName = Some(msgs(bannerTitle)),
     backLinkUrl = backLinkHref,
     mainContentLayout = if (fullWidth) None else Some(twoThirdsLayout(_)),
+    nonce = CSPNonce.get
 )(mainContentWithHelpLink)

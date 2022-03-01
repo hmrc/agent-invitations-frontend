@@ -24,9 +24,9 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import views.html.helper.CSPNonce
+
 
 @this(mainTemplate: MainTemplate, govukPanel: GovukPanel, a:a, p:p, h1:h1, h2:h2,ul:ul)
 
@@ -38,7 +38,7 @@
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
- <script>
+ <script @{CSPNonce.attr}>
   window.dataLayer.push({
    'event': 'custom_agents_request',
    'agents_event_category' : 'invitation',

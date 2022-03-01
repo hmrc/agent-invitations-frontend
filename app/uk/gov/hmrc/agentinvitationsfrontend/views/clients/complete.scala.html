@@ -20,6 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CompletePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
+@import views.html.helper.CSPNonce
 
 @this(
     mainTemplate: MainTemplate,
@@ -32,7 +33,7 @@
 @(config: CompletePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
-    <script>
+    <script @{CSPNonce.attr}>
             @for(consent <- config.consents) {
             @if(consent.consent) {
             window.dataLayer.push({

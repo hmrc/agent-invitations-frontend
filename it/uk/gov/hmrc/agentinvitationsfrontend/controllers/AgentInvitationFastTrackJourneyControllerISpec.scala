@@ -5,11 +5,9 @@ import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import play.api.test.Helpers
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
