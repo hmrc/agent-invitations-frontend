@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.track.ResendLinkPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate,h1: h1)
 
 
 @(config: ResendLinkPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -36,7 +36,7 @@ completedInviteGoSurvey = Some(true),
 backLinkHref = Some(config.backLinkUrl)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("resend-link.header")</h1>
+    @h1("resend-link.header")
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
         @if(config.step1Instructions.isDefined){

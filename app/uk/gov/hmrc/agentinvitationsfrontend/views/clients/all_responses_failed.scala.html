@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -28,7 +28,7 @@ bannerTitle = msgs("service.name.clients"),
 title = msgs("generic.title", msgs("all-responses-failed.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("all-responses-failed.header")</h1>
+    @h1("all-responses-failed.header")
 
     <p>@msgs("all-responses-failed.p1")</p>
     <p>@msgs("all-responses-failed.p2")</p>

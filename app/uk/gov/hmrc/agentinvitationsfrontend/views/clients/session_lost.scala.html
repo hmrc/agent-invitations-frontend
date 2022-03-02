@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -30,7 +30,7 @@
   hasTimeout = false
 ) {
 
-  <h1 class="govuk-heading-xl">@msgs("session-lost-client.header")</h1>
+  @h1("session-lost-client.header")
 
   <p>@msgs("session-lost-client.description.1")</p>
   <p>@msgs("session-lost-client.description.2")</p>

@@ -1170,7 +1170,8 @@ error.authorisation-request-error-template.p1.Cancelled=was cancelled by your ag
 error.authorisation-request-error-template.p1.AlreadyResponded=has already been responded to on {0}
 error.authorisation-request-error-template.p2=If your agent has sent you a recent request,
 error.authorisation-request-error-template.p3=You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for.
-error.authorisation-request-error-template.p4=<a href={0}>Sign in with the Government Gateway user ID</a> you use for managing your {1}.
+error.authorisation-request-error-template.p4.link=Sign in with the Government Gateway user ID
+error.authorisation-request-error-template.p4.span= you use for managing your {0}.
 error.authorisation-request-error-template.business=business tax affairs
 error.authorisation-request-error-template.personal=personal tax affairs
 error.authorisation-request-error-template.p5=make sure you have signed up to the tax service you need.

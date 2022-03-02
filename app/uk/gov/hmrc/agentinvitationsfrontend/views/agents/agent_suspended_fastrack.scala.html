@@ -21,21 +21,20 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p: p, h1: h1)
 
 @(service: Service, continueUrl: Option[String])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs(s"agent-suspended.fastrack.heading"), msgs("service.name.agents.auth")),
-isAgent = true
+    title = msgs("generic.title", msgs(s"agent-suspended.fastrack.heading"), msgs("service.name.agents.auth")),
+    isAgent = true
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("agent-suspended.fastrack.heading")</h1>
-
-    <p>@msgs("agent-suspended.fastrack.p1")</p>
-    <p>@msgs("agent-suspended.fastrack.p2",msgs(s"agent-suspended.fastrack.p2.${service.id}"))</p>
-    <p>@msgs("agent-suspended.fastrack.p3")</p>
-    <p>@msgs("agent-suspended.fastrack.p4")</p>
+    @h1("agent-suspended.fastrack.heading")
+    @p("agent-suspended.fastrack.p1")
+    @p(msgs("agent-suspended.fastrack.p2",msgs(s"agent-suspended.fastrack.p2.${service.id}")))
+    @p("agent-suspended.fastrack.p3")
+    @p("agent-suspended.fastrack.p4")
 
     @if(continueUrl.isDefined) {
       @linkStyledAsButton(

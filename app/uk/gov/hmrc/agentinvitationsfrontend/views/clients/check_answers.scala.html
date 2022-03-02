@@ -28,7 +28,9 @@
     mainTemplate: MainTemplate,
     formHelper: FormWithCSRF,
     checkAnswersRow: CheckAnswersRow,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1,
+    h2: h2,
 )
 
 @(pageConfig: CheckAnswersPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -40,9 +42,8 @@
     backLinkHref = Some(pageConfig.backLink.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("check-answers.heading")</h1>
-
-    <h2>@msgs("check-answers.subheading", pageConfig.processedAgencyName)</h2>
+    @h1("check-answers.heading")
+    @h2(msgs("check-answers.subheading", pageConfig.processedAgencyName))
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(consent <- pageConfig.consents) {

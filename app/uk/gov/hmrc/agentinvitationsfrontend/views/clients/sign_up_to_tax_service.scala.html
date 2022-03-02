@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate,h1: h1)
 
 @(backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -30,7 +30,7 @@ isAgent = false,
 backLinkHref = Some(backLinkUrl.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("tax-service.header")</h1>
+    @h1("tax-service.header")
 
     <p>@msgs("tax-service.p1")</p>
 

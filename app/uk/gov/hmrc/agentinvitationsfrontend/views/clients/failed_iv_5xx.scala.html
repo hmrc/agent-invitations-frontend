@@ -17,14 +17,13 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@this()
+@this(p: p, h1: h1)
 
 @()(implicit msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-    <h1 class="govuk-heading-xl">@msgs("technical-issues.header")</h1>
-
-    <p>@msgs("technical-issues.p1")</p>
-    <p>@msgs("technical-issues.p2")</p>
-    <p>@Html(msgs("technical-issues.vat", msgs("technical-issues.vat-url")))</p>
-    <p>@Html(msgs("technical-issues.it", msgs("technical-issues.sa-url")))</p>
+    @h1("technical-issues.header")
+    @p("technical-issues.p1")
+    @p("technical-issues.p2")
+    @p(html = Some(Html(msgs("technical-issues.vat", msgs("technical-issues.vat-url")))))
+    @p(html = Some(Html(msgs("technical-issues.it", msgs("technical-issues.sa-url")))))
 

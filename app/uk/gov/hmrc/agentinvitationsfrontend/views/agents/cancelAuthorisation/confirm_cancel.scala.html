@@ -34,7 +34,8 @@
     govukInsetText: GovukInsetText,
     formHelper: FormWithCSRF,
     inputRadio: InputRadios,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1
 )
 
 @(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -53,7 +54,7 @@
     @formHelper(action = config.submitCall) {
 
         @if(config.service == Service.MtdIt) {
-            <h1 class="govuk-heading-xl">@msgs("cancel-authorisation.confirm-cancel.header")</h1>
+            @h1("cancel-authorisation.confirm-cancel.header")
 
             @govukInsetText(InsetText(
                 content = Text(msgs("cancel-authorisation.confirm-cancel.itsa-panel"))

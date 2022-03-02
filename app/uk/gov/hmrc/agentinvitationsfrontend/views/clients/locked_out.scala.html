@@ -17,12 +17,12 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 
-@this()
+@this(p: p,  h1: h1)
 
 @()(implicit msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-<h1 class="govuk-heading-xl">@msgs("locked-out.header")</h1>
+ @h1("locked-out.header")
 
-<p>@msgs("locked-out.p1")</p>
-<p>@msgs("locked-out.p2")</p>
-<p>@msgs("locked-out.p3")</p>
+ @p("locked-out.p1")
+ @p("locked-out.p2")
+ @p("locked-out.p3")

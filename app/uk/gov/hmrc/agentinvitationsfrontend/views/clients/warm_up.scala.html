@@ -15,19 +15,19 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
     mainTemplate: MainTemplate,
     formHelper: FormWithCSRF,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1,
+    p: p, a: a
 )
 
 
@@ -40,13 +40,13 @@
     hasTimeout = false
 ) {
 
- <h1 class="govuk-heading-xl">@msgs("warm-up.header", pageConfig.agentName)</h1>
+    @h1(msgs("warm-up.header", pageConfig.agentName))
 
-    <p>@msgs("warm-up.p1", pageConfig.agentName)</p>
+    @p(msgs("warm-up.p1", pageConfig.agentName))
     <p>@Html(msgs(s"warm-up.p2.${pageConfig.typeOfClient}"))</p>
 
     @if(pageConfig.typeOfClient == "personal") {
-        <p>@msgs("warm-up.p3.personal")</p>
+        @p("warm-up.p3.personal")
     }
 
     <div class="govuk-inset-text">@msgs("warm-up.inset", pageConfig.agentName)</div>
@@ -56,7 +56,11 @@
     }
 
 <p class="govuk-!-margin-bottom-7">
-    <a href="@pageConfig.getConfirmDeclineCall" id="linkConfirmDecline">@msgs("warm-up.link", pageConfig.agentName)</a>
+    @a(
+        href = pageConfig.getConfirmDeclineCall.url,
+        id = Some("linkConfirmDecline"),
+        key = msgs("warm-up.link", pageConfig.agentName)
+    )
 </p>
 
 

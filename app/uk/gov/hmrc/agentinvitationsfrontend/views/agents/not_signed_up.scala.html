@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
 
 @(
     service: Service,
@@ -42,7 +42,7 @@
     backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("not-enrolled.title", msgs(s"not-enrolled.title.${service.id}"))</h1>
+    @h1(msgs("not-enrolled.title", msgs(s"not-enrolled.title.${service.id}")))
 
     <p>@msgs("not-enrolled.p", msgs(s"not-enrolled.p.${service.id}"))</p>
 

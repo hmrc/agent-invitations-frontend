@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
 
 @(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -34,7 +34,7 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
- <h1 class="govuk-heading-xl">@msgs("partial-authorisation-exists.header")</h1>
+ @h1("partial-authorisation-exists.header")
 
  <p>@Html(msgs(s"partial-authorisation-exists.p1"))</p>
 

@@ -27,9 +27,11 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-mainTemplate: MainTemplate,
-formHelper: FormWithCSRF,
-linkStyledAsButton: LinkStyledAsButton
+    mainTemplate: MainTemplate,
+    formHelper: FormWithCSRF,
+    linkStyledAsButton: LinkStyledAsButton,
+    p: p,
+    h1: h1, ul: ul
 )
 
 
@@ -40,18 +42,12 @@ linkStyledAsButton: LinkStyledAsButton
     isAgent = false,
     bannerTitle = "service.name.clients",
     hasTimeout = false,
-    backLinkHref = Some(backLinkUrl.url)
-) {
+    backLinkHref = Some(backLinkUrl.url) ) {
 
-    <h1 class="govuk-heading-xl">@msgs("new-gg-id.header")</h1>
-
-    <p>@msgs("new-gg-id.p1")</p>
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@msgs("new-gg-id.li1")</li>
-        <li>@msgs("new-gg-id.li2")</li>
-    </ul>
-    <p>@msgs("new-gg-id.p4")</p>
-
+    @h1("new-gg-id.header")
+    @p("new-gg-id.p1")
+    @ul(items = Seq("new-gg-id.li1", "new-gg-id.li2"))
+    @p("new-gg-id.p4")
     @linkStyledAsButton(href = createNewUserIdConfig.ggUrl)
 
 }

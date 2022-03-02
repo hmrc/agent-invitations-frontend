@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import views.html.helper.CSPNonce
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1)
 
 @(config: InvitationSentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -47,7 +47,7 @@ completedInviteGoSurvey = Some(true),
 scriptElem = Some(gtmScript),
 isAgent = true) {
 
-    <h1 class="govuk-heading-xl">@msgs("invitation-sent.header")</h1>
+    @h1("invitation-sent.header")
 
     @if(config.isAltItsa) {
         <p>@msgs("invitation-sent.all-steps")</p>

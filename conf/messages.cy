@@ -1171,7 +1171,8 @@ error.authorisation-request-error-template.p1.Cancelled=wedi’i ganslo gan eich
 error.authorisation-request-error-template.p1.AlreadyResponded=wedi cael ei ateb eisoes ar {0}
 error.authorisation-request-error-template.p2=Os yw’ch asiant wedi anfon cais atoch yn ddiweddar, gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch.
 error.authorisation-request-error-template.p3=Gallwch hefyd wirio eich bod wedi mewngofnodi â’r Dynodydd Defnyddiwr (ID) cywir ar gyfer Porth y Llywodraeth. Mae’n rhaid iddo fod yr un Dynodydd Defnyddiwr (ID) a ddefnyddiwyd gennych i gofrestru ar gyfer y gwasanaeth treth y mae’r cais am awdurdodiad ar ei gyfer.
-error.authorisation-request-error-template.p4=<a href={0}>Mewngofnodwch â’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth</a> yr ydych yn ei ddefnyddio ar gyfer rheoli’ch {1}.
+error.authorisation-request-error-template.p4.link=Mewngofnodwch â’r Dynodydd Defnyddiwr (ID) ar gyfer Porth y Llywodraeth
+error.authorisation-request-error-template.p4.span= yr ydych yn ei ddefnyddio ar gyfer rheoli’ch {0}.
 error.authorisation-request-error-template.business=materion treth busnes
 error.authorisation-request-error-template.personal=materion treth personol
 error.authorisation-request-error-template.p5=Gwnewch yn siŵr eich bod wedi cofrestru ar gyfer y gwasanaeth treth sydd ei angen arnoch.

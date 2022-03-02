@@ -34,7 +34,8 @@
     govukInsetText: GovukInsetText,
     formHelper: FormWithCSRF,
     inputYesNoRadio: InputYesNoRadios,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1
 )
 
 @(confirmForm: Form[ConfirmForm], service: Service, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -49,15 +50,15 @@ backLinkHref = Some(backLinkUrl)
     @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
   }
 
-
     @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
         @if(service == Service.MtdIt) {
-            <h1 class="govuk-heading-xl">@msgs("confirm-authorisation-cancelled.track.header")</h1>
 
-            @govukInsetText(InsetText(
-            content = Text(msgs("confirm-authorisation-cancelled.track.itsa-panel"))
-            ))
+            @h1("confirm-authorisation-cancelled.track.header")
+
+            @govukInsetText(
+                InsetText(content = Text(msgs("confirm-authorisation-cancelled.track.itsa-panel")))
+            )
 
             @inputYesNoRadio(
                 field = confirmForm("confirmCancelAuthorisation"),

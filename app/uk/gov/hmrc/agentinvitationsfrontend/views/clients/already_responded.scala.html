@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1, p: p)
 
 @(serviceMessageKey: String, respondedOn: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -28,7 +28,7 @@ bannerTitle = "service.name.clients",
 title = msgs(s"generic.title", msgs("already-responded.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("already-responded.header")</h1>
+    @h1("already-responded.header")
 
     <p>@msgs("already-responded.p1", respondedOn)</p>
 

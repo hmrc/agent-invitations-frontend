@@ -1458,12 +1458,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
       checkIncludesText(result, "This authorisation request has already expired")
       checkIncludesText(result, "This request expired on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p5"))
-      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
+
+      val paragraphs = html.select(Css.paragraphs)
+      paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
+      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
+      paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
     }
   }
 
@@ -1474,12 +1479,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
 
       checkIncludesText(result, "This authorisation request has been cancelled")
       checkIncludesText(result, "This request was cancelled by your agent on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
-      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
+
+      val paragraphs = html.select(Css.paragraphs)
+      paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
+      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
+      paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
     }
   }
 
@@ -1491,11 +1501,18 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showErrorAuthorisationRequestUnsuccessful(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
       checkIncludesText(result, "This authorisation request has already been responded to")
       checkIncludesText(result, "This request has already been responded to on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p2"))
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.authorisation-request-error-template.p3"))
-      checkIncludesText(result, "<a href=/invitations/sign-out-redirect>Sign in with the Government Gateway user ID</a> you use for managing your personal tax affairs.")
+
+      val paragraphs = html.select(Css.paragraphs)
+      paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
+      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
+      paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
+
     }
   }
 

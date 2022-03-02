@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
 
 @(
     authRequestsExist: Boolean,
@@ -43,7 +43,7 @@
     backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl">@msgs("active-authorisation-exists.header")</h1>
+  @h1("active-authorisation-exists.header")
 
   <p>@msgs(s"active-authorisation-exists.p1.${service.id}")</p>
 
