@@ -19,12 +19,12 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(appConfig: AppConfig, mainTemplate: MainTemplate)
+@this(appConfig: AppConfig, mainTemplate: MainTemplate, p: p, h1: h1)
 
 @(pageTitle: String, heading: String, message: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(title = pageTitle, isAgent = false) {
-    <h1 class="govuk-heading-xl">@heading</h1>
-    <p>@Html(message)</p>
+    @h1(heading)
+    @p(html=Some(Html(message)))
 }
 

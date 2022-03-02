@@ -30,7 +30,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    submitButton: SubmitButton
+    submitButton: SubmitButton, h1: h1
 )
 
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -39,7 +39,7 @@
 title = msgs("generic.title", msgs("create-auth-failed.header"), msgs("service.name.clients")),
 isAgent = true) {
 
-    <h1 class="govuk-heading-xl">@msgs("create-auth-failed.header")</h1>
+    @h1("create-auth-failed.header")
 
     <p class="govuk-!-margin-bottom-4">
     @if(config.hasSingleRequest){

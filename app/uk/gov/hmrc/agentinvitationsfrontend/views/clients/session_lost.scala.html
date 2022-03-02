@@ -15,26 +15,26 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1, p: p)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-  bannerTitle = "service.name.clients",
-  title = msgs("generic.title", msgs("session-lost-client.header"), msgs("service.name.clients")),
-  isAgent = false,
-  hasTimeout = false
+    bannerTitle = "service.name.clients",
+    title = msgs("generic.title", msgs("session-lost-client.header"), msgs("service.name.clients")),
+    isAgent = false,
+    hasTimeout = false
 ) {
 
-  <h1 class="govuk-heading-xl">@msgs("session-lost-client.header")</h1>
-
-  <p>@msgs("session-lost-client.description.1")</p>
-  <p>@msgs("session-lost-client.description.2")</p>
-  <p>@Html(msgs("session-lost-client.manage-agents-link", externalUrls.agentClientManagementUrl))</p>
-  <p>@msgs("session-lost-client.description.3")</p>
+    @h1("session-lost-client.header")
+    @p("session-lost-client.description.1")
+    @p("session-lost-client.description.2")
+    @p(html = Some(Html(msgs("session-lost-client.manage-agents-link",
+        externalUrls.agentClientManagementUrl))))
+    @p("session-lost-client.description.3")
 
 }

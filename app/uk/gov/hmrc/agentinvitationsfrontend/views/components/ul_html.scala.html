@@ -14,15 +14,12 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@this()
 
-@this(p: p,  h1: h1)
+@(items: Seq[Html])(implicit msgs: Messages)
 
-@()(implicit msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-
- @h1("locked-out.header")
-
- @p("locked-out.p1")
- @p("locked-out.p2")
- @p("locked-out.p3")
+<ul class="govuk-list govuk-list--bullet">
+ @for(html <- items) {
+ <li class="govuk-list--item">html</li>
+}
+</ul>

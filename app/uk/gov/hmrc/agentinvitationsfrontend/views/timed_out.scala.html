@@ -19,14 +19,13 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1)
 
 @(continueUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-@isAgent=@{
-    if(continueUrl.contains("agent"))true else false
-}
 
-@timeString=@{
+@isAgent = @{ continueUrl.contains("agent") }
+
+@timeString = @{
     val timeout = externalUrls.timeout
     if(timeout < 60) s"$timeout ${msgs("timed-out.seconds")}" else s"${timeout/60} ${msgs("timed-out.minutes")}"
 }
@@ -36,7 +35,7 @@ bannerTitle = "service.name.clients",
 isAgent = isAgent,
 hasTimeout = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("timed-out.header")</h1>
+    @h1("timed-out.header")
     <p>@msgs("timed-out.p1", timeString)</p>
         @if(isAgent){
             <p>@Html(msgs("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" role="button" href="@continueUrl">@msgs("timed-out.button")</a>

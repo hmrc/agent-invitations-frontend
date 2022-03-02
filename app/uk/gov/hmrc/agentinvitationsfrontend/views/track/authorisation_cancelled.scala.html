@@ -22,7 +22,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 @import views.html.helper.CSPNonce
@@ -49,13 +48,13 @@
 }
 
 @panelContent = {
-@displayDateForLang(Some(LocalDate.now()))
+    @displayDateForLang(Some(LocalDate.now()))
 }
 
 @mainTemplate(
-title = msgs("generic.title", msgs("authorisation-cancelled.header"), msgs("service.name.agents.auth")),
-isAgent = true,
-scriptElem = Some(gtmScript)
+    title = msgs("generic.title", msgs("authorisation-cancelled.header"), msgs("service.name.agents.auth")),
+    isAgent = true,
+    scriptElem = Some(gtmScript)
 ) {
 
      @govukPanel(Panel(

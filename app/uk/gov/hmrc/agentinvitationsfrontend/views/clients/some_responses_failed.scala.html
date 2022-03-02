@@ -29,7 +29,9 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     formHelper: FormWithCSRF,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1
+
 )
 
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -39,7 +41,7 @@ bannerTitle = "service.name.clients",
 title = msgs("generic.title", msgs("some-responses-failed.header"), msgs("service.name.clients")),
 isAgent = false) {
 
-    <h1 class="govuk-heading-xl">@msgs("some-responses-failed.header")</h1>
+    @h1("some-responses-failed.header")
 
     @if(config.consents.map(_.serviceKey).length == 1){
         <p>@msgs(s"some-responses-failed.${config.consents.head.serviceKey}")</p>

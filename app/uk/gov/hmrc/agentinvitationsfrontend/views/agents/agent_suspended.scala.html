@@ -23,7 +23,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
 
 @(basket: Basket, service: Service, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -33,10 +33,11 @@
 }
 
 @mainTemplate(
-title = msgs("generic.title", heading, msgs("service.name.agents.auth")),
-isAgent = true) {
+    title = msgs("generic.title", heading, msgs("service.name.agents.auth")),
+    isAgent = true
+) {
 
-    <h1 class="govuk-heading-xl">@heading</h1>
+    @h1(heading)
     <p>@msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.${service.id}"))</p>
 
     @if(basket.isEmpty) {

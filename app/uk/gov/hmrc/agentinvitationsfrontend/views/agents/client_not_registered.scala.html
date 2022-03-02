@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p, h2: h2)
 
 @(authRequestsExist: Boolean, fromFastTrack: Boolean, reviewAuthsCall: Call, clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -34,15 +34,15 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("client-not-registered.header")</h1>
+    @h1("client-not-registered.header")
 
-    <p>@msgs(s"client-not-registered.p1")</p>
+    @p(s"client-not-registered.p1")
 
-    <h2>@msgs("client-not-registered.h2")</h2>
+    @h2("client-not-registered.h2")
 
-    <p>@Html(msgs("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))</p>
+    @p(html = Some(Html(msgs("client-not-registered.p2", externalUrls.guidanceUrlSaSignup))))
 
-    <p>@Html(msgs("client-not-registered.p3", clientTypeCall))</p>
+    @p(html = Some(Html(msgs("client-not-registered.p3", clientTypeCall))))
 
     @if(authRequestsExist && !fromFastTrack) {
         @linkStyledAsButton(

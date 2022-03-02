@@ -15,24 +15,23 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1, p: p, ul_html: ul_html)
 
 @(backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs("tax-service.header"), msgs("service.name.clients")),
-isAgent = false,
-backLinkHref = Some(backLinkUrl.url)
+    bannerTitle = "service.name.clients",
+    title = msgs("generic.title", msgs("tax-service.header"), msgs("service.name.clients")),
+    isAgent = false,
+    backLinkHref = Some(backLinkUrl.url)
 ) {
 
-    <h1 class="govuk-heading-xl">@msgs("tax-service.header")</h1>
-
-    <p>@msgs("tax-service.p1")</p>
+    @h1("tax-service.header")
+    @p("tax-service.p1")
 
     <ul class="govuk-list govuk-list--bullet">
         <li><a href="@externalUrls.guidanceCgtUkProperty">@msgs("tax-service.l1")</a></li>

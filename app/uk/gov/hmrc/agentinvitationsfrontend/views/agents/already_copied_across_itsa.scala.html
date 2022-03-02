@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -32,7 +32,7 @@ isAgent = true,
 backLinkHref = Some(backLink)
 ) {
 
-  <h1 class="govuk-heading-xl">@msgs("already-copied.header")</h1>
+  @h1("already-copied.header")
 
   <p>@msgs(s"already-copied.p1")</p>
 

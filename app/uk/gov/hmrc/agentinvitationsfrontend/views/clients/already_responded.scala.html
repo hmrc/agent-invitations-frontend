@@ -15,22 +15,21 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1, p: p)
 
 @(serviceMessageKey: String, respondedOn: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs(s"generic.title", msgs("already-responded.header"), msgs("service.name.clients")),
-isAgent = false) {
+    bannerTitle = "service.name.clients",
+    title = msgs(s"generic.title", msgs("already-responded.header"), msgs("service.name.clients")),
+    isAgent = false
+) {
 
-    <h1 class="govuk-heading-xl">@msgs("already-responded.header")</h1>
-
-    <p>@msgs("already-responded.p1", respondedOn)</p>
-
-    <p>@Html(msgs("already-responded.p2", s"${externalUrls.agentClientManagementUrl}#history"))</p>
+    @h1("already-responded.header")
+    @p(msgs("already-responded.p1", respondedOn))
+    @p(html = Some(Html(msgs("already-responded.p2", s"${externalUrls.agentClientManagementUrl}#history"))))
 }

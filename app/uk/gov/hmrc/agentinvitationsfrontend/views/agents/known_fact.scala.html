@@ -15,16 +15,15 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.KnownFactPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputDate, InputText, SubmitButton}
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
     mainTemplate: MainTemplate,
@@ -33,55 +32,55 @@
     formHelper: FormWithCSRF,
     inputText: InputText,
     inputDate: InputDate,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1,
+    p:p
 )
 
 @(knownFactForm: Form[String], config: KnownFactPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = errorPrefix(knownFactForm) + msgs("generic.title", msgs(s"known-fact.${config.service.id}.heading"), msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(s"${config.backLinkUrl}")
+    title = errorPrefix(knownFactForm) + msgs("generic.title", msgs(s"known-fact.${config.service.id}.heading"), msgs("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(s"${config.backLinkUrl}")
 ) {
 
     @if(knownFactForm.hasErrors) {
         @if(config.service == Service.MtdIt) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
+            @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm))
         } else {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = dateErrorMapping("knownFact", knownFactForm)))
+            @govukErrorSummary(ErrorSummary().withFormErrorsAsText(knownFactForm, mapping = dateErrorMapping("knownFact", knownFactForm)))
         }
     }
 
     @formHelper(action = config.submitKFCall) {
 
-    <h1 class="govuk-heading-xl">@msgs(s"known-fact.${config.service.id}.heading")</h1>
+        @h1(s"known-fact.${config.service.id}.heading")
+        @p("known-fact.p1")
 
-    <p>@msgs("known-fact.p1")</p>
+        @if(config.service == Service.MtdIt) {
 
-    @if(config.service == Service.MtdIt) {
+            @inputText(
+                field = knownFactForm("knownFact"),
+                label = msgs(s"known-fact.${config.service.id}.heading"),
+                labelClass = Some("govuk-visually-hidden"),
+                hint = Some(msgs(s"known-fact.${config.service.id}.helper")),
+                inputClass = Some("govuk-input--width-10")
+            )
 
-        @inputText(
-            field = knownFactForm("knownFact"),
-            label = msgs(s"known-fact.${config.service.id}.heading"),
-            labelClass = Some("govuk-visually-hidden"),
-            hint = Some(msgs(s"known-fact.${config.service.id}.helper")),
-            inputClass = Some("govuk-input--width-10")
-        )
+        } else {
 
-    } else {
+            @inputDate(
+                field = knownFactForm("knownFact"),
+                legend = msgs(s"known-fact.${config.service.id}.heading"),
+                legendClass = "govuk-visually-hidden",
+                hint = Some(msgs(s"known-fact.${config.service.id}.helper"))
+            )
 
-         @inputDate(
-             field = knownFactForm("knownFact"),
-             legend = msgs(s"known-fact.${config.service.id}.heading"),
-             legendClass = "govuk-visually-hidden",
-             hint = Some(msgs(s"known-fact.${config.service.id}.helper"))
-         )
+        }
+
+        @submitButton()
 
     }
-
-      @submitButton()
-
-
- }
 }
 

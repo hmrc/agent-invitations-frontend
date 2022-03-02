@@ -20,7 +20,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
 
 @(clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -28,7 +28,7 @@
 title = msgs("generic.title", msgs(s"all-authorisations-removed.header"), msgs("service.name.agents.auth")),
 isAgent = true) {
 
-  <h1 class="govuk-heading-xl">@msgs("all-authorisations-removed.header")</h1>
+  @h1("all-authorisations-removed.header")
 
   <p>@msgs("all-authorisations-removed.p")</p>
 

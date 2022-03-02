@@ -21,21 +21,40 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.AuthRequestErrorCase
 
-@this(mainTemplate: MainTemplate)
+@this(mainTemplate: MainTemplate, h1: h1, p: p, span: span, a: a)
 
 @(serviceMessageKey: String, clientType: String, eventDate: String, errorCase: AuthRequestErrorCase)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs(s"error.authorisation-request-error-template.header", msgs(s"error.authorisation-request-error-template.header.$errorCase")), msgs("service.name.clients")),
-isAgent = false) {
+    bannerTitle = "service.name.clients",
+    title = msgs("generic.title", msgs(s"error.authorisation-request-error-template.header", msgs(s"error.authorisation-request-error-template.header.$errorCase")), msgs("service.name.clients")),
+    isAgent = false
+) {
 
-    <h1 class="govuk-heading-xl">@msgs(s"error.authorisation-request-error-template.header", msgs(s"error.authorisation-request-error-template.header.$errorCase"))</h1>
+    @h1(msgs(s"error.authorisation-request-error-template.header",
+        msgs(s"error.authorisation-request-error-template.header.$errorCase")))
 
-    <p>@Html(msgs(s"error.authorisation-request-error-template.p1", msgs(s"error.authorisation-request-error-template.p1.$errorCase", eventDate), s"${externalUrls.agentClientManagementUrl}#history"))</p>
-    <p>@msgs("error.authorisation-request-error-template.p2") <a href="@externalUrls.guidanceAuthoriseAgent">@msgs("error.authorisation-request-error-template.p5")</a></p>
-    <p>@msgs("error.authorisation-request-error-template.p3")</p>
-    <p>@Html(msgs("error.authorisation-request-error-template.p4", routes.ClientInvitationJourneyController.signOutAndRedirect(), msgs(s"error.authorisation-request-error-template.$clientType")))</p>
-
+    @p(html= Some(Html(msgs(s"error.authorisation-request-error-template.p1",
+        msgs(s"error.authorisation-request-error-template.p1.$errorCase", eventDate),
+        s"${externalUrls.agentClientManagementUrl}#history")))
+    )
+    <p>
+        @span("error.authorisation-request-error-template.p2")
+        @a(
+            href = externalUrls.guidanceAuthoriseAgent,
+            key="error.authorisation-request-error-template.p5"
+        )
+    </p>
+    @p("error.authorisation-request-error-template.p3")
+    <p>
+        @a( href = routes.ClientInvitationJourneyController.signOutAndRedirect().url,
+            key = "error.authorisation-request-error-template.p4.link",
+            id = Some("signout-redirect-link")
+        )
+        @span(
+            msgs("error.authorisation-request-error-template.p4.span",
+            msgs(s"error.authorisation-request-error-template.$clientType"))
+        )
+    </p>
 
 }

@@ -21,7 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p)
 
 @(hasRequests: Boolean, isFastTrack: Boolean)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -30,9 +30,8 @@ title = msgs("generic.title", msgs(s"client-insolvent.header"), msgs("service.na
 isAgent = true) {
 
 
-    <h1 class="govuk-heading-xl">@msgs("client-insolvent.header")</h1>
-
-    <p>@msgs("client-insolvent.p")</p>
+    @h1("client-insolvent.header")
+    @p("client-insolvent.p")
 
     @if(hasRequests) {
          @linkStyledAsButton(

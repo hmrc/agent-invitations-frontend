@@ -35,7 +35,8 @@
     formHelper: FormWithCSRF,
     checkAnswersRow: CheckAnswersRow,
     inputRadio: InputRadios,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1
 )
 
 @(confirmForm: Form[Confirmation],
@@ -70,7 +71,7 @@ backLinkHref = config.backLinkUrl
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    <h1 class="govuk-heading-xl">@msgs("check-details.heading")</h1>
+    @h1("check-details.heading")
 
     <p class="govuk-inset-text">@msgs(s"check-details.p.${config.fastTrackRequest.service.id}")</p>
 

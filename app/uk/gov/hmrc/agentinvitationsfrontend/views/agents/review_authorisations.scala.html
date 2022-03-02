@@ -32,7 +32,8 @@
     formHelper: FormWithCSRF,
     inputYesNoRadio: InputYesNoRadios,
     checkAnswersRow: CheckAnswersRow,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    h1: h1
 )
 
 @(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -47,7 +48,7 @@ backLinkHref = Some(backLinkUrl)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(reviewAuthorisationsForm))
     }
 
-    <h1 class="govuk-heading-xl">@msgs("review-authorisations.heading")</h1>
+    @h1("review-authorisations.heading")
 
     <p>
     @if(config.basket.size == 1) {
