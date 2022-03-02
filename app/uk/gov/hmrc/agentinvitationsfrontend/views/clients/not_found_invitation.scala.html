@@ -15,18 +15,19 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(mainTemplate: MainTemplate, h1: h1, p: p)
 
 @(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs("not-found-invitation.header"), msgs("service.name.clients")),
-isAgent = false) {
+    bannerTitle = "service.name.clients",
+    title = msgs("generic.title", msgs("not-found-invitation.header"), msgs("service.name.clients")),
+    isAgent = false
+) {
 
     @h1("not-found-invitation.header")
     @p("not-found-invitation.description.1")

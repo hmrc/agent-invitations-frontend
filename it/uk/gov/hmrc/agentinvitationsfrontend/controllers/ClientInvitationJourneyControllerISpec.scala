@@ -1444,9 +1444,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.showErrorAuthorisationRequestInvalid(authorisedAsIndividualClientWithAllSupportedEnrolments(request))
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result, htmlEscapedMessage("request-expired.header"))
-      checkIncludesText(result, "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
-      checkResultContainsLink(result, "someAgentClientManagementFrontendExternalUrl#history","View your request history",None)
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      html.select(Css.paragraphs).get(0).text() shouldBe "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
+      html.select(Css.H1).get(0).text() shouldBe "This authorisation request has expired"
+      html.select("a[href=someAgentClientManagementFrontendExternalUrl#history]").text() shouldBe "View your request history"
+
     }
   }
 
