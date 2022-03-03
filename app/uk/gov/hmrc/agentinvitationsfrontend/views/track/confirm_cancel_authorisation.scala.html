@@ -32,7 +32,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukInsetText: GovukInsetText,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputYesNoRadio: InputYesNoRadios,
     submitButton: SubmitButton,
     h1: h1
@@ -50,7 +50,7 @@ backLinkHref = Some(backLinkUrl)
     @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
   }
 
-    @formHelper(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
+    @formWithCSRF(routes.AgentsRequestTrackingController.submitCancelAuthorisationConfirm){
 
         @if(service == Service.MtdIt) {
 

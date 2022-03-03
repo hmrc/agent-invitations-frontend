@@ -30,7 +30,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukDetails: GovukDetails,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputYesNoRadios: InputYesNoRadios,
     submitButton: SubmitButton
 )
@@ -51,7 +51,7 @@ backLinkHref = Some(config.backLink)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @formHelper(action = config.submitCall) {
+    @formWithCSRF(action = config.submitCall) {
 
         @inputYesNoRadios(
             field = choiceForm("accepted"),

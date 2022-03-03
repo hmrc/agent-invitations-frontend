@@ -15,36 +15,32 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
-    linkStyledAsButton: LinkStyledAsButton
+    formWithCSRF: FormWithCSRF,
+    linkStyledAsButton: LinkStyledAsButton,
+    p: p, h1: h1
 )
 
 @(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs(s"not-matched.header"), msgs("service.name.agents.auth")),
-isAgent = true) {
+    title = msgs("generic.title", msgs("not-matched.header"), msgs("service.name.agents.auth")),
+    isAgent = true) {
 
-    <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs(s"not-matched.header")</h1>
-
-    <p id="notMatched">@msgs(s"not-matched.description")</p>
-
-    <p id="notMatchedAdvice">@msgs(s"not-matched.advice")</p>
-
-    @linkStyledAsButton(id="tryAgainButton", href = tryAgainCall.url, messageKey = "try-again.button")
+    @h1(id = Some("notMatchedHeader"), key = "not-matched.header")
+    @p(id = Some("notMatched"), key = "not-matched.description")
+    @p(id = Some("notMatchedAdvice"), key = "not-matched.advice")
+    @linkStyledAsButton(id = "tryAgainButton", href = tryAgainCall.url, messageKey = "try-again.button")
 
     @if(hasJourneyCache) {
         <p class="govuk-!-margin-top-6">

@@ -32,7 +32,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukInsetText: GovukInsetText,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton,
     h1: h1
@@ -51,7 +51,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @formHelper(action = config.submitCall) {
+    @formWithCSRF(action = config.submitCall) {
 
         @if(config.service == Service.MtdIt) {
             @h1("cancel-authorisation.confirm-cancel.header")

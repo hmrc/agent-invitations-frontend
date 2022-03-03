@@ -28,7 +28,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
     submitButton: SubmitButton
 )
@@ -55,7 +55,7 @@ backLinkHref = Some(backLinkUrl)
 
     <!-- TODO use client type here (personal or trust) -->
 
-    @formHelper(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
         @inputText(
             field = cgtClientForm("cgtRef"),

@@ -32,11 +32,13 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     checkAnswersRow: CheckAnswersRow,
     inputRadio: InputRadios,
     submitButton: SubmitButton,
-    h1: h1
+    h1: h1,
+    p: p,
+    insetText: inset_text
 )
 
 @(confirmForm: Form[Confirmation],
@@ -73,7 +75,7 @@ backLinkHref = config.backLinkUrl
 
     @h1("check-details.heading")
 
-    <p class="govuk-inset-text">@msgs(s"check-details.p.${config.fastTrackRequest.service.id}")</p>
+    @insetText(html = Html(msgs(s"check-details.p.${config.fastTrackRequest.service.id}")))
 
     <h2>@msgs("check-details.table.heading")</h2>
 
@@ -129,19 +131,19 @@ backLinkHref = config.backLinkUrl
 
 
       @if(config.needClientType) {
-          @formHelper(config.clientTypeUrl) {
+          @formWithCSRF(config.clientTypeUrl) {
               @submitButton(id = "continueMoreInfo")
           }
       } else {
           @if(config.needKnownFact) {
-              @formHelper(config.knownFactUrl) {
+              @formWithCSRF(config.knownFactUrl) {
                   @submitButton(id = "continueMoreInfo")
               }
           }
       }
     } else {
 
-        @formHelper(config.submitFormCall, 'class -> "govuk-!-margin-top-6") {
+        @formWithCSRF(config.submitFormCall, 'class -> "govuk-!-margin-top-6") {
 
             @inputRadio(
                 field = confirmForm("accepted"),

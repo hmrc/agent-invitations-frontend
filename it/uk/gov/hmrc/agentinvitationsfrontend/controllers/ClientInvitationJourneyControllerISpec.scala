@@ -1447,8 +1447,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
 
-      html.select(Css.paragraphs).get(0).text() shouldBe "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
       html.select(Css.H1).get(0).text() shouldBe "This authorisation request has expired"
+      html.select(Css.paragraphs).get(0).text() shouldBe "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
       html.select("a[href=someAgentClientManagementFrontendExternalUrl#history]").text() shouldBe "View your request history"
 
     }
@@ -1465,10 +1465,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
 
-      checkIncludesText(result, "This authorisation request has already expired")
-      checkIncludesText(result, "This request expired on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
-
+      html.select(Css.H1).get(0).text() shouldBe "This authorisation request has already expired"
       val paragraphs = html.select(Css.paragraphs)
+      paragraphs.get(0).text() shouldBe "This request expired on d/M/yyyy. For details, view your history to check for any expired, cancelled or outstanding requests."
+      paragraphs.get(0).select("a").text() shouldBe "view your history"
+      paragraphs.get(0).select("a").attr("href") shouldBe "someAgentClientManagementFrontendExternalUrl#history"
+      paragraphs.get(0).select("a").hasClass("govuk-link")
       paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
       paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
       paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"

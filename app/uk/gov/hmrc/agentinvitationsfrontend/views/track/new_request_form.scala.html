@@ -25,7 +25,7 @@
 @this(
     mainTemplate: MainTemplate,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF
+    formWithCSRF: FormWithCSRF
 )
 
 @(
@@ -35,7 +35,7 @@ index: Int
 
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
-@formHelper(
+@formWithCSRF(
     action = Call("POST", routes.AgentInvitationFastTrackJourneyController.agentFastTrack().url),
     'id -> s"fastTrackInvitationCreate-${index}"
 ) {

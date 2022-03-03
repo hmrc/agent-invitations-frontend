@@ -28,7 +28,7 @@
 
 @this(
     mainTemplate: MainTemplate,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton,
     govukErrorSummary: GovukErrorSummary
@@ -47,7 +47,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    @formHelper(routes.ClientInvitationJourneyController.submitWhichTaxService){
+    @formWithCSRF(routes.ClientInvitationJourneyController.submitWhichTaxService){
 
         @inputRadio(
             field = confirmForm("accepted"),

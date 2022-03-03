@@ -27,14 +27,14 @@
 
 @this(
     mainTemplate: MainTemplate,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
 inputText: InputText
 )
 
 @(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @mainTemplate(title = "Test Only: Create a relationship", isAgent = true) {
     <h1>Test Only: Create a relationship</h1>
-    @formHelper(routes.TestEndpointsController.submitCreateRelationship()) {
+    @formWithCSRF(routes.TestEndpointsController.submitCreateRelationship()) {
         <fieldset class="govuk-fieldset">
             @inputText(
             field = dRForm("arn"),

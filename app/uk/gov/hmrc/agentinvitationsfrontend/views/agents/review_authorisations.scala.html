@@ -29,7 +29,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputYesNoRadio: InputYesNoRadios,
     checkAnswersRow: CheckAnswersRow,
     submitButton: SubmitButton,
@@ -75,7 +75,7 @@ backLinkHref = Some(backLinkUrl)
     }
     </dl>
 
-    @formHelper(config.submitCall){
+    @formWithCSRF(config.submitCall){
 
         @if(config.basketFull) {
             <input type="hidden" name="accepted" value="false" />

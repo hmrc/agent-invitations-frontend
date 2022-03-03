@@ -15,30 +15,28 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(
-   mainTemplate: MainTemplate,
-   linkStyledAsButton: LinkStyledAsButton
-)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p: p, h1: h1)
 
 @(clientTypeCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = msgs("service.name.agents.de-auth"), title = msgs("generic.title", msgs("cancel-authorisation.not-matched.header"), msgs("service.name.agents.de-auth")),  isAgent = true) {
+@mainTemplate(
+    bannerTitle = msgs("service.name.agents.de-auth"),
+    isAgent = true,
+    title = msgs("generic.title", msgs("cancel-authorisation.not-matched.header"), msgs("service.name.agents.de-auth"))) {
 
-<h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs("cancel-authorisation.not-matched.header")</h1>
+   @h1(id = Some("notMatchedHeader"), key = "cancel-authorisation.not-matched.header")
+   @p(id = Some("notMatched"), key = "cancel-authorisation.not-matched.description")
+   @p(id = Some("notMatchedAdvice"), key = "cancel-authorisation.not-matched.advice")
 
-<p id="notMatched">@msgs("cancel-authorisation.not-matched.description")</p>
-
-<p id="notMatchedAdvice">@msgs("cancel-authorisation.not-matched.advice")</p>
-
-@linkStyledAsButton(
- id="showClientTypeButton",
- href = clientTypeCall.toString,
- messageKey = "start-over.button"
-)
+    @linkStyledAsButton(
+        id = "showClientTypeButton",
+        href = clientTypeCall.toString,
+        messageKey = "start-over.button"
+    )
 
 }

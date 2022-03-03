@@ -15,30 +15,40 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, h1: h1)
+@this(mainTemplate: MainTemplate, h1: h1, p: p, a: a)
 
 @(continueUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@isAgent = @{ continueUrl.contains("agent") }
+@isAgent = @{
+    continueUrl.contains("agent")
+}
 
 @timeString = @{
     val timeout = externalUrls.timeout
-    if(timeout < 60) s"$timeout ${msgs("timed-out.seconds")}" else s"${timeout/60} ${msgs("timed-out.minutes")}"
+    if(timeout < 60) s"$timeout ${msgs("timed-out.seconds")}" else s"${timeout / 60} ${msgs("timed-out.minutes")}"
 }
 
-@mainTemplate(title = msgs("generic.title", msgs("timed-out.header"), msgs("service.name.clients")),
-bannerTitle = "service.name.clients",
-isAgent = isAgent,
-hasTimeout = false) {
+@mainTemplate(
+    title = msgs("generic.title", msgs("timed-out.header"), msgs("service.name.clients")),
+    bannerTitle = "service.name.clients",
+    isAgent = isAgent,
+    hasTimeout = false
+) {
 
     @h1("timed-out.header")
-    <p>@msgs("timed-out.p1", timeString)</p>
-        @if(isAgent){
-            <p>@Html(msgs("timed-out.p2", s"${continueUrl}"))</p>} else{<a class="button" role="button" href="@continueUrl">@msgs("timed-out.button")</a>
-        }
-
+    @p(msgs("timed-out.p1", timeString))
+    @if(isAgent) {
+        @p(html = Some(Html(msgs("timed-out.p2", s"$continueUrl"))))
+    } else {
+        @a(
+            href = continueUrl,
+            key = "timed-out.button",
+            classes = Some("govuk-button"),
+            attrs = Map("role" -> "button")
+        )
+    }
 }

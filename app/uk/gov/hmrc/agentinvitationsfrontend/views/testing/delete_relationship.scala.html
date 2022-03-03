@@ -28,14 +28,14 @@
 @this(
     mainTemplate: MainTemplate,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText
 )
 
 @(dRForm: Form[Relationship])(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 @mainTemplate(title = "Test Only: Delete a relationship", isAgent = true) {
     <h1>Test Only: Delete a relationship</h1>
-    @formHelper(routes.TestEndpointsController.submitDeleteRelationship()) {
+    @formWithCSRF(routes.TestEndpointsController.submitDeleteRelationship()) {
         <fieldset class="govuk-fieldset">
             @inputText(
             field = dRForm("arn"),

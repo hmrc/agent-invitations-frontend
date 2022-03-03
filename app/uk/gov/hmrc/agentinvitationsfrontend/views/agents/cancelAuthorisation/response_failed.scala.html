@@ -15,18 +15,18 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
-   mainTemplate: MainTemplate,
-   formHelper: FormWithCSRF,
-   submitButton: SubmitButton
+  mainTemplate: MainTemplate,
+  formWithCSRF: FormWithCSRF,
+  submitButton: SubmitButton,
+  p: p,
+  h1: h1,
 )
 
 @(submitCall: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -37,15 +37,18 @@
     isAgent = true
 ) {
 
-<h1 id="responseFailedHeader" class="govuk-heading-xl govuk-!-margin-top-4">@msgs("cancel-authorisation.response-failed.header")</h1>
+  @h1(
+       id = Some("responseFailedHeader"),
+       key="cancel-authorisation.response-failed.header",
+       classes = Some("govuk-!-margin-top-4"),
+    )
 
-<p id="responseFailed">@msgs("cancel-authorisation.response-failed.description")</p>
+    @p(id = Some("responseFailed"), key="cancel-authorisation.response-failed.description")
+    @p(id = Some("responseFailedAdvice"), key="cancel-authorisation.response-failed.advice")
 
-<p id="responseFailedAdvice">@msgs("cancel-authorisation.response-failed.advice")</p>
-
-@formHelper(action = submitCall) {
- <input id="confirmCancel" type="hidden" value="true" name="accepted"/>
- @submitButton(messageKey = "try-again.button")
-}
+    @formWithCSRF(action = submitCall) {
+        <input id="confirmCancel" type="hidden" value="true" name="accepted"/>
+        @submitButton(messageKey = "try-again.button")
+    }
 
 }

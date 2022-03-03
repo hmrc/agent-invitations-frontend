@@ -22,14 +22,14 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    formHelper: FormWithCSRF
+    formWithCSRF: FormWithCSRF
 )
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit msgs: Messages, request: Request[_])
 
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
-@formHelper(
+@formWithCSRF(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
     'id -> s"resendLink-${index}",
     'class -> "govuk-!-margin-bottom-2"
@@ -51,7 +51,7 @@
     </button>
 }
 
-@formHelper(
+@formWithCSRF(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
     'id -> s"postToConfirmCancel-$index"
 ) {

@@ -15,21 +15,21 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p)
 
 @(basket: Basket, service: Service, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @heading = @{
-  if(basket.isEmpty) msgs("agent-suspended.heading.single")
-  else msgs("agent-suspended.heading.multi")
+    if(basket.isEmpty) msgs("agent-suspended.heading.single")
+    else msgs("agent-suspended.heading.multi")
 }
 
 @mainTemplate(
@@ -38,17 +38,22 @@
 ) {
 
     @h1(heading)
-    <p>@msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.${service.id}"))</p>
+    @p(msgs("agent-suspended.p1", msgs(s"agent-suspended.p1.${service.id}")))
 
     @if(basket.isEmpty) {
-        <p>@msgs("agent-suspended.p2.single")</p>
+        @p("agent-suspended.p2.single")
         @linkStyledAsButton(
             id = "start-again",
             href = routes.AgentInvitationJourneyController.agentsRoot().url,
             messageKey = "start-again.button"
         )
     } else {
-        <p>@Html(msgs("agent-suspended.p2.multi", routes.AgentInvitationJourneyController.agentsRoot().url))</p>
+        @p(
+            html = Some(
+                Html(msgs("agent-suspended.p2.multi",
+                    routes.AgentInvitationJourneyController.agentsRoot().url))
+            )
+        )
         @linkStyledAsButton(
             id = "continue",
             href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url

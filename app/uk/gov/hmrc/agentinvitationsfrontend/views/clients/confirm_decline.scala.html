@@ -15,16 +15,15 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukRadios, Radios, Fieldset, Legend, Text, HtmlContent, Hint}
-@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcYesNoRadioItems
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukRadios, Hint, HtmlContent, Legend, Radios, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.hmrcfrontend.views.config.HmrcYesNoRadioItems
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -32,21 +31,13 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukRadios: GovukRadios,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputYesNoRadio: InputYesNoRadios,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    p: p, ul: ul
 )
 
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
-
-@inputHtmlHint = {
-    <p>@msgs(s"confirm-decline.sub-header", config.agencyName)</p>
-    <ul class="govuk-list govuk-list--bullet">
-    @for(key <- config.serviceKeys) {
-        <li>@msgs(s"confirm-decline.$key.service-name")</li>
-    }
-    </ul>
-}
 
 @mainTemplate(
 bannerTitle = "service.name.clients",
@@ -59,7 +50,7 @@ backLinkHref = Some(config.backLink.url)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmDeclineForm))
     }
 
-    @formHelper(action = config.submitUrl) {
+    @formWithCSRF(action = config.submitUrl) {
 
         @if(config.serviceKeys.length == 1){
             @inputYesNoRadio(
@@ -71,7 +62,12 @@ backLinkHref = Some(config.backLink.url)
         } else {
             @govukRadios(Radios(
                 classes = "govuk-radios--inline",
-                hint = Some(Hint(content = HtmlContent(inputHtmlHint))),
+                hint = Some(
+                    Hint(content = HtmlContent(
+                        p(msgs(s"confirm-decline.sub-header", config.agencyName)) + "" +
+                        ul(items = config.serviceKeys.map(key => s"confirm-decline.$key.service-name"))
+                    ))
+                ),
                 fieldset = Some(Fieldset(
                     legend = Some(Legend(
                         content = Text(msgs("confirm-decline.heading")),

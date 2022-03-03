@@ -14,12 +14,18 @@
  * limitations under the License.
  *@
 
-@this()
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukInsetText
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.insettext.InsetText
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 
-@(items: Seq[Html])(implicit msgs: Messages)
+@this(govukInsetText: GovukInsetText)
 
-<ul class="govuk-list govuk-list--bullet">
-    @for(html <- items) {
-        <li class="govuk-list--item">@html</li>
-    }
-</ul>
+@(html: Html, classes: String = "", id: Option[String] = None)(implicit msgs: Messages)
+
+@govukInsetText(
+    InsetText(
+        content = HtmlContent(html),
+        classes = classes,
+        id = id
+    )
+)

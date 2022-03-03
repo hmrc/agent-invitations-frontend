@@ -30,10 +30,11 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukFieldset: GovukFieldset,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
     inputDate: InputDate,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    p: p,
 )
 
 @(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -45,7 +46,7 @@
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@msgs("identify-client.itsa.p1")</p>
+    @p(id = Some("identify-client-hint"), key = "identify-client.itsa.p1")
 
     @inputText(
         field = agentInvitationsForm("clientIdentifier"),
@@ -73,7 +74,7 @@ backLinkHref = Some(backLinkUrl)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = dateErrorMapping("dob", agentInvitationsDateForm)))
     }
 
-    @formHelper(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(

@@ -31,7 +31,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText
 )
 
@@ -48,7 +48,7 @@
 @mainTemplate(title = "Test Only: Fast Track Invitation", isAgent = true) {
   <h1>Test Only: Fast Track Invitation</h1>
 
-  @formHelper(action = Call("POST", postToInvitations)) {
+  @formWithCSRF(action = Call("POST", postToInvitations)) {
     <fieldset class="govuk-fieldset">
           @inputText(
               field = fastTrackForm("clientType"),

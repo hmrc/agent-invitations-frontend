@@ -15,46 +15,40 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.InvitationCreationFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
-    submitButton: SubmitButton, h1: h1
+    formWithCSRF: FormWithCSRF,
+    submitButton: SubmitButton,
+    h1: h1,
+    p: p,
 )
 
 @(config: InvitationCreationFailedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs("create-auth-failed.header"), msgs("service.name.clients")),
-isAgent = true) {
+    title = msgs("generic.title", msgs("create-auth-failed.header"), msgs("service.name.clients")),
+    isAgent = true) {
 
     @h1("create-auth-failed.header")
 
-    <p class="govuk-!-margin-bottom-4">
-    @if(config.hasSingleRequest){
-        @msgs(s"create-auth-failed.p1", "request")
-    } else {
-        @msgs(s"create-auth-failed.p1", "requests")
-    }
-    </p>
+    @p(classes = Some("govuk-!-margin-bottom-4"),
+        key = msgs(s"create-auth-failed.p1", if(config.hasSingleRequest) "request" else "requests")
+    )
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-9">
     @for(request <- config.failedRequests) {
         <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-            @request.clientName
-            </dt>
+            <dt class="govuk-summary-list__key">@request.clientName</dt>
             <dd class="govuk-summary-list__value" id="client-identifier">
             @msgs(s"create-auth-failed.${request.invitation.service.id}")
             </dd>
@@ -63,31 +57,28 @@ isAgent = true) {
     </dl>
 
     @if(config.isAll) {
-        <p>@Html(msgs("create-auth-failed.p2.all", "/invitations/agents/client-type"))</p>
 
-        @formHelper(
+        @p(html = Some(Html(msgs("create-auth-failed.p2.all", "/invitations/agents/client-type"))))
+
+        @formWithCSRF(
             action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
-            'id -> "tryAgainInvitationCreation"
-        ) {
+            'id -> "tryAgainInvitationCreation") {
             <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
-            @submitButton(id="resendRequest", messageKey = "try-again.button")
+            @submitButton(id = "resendRequest", messageKey = "try-again.button")
         }
     } else {
-        @formHelper(
-          action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
-          'id -> "tryAgainInvitationCreation"
-        ) {
+        @formWithCSRF(
+            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
+            'id -> "tryAgainInvitationCreation") {
             <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
-            <p>
-              @if(config.hasSingleRequest) {
-                  @Html(msgs("create-auth-failed.link-text.one"))
-              } else {
-                  @Html(msgs("create-auth-failed.link-text.some"))
-              }
-            </p>
+            @if(config.hasSingleRequest) {
+                @p(html = Some(Html(msgs("create-auth-failed.link-text.one"))))
+            } else {
+                @p(html = Some(Html(msgs("create-auth-failed.link-text.some"))))
+            }
         }
 
-        @formHelper(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
+        @formWithCSRF(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
             @submitButton()
         }
     }

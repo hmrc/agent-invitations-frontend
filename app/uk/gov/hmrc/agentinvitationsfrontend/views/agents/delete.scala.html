@@ -29,7 +29,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputYesNoRadios: InputYesNoRadios,
     submitButton: SubmitButton
 )
@@ -46,7 +46,7 @@ backLinkHref = Some(config.backLinkUrl)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(deleteForm))
     }
 
-    @formHelper(config.submitDelete) {
+    @formWithCSRF(config.submitDelete) {
 
         @inputYesNoRadios(
             field = deleteForm("accepted"),
