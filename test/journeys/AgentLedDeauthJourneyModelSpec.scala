@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,8 +54,18 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val utr = Utr("1977030537")
   val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
   val cgtRef = CgtRef("XMCGTP123456789")
+  val pptRef = PptRef("XAPPT0000012345")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
+
+  def anIdentifierFor(service: Service): TaxIdentifier = service match {
+    case Service.MtdIt                => Nino(nino)
+    case Service.PersonalIncomeRecord => Nino(nino)
+    case Service.Vat                  => Vrn(vrn)
+    case Service.Trust                => utr
+    case Service.CapitalGains         => cgtRef
+    case Service.Ppt                  => pptRef
+  }
 
   def getClientName(clientId: String, service: Service) = Future(Some("John Smith"))
 
@@ -340,118 +350,48 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
     }
 
-    "at state ConfirmClientItsa" should {
-      "transition to ConfirmCancel when YES is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), Nino(nino))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.MtdIt, Some("Lucy Rose"), nino)
-        )
-      }
-
-      "transition to ConfirmCancel when YES is selected for alt-itsa" in {
-        given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), Nino(nino))) when
-          transitions.copy(hasPartialAuthorisationFor = (_, _) => Future(true)).clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.MtdIt, Some("Lucy Rose"), nino, true)
-        )
-      }
-      "transition to root when NO is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), Nino(nino))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to root when NO is selected for alt-itsa" in {
-        given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), Nino(nino))) when
-          transitions.copy(hasPartialAuthorisationFor = (_, _) => Future(true)).clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to NotAuthorised when there are no active relationships or partial auth requests" in {
-        given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), Nino(nino))) when
-          transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          NotAuthorised(Service.MtdIt)
-        )
-      }
-    }
-    "at state ConfirmClientIrv" should {
-      "transition to ConfirmCancel when YES is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, Some("Lucy Rose"), Nino(nino))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.PersonalIncomeRecord, Some("Lucy Rose"), nino)
-        )
-      }
-      "transition to root when NO is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, Some("Lucy Rose"), Nino(nino))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to NotAuthorised when there are no active relationships" in {
-        given(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, Some("Lucy Rose"), Nino(nino))) when
-          transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          NotAuthorised(Service.PersonalIncomeRecord)
-        )
-      }
-    }
-    "at state ConfirmClientPersonalVat" should {
-      "transition to ConfirmCancel when YES is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.Vat, Some("Lucy Rose"), vrn)
-        )
-      }
-      "transition to root when NO is selected" in {
-        given(ConfirmClient(ClientType.Personal, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to NotAuthorised when there are no active relationships" in {
-        given(ConfirmClient(ClientType.Personal, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          NotAuthorised(Service.Vat)
-        )
-      }
-    }
-    "at state ConfirmClientBusiness" should {
-      "transition to ConfirmCancel when YES is selected" in {
-        given(ConfirmClient(ClientType.Business, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.Vat, Some("Lucy Rose"), vrn)
-        )
-      }
-      "transition to root when NO is selected" in {
-        given(ConfirmClient(ClientType.Business, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to NotAuthorised when there are no active relationships" in {
-        given(ConfirmClient(ClientType.Business, Service.Vat, Some("Lucy Rose"), Vrn(vrn))) when
-          transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          NotAuthorised(Service.Vat)
-        )
-      }
-    }
-
-    "at state ConfirmClientTrust" should {
-      "transition to ConfirmCancel when YES is selected" in {
-        given(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), utr)) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ConfirmCancel(Service.Trust, Some("some-trust"), utr.value)
-        )
-      }
-      "transition to root when NO is selected" in {
-        given(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), utr)) when
-          transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
-          SelectClientType
-        )
-      }
-      "transition to NotAuthorised when there are no active relationships" in {
-        given(ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), utr)) when
-          transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          NotAuthorised(Service.Trust)
-        )
+    ClientType.clientTypes.foreach { clientType =>
+      val availableServices = Services.supportedServicesFor(clientType)
+      availableServices.foreach { service =>
+        val taxId = anIdentifierFor(service)
+        s"at state ConfirmClient ($clientType, $service)" should {
+          "transition to ConfirmCancel when YES is selected" in {
+            given(ConfirmClient(clientType, service, Some("client-name"), taxId)) when
+              transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+              ConfirmCancel(service, Some("client-name"), taxId.value)
+            )
+          }
+          "transition to root when NO is selected" in {
+            given(ConfirmClient(clientType, service, Some("client-name"), taxId)) when
+              transitionsWithActiveRelationship.clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
+              SelectClientType
+            )
+          }
+          "transition to NotAuthorised when there are no active relationships" in {
+            given(ConfirmClient(clientType, service, Some("client-name"), taxId)) when
+              transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+              NotAuthorised(service)
+            )
+          }
+          if (clientType == ClientType.Personal && service == Service.MtdIt) {
+            "transition to ConfirmCancel when there is only a partial auth (auth-itsa) and YES is selected" in {
+              given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), taxId)) when
+                transitions
+                  .copy(hasPartialAuthorisationFor = (_, _) => Future(true))
+                  .clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+                ConfirmCancel(Service.MtdIt, Some("Lucy Rose"), nino, true)
+              )
+            }
+            "transition to root when there is only a partial auth (auth-itsa) and NO is selected" in {
+              given(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Lucy Rose"), taxId)) when
+                transitions
+                  .copy(hasPartialAuthorisationFor = (_, _) => Future(true))
+                  .clientConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
+                SelectClientType
+              )
+            }
+          }
+        }
       }
     }
 
