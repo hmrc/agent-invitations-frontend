@@ -41,9 +41,9 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "SelectService" in {
-        val state = SelectService(ClientType.Personal, Set(Service.Vat, Service.MtdIt))
+        val state = SelectService(ClientType.Personal)
         val json =
-          Json.parse("""{"state":"SelectService", "properties": {"clientType": "personal", "enabledServices": ["HMRC-MTD-VAT", "HMRC-MTD-IT"]}}""")
+          Json.parse("""{"state":"SelectService", "properties": {"clientType": "personal"}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

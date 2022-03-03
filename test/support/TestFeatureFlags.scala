@@ -17,6 +17,7 @@
 package support
 
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class TestFeatureFlags(
   override val showHmrcMtdIt: Boolean = false,
@@ -29,7 +30,18 @@ case class TestFeatureFlags(
   override val showAgentLedDeAuth: Boolean = false,
   override val agentSuspensionEnabled: Boolean = false,
   override val acceptTrustURNIdentifier: Boolean = false,
-) extends FeatureFlags
+) extends FeatureFlags {
+  def setServiceFlag(service: Service, flag: Boolean): TestFeatureFlags = service match {
+    case Service.MtdIt                   => this.copy(showHmrcMtdIt = flag)
+    case Service.PersonalIncomeRecord    => this.copy(showPersonalIncome = flag)
+    case Service.Vat                     => this.copy(showHmrcMtdVat = flag)
+    case Service.Trust | Service.TrustNT => this.copy(showHmrcTrust = flag)
+    case Service.CapitalGains            => this.copy(showHmrcCgt = flag)
+    case Service.Ppt                     => this.copy(showPlasticPackagingTax = flag)
+  }
+  def enable(service: Service): TestFeatureFlags = setServiceFlag(service, true)
+  def disable(service: Service): TestFeatureFlags = setServiceFlag(service, false)
+}
 
 object TestFeatureFlags {
   def allDisabled: TestFeatureFlags = TestFeatureFlags()

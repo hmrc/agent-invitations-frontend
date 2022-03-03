@@ -472,7 +472,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
     def checkedDetailsAllInformation(appConfig: AppConfig)(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
-        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.MtdIt => {
+        case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.MtdIt =>
           if (confirmation.choice) {
             checkPostcodeMatches(Nino(fastTrackRequest.clientIdentifier), fastTrackRequest.knownFact.getOrElse(""))
               .flatMap {
@@ -489,7 +489,6 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                   else goto(ClientNotSignedUp(fastTrackRequest, continueUrl))
               }
           } else goto(IdentifyPersonalClient(fastTrackRequest, continueUrl))
-        }
 
         case cdc @ CheckDetailsComplete(fastTrackRequest, continueUrl) if cdc.service == Service.PersonalIncomeRecord =>
           if (confirmation.choice) {
@@ -742,7 +741,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
     def moreDetailsVat(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
-        case NoVatRegDate(ftRequest, continueUrl) => {
+        case NoVatRegDate(ftRequest, continueUrl) =>
           val clientType =
             if (ftRequest.clientType.contains(ClientType.Personal))
               ClientType.Personal
@@ -756,18 +755,16 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
           checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
-        }
       }
 
     def moreDetailsPpt(appConfig: AppConfig)(agent: AuthorisedAgent)(suppliedKnownFact: String) =
       Transition {
-        case NoPptRegDate(ftRequest, continueUrl) => {
+        case NoPptRegDate(ftRequest, continueUrl) =>
           val newState =
             CheckDetailsComplete(ftRequest.copy(service = Service.Ppt, knownFact = Some(suppliedKnownFact)), continueUrl)
 
           checkedDetailsAllInformation(appConfig)(agent)(Confirmation(true))
             .apply(newState)
-        }
       }
 
     def tryAgainNotMatchedKnownFact(agent: AuthorisedAgent) =

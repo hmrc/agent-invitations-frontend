@@ -20,6 +20,7 @@ import com.google.inject.ImplementedBy
 
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
@@ -44,6 +45,8 @@ trait FeatureFlags {
     case Service.Ppt                  => showPlasticPackagingTax
   }
 
+  def enabledServices: Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled)
+  def enabledServicesFor(clientType: ClientType): Set[Service] = Services.supportedServicesFor(clientType).filter(isServiceEnabled)
 }
 
 @Singleton

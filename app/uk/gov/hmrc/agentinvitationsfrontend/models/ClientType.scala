@@ -28,6 +28,8 @@ object ClientType {
   case object Business extends ClientType
   case object Trust extends ClientType
 
+  val clientTypes: Seq[ClientType] = Seq(Personal, Business, Trust)
+
   def toEnum: String => ClientType = {
     case "personal" => Personal
     case "business" => Business

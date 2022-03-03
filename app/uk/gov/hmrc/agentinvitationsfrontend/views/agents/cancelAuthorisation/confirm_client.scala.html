@@ -34,7 +34,7 @@
     submitButton: SubmitButton
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientName: String, choiceForm: Form[Confirmation], submitCall: Call, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     bannerTitle = msgs("service.name.agents.de-auth"),

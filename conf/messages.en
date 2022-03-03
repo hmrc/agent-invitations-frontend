@@ -334,14 +334,14 @@ cancel-authorisation.client-type.p1=If you need to cancel your authorisation for
 error.cancel-authorisation.client-type.empty=Select the type of client you need to cancel your authorisation for
 error.fast-track.client-type.empty=Select the type of client you need to cancel your authorisation for
 
-cancel-authorisation.select-service.header=Which authorisation do you want to cancel for this client?
-cancel-authorisation.select-service.PERSONAL-INCOME-RECORD=View their PAYE income record
-cancel-authorisation.select-service.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
-cancel-authorisation.select-service.HMRC-MTD-VAT=Manage their VAT
-cancel-authorisation.select-service.HMRC-TERS-ORG=Maintain a trust or an estate
-cancel-authorisation.select-service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
-cancel-authorisation.select-service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
-cancel-authorisation.select-service.hint=Select an option.
+cancel-authorisation.personal.select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.personal.select-service.PERSONAL-INCOME-RECORD=View their PAYE income record
+cancel-authorisation.personal.select-service.HMRC-MTD-IT=Manage their Making Tax Digital for Income Tax
+cancel-authorisation.personal.select-service.HMRC-MTD-VAT=Manage their VAT
+cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Maintain a trust or an estate
+cancel-authorisation.personal.select-service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
+cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
+cancel-authorisation.personal.select-service.hint=Select an option.
 
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
 cancel-authorisation.confirm-client.header=Is {0} the client you want to cancel your authorisation for?
@@ -373,11 +373,11 @@ cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG={0} is no longer authorised to
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property account for {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG={0} is no longer authorised to manage Plastic Packaging Tax for {1}.
 cancel-authorisation.cancelled.print=Print this page
-cancel-authorisation.business-select-service.header=Which authorisation do you want to cancel for this client?
-cancel-authorisation.business-select-service.single.header=Do you want to cancel managing this client’s VAT?
+cancel-authorisation.business.select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.business.select-service.single.header=Do you want to cancel managing this client’s VAT?
 cancel-authorisation.error.business-service.single.required=Select yes if you want to cancel managing this client’s VAT
 
-cancel-authorisation.trust-select-service.header=Which authorisation do you want to cancel for this client?
+cancel-authorisation.trust.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.error.trust-service.required=Select yes if you want to cancel this client’s tax returns through software
 
 cancel-authorisation.not-matched.header=We could not find your client
