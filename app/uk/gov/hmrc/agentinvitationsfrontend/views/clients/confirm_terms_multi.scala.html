@@ -110,7 +110,9 @@
             </li>
         </ul>
     } else {
-        <p class="govuk-!-margin-bottom-4">@msgs("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)</p>
+        @p(classes = Some("govuk-!-margin-bottom-4"),
+            key = msgs("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)
+        )
         <ul class="govuk-list govuk-list--bullet">
             <li>@msgs("confirm-terms-multi.cgt.business.p1.l1")</li>
             <li>@msgs("confirm-terms-multi.cgt.business.p1.l2")</li>
@@ -183,11 +185,11 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmTermsForm))
     }
 
-        @if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl.url)){
-            @h1("confirm-terms.multi-individual.heading", classes = Some("govuk-!-margin-bottom-4"))
-        } else {
-            @h1("confirm-terms.multi.heading", classes = Some("govuk-!-margin-bottom-4"))
-        }
+    @if(request.headers.get("Referer").getOrElse("").endsWith(pageConfig.checkAnswersUrl.url)){
+        @h1("confirm-terms.multi-individual.heading", classes = Some("govuk-!-margin-bottom-4"))
+    } else {
+        @h1("confirm-terms.multi.heading", classes = Some("govuk-!-margin-bottom-4"))
+    }
 
     @p(msgs("confirm-terms.multi.p1", pageConfig.agencyName))
 
@@ -195,7 +197,8 @@
     @p(html = Some(Html(msgs("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))))
 
     @formWithCSRF(pageConfig.submitUrl) {
-    <fieldset class="govuk-fieldset">
+
+        <fieldset class="govuk-fieldset">
         <legend class="govuk-visually-hidden">
             @msgs(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName)
         </legend>
@@ -204,7 +207,13 @@
 
             @if(pageConfig.isPending(consent)) {
 
-                <h2 class="govuk-!-margin-bottom-4 govuk-!-margin-top-4">@msgs(s"confirm-terms-multi.${if(List("cgt", "ppt").contains(consent.serviceKey)) s"${consent.serviceKey}.${pageConfig.clientType}" else consent.serviceKey}.heading")</h2>
+                @if(List("cgt", "ppt").contains(consent.serviceKey)) {
+                    @h2(key = s"confirm-terms-multi.${consent.serviceKey}.${pageConfig.clientType}.heading",
+                        classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
+                }else{
+                    @h2(key = s"confirm-terms-multi.${consent.serviceKey}.heading",
+                        classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
+                }
 
                 @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
 
@@ -229,7 +238,7 @@
             }
         }
     </fieldset>
-    @submitButton()
+        @submitButton()
     }
 
 }
