@@ -19,9 +19,9 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import org.joda.time.LocalDate
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
+import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, TrustTaxIdentifier, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
@@ -63,15 +63,12 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     case class PptRefNotFound(pptRef: PptRef) extends ErrorState
   }
 
-  object Transitions {
-
-    import State._
-
+  object TransitionEffects {
     type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type HasActiveRelationship = (Arn, String, Service) => Future[Boolean]
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, Service) => Future[Option[String]]
-    type DOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
+    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
     type VatRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type DeleteRelationship = (Service, Arn, String) => Future[Option[Boolean]]
     type SetRelationshipEnded = (Arn, String, Service) => Future[Option[Boolean]]
@@ -79,6 +76,27 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
+  }
+
+  import TransitionEffects._
+
+  case class Transitions(
+    featureFlags: FeatureFlags,
+    checkPostcodeMatches: CheckPostcodeMatches,
+    hasActiveRelationshipFor: HasActiveRelationship,
+    hasPartialAuthorisationFor: HasPartialAuthorisation,
+    getClientName: GetClientName,
+    checkDOBMatches: CheckDOBMatches,
+    checkVatRegDateMatches: VatRegDateMatches,
+    deleteRelationship: DeleteRelationship,
+    setRelationshipEnded: SetRelationshipEnded,
+    getAgencyName: GetAgencyName,
+    getCgtSubscription: GetCgtSubscription,
+    getPptSubscription: GetPptSubscription,
+    getTrustName: GetTrustName
+  ) {
+
+    import State._
 
     def selectedClientType(agent: AuthorisedAgent)(clientTypeStr: String) = Transition {
       case SelectClientType =>
@@ -86,10 +104,10 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         goto(SelectService(clientType))
     }
 
-    def chosenServiceMulti(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(service: Service) =
-      chosenService(featureFlags)(agent)(Some(service))
+    def chosenServiceMulti(agent: AuthorisedAgent)(service: Service) =
+      chosenService(agent)(Some(service))
 
-    def chosenService(featureFlags: FeatureFlags)(agent: AuthorisedAgent)(mService: Option[Service]) =
+    def chosenService(agent: AuthorisedAgent)(mService: Option[Service]) =
       Transition {
         case SelectService(clientType) =>
           mService match {
@@ -102,8 +120,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
         case _ => goto(root)
       }
 
-    def submitIdentifyClientItsa(checkPostcodeMatches: CheckPostcodeMatches, getClientName: GetClientName)(agent: AuthorisedAgent)(
-      itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientItsa(agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(kfcResult: Option[Boolean]): Future[State] =
         for {
@@ -127,11 +144,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def submitIdentifyClientIrv(
-      checkDOBMatches: DOBMatches,
-      getClientName: GetClientName,
-      hasActiveRelationship: HasActiveRelationship,
-      hasPartialAuthorisation: HasPartialAuthorisation)(agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientIrv(agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
       def goToState(dobMatchResult: Option[Boolean]): Future[State] =
         for {
@@ -139,7 +152,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                          case Some(true) =>
                            getClientName(irvClient.clientIdentifier, Service.PersonalIncomeRecord).flatMap(
                              name =>
-                               clientConfirmed(hasActiveRelationship)(hasPartialAuthorisation)(agent)(Confirmation(true))
+                               clientConfirmed(agent)(Confirmation(true))
                                  .apply(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, name, Nino(irvClient.clientIdentifier))))
                          case Some(false) => goto(KnownFactNotMatched)
                          case None        => goto(NotSignedUp(Service.PersonalIncomeRecord))
@@ -157,7 +170,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def submitIdentifyClientTrust(getTrustName: GetTrustName)(agent: AuthorisedAgent)(trustClient: TrustClient) =
+    def submitIdentifyClientTrust(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
           getTrustName(trustClient.taxId).flatMap { trustResponse =>
@@ -174,37 +187,19 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitIdentifyClientCgt(getCgtSubscription: GetCgtSubscription)(agent: AuthorisedAgent)(
-      cgtClient: CgtClient): AgentLedDeauthJourneyModel.Transition = {
-      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State) =
+    def submitIdentifyClientCgt(agent: AuthorisedAgent)(cgtClient: CgtClient): AgentLedDeauthJourneyModel.Transition = Transition {
+      case IdentifyClient(clientType, Service.CapitalGains) =>
         getCgtSubscription(cgtClient.cgtRef).map {
-          case Some(subscription) =>
-            if (subscription.isUKBasedClient) {
-              showPostcode(subscription)
-            } else {
-              showCountryCode(subscription)
-            }
+          case Some(subscription) if subscription.isUKBasedClient =>
+            ConfirmPostcodeCgt(clientType, cgtClient.cgtRef, subscription.postCode, subscription.name)
+          case Some(subscription) if !subscription.isUKBasedClient =>
+            ConfirmCountryCodeCgt(clientType, cgtClient.cgtRef, subscription.countryCode, subscription.name)
           case None =>
             CgtRefNotFound(cgtClient.cgtRef)
         }
-
-      Transition {
-        case IdentifyClient(clientType, Service.CapitalGains) =>
-          handle(
-            cgtSubscription => ConfirmPostcodeCgt(clientType, cgtClient.cgtRef, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription =>
-              ConfirmCountryCodeCgt(
-                clientType,
-                cgtClient.cgtRef,
-                cgtSubscription.countryCode,
-                cgtSubscription.name
-            )
-          )
-      }
     }
 
-    def submitIdentifyClientPpt(getPptSubscription: GetPptSubscription)(agent: AuthorisedAgent)(
-      pptClient: PptClient): AgentLedDeauthJourneyModel.Transition =
+    def submitIdentifyClientPpt(agent: AuthorisedAgent)(pptClient: PptClient): AgentLedDeauthJourneyModel.Transition =
       Transition {
         case IdentifyClient(clientType, Service.Ppt) =>
           getPptSubscription(pptClient.pptRef).map {
@@ -235,12 +230,11 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def submitIdentifyClientVat(vatRegDateMatches: VatRegDateMatches, getClientName: GetClientName)(agent: AuthorisedAgent)(
-      vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
+    def submitIdentifyClientVat(agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
 
       def vatRegDateMatchResult: Future[VatKnownFactCheckResult] =
         if (vatClient.registrationDate.nonEmpty)
-          vatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
+          checkVatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
         else throw new Exception("Vat registration date expected but none found")
 
       def goToState(vatRegDateMatchResult: VatKnownFactCheckResult, finalState: Option[String] => State): Future[State] =
@@ -275,15 +269,14 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def clientConfirmed(hasActiveRelationship: HasActiveRelationship)(hasPartialAuthorisation: HasPartialAuthorisation)(agent: AuthorisedAgent)(
-      confirmation: Confirmation): AgentLedDeauthJourneyModel.Transition = {
+    def clientConfirmed(agent: AuthorisedAgent)(confirmation: Confirmation): AgentLedDeauthJourneyModel.Transition = {
 
       def gotoFinalState(clientId: String, service: Service, name: Option[String]) =
         if (confirmation.choice) {
           for {
-            relationshipIsActive <- hasActiveRelationship(agent.arn, clientId, service)
+            relationshipIsActive <- hasActiveRelationshipFor(agent.arn, clientId, service)
             result <- if (relationshipIsActive) goto(ConfirmCancel(service, name, clientId))
-                     else if (service == Service.MtdIt) hasPartialAuthorisation(agent.arn, clientId).flatMap {
+                     else if (service == Service.MtdIt) hasPartialAuthorisationFor(agent.arn, clientId).flatMap {
                        case true  => goto(ConfirmCancel(service, name, clientId, true))
                        case false => goto(NotAuthorised(service))
                      } else goto(NotAuthorised(service))
@@ -295,8 +288,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    def cancelConfirmed(deleteRelationship: DeleteRelationship, getAgencyName: GetAgencyName, setRelationshipEnded: SetRelationshipEnded)(
-      agent: AuthorisedAgent)(confirmation: Confirmation) =
+    def cancelConfirmed(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case ConfirmCancel(service, clientName, clientId, isAltItsa) =>
           if (confirmation.choice) {
