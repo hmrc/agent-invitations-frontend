@@ -14,24 +14,20 @@
  * limitations under the License.
  *@
 
-@import java.time.LocalDate
-
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.util.DisplayDateUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, HtmlContent, Panel, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(
-    mainTemplate: MainTemplate,
-    govukPanel: GovukPanel,
-    linkStyledAsButton: LinkStyledAsButton
-)
+@import java.time.LocalDate
+
+@this(mainTemplate: MainTemplate, govukPanel: GovukPanel,
+        linkStyledAsButton: LinkStyledAsButton,
+        h1: h1, h2: h2, p: p, a: a, span: span, ul_html: ul_html)
 
 @(
     service: Service,
@@ -46,35 +42,36 @@
 }
 
 @mainTemplate(
-bannerTitle = msgs("service.name.agents.de-auth"),
-title = msgs("generic.title", msgs("cancel-authorisation.cancelled.header"), msgs("service.name.agents.de-auth")),
-isAgent = true) {
+    bannerTitle = msgs("service.name.agents.de-auth"),
+    title = msgs("generic.title", msgs("cancel-authorisation.cancelled.header"), msgs("service.name.agents.de-auth")),
+    isAgent = true) {
 
     @govukPanel(Panel(
         title = Text(msgs("cancel-authorisation.cancelled.header")),
         content = HtmlContent(s"$panelContent")
     ))
 
-    <h2>@msgs("cancel-authorisation.cancelled.subheader")</h2>
-    <p>@Html(msgs(s"cancel-authorisation.cancelled.p1.${service.id}", agencyName, clientName))</p>
+    @h2("cancel-authorisation.cancelled.subheader")
+    @p(msgs(s"cancel-authorisation.cancelled.p1.${service.id}", agencyName, clientName))
 
     @if(service == Service.MtdIt) {
-        <h2>@msgs("authorisation-cancelled.check-sa.subheader")</h2>
+        @h2("authorisation-cancelled.check-sa.subheader")
 
-        <p>@msgs("authorisation-cancelled.check-sa.p1")</p>
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
-            <li>
-            <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
-            </li>
-            <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
-        </ul>
-    }  
+        @p("authorisation-cancelled.check-sa.p1")
+        @ul_html(
+            items = Seq(
+                span("authorisation-cancelled.check-sa.l1"),
+                a(key = "authorisation-cancelled.check-sa.l2", href = externalUrls.guidanceSa),
+                span("authorisation-cancelled.check-sa.l3"),
+            )
+        )
+    }
     <p>
-        <a href="javascript:window.print()" class="print-link">
-            <!--TODO add hidden text with more context in messages file-->
-            <span>@msgs("cancel-authorisation.cancelled.print")</span>
-        </a>
+        @a(
+            href="javascript:window.print()",
+            classes= Some("print-link"),
+            key = "cancel-authorisation.cancelled.print"
+        )
     </p>
 
     @linkStyledAsButton(href = agentServicesAccountUrl, messageKey = "cancel-authorisation.cancelled.return-to-account-services.button")

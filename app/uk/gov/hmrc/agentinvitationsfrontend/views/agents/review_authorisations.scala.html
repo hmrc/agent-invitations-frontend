@@ -15,14 +15,13 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.ReviewAuthorisationsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, CheckAnswersRow, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{CheckAnswersRow, InputYesNoRadios, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -33,15 +32,16 @@
     inputYesNoRadio: InputYesNoRadios,
     checkAnswersRow: CheckAnswersRow,
     submitButton: SubmitButton,
-    h1: h1
+    h1: h1,
+    p: p
 )
 
-@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm:Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(config: ReviewAuthorisationsPageConfig, reviewAuthorisationsForm: Form[Confirmation], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs("review-authorisations.heading"), msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(backLinkUrl)
+    title = msgs("generic.title", msgs("review-authorisations.heading"), msgs("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(reviewAuthorisationsForm.hasErrors) {
@@ -50,16 +50,14 @@ backLinkHref = Some(backLinkUrl)
 
     @h1("review-authorisations.heading")
 
-    <p>
     @if(config.basket.size == 1) {
-        @msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.singular")}")
+        @p(msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.singular")}"))
     } else {
-        @msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.plural")}")
+        @p(msgs("review-authorisations.p", s"${config.basket.size} ${msgs("review-authorisations.plural")}"))
     }
-    </p>
 
-    @if(config.clientNamesAreDifferent){
-      <p>@msgs("review-authorisations.different-names")</p>
+    @if(config.clientNamesAreDifferent) {
+        @p("review-authorisations.different-names")
     }
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
@@ -68,14 +66,14 @@ backLinkHref = Some(backLinkUrl)
             key = config.clientNameOf(authorisationRequest, msgs("review-authorisations.no-client-name")),
             valueId = s"client-service-${authorisationRequest.invitation.service.id}",
             value = msgs(s"review-authorisations.table.${authorisationRequest.invitation.service.id}"),
-            actionText = Some(msgs("review-authorisations.table.remove")) ,
+            actionText = Some(msgs("review-authorisations.table.remove")),
             actionHref = Some(config.showDeleteCall(authorisationRequest.itemId).url),
-            hiddenActionText = Some(msgs("review-authorisations.table.remove.aria-text", msgs(s"review-authorisations.table.${authorisationRequest.invitation.service.id}"),config.clientNameOf(authorisationRequest, msgs("review-authorisations.no-client-name"))))
+            hiddenActionText = Some(msgs("review-authorisations.table.remove.aria-text", msgs(s"review-authorisations.table.${authorisationRequest.invitation.service.id}"), config.clientNameOf(authorisationRequest, msgs("review-authorisations.no-client-name"))))
         )
     }
     </dl>
 
-    @formWithCSRF(config.submitCall){
+    @formWithCSRF(config.submitCall) {
 
         @if(config.basketFull) {
             <input type="hidden" name="accepted" value="false" />

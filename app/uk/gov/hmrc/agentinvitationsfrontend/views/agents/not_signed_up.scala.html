@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p)
 
 @(
     service: Service,
@@ -44,7 +44,7 @@
 
     @h1(msgs("not-enrolled.title", msgs(s"not-enrolled.title.${service.id}")))
 
-    <p>@msgs("not-enrolled.p", msgs(s"not-enrolled.p.${service.id}"))</p>
+    @p(msgs("not-enrolled.p", msgs(s"not-enrolled.p.${service.id}")))
 
     @htmlPartial.getOrElse("")
 

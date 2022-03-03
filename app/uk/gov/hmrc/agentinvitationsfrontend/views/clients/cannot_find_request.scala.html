@@ -21,18 +21,21 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 
-@this(mainTemplate: MainTemplate, h1:h1, p:p)
+@this(mainTemplate: MainTemplate, h1: h1, p: p, a: a, span: span)
 
 @(clientType: String, agencyName: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(bannerTitle = "service.name.clients", title = msgs(s"generic.title", msgs("cannot-find-request.header"), msgs("service.name.clients")),  isAgent = false) {
 
     @h1("cannot-find-request.header")
-
     @p(msgs("cannot-find-request.p1", agencyName))
-    <p><a href="@externalUrls.guidanceAuthoriseAgent">@msgs("cannot-find-request.p2")</a> @msgs("cannot-find-request.p4")</p>
-    <p>@Html(msgs("cannot-find-request.p3", routes.ClientInvitationJourneyController.signOutAndRedirect(), msgs(s"cannot-find-request.${clientType}")))</p>
-
-
-
+    <p>
+        @a(href=externalUrls.guidanceAuthoriseAgent, key = "cannot-find-request.p2")
+        @span("cannot-find-request.p4")
+    </p>
+    @p(html = Some(Html(
+        msgs("cannot-find-request.p3",
+            routes.ClientInvitationJourneyController.signOutAndRedirect(),
+            msgs(s"cannot-find-request.${clientType}"))))
+    )
 }

@@ -1,12 +1,12 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.joda.time.{DateTime, LocalDate}
+import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
-import play.api.test.FakeRequest
-import play.api.test.Helpers
-import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import play.api.test.Helpers.defaultAwaitTimeout
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -1152,8 +1152,19 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         htmlEscapedMessage("authorisation-cancelled.check-sa.l3"),
         htmlEscapedMessage("cancel-authorisation.cancelled.print")
       )
-      checkResultContainsLink(result, "https://www.gov.uk/guidance/self-assessment-for-agents-online-service", htmlEscapedMessage("authorisation-cancelled.check-sa.l2"))
-      checkResultContainsLink(result, s"http://localhost:$wireMockPort/agent-services-account/home", htmlEscapedMessage("cancel-authorisation.cancelled.return-to-account-services.button"), roleIsButton = true)
+
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      val signInLink = html.select("a[href='https://www.gov.uk/guidance/self-assessment-for-agents-online-service']")
+      signInLink.text() shouldBe "sign in to your HMRC online services for agents account"
+      signInLink.hasClass("govuk-link")
+
+      val asaLink = html.select(s"a[href='http://localhost:${wireMockPort}/agent-services-account/home']")
+      asaLink.text() shouldBe "Return to agent services account"
+      asaLink.hasClass("govuk-button")
+      asaLink.attr("role") shouldBe "button"
+
     }
 
     "not display the extra 'check self assessment' lines when cancelling authorisations other than Income Tax" in {

@@ -1,20 +1,20 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.util.UUID
 import org.joda.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatest.Assertion
 import play.api.Application
 import play.api.mvc._
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, Css}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
@@ -59,36 +59,74 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
-        checkWarmUpPageIsShown(result.futureValue)
-        checkNewWarmUpPageIsShown(result.futureValue)
+        val agencyName = "My Agency"
+        val htmlString = Helpers.contentAsString(result)
+        val html = Jsoup.parse(htmlString)
+        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
+        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
+        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "show old warmup prototype when business client type" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("business", uid, "My-Agency")(reqAuthorisedWithJourneyId)
-        checkWarmUpPageIsShown(result.futureValue)
-        checkNewWarmUpPageIsNotShown(result.futureValue)
+        val agencyName = "My Agency"
+        val htmlString = Helpers.contentAsString(result)
+        val html = Jsoup.parse(htmlString)
+        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
+        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
+        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your business tax affairs."
+        paragraphs.get(2).text() shouldBe "I do not want to authorise My Agency"
       }
 
       "work when signed in" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
-        checkWarmUpPageIsShown(result.futureValue)
+        val agencyName = "My Agency"
+        val htmlString = Helpers.contentAsString(result)
+        val html = Jsoup.parse(htmlString)
+        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
+        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
+        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "work when not signed in" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
         val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
-        checkWarmUpPageIsShown(result.futureValue)
+        val agencyName = "My Agency"
+        val htmlString = Helpers.contentAsString(result)
+        val html = Jsoup.parse(htmlString)
+        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
+        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
+        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "remove spaces in the url" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency ")(reqAuthorisedWithJourneyId)
-        checkWarmUpPageIsShown(result.futureValue)
+        val htmlString = Helpers.contentAsString(result)
+        val html = Jsoup.parse(htmlString)
+        val agencyName = "My Agency"
+        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
+        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
+        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "show not-found content on the same page if the url is corrupted" in new Setup {
@@ -100,33 +138,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
-      }
-
-      def checkWarmUpPageIsShown(result: Result) {
-        status(result) shouldBe 200
-
-        checkHtmlResultWithBodyText(
-          result,
-          htmlEscapedMessage("service.name.clients"),
-          htmlEscapedMessage("warm-up.header", "My Agency"),
-          htmlEscapedMessage("warm-up.inset", "My Agency"))
-        checkIncludesText(result, "<p>So we can confirm who you are")
-      }
-
-      def checkNewWarmUpPageIsShown(result: Result): Unit = {
-        checkHtmlResultWithBodyText(
-          result,
-          htmlEscapedMessage("warm-up.p2.personal"),
-          htmlEscapedMessage("warm-up.p3.personal")
-        )
-      }
-
-      def checkNewWarmUpPageIsNotShown(result: Result): Unit = {
-        checkHtmlResultWithNotBodyText(
-          result,
-          htmlEscapedMessage("warm-up.p2.personal"),
-          htmlEscapedMessage("warm-up.p3.personal")
-        )
       }
     }
 

@@ -14,18 +14,13 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.GovukInsetText
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.insettext.InsetText
+@this()
 
-@this(govukInsetText: GovukInsetText)
+@(
+   key: String = "",
+   html: Option[Html] = None,
+   classes: Option[String] = None,
+   id: Option[String] = None
+)(implicit msgs: Messages)
 
-@(html: Html, classes: String = "", id: Option[String] = None)(implicit msgs: Messages)
-
-@govukInsetText(
-    InsetText(
-        content = HtmlContent(html),
-        classes = classes,
-        id = id
-    )
-)
+ <li class=@classes.getOrElse("") @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</li>
