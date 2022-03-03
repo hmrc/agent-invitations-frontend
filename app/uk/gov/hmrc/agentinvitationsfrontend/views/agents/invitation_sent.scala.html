@@ -80,8 +80,7 @@ isAgent = true) {
                     href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax",
                     key = "invitation-sent.mtd",
                     id = Some("signUpYourClient"),
-                    target = Some("_blank"),
-                    rel = Some("noreferrer noopener")
+                    openInNewWindow = true,
                 )
 
             </li>
@@ -97,8 +96,7 @@ isAgent = true) {
                     href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you",
                     key = "invitation-sent.further-help.link-text.sbs",
                     id = Some("stepByStep"),
-                    target = Some("_blank"),
-                    rel = Some("noreferrer noopener")
+                    openInNewWindow = true
                 ).toString
             ),
             Html(
