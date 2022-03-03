@@ -29,7 +29,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
     submitButton: SubmitButton
 )
@@ -50,7 +50,7 @@ backLinkHref = Some(backLinkUrl)) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(postcodeForm))
     }
 
-    @formHelper(action = submitUrl) {
+    @formWithCSRF(action = submitUrl) {
 
         @inputText(
             field = postcodeForm("postcode"),

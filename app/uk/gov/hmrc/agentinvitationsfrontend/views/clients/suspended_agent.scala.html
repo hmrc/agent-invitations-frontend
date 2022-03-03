@@ -27,7 +27,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
     p:p,
     a:a,
@@ -76,7 +76,7 @@ isAgent = false) {
             )
         )
 
-        @formHelper(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
+        @formWithCSRF(Call("POST", routes.ClientInvitationJourneyController.submitSuspendedAgent.url)){
             @submitButton(id="continueFromSuspendedAgent")
         }
     }

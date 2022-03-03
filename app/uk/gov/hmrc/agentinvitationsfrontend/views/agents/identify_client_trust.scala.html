@@ -15,15 +15,13 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukInput, Input, Label, Hint}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Details, ErrorSummary, FormWithCSRF, GovukDetails, GovukErrorSummary, GovukInput, Hint, HtmlContent, Input, Label, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -32,44 +30,49 @@
     govukErrorSummary: GovukErrorSummary,
     govukDetails: GovukDetails,
     govukInput: GovukInput,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    p: p,
+    h1: h1,
 )
 
 @(
-trustClientForm : Form[TrustClient],
-submitFormCall: Call,
-backLinkUrl: String,
-isDeAuthJourney: Boolean = false,
-showUrnEnabledContent: Boolean = false
+        trustClientForm: Form[TrustClient],
+        submitFormCall: Call,
+        backLinkUrl: String,
+        isDeAuthJourney: Boolean = false,
+        showUrnEnabledContent: Boolean = false
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{
+    if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
 
 @detailsContent = {
-<p id="identifyTrustSuggestion">@Html(msgs("identify-trust.alt-suggestion"))</p>
-<p id="identifyTrustGuidance">@Html(msgs("identify-trust.suggestion"))</p>
+    @p( id = Some("identifyTrustSuggestion"),
+        html = Some(Html(msgs("identify-trust.alt-suggestion")))
+    )
+    @p( id = Some("identifyTrustGuidance"),
+        html = Some(Html(msgs("identify-trust.suggestion")))
+    )
 }
 
 @mainTemplate(
-bannerTitle = msgs(banner),
-title = errorPrefix(trustClientForm) + msgs("generic.title", msgs(s"identify-trust-client.title.$showUrnEnabledContent"), msgs(banner)),
-isAgent = true,
-backLinkHref = Some(backLinkUrl)
+    bannerTitle = msgs(banner),
+    title = errorPrefix(trustClientForm) + msgs("generic.title", msgs(s"identify-trust-client.title.$showUrnEnabledContent"), msgs(banner)),
+    isAgent = true,
+    backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(trustClientForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(trustClientForm))
     }
 
-    @formHelper(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
-        <h1 class="govuk-heading-xl">
-            @msgs(s"identify-trust-client.header.$showUrnEnabledContent")
-        </h1>
-
-        <p class="govuk-body govuk-!-margin-bottom-4" id="taxId-info">@msgs("identify-trust-client.p1")</p>
+        @h1(s"identify-trust-client.header.$showUrnEnabledContent")
+        @p(id = Some("taxId-info"), classes = Some("govuk-!-margin-bottom-4"), key = "identify-trust-client.p1")
 
         @if(showUrnEnabledContent) {
             @govukDetails(Details(

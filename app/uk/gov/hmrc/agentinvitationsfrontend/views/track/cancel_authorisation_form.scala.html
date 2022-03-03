@@ -25,7 +25,7 @@
 
 @this(
     mainTemplate: MainTemplate,
-    formHelper: FormWithCSRF
+    formWithCSRF: FormWithCSRF
 )
 
 
@@ -33,7 +33,7 @@
 
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
-@formHelper(
+@formWithCSRF(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
     'id -> s"cancelAuthorisation-$index"
 ) {

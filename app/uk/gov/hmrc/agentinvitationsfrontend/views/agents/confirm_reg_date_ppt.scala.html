@@ -15,36 +15,37 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.PptClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputDate, InputText, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukFieldset, Legend, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: MainTemplate,
-    errorPrefix: error_prefix,
-    govukErrorSummary: GovukErrorSummary,
-    govukFieldset: GovukFieldset,
-    formHelper: FormWithCSRF,
-    inputText: InputText,
-    inputDate: InputDate,
-    submitButton: SubmitButton
+        mainTemplate: MainTemplate,
+        errorPrefix: error_prefix,
+        govukErrorSummary: GovukErrorSummary,
+        govukFieldset: GovukFieldset,
+        formWithCSRF: FormWithCSRF,
+        inputText: InputText,
+        inputDate: InputDate,
+        submitButton: SubmitButton,
+        p: p
 )
 
 @(regDateForm: Form[String], submitFormCall: Call, backLinkUrl: String, isDeAuth: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@banner = @{if(isDeAuth) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{
+    if(isDeAuth) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
 
 @agentInvitationsDateForm = @{
     regDateForm
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@msgs("identify-client.vat.p1")</p>
+    @p(id = Some("identify-client-hint"), key = "identify-client.vat.p1")
 
     @inputDate(
         field = agentInvitationsDateForm("knownFact"),
@@ -64,7 +65,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(regDateForm, mapping = Map("registrationDate" -> "registrationDate.day")))
     }
 
- @formHelper(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
@@ -76,7 +77,7 @@
             html = fieldsetHtml
         ))
 
-     @submitButton()
+        @submitButton()
 
- }
- }
+    }
+}

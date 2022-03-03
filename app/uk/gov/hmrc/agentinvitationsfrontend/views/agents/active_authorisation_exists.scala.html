@@ -15,15 +15,15 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p)
 
 @(
     authRequestsExist: Boolean,
@@ -34,7 +34,9 @@
     clientTypeCall: Call
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
+@backLink = @{
+    s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"
+}
 
 
 @mainTemplate(
@@ -43,26 +45,24 @@
     backLinkHref = Some(backLink)
 ) {
 
-  @h1("active-authorisation-exists.header")
+    @h1("active-authorisation-exists.header")
+    @p(s"active-authorisation-exists.p1.${service.id}")
+    @p("active-authorisation-exists.p2")
 
-  <p>@msgs(s"active-authorisation-exists.p1.${service.id}")</p>
-
-  <p>@msgs("active-authorisation-exists.p2")</p>
-
-  @if(authRequestsExist && !fromFastTrack) {
-    @linkStyledAsButton(
-        id = "return",
-        href = reviewAuthsCall.url,
-        messageKey = "active-authorisation-exists.return"
-    )
-  } else {
-     @if(!fromFastTrack) {
+    @if(authRequestsExist && !fromFastTrack) {
         @linkStyledAsButton(
-            id = "start-new",
-            href = clientTypeCall.url,
-            messageKey = "new-request.button"
+            id = "return",
+            href = reviewAuthsCall.url,
+            messageKey = "active-authorisation-exists.return"
         )
-     }
-  }
+    } else {
+        @if(!fromFastTrack) {
+            @linkStyledAsButton(
+                id = "start-new",
+                href = clientTypeCall.url,
+                messageKey = "new-request.button"
+            )
+        }
+    }
 
 }

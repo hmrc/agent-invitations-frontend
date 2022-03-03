@@ -39,10 +39,10 @@
         title = Text(msgs("request-cancelled.header"))
     ))
 
- <p>@msgs(s"request-cancelled.p1.${pageConfig.service}")</p>
+    @p(s"request-cancelled.p1.${pageConfig.service}")
 
     <div class="govuk-inset-text govuk-!-margin-top-6 govuk-!-margin-bottom-6">
-        <p>@msgs("request-cancelled.panel", pageConfig.hideClientName)</p>
+        @p(msgs("request-cancelled.panel", pageConfig.hideClientName))
     </div>
 
     <div class="govuk-!-margin-bottom-6">
@@ -53,6 +53,6 @@
         )
     </div>
 
-    <p>@Html(msgs("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))</p>
+    @p(html = Some(Html(msgs("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))))
 
 }

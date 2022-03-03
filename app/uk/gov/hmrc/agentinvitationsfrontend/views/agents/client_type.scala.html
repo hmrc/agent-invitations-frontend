@@ -28,7 +28,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton
 )
@@ -45,7 +45,7 @@ backLinkHref = Some(config.backLinkUrl)
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
     }
 
-    @formHelper(action = config.submitCall) {
+    @formWithCSRF(action = config.submitCall) {
 
         @inputRadio(
             field = agentInvitationsForm("clientType"),

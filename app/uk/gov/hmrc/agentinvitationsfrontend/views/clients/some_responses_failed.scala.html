@@ -15,52 +15,42 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.clients.SomeResponsesFailedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
-    h1: h1
-
+    h1: h1, ul: ul, p: p
 )
 
 @(config: SomeResponsesFailedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs("generic.title", msgs("some-responses-failed.header"), msgs("service.name.clients")),
-isAgent = false) {
+    bannerTitle = "service.name.clients",
+    title = msgs("generic.title", msgs("some-responses-failed.header"), msgs("service.name.clients")),
+    isAgent = false) {
 
     @h1("some-responses-failed.header")
 
-    @if(config.consents.map(_.serviceKey).length == 1){
-        <p>@msgs(s"some-responses-failed.${config.consents.head.serviceKey}")</p>
+    @if(config.consents.map(_.serviceKey).length == 1) {
+        @p(s"some-responses-failed.${config.consents.head.serviceKey}")
     } else {
-        <p>@msgs("some-responses-failed.p1")</p>
-        <ul class="govuk-list govuk-list--bullet">
-        @for(serviceKey <- config.consents.map(_.serviceKey)) {
-            <li>
-            @msgs(s"some-responses-failed.li.$serviceKey")
-            </li>
-        }
-        </ul>
+        @p("some-responses-failed.p1")
+        @ul(items = config.consents.map(s"some-responses-failed.li." + _.serviceKey)))
     }
 
-  <p>@msgs("some-responses-failed.try-again")</p>
+    @p("some-responses-failed.try-again")
+    @p(msgs("some-responses-failed.advice", config.agencyName))
 
-  <p>@msgs("some-responses-failed.advice", config.agencyName)</p>
-
-    @formHelper(config.acceptInvitationCall) {
-        @submitButton(id="continueToComplete")
+    @formWithCSRF(config.acceptInvitationCall) {
+        @submitButton(id = "continueToComplete")
     }
 }

@@ -30,10 +30,11 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukFieldset: GovukFieldset,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
     inputDate: InputDate,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    p: p,
 )
 
 @(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -45,8 +46,7 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
 }
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@msgs("identify-client.vat.p1")</p>
-
+    @p(id = Some("identify-client-hint"), key = "identify-client.vat.p1")
     @inputText(
         field = pptClientForm("pptRef"),
         label = msgs("identify-ppt-client.label"),
@@ -73,7 +73,7 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pptClientForm, mapping = dateErrorMapping("registrationDate", agentInvitationsDateForm)))
     }
 
- @formHelper(action = submitFormCall) {
+ @formWithCSRF(action = submitFormCall) {
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(

@@ -31,7 +31,7 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukDetails: GovukDetails,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton
 )
@@ -57,7 +57,7 @@ config: SelectServicePageConfig
     @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
 }
 
-    @formHelper(action = config.submitCall) {
+    @formWithCSRF(action = config.submitCall) {
 
         @inputRadio(
             field = agentInvitationsForm("serviceType"),

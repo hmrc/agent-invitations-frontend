@@ -29,9 +29,10 @@
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
     govukFieldset: GovukFieldset,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
-    submitButton: SubmitButton
+    submitButton: SubmitButton,
+    p: p
 )
 
 @(agentInvitationsForm : Form[ItsaClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -39,7 +40,7 @@
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @fieldsetHtml = {
-    <p id="identify-client-hint">@msgs("identify-client.itsa.p1")</p>
+    @p(id = Some("identify-client-hint"), key = "identify-client.itsa.p1")
 
     @inputText(
         field = agentInvitationsForm("clientIdentifier"),
@@ -70,7 +71,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm))
     }
 
-    @formHelper(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(

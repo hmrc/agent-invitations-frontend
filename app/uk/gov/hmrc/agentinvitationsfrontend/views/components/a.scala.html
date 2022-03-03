@@ -21,10 +21,20 @@
     href: String,
     classes: Option[String] = None,
     id: Option[String] = None,
-    attrs: Map[String, String] = Map.empty
- )(implicit msgs: Messages)
+    attrs: Map[String, String] = Map.empty,
+    openInNewWindow: Boolean = false,
+    rel: Option[String] = None,
+    target: Option[String] = None,
+)(implicit msgs: Messages)
 
-@cls = @{"govuk-link govuk-body ".concat(classes.getOrElse(""))}
+    @cls = @{classes.getOrElse("govuk-link govuk-body")}
 
-<a href ="@href" class ="@cls"@id.map(i => s"id =$i")
-    @attrs.map(a => a._1 + "=" + a._2)>@Html(msgs(key))</a>
+    <a href="@href" class="@cls"
+        @if(id.nonEmpty){id="@id"}
+        @if(openInNewWindow){
+            target="_blank" rel="noreferrer noopener"
+        } else{
+            @if(rel.nonEmpty){rel="@rel"}
+            @if(target.nonEmpty){target="@target"}
+        }
+        @attrs.map(a => a._1 + "=" + a._2)>@Html(msgs(key))</a>

@@ -24,7 +24,7 @@
 
 @this(
     mainTemplate: MainTemplate,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
     h1: h1,
     p: p, a: a
@@ -51,7 +51,7 @@
 
     <div class="govuk-inset-text">@msgs("warm-up.inset", pageConfig.agentName)</div>
 
-    @formHelper(pageConfig.getConfirmTermsCall) {
+    @formWithCSRF(pageConfig.getConfirmTermsCall) {
         @submitButton(id="continueMoreInfo")
     }
 

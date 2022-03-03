@@ -15,27 +15,34 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CannotCreateRequestConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p: p, h1: h1)
 
 @(config: CannotCreateRequestConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs(s"cannot-create-request.header"), msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = if(!config.fromFastTrack) {Some(config.backLink)} else {None}) {
+    title = msgs("generic.title", msgs(s"cannot-create-request.header"), msgs("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = if(!config.fromFastTrack) {
+        Some(config.backLink)
+    } else {
+        None
+    }) {
 
-    <h1 id="cannotCreateRequestHeader" class="govuk-heading-xl">@msgs("cannot-create-request.header")</h1>
+    @h1(
+        id = Some("cannotCreateRequestHeader"),
+        key = "cannot-create-request.header"
+    )
 
-    <p id="cannotCreateRequestP1">@msgs("cannot-create-request.p1")</p>
-    <p id="cannotCreateRequestP2">@msgs("cannot-create-request.p2")</p>
-    <p id="cannotCreateRequestP3">@msgs("cannot-create-request.p3")</p>
+    @p(id=Some("cannotCreateRequestP1"), key="cannot-create-request.p1")
+    @p(id=Some("cannotCreateRequestP2"), key="cannot-create-request.p2")
+    @p(id=Some("cannotCreateRequestP3"), key="cannot-create-request.p3")
 
     @if(config.hasRequests && (config.fromFastTrack == false)) {
         <p class="govuk-!-margin-top-6">
@@ -46,13 +53,13 @@ backLinkHref = if(!config.fromFastTrack) {Some(config.backLink)} else {None}) {
         )
         </p>
     } else {
-        @if(config.fromFastTrack == false){
+        @if(config.fromFastTrack == false) {
             <p class="govuk-!-margin-top-6">
-                @linkStyledAsButton(
-                    id = "showClientType",
-                    href = routes.AgentInvitationJourneyController.showClientType().url,
-                    messageKey = "new-request.button"
-                )
+            @linkStyledAsButton(
+                id = "showClientType",
+                href = routes.AgentInvitationJourneyController.showClientType().url,
+                messageKey = "new-request.button"
+            )
             </p>
         }
     }

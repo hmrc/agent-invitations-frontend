@@ -26,7 +26,7 @@
 
 @this(
     appConfig: AppConfig,
-    formHelper: FormWithCSRF
+    formWithCSRF: FormWithCSRF
 )
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit msgs: Messages, request: Request[_])
@@ -35,7 +35,7 @@
 
 <a href="@{appConfig.govUkGuidanceSignupUrl}" target="_blank" rel="noreferrer noopener">@signupInfo(invitationOrRelationship)</a>
 
-@formHelper(
+@formWithCSRF(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
     'id -> s"postToConfirmCancel-$index"
 ) {

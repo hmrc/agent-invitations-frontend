@@ -28,7 +28,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton
 )
@@ -46,7 +46,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentForm))
     }
 
-    @formHelper(action = config.submitCall) {
+    @formWithCSRF(action = config.submitCall) {
 
         @inputRadio(
             field = agentForm("clientType"),

@@ -31,7 +31,7 @@
 @this(
     mainTemplate: MainTemplate,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     pendingForm: pending_form,
     preAuthForm: preauth_form,
     cancelAuthForm: cancel_authorisation_form,
@@ -59,7 +59,7 @@ isAgent = true) {
 
     @if(config.showFilterForm){
 
-        @formHelper(action = config.filterFormSubmitUrl) {
+        @formWithCSRF(action = config.filterFormSubmitUrl) {
             <fieldset class="govuk-fieldset" aria-describedby="client-label status-label">
                 <legend>
                     @h1(s"recent-invitations.header")

@@ -31,7 +31,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
     inputSingleCheckbox: InputSingleCheckbox
 )
@@ -220,7 +220,7 @@ backLinkHref = Some(pageConfig.backLink.url)
 
     <p>@Html(msgs("confirm-terms.subheading3.p1", externalUrls.privacypolicyUrl))</p>
 
-    @formHelper(pageConfig.submitUrl) {
+    @formWithCSRF(pageConfig.submitUrl) {
     <fieldset class="govuk-fieldset">
         <legend class="govuk-visually-hidden">
             @msgs(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName)

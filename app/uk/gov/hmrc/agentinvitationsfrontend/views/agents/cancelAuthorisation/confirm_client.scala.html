@@ -29,7 +29,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputRadio: InputRadios,
     submitButton: SubmitButton
 )
@@ -47,7 +47,7 @@
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @formHelper(action = submitCall) {
+    @formWithCSRF(action = submitCall) {
 
         @inputRadio(
             field = choiceForm("accepted"),

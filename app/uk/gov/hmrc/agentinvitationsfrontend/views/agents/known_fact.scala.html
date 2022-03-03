@@ -29,7 +29,7 @@
     mainTemplate: MainTemplate,
     errorPrefix: error_prefix,
     govukErrorSummary: GovukErrorSummary,
-    formHelper: FormWithCSRF,
+    formWithCSRF: FormWithCSRF,
     inputText: InputText,
     inputDate: InputDate,
     submitButton: SubmitButton,
@@ -53,7 +53,7 @@
         }
     }
 
-    @formHelper(action = config.submitKFCall) {
+    @formWithCSRF(action = config.submitKFCall) {
 
         @h1(s"known-fact.${config.service.id}.heading")
         @p("known-fact.p1")

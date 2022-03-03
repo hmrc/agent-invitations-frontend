@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import views.html.helper.CSPNonce
 
-@this(mainTemplate: MainTemplate, h1: h1)
+@this(mainTemplate: MainTemplate, h1: h1, h2: h2, p: p, a: a, ul_html: ul_html)
 
 @(config: InvitationSentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -50,7 +50,7 @@ isAgent = true) {
     @h1("invitation-sent.header")
 
     @if(config.isAltItsa) {
-        <p>@msgs("invitation-sent.all-steps")</p>
+        @p("invitation-sent.all-steps")
     }
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
@@ -59,13 +59,13 @@ isAgent = true) {
         }
 
         <li>
-            <p>@msgs("invitation-sent.link-text")</p>
+            @p("invitation-sent.link-text")
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
         <li>@msgs("invitation-sent.select-link")</li>
         <li>
-            <p>@msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDate), config.agencyEmail)</p>
+            @p(msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDate), config.agencyEmail))
             @if(config.showWarning) {
                 <div class="govuk-warning-text">
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -75,15 +75,38 @@ isAgent = true) {
             }
         </li>
         @if(config.isAltItsa) {
-            <li><a href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax" id="signUpYourClient" target="_blank" rel="noreferrer noopener">@msgs("invitation-sent.mtd")</a></li>
+            <li>
+                @a(
+                    href="https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax",
+                    key = "invitation-sent.mtd",
+                    id = Some("signUpYourClient"),
+                    openInNewWindow = true,
+                )
+
+            </li>
         }
     </ol>
 
-    <h2>@msgs("invitation-sent.further-help.heading")</h2>
-    <p>@msgs("invitation-sent.further-help.p")</p>
-    <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        <li><a href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you" id="stepByStep" target="_blank" rel="noreferrer noopener">@msgs("invitation-sent.further-help.link-text.sbs")</a></li>
-        <li><a href="@config.continueUrl" id="continue">@msgs("invitation-sent.further-help.link-text.asa")</a></li>
-    </ul>
+    @h2("invitation-sent.further-help.heading")
+    @p("invitation-sent.further-help.p")
+    @ul_html(items =
+        Seq(
+            Html(
+                a(
+                    href="https://www.gov.uk/guidance/authorise-an-agent-to-deal-with-certain-tax-services-for-you",
+                    key = "invitation-sent.further-help.link-text.sbs",
+                    id = Some("stepByStep"),
+                    openInNewWindow = true
+                ).toString
+            ),
+            Html(
+                a(
+                    href = config.continueUrl,
+                    key = "invitation-sent.further-help.link-text.asa",
+                    id = Some("continue"),
+                ).toString
+            )
+        )
+    )
 
 }

@@ -14,34 +14,35 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, h1: h1)
+@this(mainTemplate: MainTemplate, h1: h1, h2: h2, p: p, ul_html: ul_html)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
+@backLink = @{
+    s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"
+}
 
 @mainTemplate(
-title = msgs("generic.title", msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(backLink)
+    title = msgs("generic.title", msgs("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(backLink)
 ) {
 
-  @h1("already-copied.header")
+    @h1("already-copied.header")
+    @p(s"already-copied.p1")
+    @h2("already-copied.header2")
+    @p("already-copied.p2")
 
-  <p>@msgs(s"already-copied.p1")</p>
-
-  <h2>@msgs("already-copied.header2")</h2>
-
-  <p>@msgs("already-copied.p2")</p>
-
-  <ul class="govuk-list govuk-list--bullet">
-    <li>@Html(msgs("already-copied.link1"))</li>
-    <li>@Html(msgs("already-copied.link2"))</li>
-  </ul>
+    @ul_html(items =
+        Seq(
+            Html(msgs("already-copied.link1")),
+            Html(msgs("already-copied.link2"))
+        )
+    )
 }
