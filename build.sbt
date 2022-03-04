@@ -36,6 +36,8 @@ def testDeps(scope: String) = Seq(
 
 TwirlKeys.templateImports ++= Seq(
   "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
+  "uk.gov.hmrc.govukfrontend.views.html.components._",
+  "uk.gov.hmrc.hmrcfrontend.views.html.components._",
 )
 
 lazy val root = (project in file("."))

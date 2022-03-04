@@ -18,16 +18,22 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.models.NotSignedUpPageUrls
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-@this()
+@this(h2: h2, p: p)
 
 @(service: Service, pageUrls: NotSignedUpPageUrls)(implicit msgs: Messages, externalUrls: ExternalUrls)
 
-<h2>@msgs("not-enrolled.existing.header", msgs(s"not-enrolled.${service.id}"))</h2>
+    @h2(msgs("not-enrolled.existing.header", msgs(s"not-enrolled.${service.id}")))
 
-    <p>@Html(msgs("not-enrolled.existing.p", msgs(s"not-enrolled.${service.id}"), msgs(s"not-enrolled.existing.p.${service.id}", pageUrls.existingClientUrl)))</p>
+    @p(html = Some(Html(
+        msgs("not-enrolled.existing.p",
+            msgs(s"not-enrolled.${service.id}"),
+            msgs(s"not-enrolled.existing.p.${service.id}", pageUrls.existingClientUrl))))
+    )
 
-    <p>@Html(msgs("not-enrolled.mapping.p", msgs("not-enrolled.mapping.link", externalUrls.agentMappingFrontendUrl)))</p>
+    @p(html = Some(Html(
+                    msgs("not-enrolled.mapping.p",
+                    msgs("not-enrolled.mapping.link", externalUrls.agentMappingFrontendUrl)))))
 
-<h2>@msgs("not-enrolled.new.header", msgs(s"not-enrolled.${service.id}"))</h2>
+    @h2(msgs("not-enrolled.new.header", msgs(s"not-enrolled.${service.id}")))
 
-    <p>@Html(msgs(s"not-enrolled.new.${service.id}", pageUrls.newClientUrl))</p>
+    @p(html = Some(Html(msgs(s"not-enrolled.new.${service.id}", pageUrls.newClientUrl))))

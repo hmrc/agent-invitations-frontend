@@ -27,7 +27,8 @@
     formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
     h1: h1,
-    p: p, a: a
+    inset_text: inset_text,
+    p: p, a: a, span: span
 )
 
 
@@ -41,15 +42,14 @@
 ) {
 
     @h1(msgs("warm-up.header", pageConfig.agentName))
-
     @p(msgs("warm-up.p1", pageConfig.agentName))
-    <p>@Html(msgs(s"warm-up.p2.${pageConfig.typeOfClient}"))</p>
+    @p(msgs(s"warm-up.p2.${pageConfig.typeOfClient}"))
 
     @if(pageConfig.typeOfClient == "personal") {
         @p("warm-up.p3.personal")
     }
 
-    <div class="govuk-inset-text">@msgs("warm-up.inset", pageConfig.agentName)</div>
+    @inset_text(html = Html(msgs("warm-up.inset", pageConfig.agentName)), id = Some("inset_text"))
 
     @formWithCSRF(pageConfig.getConfirmTermsCall) {
         @submitButton(id="continueMoreInfo")

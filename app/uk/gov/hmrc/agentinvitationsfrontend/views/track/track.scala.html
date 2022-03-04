@@ -38,31 +38,37 @@
     newRequestForm: new_request_form,
     inputSelect: InputSelect,
     submitButtonGroup: SubmitButtonGroup,
-    h1: h1
+    h1: h1, p: p, a: a
 )
 
 
 @(config: TrackPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig, now: LocalDate)
 
-@clientFieldError = @{config.filterForm.flatMap { f => f.error("client")}}
-@statusFieldError =@{config.filterForm.flatMap { f => f.error("status")}}
+@clientFieldError = @{
+    config.filterForm.flatMap { f => f.error("client") }
+}
+@statusFieldError = @{
+    config.filterForm.flatMap { f => f.error("status") }
+}
 
 @mainTemplate(
-title = msgs("generic.title", msgs("recent-invitations.header"), msgs("service.name.agents.auth")),
-backLinkHref = Some(externalUrls.agentServicesAccountUrl),
-fullWidth = true,
-isAgent = true) {
+    title = msgs("generic.title", msgs("recent-invitations.header"), msgs("service.name.agents.auth")),
+    backLinkHref = Some(externalUrls.agentServicesAccountUrl),
+    fullWidth = true,
+    isAgent = true) {
 
-    @config.filterForm.map{ form => @if(form.hasErrors) {
-        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
-    }}
+    @config.filterForm.map { form =>
+        @if(form.hasErrors) {
+            @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
+        }
+    }
 
-    @if(config.showFilterForm){
+    @if(config.showFilterForm) {
 
         @formWithCSRF(action = config.filterFormSubmitUrl) {
             <fieldset class="govuk-fieldset" aria-describedby="client-label status-label">
                 <legend>
-                    @h1(s"recent-invitations.header")
+                @h1(s"recent-invitations.header")
                 </legend>
 
                 <p class="govuk-!-margin-bottom-6">
@@ -91,9 +97,8 @@ isAgent = true) {
 
         @h1(s"recent-invitations.header")
 
-        <p class="govuk-!-margin-bottom-6">
-        @msgs(s"recent-invitations.description", config.trackRequestsShowLastDays)
-        </p>
+        @p( classes = Some("govuk-!-margin-bottom-6"),
+            key = msgs(s"recent-invitations.description", config.trackRequestsShowLastDays))
     }
 
     @if(config.hasInvitationsOrRelationships) {
@@ -104,42 +109,42 @@ isAgent = true) {
                 @msgs("recent-invitations.pagination.of") <strong>@config.totalResults</strong>
             </caption>
             <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header column-22">@msgs("recent-invitations.table-row-header.clientName")</th>
-                <th scope="col" class="govuk-table__header column-30">@msgs("recent-invitations.table-row-header.service")</th>
-                <th scope="col" class="govuk-table__header column-28">@msgs("recent-invitations.table-row-header.status")</th>
-                <th scope="col" class="govuk-table__header column-20">@msgs("recent-invitations.table-row-header.actions")</th>
-            </tr>
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header column-22">@msgs("recent-invitations.table-row-header.clientName")</th>
+                    <th scope="col" class="govuk-table__header column-30">@msgs("recent-invitations.table-row-header.service")</th>
+                    <th scope="col" class="govuk-table__header column-28">@msgs("recent-invitations.table-row-header.status")</th>
+                    <th scope="col" class="govuk-table__header column-20">@msgs("recent-invitations.table-row-header.actions")</th>
+                </tr>
             </thead>
             <tbody class="govuk-table__body govuk-body-s">
             @config.invitationsAndRelationships.zipWithIndex.map { case (invitationOrRelationship, index) =>
-                <tr class="govuk-table__row" id="row-@index">
+            <tr class="govuk-table__row" id="row-@index">
                 <td class="govuk-table__cell" id="taxpayerName-@index">
                     <span>@invitationOrRelationship.clientName.getOrElse(msgs("recent-invitations.table-row-header.clientNameUnknown"))</span>
                 </td>
-                <td  class="govuk-table__cell" id="serviceInfo-@index">
+                <td class="govuk-table__cell" id="serviceInfo-@index">
                     <span>
-                       @msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}")
+                    @msgs(s"recent-invitations.invitation.service.${invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}")
                     </span>
                 </td>
                 <td class="govuk-table__cell" id="track-status-@index">
                     @msgs(s"recent-invitations.invitation.status.${invitationOrRelationship.status.toLowerCase}")
-                    <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
+                <span class="supplementary-information">@dateInfo(invitationOrRelationship)</span>
                 </td>
                 <td class="govuk-table__cell" id="action-@index-@invitationOrRelationship.status.toLowerCase()">
-                    @{
-                        invitationOrRelationship.status match {
-                            case "Partialauth" => preAuthForm(invitationOrRelationship, index)
-                            case "Pending" => pendingForm(invitationOrRelationship, index)
-                            case "Accepted" => if(config.cancelAuthActionFlag) {
-                                if(!invitationOrRelationship.isRelationshipEnded) {
-                                  cancelAuthForm(invitationOrRelationship, index)
-                                }
+                @{
+                    invitationOrRelationship.status match {
+                        case "Partialauth" => preAuthForm(invitationOrRelationship, index)
+                        case "Pending" => pendingForm(invitationOrRelationship, index)
+                        case "Accepted" => if(config.cancelAuthActionFlag) {
+                            if(!invitationOrRelationship.isRelationshipEnded) {
+                                cancelAuthForm(invitationOrRelationship, index)
                             }
-                            case _ => newRequestForm(invitationOrRelationship, index)
                         }
+                        case _ => newRequestForm(invitationOrRelationship, index)
                     }
-                </td>
+                }
+            </td>
             </tr>
             }
             </tbody>
@@ -148,9 +153,10 @@ isAgent = true) {
             @paginationControls
         }
     } else {
-        <p>@msgs(s"recent-invitations.empty")</p>
+        @p(s"recent-invitations.empty")
         <p>
-            <a href="@routes.AgentInvitationJourneyController.showSelectService()">@msgs(s"recent-invitations.empty.continue")</a>
+            @a(href=routes.AgentInvitationJourneyController.showSelectService().url,
+                key = "recent-invitations.empty.continue")
         </p>
     }
 }
@@ -159,7 +165,7 @@ isAgent = true) {
     <ul class="pager-items all-sub" >
         @if(config.pageInfo.page > 1) {
             <li>
-                <a  href="?page=@(config.pageInfo.page - 1) @config.additionalQueryParams" aria-label="Prev page">
+                <a href="?page=@(config.pageInfo.page - 1) @config.additionalQueryParams" aria-label="Prev page">
                     <span class="govuk-visually-hidden">Prev</span>
                     <span aria-hidden="true" role="presentation" >&lt;</span>
                 </a>
@@ -179,12 +185,12 @@ isAgent = true) {
         }
 
         @if(config.hasNextPage) {
-          <li class="next">
-              <a href="?page=@(config.pageInfo.page + 1)@config.additionalQueryParams" aria-label="Next page">
-                  <span class="govuk-visually-hidden">Next</span>
-                  <span aria-hidden="true" role="presentation">&gt;</span>
-              </a>
-          </li>
+            <li class="next">
+                <a href="?page=@(config.pageInfo.page + 1) @config.additionalQueryParams" aria-label="Next page">
+                    <span class="govuk-visually-hidden">Next</span>
+                    <span aria-hidden="true" role="presentation">&gt;</span>
+                </a>
+            </li>
         }
     </ul>
 }

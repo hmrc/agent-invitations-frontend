@@ -41,7 +41,8 @@ selectAttribute: Map[String, String] = Map.empty
         content = Text(label)
         ),
     hint = if(hint.isDefined) Some(Hint(content = Text(hint.get))) else None,
-    items = Seq(SelectItem(value = Some(""), text = "")) ++
+    items = Seq(
+        SelectItem(value = Some(""), text = "")) ++
             options.map(option =>
             SelectItem(
                 value = Some(option._1),
