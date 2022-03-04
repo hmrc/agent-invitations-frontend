@@ -42,6 +42,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 case class TrackResendForm(service: String, clientType: Option[ClientType], expiryDate: String)
 
@@ -165,7 +166,7 @@ class AgentsRequestTrackingController @Inject()(
             request.session.get("agentLink").getOrElse(""),
             request.session.get("clientType").getOrElse(""),
             request.session.get("expiryDate").getOrElse(""),
-            Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session"))),
+            request.session.get("service").flatMap(srv => Try(Service.forId(srv)).toOption),
             request.session.get("agencyEmail").getOrElse(""),
             routes.AgentsRequestTrackingController.showTrackRequests(1).url
           )))
