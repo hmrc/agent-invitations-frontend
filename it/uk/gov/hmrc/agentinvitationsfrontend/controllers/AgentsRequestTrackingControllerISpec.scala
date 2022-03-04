@@ -318,9 +318,29 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         getResendLink(authorisedAsValidAgent(request.withSession(
           "agentLink" -> "/agent/",
           "clientType" -> "personal",
-        "expiryDate" -> "2017-05-05",
-        "service" -> "HMRC-MTD-IT",
-        "agencyEmail" -> "abc@xyz.com"), arn.value))
+          "expiryDate" -> "2017-05-05",
+          "service" -> "HMRC-MTD-IT",
+          "agencyEmail" -> "abc@xyz.com"), arn.value))
+
+      checkHtmlResultWithBodyMsgs(result,
+        "invitation-sent.link-text",
+        "invitation-sent.select-link",
+        "invitation-sent.client-warning",
+        "invitation-sent.further-help.heading",
+        "invitation-sent.further-help.link-text.sbs",
+        "invitation-sent.further-help.link-text.asa")
+    }
+
+    "return 200 when service is not present in session" in {
+      val service = ""
+
+      val result =
+        getResendLink(authorisedAsValidAgent(request.withSession(
+          "agentLink" -> "/agent/",
+          "clientType" -> "personal",
+          "expiryDate" -> "2017-05-05",
+          "service" -> service,
+          "agencyEmail" -> "abc@xyz.com"), arn.value))
 
       checkHtmlResultWithBodyMsgs(result,
         "invitation-sent.link-text",

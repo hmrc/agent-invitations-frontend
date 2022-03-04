@@ -28,7 +28,7 @@ case class ResendLinkPageConfig(
   agentLink: String,
   clientType: String,
   expiryDate: String,
-  service: Service,
+  maybeService: Option[Service],
   agencyEmail: String,
   backLinkUrl: String)(implicit externalUrls: ExternalUrls, messages: Messages) {
 
@@ -45,12 +45,16 @@ case class ResendLinkPageConfig(
   val asaUrl = externalUrls.agentServicesAccountUrl
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
-    if (service == Service.PersonalIncomeRecord) Some(Messages("invitation-sent.step1.personal.paye"))
-    else if (service == Service.Vat) Some(Messages("invitation-sent.step1.personal.vat"))
-    else None
+    maybeService.flatMap(
+      service =>
+        if (service == Service.PersonalIncomeRecord) Some(Messages("invitation-sent.step1.personal.paye"))
+        else if (service == Service.Vat) Some(Messages("invitation-sent.step1.personal.vat"))
+        else None)
   } else if (clientType == "business") {
-    if (service == Service.Vat) Some(Messages("invitation-sent.step1.business.vat"))
-    else if (service == Service.Trust || service == Service.TrustNT) Some(Messages("invitation-sent.step1.business.trust"))
-    else None
+    maybeService.flatMap(
+      service =>
+        if (service == Service.Vat) Some(Messages("invitation-sent.step1.business.vat"))
+        else if (service == Service.Trust || service == Service.TrustNT) Some(Messages("invitation-sent.step1.business.trust"))
+        else None)
   } else None
 }
