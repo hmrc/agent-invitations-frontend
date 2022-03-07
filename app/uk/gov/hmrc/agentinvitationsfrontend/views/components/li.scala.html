@@ -23,4 +23,4 @@
    id: Option[String] = None
 )(implicit msgs: Messages)
 
- <li class=@classes.getOrElse("") @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</li>
+ <li class=@classes.getOrElse("govuk-list--item") @id.map(i => { s"id =${i}"})>@msgs(key)@html.getOrElse("")</li>
