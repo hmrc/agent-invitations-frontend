@@ -215,29 +215,21 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           }
       }
 
-    def identifyCgtClient(agent: AuthorisedAgent)(cgtClient: CgtClient): AgentInvitationJourneyModel.Transition = {
-      def handle(showPostcode: CgtSubscription => State, showCountryCode: CgtSubscription => State, basket: Basket) =
-        getCgtSubscription(cgtClient.cgtRef).map {
-          case Some(subscription) =>
-            if (subscription.isUKBasedClient) {
-              showPostcode(subscription)
-            } else {
-              showCountryCode(subscription)
-            }
-          case None =>
-            CgtRefNotFound(cgtClient.cgtRef, basket)
-        }
-
+    def identifyCgtClient(agent: AuthorisedAgent)(cgtClient: CgtClient): AgentInvitationJourneyModel.Transition =
       Transition {
         case IdentifyClient(clientType, Service.CapitalGains, basket) =>
           require(Services.isSupported(clientType, Service.CapitalGains))
-          handle(
-            cgtSubscription => ConfirmPostcodeCgt(cgtClient.cgtRef, clientType, basket, cgtSubscription.postCode, cgtSubscription.name),
-            cgtSubscription => ConfirmCountryCodeCgt(cgtClient.cgtRef, clientType, basket, cgtSubscription.countryCode, cgtSubscription.name),
-            basket
-          )
+          getCgtSubscription(cgtClient.cgtRef).map {
+            case Some(subscription) =>
+              if (subscription.isUKBasedClient) {
+                ConfirmPostcodeCgt(cgtClient.cgtRef, clientType, basket, subscription.postCode, subscription.name)
+              } else {
+                ConfirmCountryCodeCgt(cgtClient.cgtRef, clientType, basket, subscription.countryCode, subscription.name)
+              }
+            case None =>
+              CgtRefNotFound(cgtClient.cgtRef, basket)
+          }
       }
-    }
 
     def identifyPptClient(agent: AuthorisedAgent)(pptClient: PptClient): AgentInvitationJourneyModel.Transition = {
       def handle(mkState: String => State, basket: Basket) =

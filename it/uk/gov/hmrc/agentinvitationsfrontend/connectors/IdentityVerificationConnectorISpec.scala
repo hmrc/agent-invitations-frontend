@@ -96,7 +96,7 @@ class IdentityVerificationConnectorISpec extends BaseISpec {
       val result = await(connector.updateEntry(
         NinoClStoreEntry(
           credId = "cred-1",
-          nino = Nino(nino),
+          nino = nino,
           confidenceLevel = None,
           createdAt = None,
           updatedAt = None), "cred-1"))
@@ -108,7 +108,7 @@ class IdentityVerificationConnectorISpec extends BaseISpec {
       val result = await(connector.updateEntry(
         NinoClStoreEntry(
           credId = "cred-1",
-          nino = Nino(nino),
+          nino = nino,
           confidenceLevel = None,
           createdAt = None,
           updatedAt = None), "cred-1"))

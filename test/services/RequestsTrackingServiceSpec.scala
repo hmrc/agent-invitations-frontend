@@ -158,25 +158,11 @@ class RequestsTrackingServiceSpec extends UnitSpec {
         when(citizenDetailsConnector.getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Citizen(Some("Aa1"), Some("Aa2"))))
 
-        await(tested.getClientNameByService(
-          TrackedInvitation(Some("personal"), Service.MtdIt, nino.value, "ni", None, "Pending", dateTime, now, "foo"))) shouldBe Some(
-          "Aaa Itsa Trader")
+        await(tested.getClientNameByService(nino.value, Service.MtdIt)) shouldBe Some("Aaa Itsa Trader")
 
-        await(tested.getClientNameByService(
-          TrackedInvitation(Some("personal"), Service.Vat, vrn.value, "vrn", None, "Accepted", dateTime, now, "foo"))) shouldBe Some("Aaa Ltd.")
+        await(tested.getClientNameByService(vrn.value, Service.Vat)) shouldBe Some("Aaa Ltd.")
 
-        await(
-          tested
-            .getClientNameByService(TrackedInvitation(
-              Some("personal"),
-              Service.PersonalIncomeRecord,
-              nino.value,
-              "ni",
-              None,
-              "Expired",
-              dateTime,
-              now,
-              "foo"))) shouldBe Some("Aa1 Aa2")
+        await(tested.getClientNameByService(nino.value, Service.PersonalIncomeRecord)) shouldBe Some("Aa1 Aa2")
       }
     }
 

@@ -24,6 +24,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text, RadioItem}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.domain.TaxIdentifier
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +35,7 @@
     submitButton: SubmitButton
 )
 
-@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientIdType: String, clientIdentifier: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientName: String, choiceForm: Form[Confirmation], backLinkUrl: String, submitCall: Call, clientId: TaxIdentifier)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 title = errorPrefix(choiceForm) + msgs("generic.title", msgs("confirm-client.title"), msgs("service.name.agents.auth")),

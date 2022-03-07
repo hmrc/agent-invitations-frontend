@@ -18,34 +18,32 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.i18n.Messages
 import play.api.mvc.Call
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.govukfrontend.views.Aliases.{RadioItem, Text}
 
 case class ClientTypePageConfig(
   backLinkUrl: String,
   submitCall: Call,
   showTrustFlag: Boolean,
-  isForVat: Boolean = false,
-  isForCgt: Boolean = false,
-  isForPpt: Boolean = false)(implicit messages: Messages) {
+  availableClientTypes: Seq[ClientType] = ClientType.clientTypes)(implicit messages: Messages) {
 
-  val personalOption = Seq("personal" -> Messages("client-type.personal"))
-  val businessOption = Seq("business" -> Messages("client-type.business"))
-  val trustOption = Seq("trust"       -> Messages("client-type.trust"))
-
-  val clientTypes: Seq[(String, String)] =
-    if (showTrustFlag && !isForVat && !isForCgt) personalOption ++ businessOption ++ trustOption
-    else if (showTrustFlag && isForCgt) personalOption ++ trustOption
-    else if (showTrustFlag && isForPpt) personalOption ++ businessOption ++ trustOption
-    else personalOption ++ businessOption
+  def radioFor(clientType: ClientType) = clientType match {
+    case ClientType.Personal => "personal" -> Messages("client-type.personal")
+    case ClientType.Business => "business" -> Messages("client-type.business")
+    case ClientType.Trust    => "trust"    -> Messages("client-type.trust")
+  }
 
   val clientTypesAsRadioItems: Seq[RadioItem] = {
-    clientTypes.map(
-      client =>
-        RadioItem(
-          id = Some(client._1),
-          content = Text(client._2),
-          value = Some(client._1)
-      ))
+    availableClientTypes
+      .map(radioFor)
+      .map(
+        client =>
+          RadioItem(
+            id = Some(client._1),
+            content = Text(client._2),
+            value = Some(client._1)
+        ))
   }
 
 }

@@ -158,18 +158,18 @@ trait ACRStubs {
     )
   }
 
-  def givenCheckRelationshipItsaWithStatus(arn: Arn, nino: String, status: Int) =
+  def givenCheckRelationshipItsaWithStatus(arn: Arn, nino: Nino, status: Int) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/$nino"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-IT/client/NI/${nino.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)
         )
     )
 
-  def givenCheckRelationshipVatWithStatus(arn: Arn, vrn: String, status: Int) =
+  def givenCheckRelationshipVatWithStatus(arn: Arn, vrn: Vrn, status: Int) =
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/$vrn"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/service/HMRC-MTD-VAT/client/VRN/${vrn.value}"))
         .willReturn(
           aResponse()
             .withStatus(status)
@@ -199,9 +199,9 @@ trait ACRStubs {
         )
     )
 
-  def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: String, status: Int) = {
+  def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: Nino, status: Int) = {
     stubFor(
-      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"))
+      get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/client/${nino.value}/legacy-mapped-relationship"))
         .willReturn(
           aResponse()
             .withStatus(status)

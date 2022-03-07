@@ -27,6 +27,8 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.domain.Nino
+@import uk.gov.hmrc.agentmtdidentifiers.model._
 
 @this(
     mainTemplate: MainTemplate,
@@ -94,19 +96,19 @@ backLinkHref = config.backLinkUrl
         }
 
         @checkAnswersRow(
-            key = config.fastTrackRequest.clientIdentifierType match {
-                case "ni" => msgs("check-details.nino")
-                case "vrn" => msgs("check-details.vrn")
-                case "utr" => msgs("check-details.utr")
-                case "urn" => msgs("check-details.urn")
-                case "CGTPDRef" => msgs("check-details.cgt")
-                case "EtmpRegistrationNumber" => msgs("check-details.ppt")
+            key = config.fastTrackRequest.clientId match {
+                case Nino(_) => msgs("check-details.nino")
+                case Vrn(_) => msgs("check-details.vrn")
+                case Utr(_) => msgs("check-details.utr")
+                case Urn(_) => msgs("check-details.urn")
+                case CgtRef(_) => msgs("check-details.cgt")
+                case PptRef(_) => msgs("check-details.ppt")
                 case p => throw new IllegalArgumentException(s"client identifier type not supported: $p")
             },
             valueId = "client-identifier",
             value = config.fastTrackRequest.service match {
-                case Service.Vat | Service.TrustNT | Service.Ppt => config.fastTrackRequest.clientIdentifier
-                case _ => config.fastTrackRequest.clientIdentifier.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
+                case Service.Vat | Service.TrustNT | Service.Ppt => config.fastTrackRequest.clientId.value
+                case _ => config.fastTrackRequest.clientId.value.replaceAll(" ", "").replaceAll("(.{2})", "$1 ")
             }
         )
 

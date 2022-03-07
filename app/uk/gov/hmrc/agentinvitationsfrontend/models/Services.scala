@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, Service}
+import uk.gov.hmrc.agentmtdidentifiers.model._
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 object Services {
 
@@ -42,6 +43,8 @@ object Services {
     case (ClientType.Trust, Service.TrustNT) => true // must check this separately as it is not separately listed in the supported services
     case _                                   => supportedServicesFor(clientType).contains(service)
   }
+
+  def supportedClientTypesFor(service: Service): Seq[ClientType] = ClientType.clientTypes.filter(ct => isSupported(ct, service))
 
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
@@ -93,4 +96,17 @@ object Services {
       case Service.PersonalIncomeRecord => "ni"
       case Service.Ppt                  => "EtmpRegistrationNumber"
     }
+
+  // TODO move this to agent-mtd-identifiers
+  def clientIdType(taxId: TaxIdentifier): ClientIdType[TaxIdentifier] = taxId match {
+    case Nino(_)   => NinoType
+    case Vrn(_)    => VrnType
+    case Utr(_)    => UtrType
+    case Urn(_)    => UrnType
+    case CgtRef(_) => CgtRefType
+    case PptRef(_) => PptRefType
+  }
+
+  // TODO move this to agent-mtd-identifiers
+  def createTaxIdentifier(idType: String, id: String) = ClientIdType.forId(idType).createUnderlying(id)
 }

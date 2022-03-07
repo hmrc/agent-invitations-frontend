@@ -135,8 +135,6 @@ class AgentLedDeauthJourneyController @Inject()(
       .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.Vat, Business))
       .applyWithRequest(implicit request => transitions.chosenService)
 
-  val identifyClientRedirect: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showIdentifyClient()))
-
   def showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   def submitIdentifyItsaClient: Action[AnyContent] =

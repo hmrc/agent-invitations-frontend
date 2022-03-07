@@ -163,9 +163,6 @@ class AgentInvitationJourneyController @Inject()(
       .bindForm(ServiceTypeForm.selectSingleServiceForm(Service.forId(serviceId), ClientType.toEnum(clientType)))
       .applyWithRequest(implicit request => transitions.selectedService)
 
-  val identifyClientRedirect: Action[AnyContent] =
-    Action(Redirect(routes.AgentInvitationJourneyController.showIdentifyClient()))
-
   val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   val showConfirmCgtPostcode: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
@@ -454,8 +451,7 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient(),
-            authorisationRequest.invitation.service.supportedClientIdType.id,
-            authorisationRequest.invitation.clientId
+            authorisationRequest.invitation.clientIdentifier
           ))
 
       case ConfirmPostcodeCgt(_, clientType, _, _, _) =>
