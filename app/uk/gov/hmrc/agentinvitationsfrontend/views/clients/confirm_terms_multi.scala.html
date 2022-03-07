@@ -57,22 +57,16 @@
     @p(classes = Some("govuk-!-margin-bottom-4"),
         key = msgs("confirm-terms-multi.vat.p1", pageConfig.agencyName)
     )
-    <ul class="govuk-list govuk-list--bullet">
-        <li>@msgs("confirm-terms-multi.vat.list.item1")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item2")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item3")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item4")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item5")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item6")</li>
-        <li>@msgs("confirm-terms-multi.vat.list.item7")
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@msgs("confirm-terms-multi.vat.list.item8")</li>
-            <li>@msgs("confirm-terms-multi.vat.list.item9")</li>
-            <li>@msgs("confirm-terms-multi.vat.list.item10")</li>
-            <li>@msgs("confirm-terms-multi.vat.list.item11")</li>
-        </ul>
-        </li>
-    </ul>
+    @ul_html(
+        items = (1 to 6).map(i => span(s"confirm-terms-multi.vat.list.item$i"))
+                .union(
+                    Seq(
+                        Html(
+                        msgs("confirm-terms-multi.vat.list.item7") +
+                                ul(items = (8 to 11).map(i => s"confirm-terms-multi.vat.list.item$i")))
+                    )
+            )
+    )
 }
 
 @trustTerms = {
@@ -94,41 +88,32 @@
         @p(classes = Some("govuk-!-margin-bottom-4"),
             key = msgs("confirm-terms-multi.cgt.personal.p1", pageConfig.agencyName)
         )
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@msgs("confirm-terms-multi.cgt.personal.p1.l1")</li>
-            <li>@msgs("confirm-terms-multi.cgt.personal.p1.l2")</li>
-            <li>@msgs("confirm-terms-multi.cgt.personal.p1.l3")</li>
-            <li>@msgs("confirm-terms-multi.cgt.personal.p1.l4")</li>
-            <li>@msgs("confirm-terms-multi.cgt.personal.p1.l5")
-                <ul class="govuk-list govuk-list--bullet">
-                    <li>@msgs("confirm-terms-multi.cgt.personal.p1.l6")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.personal.p1.l7")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.personal.p1.l8")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.personal.p1.l9")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.personal.p1.l10")</li>
-                </ul>
-            </li>
-        </ul>
+        @ul_html(
+            items = (1 to 5).map(i => span(s"confirm-terms-multi.cgt.personal.p1.l$i"))
+                    .union(
+                Seq(
+                    Html(
+                        msgs("confirm-terms-multi.cgt.business.p1.l5") +
+                                ul(items = (6 to 10).map(i => s"confirm-terms-multi.cgt.personal.p1.l$i")))
+                )
+            )
+        )
     } else {
         @p(classes = Some("govuk-!-margin-bottom-4"),
             key = msgs("confirm-terms-multi.cgt.business.p1", pageConfig.agencyName)
         )
-        <ul class="govuk-list govuk-list--bullet">
-            <li>@msgs("confirm-terms-multi.cgt.business.p1.l1")</li>
-            <li>@msgs("confirm-terms-multi.cgt.business.p1.l2")</li>
-            <li>@msgs("confirm-terms-multi.cgt.business.p1.l3")</li>
-            <li>@msgs("confirm-terms-multi.cgt.business.p1.l4")</li>
-            <li>@msgs("confirm-terms-multi.cgt.business.p1.l5")
-                <ul class="govuk-list govuk-list--bullet">
-                    <li>@msgs("confirm-terms-multi.cgt.business.p1.l6")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.business.p1.l7")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.business.p1.l8")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.business.p1.l9")</li>
-                    <li>@msgs("confirm-terms-multi.cgt.business.p1.l10")</li>
-                </ul>
-            </li>
-        </ul>
-   }
+        @ul_html(
+            items = (1 to 4).map(i => span(s"confirm-terms-multi.cgt.business.p1.l$i"))
+                    .union(
+                Seq(
+                    Html(
+                        msgs("confirm-terms-multi.cgt.business.p1.l5") +
+                                ul(items = (6 to 10).map(i => s"confirm-terms-multi.cgt.business.p1.l$i")))
+                )
+            )
+        )
+
+    }
 }
 
 @pptTerms = {
@@ -149,15 +134,17 @@
     @if(isAltItsa) {
         @p(msgs("confirm-terms-multi.expires.p2", expiryDate))
     }
-    @{serviceKey match {
-        case "itsa" => itsaTerms
-        case "afi" => pirTerms
-        case "vat" => vatTerms
-        case "trust" => trustTerms
-        case "trustNT" => trustNTTerms
-        case "cgt" => cgtTerms
-        case "ppt" => pptTerms
-    }}
+    @{
+        serviceKey match {
+            case "itsa" => itsaTerms
+            case "afi" => pirTerms
+            case "vat" => vatTerms
+            case "trust" => trustTerms
+            case "trustNT" => trustNTTerms
+            case "cgt" => cgtTerms
+            case "ppt" => pptTerms
+        }
+    }
     @if(!isAltItsa) {
         @p(msgs("confirm-terms-multi.expires.p2", expiryDate))
     }

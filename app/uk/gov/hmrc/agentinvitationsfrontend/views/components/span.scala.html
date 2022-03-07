@@ -25,4 +25,4 @@
 
  @cls = @{if(classes.isDefined) classes.get.concat(" govuk-body") else "govuk-body"}
 
- <span class ="@cls" @id.map(i => { s"id =${i}"})>@html.getOrElse(Html(msgs(key)))</span>
+ <span class ="@cls" @id.map(i => { s"id =${i}"})>@msgs(key)@html.getOrElse("")</span>
