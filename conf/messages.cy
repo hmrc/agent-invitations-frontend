@@ -167,6 +167,7 @@ agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 agent-suspended.p1.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig
+agent-suspended.p1.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm TWE
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
 

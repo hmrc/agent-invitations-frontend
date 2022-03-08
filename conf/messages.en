@@ -166,6 +166,7 @@ agent-suspended.p1.HMRC-TERS-ORG=maintain their trust or estate
 agent-suspended.p1.HMRC-TERSNT-ORG=maintain their trust or estate
 agent-suspended.p1.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account
 agent-suspended.p1.HMRC-PPT-ORG=manage their Plastic Packaging Tax
+agent-suspended.p1.PERSONAL-INCOME-RECORD=view their PAYE income record
 agent-suspended.p2.single=You can start a new authorisation request for a different service.
 agent-suspended.p2.multi=You can continue without this request, or <a href="{0}">start a new request</a>.
 
