@@ -11,9 +11,9 @@ Invitations service currently provides these functions:
  - Agent can view their authorisation requests and inactive relationships from the last 30 days (track)
  - Agent fast track service
 
-Clients can 'personal' or 'buisness' and includes trusts (taxable and non-taxable).
+Clients can be 'personal' or 'business' and includes trusts (taxable and non-taxable).
 
-Currently this service supports the following invitaitons:
+Currently this service supports the following invitations:
 - ITSA, including alternative itsa
 - Personal Income Record
 - MTD VAT
