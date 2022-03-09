@@ -15,15 +15,13 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
+
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+import uk.gov.hmrc.domain.TaxIdentifier
+import uk.gov.hmrc.agentinvitationsfrontend.models.TaxIdFormat.taxIdFormat
 
-case class AgentFastTrackRequest(
-  clientType: Option[ClientType],
-  service: Service,
-  clientIdentifierType: String,
-  clientIdentifier: String,
-  knownFact: Option[String])
+case class AgentFastTrackRequest(clientType: Option[ClientType], service: Service, clientId: TaxIdentifier, knownFact: Option[String])
 
 object AgentFastTrackRequest {
 

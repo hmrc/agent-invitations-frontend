@@ -14,15 +14,15 @@ class CitizenDetailsConnectorISpec extends BaseISpec {
   "Get citizen details" should {
     "return citizen details having first and last name given valid nino" in {
       givenCitizenDetailsAreKnownFor(nino, "Johny", "Smithy")
-      val result = await(connector.getCitizenDetails(validNino))
+      val result = await(connector.getCitizenDetails(nino))
       result.firstName.get shouldBe "Johny"
       result.lastName.get shouldBe "Smithy"
-      result.nino.get shouldBe nino
+      result.nino.get shouldBe nino.value
     }
 
     "return empty Citizen if nino not found" in {
       givenCitizenDetailsReturns404For(nino)
-      val result = await(connector.getCitizenDetails(validNino))
+      val result = await(connector.getCitizenDetails(nino))
       result.firstName shouldBe None
       result.lastName shouldBe None
       result.nino shouldBe None
@@ -31,7 +31,7 @@ class CitizenDetailsConnectorISpec extends BaseISpec {
     "return BAD_REQUEST if nino not valid" in {
       givenCitizenDetailsReturns400For(nino)
       a[RuntimeException] shouldBe thrownBy {
-        await(connector.getCitizenDetails(validNino))
+        await(connector.getCitizenDetails(nino))
       }
     }
   }

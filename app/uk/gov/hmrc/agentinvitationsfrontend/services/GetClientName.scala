@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ServiceAndClient, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,9 +28,6 @@ trait GetClientName extends Logging {
 
   def citizenDetailsConnector: CitizenDetailsConnector
   def acaConnector: AgentClientAuthorisationConnector
-
-  def getClientNameByService(invitation: ServiceAndClient)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    getClientNameByService(invitation.clientId, invitation.service)
 
   def getClientNameByService(clientId: String, service: Service)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     service match {

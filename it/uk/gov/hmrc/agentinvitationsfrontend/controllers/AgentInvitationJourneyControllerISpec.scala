@@ -637,30 +637,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
   }
 
-  "GET /agents/identify-itsa-client" should {
-    val request = FakeRequest("GET", "/agents/identify-itsa-client")
-    "redirect to the identify client page" in {
-      journeyState.set(
-        IdentifyClient(Personal, Service.MtdIt, emptyBasket),
-        List(SelectService(Personal, availablePersonalServices, emptyBasket), SelectClientType(emptyBasket)))
-
-      val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showIdentifyClient().url)
-    }
-  }
-
   "POST /agents/identify-itsa-client" should {
     val request = FakeRequest("POST", "/agents/identify-itsa-client")
 
     "redirect to /agents/confirm-client" when {
       "nino is uppercase" in {
-        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toUpperCase)
+        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.value.toUpperCase)
       }
 
       "nino is lowercase (APB-3634 bug fix)" in {
-        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.toLowerCase)
+        checkSubmitIdentifyItsaClient(submittedNinoStr = nino.value.toLowerCase)
       }
 
       def checkSubmitIdentifyItsaClient(submittedNinoStr: String) = {
@@ -705,7 +691,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to not matched when clientId and known fact don't match" in {
-      givenNonMatchingClientIdAndPostcode(Nino(nino), "BN114AW")
+      givenNonMatchingClientIdAndPostcode(nino, "BN114AW")
 
       journeyState.set(
         IdentifyClient(Personal, Service.MtdIt, emptyBasket),
@@ -713,7 +699,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       val result = controller.submitIdentifyItsaClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("clientIdentifier" -> nino, "postcode" -> "BN114AW"),
+          request.withFormUrlEncodedBody("clientIdentifier" -> nino.value, "postcode" -> "BN114AW"),
           arn.value))
 
       status(result) shouldBe 303
@@ -729,13 +715,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to client not registered when the client is not signed up for the service and no SAUTR was found on CiD record" in {
-      givenNotEnrolledClientITSA(Nino(nino), "BN114AW")
+      givenNotEnrolledClientITSA(nino, "BN114AW")
 
       journeyState.set(IdentifyClient(Personal, Service.MtdIt, emptyBasket), List())
 
       val result = controller.submitIdentifyItsaClient(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody("clientIdentifier" -> nino, "postcode" -> "BN114AW"),
+          request.withFormUrlEncodedBody("clientIdentifier" -> nino.value, "postcode" -> "BN114AW"),
           arn.value))
 
       status(result) shouldBe 303
@@ -1337,17 +1323,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /agents/review-authorisations because flag is off" when {
       "submitted NINO is uppercase" in {
-        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toUpperCase)
+        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.value.toUpperCase)
       }
 
       "submitted NINO is lowercase (APB-3525)" in {
-        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.toLowerCase)
+        checkSubmitIdentifyIrvClient(submittedNinoStr = nino.value.toLowerCase)
       }
 
       def checkSubmitIdentifyIrvClient(submittedNinoStr: String) = {
-        givenMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, Service.PersonalIncomeRecord)
-        givenAfiRelationshipNotFoundForAgent(arn, Nino(nino))
+        givenMatchingCitizenRecord(nino, LocalDate.parse("1990-10-10"))
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.PersonalIncomeRecord)
+        givenAfiRelationshipNotFoundForAgent(arn, nino)
         givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
 
         journeyState.set(
@@ -1377,7 +1363,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to /agents/not-matched when clientId and known fact don't match" in {
-      givenNonMatchingCitizenRecord(Nino(nino), LocalDate.parse("1990-10-10"))
+      givenNonMatchingCitizenRecord(nino, LocalDate.parse("1990-10-10"))
 
       journeyState.set(
         IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket),
@@ -1386,7 +1372,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val result = controller.submitIdentifyIrvClient(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody(
-            "clientIdentifier" -> nino,
+            "clientIdentifier" -> nino.value,
             "dob.year"         -> "1990",
             "dob.month"        -> "10",
             "dob.day"          -> "10"),
@@ -1410,10 +1396,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("GET", "/agents/confirm-client")
 
     "show the confirm client page for ITSA service" in {
-      givenTradingName(validNino, "Sylvia Plath")
+      givenTradingName(nino, "Sylvia Plath")
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
           emptyBasket),
         List(
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
@@ -1429,7 +1415,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should havePattern[State](
         {
           case ConfirmClient(
-              AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(`nino`)), _, _),
+              AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, `nino`), _, _),
               `emptyBasket`, _) =>
         },
         List(
@@ -1443,7 +1429,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenClientDetails(Vrn("202949960"))
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           emptyBasket, clientInsolvent = Some(false)),
         List(
           IdentifyClient(Personal, Service.Vat, emptyBasket),
@@ -1529,7 +1515,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenClientDetails(Vrn("202949960"))
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Business), Service.Vat, Vrn(vrn))), emptyBasket, clientInsolvent = Some(false)),
+          AuthorisationRequest("GDT", Invitation(Some(Business), Service.Vat, vrn)), emptyBasket, clientInsolvent = Some(false)),
         List(IdentifyClient(Business, Service.Vat, emptyBasket), SelectService(Business, availablePersonalServices, emptyBasket), SelectClientType(emptyBasket))
       )
 
@@ -1571,14 +1557,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       val request = FakeRequest("POST", "/agents/confirm-client")
 
       "redirect to the authorisation detected page if legacy relationship exists" in {
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, Service.MtdIt)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
         givenCheckRelationshipItsaWithStatus(arn, nino,404)
-        givenPartialAuthNotExists(arn, nino)
+        givenPartialAuthNotExists(arn, nino.value)
         givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
 
         journeyState.set(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           List(
             IdentifyClient(Personal, Service.MtdIt, emptyBasket),
@@ -1594,14 +1580,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       }
 
       "redirect to already mapped page if legacy relationship exists and is copied across" in {
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, Service.MtdIt)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
         givenCheckRelationshipItsaWithStatus(arn, nino,404)
-        givenPartialAuthNotExists(arn, nino)
+        givenPartialAuthNotExists(arn, nino.value)
         givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
 
         journeyState.set(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           List(
             IdentifyClient(Personal, Service.MtdIt, emptyBasket),
@@ -1617,14 +1603,14 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       }
 
       "redirect to the review authorisations page if legacy relationship does not exist" in {
-        givenGetAllPendingInvitationsReturnsEmpty(arn, nino, Service.MtdIt)
+        givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
         givenCheckRelationshipItsaWithStatus(arn, nino,404)
-        givenPartialAuthNotExists(arn, nino)
+        givenPartialAuthNotExists(arn, nino.value)
         givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
 
         journeyState.set(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           List(
             IdentifyClient(Personal, Service.MtdIt, emptyBasket),
@@ -1645,11 +1631,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/confirm-client")
 
     "redirect to the review authorisations page when yes is selected" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, Service.Vat)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn.value, Service.Vat)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           `emptyBasket`),
         List(
           IdentifyClient(Personal, Service.Vat, emptyBasket),
@@ -1666,11 +1652,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to client insolvent page when yes is selected and client is insolvent" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, Service.Vat)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn.value, Service.Vat)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           `emptyBasket`, clientInsolvent = Some(true)),
         List(
           IdentifyClient(Personal, Service.Vat, emptyBasket),
@@ -1687,15 +1673,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to review authorisations for business journeys also" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, Service.Vat)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn.value, Service.Vat)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
-      givenInvitationCreationSucceeds(arn, Some(Business), vrn, invitationIdVAT, vrn, "vrn", Service.Vat, "VRN")
+      givenInvitationCreationSucceeds(arn, Some(Business), vrn.value, invitationIdVAT, vrn.value, "vrn", Service.Vat, "VRN")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Business)
+      givenAgentReference(arn, nino.value, Business)
       givenGetAgencyEmailAgentStub
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Business), Service.Vat, Vrn(vrn))), emptyBasket),
+          AuthorisationRequest("GDT", Invitation(Some(Business), Service.Vat, vrn)), emptyBasket),
         List(
           IdentifyClient(Business, Service.Vat, emptyBasket),
           SelectService(Business, availablePersonalServices, emptyBasket),
@@ -1713,7 +1699,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to the identify-client page when no is selected" in {
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           `emptyBasket`),
         List(
           IdentifyClient(Personal, Service.Vat, emptyBasket),
@@ -1731,12 +1717,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to pending invitation exists when a pending invitation already exists for this service" in {
-      givenGetAllPendingInvitationsReturnsSome(arn, vrn, Service.Vat)
+      givenGetAllPendingInvitationsReturnsSome(arn, vrn.value, Service.Vat)
       givenCheckRelationshipVatWithStatus(arn, vrn, 404)
       givenAgentReference(arn, "uid", ClientType.Personal)
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           `emptyBasket`),
         List()
       )
@@ -1750,11 +1736,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to active authorisation exists when there is already an active authorisation for this service" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn, Service.Vat)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, vrn.value, Service.Vat)
       givenCheckRelationshipVatWithStatus(arn, vrn, 200)
       journeyState.set(
         ConfirmClient(
-          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, Vrn(vrn))),
+          AuthorisationRequest("GDT", Invitation(Some(Personal), Service.Vat, vrn)),
           `emptyBasket`),
         List())
 
@@ -1770,7 +1756,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetAllPendingInvitationsReturnsEmpty(arn, validUtr.value, Service.Trust)
       givenCheckRelationshipTrustWithStatus(arn, validUtr, 200)
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Business)
+      givenAgentReference(arn, nino.value, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
@@ -1789,7 +1775,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       givenGetAllPendingInvitationsReturnsEmpty(arn, validUrn.value, Service.TrustNT)
       givenCheckRelationshipTrustWithStatus(arn, validUrn, 200)
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Business)
+      givenAgentReference(arn, nino.value, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
@@ -1805,16 +1791,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to active authorisation exists when there is already a partial authorisation for ITSA" in {
-      givenGetAllPendingInvitationsReturnsEmpty(arn, nino, Service.MtdIt)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
-      givenPartialAuthorisationExists(arn, nino)
+      givenPartialAuthorisationExists(arn, nino.value)
 
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Business)
+      givenAgentReference(arn, nino.value, Business)
       givenGetAgencyEmailAgentStub
 
       journeyState.set(
-        ConfirmClient(AuthorisationRequest("GDT", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))), emptyBasket),
+        ConfirmClient(AuthorisationRequest("GDT", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)), emptyBasket),
         List())
 
       val result = controller.submitConfirmClient(
@@ -1830,7 +1816,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val fullBasket = Set(
       AuthorisationRequest(
         "James Client",
-        Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)),
+        Invitation(Some(ClientType.Personal), Service.MtdIt, nino),
         itemId = "ABC"))
     val request = FakeRequest("GET", "/agents/review-authorisations")
 
@@ -1839,7 +1825,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ReviewAuthorisations(Personal, availablePersonalServices, fullBasket),
         List(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             fullBasket),
           IdentifyClient(Personal, Service.MtdIt, fullBasket),
           SelectService(Personal, availablePersonalServices, fullBasket),
@@ -1868,7 +1854,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val fullBasket = Set(
       AuthorisationRequest(
         "Client Biz",
-        Invitation(Some(ClientType.Business), Service.Vat, Vrn(vrn)),
+        Invitation(Some(ClientType.Business), Service.Vat, vrn),
         itemId = "ABC"))
     val request = FakeRequest("GET", "/agents/review-authorisations")
 
@@ -1877,7 +1863,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ReviewAuthorisations(Business, availableBusinessServices, fullBasket),
         List(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(Business), Service.Vat, Vrn(vrn))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(Business), Service.Vat, vrn)),
             fullBasket),
           IdentifyClient(Business, Service.Vat, fullBasket),
           SelectService(Personal, availableBusinessServices, fullBasket),
@@ -1944,15 +1930,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("POST", "/agents/review-authorisations")
 
     "redirect to invitation-sent page for a personal service when no is selected" in {
-      givenInvitationCreationSucceeds(arn, Some(Personal), nino, invitationIdITSA, nino, "ni", Service.MtdIt, "NI")
+      givenInvitationCreationSucceeds(arn, Some(Personal), nino.value, invitationIdITSA, nino.value, "ni", Service.MtdIt, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Personal)
+      givenAgentReference(arn, nino.value, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
         ReviewAuthorisations(Personal, availablePersonalServices, emptyBasket),
         List(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, availablePersonalServices, emptyBasket),
@@ -1975,7 +1961,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         ReviewAuthorisations(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
         List(
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
@@ -1993,17 +1979,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to some authorisations failed when some of the invitation creations fail" in {
-      givenInvitationCreationSucceeds(arn, Some(Personal), nino, invitationIdITSA, nino, "ni", Service.MtdIt, "NI")
-      givenInvitationCreationFailsForService(arn, Some(Personal), nino, invitationIdPIR, nino, "ni", Service.PersonalIncomeRecord, "NI")
+      givenInvitationCreationSucceeds(arn, Some(Personal), nino.value, invitationIdITSA, nino.value, "ni", Service.MtdIt, "NI")
+      givenInvitationCreationFailsForService(arn, Some(Personal), nino.value, invitationIdPIR, nino.value, "ni", Service.PersonalIncomeRecord, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Personal)
+      givenAgentReference(arn, nino.value, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
         ReviewAuthorisations(Personal, 
           availablePersonalServices,
           Set(
-            AuthorisationRequest("client name", Invitation(Some(Personal), Service.MtdIt, Nino(nino))),
-            AuthorisationRequest("client name", Invitation(Some(Personal), Service.PersonalIncomeRecord, Nino(nino)))
+            AuthorisationRequest("client name", Invitation(Some(Personal), Service.MtdIt, nino)),
+            AuthorisationRequest("client name", Invitation(Some(Personal), Service.PersonalIncomeRecord, nino))
           )),
         List()
       )
@@ -2016,15 +2002,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to all authorisation failed when all of the invitation creations fail" in {
-      givenInvitationCreationFailsForService(arn, Some(Personal), nino, invitationIdPIR, nino, "ni", Service.PersonalIncomeRecord, "NI")
+      givenInvitationCreationFailsForService(arn, Some(Personal), nino.value, invitationIdPIR, nino.value, "ni", Service.PersonalIncomeRecord, "NI")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn, nino, Personal)
+      givenAgentReference(arn, nino.value, Personal)
       givenGetAgencyEmailAgentStub
       journeyState.set(
         ReviewAuthorisations(Personal, 
           availablePersonalServices,
           Set(
-            AuthorisationRequest("client name", Invitation(Some(Personal), Service.PersonalIncomeRecord, Nino(nino)))
+            AuthorisationRequest("client name", Invitation(Some(Personal), Service.PersonalIncomeRecord, nino))
           )),
         List()
       )
@@ -2046,7 +2032,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.MtdIt), emptyBasket),
@@ -2079,7 +2065,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.MtdIt), emptyBasket),
@@ -2100,7 +2086,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.MtdIt, Service.Vat), emptyBasket),
@@ -2167,12 +2153,12 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "show the delete page" in {
       journeyState.set(
         DeleteAuthorisationRequest(Personal, 
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "itemId"),
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "itemId"),
           Set.empty),
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), emptyBasket),
@@ -2191,7 +2177,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](
         DeleteAuthorisationRequest(Personal, 
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "itemId"),
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "itemId"),
           Set.empty))
     }
   }
@@ -2202,17 +2188,17 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to review-authorisations when yes is selected and there is something left in the basket" in {
       journeyState.set(
         DeleteAuthorisationRequest(Personal, 
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
-          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "itemId"))
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
+          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "itemId"))
         ),
         List(
           ReviewAuthorisations(Personal, 
             availablePersonalServices,
             Set(
-              AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "itemId")
+              AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "itemId")
             )),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
@@ -2228,18 +2214,18 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](ReviewAuthorisations(Personal, 
         availablePersonalServices,
-        Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "itemId"))))
+        Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "itemId"))))
     }
     "redirect to all-authorisations-removed when yes is selected and there is nothing left in the basket" in {
       journeyState.set(
         DeleteAuthorisationRequest(Personal, 
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "ABC123"),
-          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "ABC123"))
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "ABC123"),
+          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "ABC123"))
         ),
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), emptyBasket),
@@ -2258,13 +2244,13 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     "redirect to review-authorisations when no is selected and keep basket the same" in {
       journeyState.set(
         DeleteAuthorisationRequest(Personal, 
-          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "ABC123"),
-          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "ABC123"))
+          AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "ABC123"),
+          Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "ABC123"))
         ),
         List(
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
@@ -2280,7 +2266,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
       journeyState.get should have[State](ReviewAuthorisations(Personal, 
         availablePersonalServices,
-        Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), itemId = "ABC123"))))
+        Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino), itemId = "ABC123"))))
     }
   }
   "POST /some-create-authorisations-failed" should {
@@ -2293,7 +2279,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
           SomeAuthorisationsFailed("invitation/link", None, "abc@xyz.com", Set.empty),
           ReviewAuthorisations(Personal, availablePersonalServices, Set.empty),
           ConfirmClient(
-            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))),
+            AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
           SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), emptyBasket),
@@ -2428,7 +2414,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the legacy authorisation detected page" in {
       journeyState.set(
-        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))))),
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)))),
         List()
       )
       val result = controller.showLegacyAuthorisationDetected(
@@ -2449,7 +2435,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the page with errors when input invalid" in {
       journeyState.set(
-        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))))),
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)))),
         List()
       )
       val result = controller.submitLegacyAuthorisationDetected(
@@ -2462,7 +2448,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /agent-mapping/start when yes" in {
       journeyState.set(
-        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))))),
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)))),
         List()
       )
       val result = controller.submitLegacyAuthorisationDetected(
@@ -2476,7 +2462,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "redirect to /invitations/agents/review-authorisations when no" in {
       journeyState.set(
-        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino))))),
+        LegacyAuthorisationDetected(Set(AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)))),
         List()
       )
       val result = controller.submitLegacyAuthorisationDetected(

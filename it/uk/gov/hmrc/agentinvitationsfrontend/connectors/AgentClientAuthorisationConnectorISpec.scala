@@ -154,7 +154,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         await(connector.getAllInvitations(Arn("TARN0000001"), LocalDate.now().minusDays(30)))
       result should not be empty
       result.length shouldBe 18
-      result.count(_.clientId == validNino.value) shouldBe 6
+      result.count(_.clientId == nino.value) shouldBe 6
       result.count(_.clientId == validVrn.value) shouldBe 6
       result.count(_.clientId == "AB123456B") shouldBe 6
       result.count(_.service == Service.MtdIt) shouldBe 6
@@ -244,9 +244,9 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
     "service is for PIR" should {
       val getPIRInvitation =
-        s"/agent-client-authorisation/clients/NI/${encodePathSegment(validNino.value)}/invitations/received/${invitationIdPIR.value}"
+        s"/agent-client-authorisation/clients/NI/${encodePathSegment(nino.value)}/invitations/received/${invitationIdPIR.value}"
       "return PIR Invitation" in {
-        givenInvitationExists(arn, validNino.value, invitationIdPIR, Service.PersonalIncomeRecord, identifierPIR, "Pending")
+        givenInvitationExists(arn, nino.value, invitationIdPIR, Service.PersonalIncomeRecord, identifierPIR, "Pending")
         val result = await(
           connector
             .getInvitation(getPIRInvitation))
@@ -254,7 +254,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       }
 
       "return an error if PIR invitation not found" in {
-        givenInvitationNotFound(validNino.value, invitationIdPIR, identifierPIR)
+        givenInvitationNotFound(nino.value, invitationIdPIR, identifierPIR)
         an[RuntimeException] shouldBe thrownBy(
           await(connector
             .getInvitation(getPIRInvitation)))
@@ -327,47 +327,47 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       }
 
       "return true if invitation was accepted and it is alt-Itsa" in {
-        givenAcceptInvitationSucceeds(nino, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        givenAcceptInvitationSucceeds(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe true
-        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
 
       "return false if invitation is already actioned and it is alt-Itsa" in {
-        givenAcceptInvitationReturnsAlreadyActioned(nino, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        givenAcceptInvitationReturnsAlreadyActioned(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe false
-        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
 
       "return an error if invitation not found and it is alt-Itsa" in {
-        givenAcceptInvitationReturnsNotFound(nino, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(validNino, invitationIdITSA))
+        givenAcceptInvitationReturnsNotFound(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe false
-        verifyAcceptInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
     }
 
     "service is for PIR" should {
       "return status 204 if PIR invitation was accepted" in {
-        givenAcceptInvitationSucceeds(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
+        givenAcceptInvitationSucceeds(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
         result shouldBe true
-        verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
+        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation is already actioned" in {
-        givenAcceptInvitationReturnsAlreadyActioned(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
+        givenAcceptInvitationReturnsAlreadyActioned(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
         result shouldBe false
-        verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, "NI")
+        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, "NI")
       }
 
       "return an error if PIR invitation not found" in {
-        givenAcceptInvitationReturnsNotFound(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(validNino, invitationIdPIR))
+        givenAcceptInvitationReturnsNotFound(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
         result shouldBe false
-        verifyAcceptInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
       }
     }
 
@@ -443,47 +443,47 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       }
 
       "return status 204 if invitation was rejected and it is alt-itsa" in {
-        givenRejectInvitationSucceeds(nino, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        givenRejectInvitationSucceeds(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe true
-        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
 
       "return an error if invitation is already actioned and it is alt-Itsa" in {
-        givenRejectInvitationReturnsAlreadyActioned(nino, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        givenRejectInvitationReturnsAlreadyActioned(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe false
-        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
 
       "return an error if invitation not found and it is alt-Itsa" in {
-        givenRejectInvitationReturnsWithStatus(nino, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(validNino, invitationIdITSA))
+        givenRejectInvitationReturnsWithStatus(nino.value, invitationIdITSA, "NI")
+        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
         result shouldBe false
-        verifyRejectInvitationAttempt(nino, invitationIdITSA, "NI")
+        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
       }
     }
 
     "service is for PIR" should {
       "return status 204 if PIR invitation was rejected" in {
-        givenRejectInvitationSucceeds(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
+        givenRejectInvitationSucceeds(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
         result shouldBe true
-        verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation is already actioned" in {
-        givenRejectInvitationReturnsAlreadyActioned(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
+        givenRejectInvitationReturnsAlreadyActioned(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
         result shouldBe false
-        verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
       }
 
       "return an error if PIR invitation not found" in {
-        givenRejectInvitationReturnsWithStatus(validNino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(validNino, invitationIdPIR))
+        givenRejectInvitationReturnsWithStatus(nino.value, invitationIdPIR, identifierPIR)
+        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
         result shouldBe false
-        verifyRejectInvitationAttempt(validNino.value, invitationIdPIR, identifierPIR)
+        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
       }
     }
 
@@ -536,37 +536,37 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
   "Check ITSA Registered Client KFC" should {
     "return Some(true) if DES/ETMP has a matching postcode" in {
-      givenMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenMatchingClientIdAndPostcode(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe Some(true)
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Some(true)
 
-      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+      verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
 
     "return Some(false) if DES/ETMP has customer ITSA information but has no matching postcode" in {
-      givenNonMatchingClientIdAndPostcode(validNino, validPostcode)
+      givenNonMatchingClientIdAndPostcode(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe Some(false)
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Some(false)
 
-      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+      verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
 
     "return None if DES/ETMP has no customer ITSA information" in {
-      givenNotEnrolledClientITSA(validNino, validPostcode)
+      givenNotEnrolledClientITSA(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(validNino, validPostcode)) shouldBe None
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe None
 
-      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+      verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
 
     "throws 5xx is DES/ETMP is unavailable" in {
-      givenServiceUnavailableITSA(validNino, validPostcode)
+      givenServiceUnavailableITSA(nino, validPostcode)
 
       assertThrows[RuntimeException] {
-        await(connector.checkPostcodeForClient(validNino, validPostcode))
+        await(connector.checkPostcodeForClient(nino, validPostcode))
       }
 
-      verifyCheckItsaRegisteredClientStubAttempt(validNino, validPostcode)
+      verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
   }
 
@@ -751,9 +751,9 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
   "getNinoForMtdItId" should {
     "return nino for given mtditid" in {
-      givenNinoForMtdItId(mtdItId, validNino)
+      givenNinoForMtdItId(mtdItId, nino)
       val result = await(connector.getNinoForMtdItId(mtdItId))
-      result shouldBe Some(validNino)
+      result shouldBe Some(nino)
     }
   }
 

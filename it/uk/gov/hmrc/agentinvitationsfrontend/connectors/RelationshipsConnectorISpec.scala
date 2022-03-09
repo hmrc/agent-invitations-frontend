@@ -51,17 +51,17 @@ class RelationshipsConnectorISpec extends BaseISpec with ACRStubs {
   "GetLegacySaRelationshipStatusFor" should {
     "return LegacySaRelationshipFoundAndMapped" in {
       givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
-      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino.value))
       result shouldBe LegacySaRelationshipFoundAndMapped
     }
     "return LegacySaRelationshipFoundNotMapped" in {
       givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
-      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino.value))
       result shouldBe LegacySaRelationshipFoundNotMapped
     }
     "return LegacySaRelationshipNotFound" in {
       givenLegacySaRelationshipReturnsStatus(arn, nino, 404)
-      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino))
+      val result = await(connector.getLegacySaRelationshipStatusFor(arn, nino.value))
       result shouldBe LegacySaRelationshipNotFound
     }
   }

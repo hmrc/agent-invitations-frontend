@@ -31,10 +31,8 @@ case class TrackedInvitation(
   invitationId: String,
   isRelationshipEnded: Boolean = false,
   relationshipEndedBy: Option[String] = None
-) extends ServiceAndClient {
-
+) {
   def lastUpdatedFormatted: LocalDate = LocalDate.parse(lastUpdated.toString)
-
 }
 
 object TrackedInvitation {

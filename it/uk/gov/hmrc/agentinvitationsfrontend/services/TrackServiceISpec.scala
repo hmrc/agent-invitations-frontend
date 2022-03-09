@@ -5,6 +5,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, TrackInformationSorted}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Service}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -69,8 +70,8 @@ class TrackServiceISpec extends BaseISpec {
       givenNinoForMtdItId(mtdItId, validNino)
       givenNinoForMtdItId(mtdItId2, validNino)
       givenTradingName(validNino, "Boolean Ltd")
-      givenCitizenDetailsAreKnownFor("AB123456A", "Serena", "Williams")
-      givenCitizenDetailsAreKnownFor("GZ753451B", "Venus", "Williams")
+      givenCitizenDetailsAreKnownFor(Nino("AB123456A"), "Serena", "Williams")
+      givenCitizenDetailsAreKnownFor(Nino("GZ753451B"), "Venus", "Williams")
       givenClientDetailsOnlyOrganisation(validVrn)
       givenClientDetailsOnlyOrganisation(validVrn9755)
 

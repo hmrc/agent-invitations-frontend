@@ -344,17 +344,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         "identify-cgt-client.p1")
     }
   }
-  "GET /agents/identify-itsa-client" should {
-    val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/identify-itsa-client")
-    "redirect to the identify client page" in {
-      journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
-
-      val result = controller.identifyClientRedirect()(authorisedAsValidAgent(request, arn.value))
-
-      status(result) shouldBe 303
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showIdentifyClient().url)
-    }
-  }
   "POST /agents/cancel-authorisation/identify-itsa-client" should {
     "redirect to confirm client" in {
       journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
@@ -410,7 +399,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val request = FakeRequest("POST", "agents/cancel-authorisation/identify-irv-client")
 
       givenMatchingCitizenRecord(validNino, LocalDate.parse(dateOfBirth))
-      givenCitizenDetailsAreKnownFor(validNino.value, "Barry", "Block")
+      givenCitizenDetailsAreKnownFor(validNino, "Barry", "Block")
       givenAfiRelationshipIsActiveForAgent(arn, validNino)
 
       val result =
@@ -809,7 +798,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/confirm-client" should {
     "redirect to confirm cancel when YES is selected" in {
-      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 200)
@@ -825,11 +814,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
     "redirect to confirm cancel when YES is selected for alt-itsa" in {
-      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
-      givenPartialAuthorisationExists(arn, nino)
+      givenPartialAuthorisationExists(arn, nino.value)
 
       val result =
         controller.submitConfirmClient(
@@ -842,11 +831,11 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
     }
     "redirect to not authorised when there are is no active relationship or partial auth to de-authorise" in {
-      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), Nino(nino)), Nil)
+      journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-client")
 
       givenCheckRelationshipItsaWithStatus(arn, nino, 404)
-      givenPartialAuthNotExists(arn, nino)
+      givenPartialAuthNotExists(arn, nino.value)
 
       val result =
         controller.submitConfirmClient(
@@ -979,12 +968,12 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
   "POST /agents/cancel-authorisation/confirm-cancel" should {
     "redirect to the authorisation cancelled page" in {
-      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
+      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino.value), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
-      givenCancelledAuthorisationItsa(arn, Nino(nino), 204)
+      givenCancelledAuthorisationItsa(arn, nino, 204)
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, nino, Service.MtdIt, "NI", DateTime.now())
+      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", DateTime.now())
 
       val result =
         controller.submitConfirmCancel(
@@ -1000,12 +989,12 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to the authorisation cancelled page for alt-itsa" in {
-      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino, isPartialAuth = true), Nil)
+      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino.value, isPartialAuth = true), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, nino, Service.MtdIt, "NI", DateTime.now(), isPartialAuth = true)
-      givenSetRelationshipEndedReturns(arn, nino,Service.MtdIt, 204)
+      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", DateTime.now(), isPartialAuth = true)
+      givenSetRelationshipEndedReturns(arn, nino.value,Service.MtdIt, 204)
 
       val result =
         controller.submitConfirmCancel(
@@ -1105,10 +1094,10 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to response failed page when the relationship termination fails" in {
-      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
+      journeyState.set(ConfirmCancel(Service.MtdIt, Some("Sufjan Stevens"), nino.value), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
-      givenCancelledAuthorisationItsa(arn, Nino(nino), 404)
+      givenCancelledAuthorisationItsa(arn, nino, 404)
       givenGetAgencyNameClientStub(arn)
 
       val result =

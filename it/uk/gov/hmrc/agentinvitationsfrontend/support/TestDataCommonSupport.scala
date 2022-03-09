@@ -8,9 +8,9 @@ import uk.gov.hmrc.domain.Nino
 trait TestDataCommonSupport {
 
   val arn = Arn("TARN0000001")
+  val nino = Nino("AB123456A")
   val validNino = Nino("AB123456A")
   val validNinoSpace = Nino("AB 12 34 56 A")
-  val nino = "AB123456A"
 
   val mtdItId = MtdItId("ABCDEF123456789")
   val serviceITSA = "HMRC-MTD-IT"
@@ -32,7 +32,7 @@ trait TestDataCommonSupport {
   val validRegistrationDate = "2007-07-07"
   val dateOfBirth = "1980-07-07"
   val validVrn9755 = Vrn("101747641")
-  val vrn = "101747696"
+  val vrn = Vrn("101747696")
 
   val uid = "X4BZC17W"
   val normalisedAgentName = "99-with-flake"
