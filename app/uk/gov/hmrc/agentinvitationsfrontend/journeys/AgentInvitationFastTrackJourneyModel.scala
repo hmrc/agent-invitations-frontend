@@ -398,11 +398,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
     def checkedDetailsChangeInformation(agent: AuthorisedAgent): AgentInvitationFastTrackJourneyModel.Transition =
       Transition {
-        case cdc @ CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.CapitalGains =>
-          if (ftr.clientType.isEmpty) goto(SelectClientType(ftr, continueUrl, isChanging = true))
-          else goto(IdentifyClient(ftr, continueUrl))
-
-        case cdc @ CheckDetailsComplete(ftr, continueUrl) if cdc.service == Service.Ppt =>
+        case cdc @ CheckDetailsComplete(ftr, continueUrl) if List(Service.CapitalGains, Service.Ppt).contains(cdc.service) =>
           if (ftr.clientType.isEmpty) goto(SelectClientType(ftr, continueUrl, isChanging = true))
           else goto(IdentifyClient(ftr, continueUrl))
 
@@ -418,7 +414,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case CheckDetailsNoClientTypeVat(ftr, continueUrl) =>
           goto(SelectClientType(ftr, continueUrl, isChanging = true))
 
-        case cdc @ CheckDetailsComplete(ftr, continueUrl) =>
+        case CheckDetailsComplete(ftr, continueUrl) =>
           goto(IdentifyClient(ftr, continueUrl))
       }
 
@@ -503,8 +499,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
             getClientName(fastTrackRequest.clientId.value, fastTrackRequest.service).flatMap {
               case Some(_) =>
                 val trustInvitation = fastTrackRequest.clientId match {
-                  case Utr(utr) if utr.matches(utrPattern) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
-                  case Urn(urn) if urn.matches(urnPattern) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
+                  case Utr(utr) if Utr.isValid(utr) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
+                  case Urn(urn) if Urn.isValid(urn) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
                 }
                 checkIfPendingOrActiveAndGoto(
                   fastTrackRequest,
@@ -631,8 +627,8 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
         case ConfirmClientTrust(ftr, continueUrl, trustName) =>
           if (confirmation.choice) {
             val trustInvitation = ftr.clientId match {
-              case Utr(utr) if utr.matches(utrPattern) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
-              case Urn(urn) if urn.matches(urnPattern) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
+              case Utr(utr) if Utr.isValid(utr) => Invitation(Some(ClientType.Trust), Service.Trust, Utr(utr))
+              case Urn(urn) if Urn.isValid(urn) => Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(urn))
             }
             checkIfPendingOrActiveAndGoto(
               ftr,
