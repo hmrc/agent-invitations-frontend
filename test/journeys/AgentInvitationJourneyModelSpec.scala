@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, SuspensionDetails, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, SuspensionDetails, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -76,6 +76,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val pptRef = "XAPPT000012345"
   val pptRegDate = new LocalDate(2021, 1, 1)
   val pptRegDateStr = pptRegDate.toString("yyyy-MM-dd")
+  val utr = Utr("1977030537")
+  val urn = Urn("XXTRUST10010010")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -631,6 +633,22 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     // *************************************************
 
     "at state IdentifyTrustClient" should {
+
+      "transition to ConfirmClient when trust client is identified with a UTR" in {
+        given(IdentifyClient(Trust, Service.Trust, emptyBasket)) when
+          transitions.identifiedTrustClient(authorisedAgent)(TrustClient(utr)) should
+          matchPattern {
+            case (cc: ConfirmClient, _) if cc.service == Service.Trust =>
+          }
+      }
+
+      "transition to ConfirmClient (and change service to non-taxable trust) when trust client is identified with a URN" in {
+        given(IdentifyClient(Trust, Service.Trust, emptyBasket)) when
+          transitions.identifiedTrustClient(authorisedAgent)(TrustClient(urn)) should
+          matchPattern {
+            case (cc: ConfirmClient, _) if cc.service == Service.TrustNT =>
+          }
+      }
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a personal" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
