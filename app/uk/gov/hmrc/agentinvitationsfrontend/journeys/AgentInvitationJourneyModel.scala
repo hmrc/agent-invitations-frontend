@@ -197,13 +197,13 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                   case Utr(_) =>
                     goto(
                       ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), trustService, Utr(trustClient.taxId.value))),
+                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.Trust, Utr(trustClient.taxId.value))),
                         basket)
                     )
                   case Urn(_) =>
                     goto(
                       ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), trustService, Urn(trustClient.taxId.value))),
+                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(trustClient.taxId.value))),
                         basket)
                     )
 
