@@ -274,7 +274,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       .bindForm(CountrycodeForm.form(validCountryCodes))
       .applyWithRequest(implicit request => transitions.confirmCountryCodeCgt)
 
-  def showConfirmPptRegDate: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmRegDatePpt]
+  def showConfirmPptRegDate: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmRegDatePpt].orRollback
 
   def submitConfirmPptRegDate: Action[AnyContent] =
     actions
