@@ -552,6 +552,7 @@ suspended-agent.p1.VATC=manage your VAT
 suspended-agent.p1.TRS=maintain a trust or an estate
 suspended-agent.p1.CGT=manage your Capital Gains Tax on UK property account
 suspended-agent.p1.PPT=manage your Plastic Packaging Tax
+suspended-agent.p1.PIR=view your PAYE income record
 suspended-agent.p2=If you have any questions, contact the tax agent who sent you this request.
 suspended-agent.p3=You can continue without this service, or 
 suspended-agent.finish=finish and sign out
