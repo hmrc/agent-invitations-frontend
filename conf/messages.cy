@@ -553,6 +553,7 @@ suspended-agent.p1.VATC=rheoli’ch TAW
 suspended-agent.p1.TRS=cynnal ymddiriedolaeth neu ystâd
 suspended-agent.p1.CGT=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 suspended-agent.p1.PPT=rheoli’ch Treth Deunydd Pacio Plastig
+suspended-agent.p1.PIR=bwrw golwg dros eich cofnod incwm TWE
 suspended-agent.p2=Os oes gennych unrhyw gwestiynau, cysylltwch â’r asiant treth a anfonodd y cais hwn atoch.
 suspended-agent.p3=Gallwch fynd yn eich blaen heb y gwasanaeth hwn, neu
 suspended-agent.finish=gorffen ac allgofnodi
