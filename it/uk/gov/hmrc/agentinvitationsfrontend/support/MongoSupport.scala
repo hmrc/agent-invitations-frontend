@@ -11,10 +11,6 @@ import scala.language.postfixOps
 trait MongoSupport extends MongoSpecSupport with BeforeAndAfterEach {
   me: Suite =>
 
-  protected def mongoConfiguration =
-    Map(
-      "mongodb.uri" -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default")
-
   def dropMongoDb()(implicit ec: ExecutionContext = global): Unit =
     Await.result(mongo().drop(), 5 seconds)
 }
