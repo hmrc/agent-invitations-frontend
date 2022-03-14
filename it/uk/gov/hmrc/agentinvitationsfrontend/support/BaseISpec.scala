@@ -90,7 +90,7 @@ abstract class BaseISpec
         "features.enable-trust-urn-identifier"                                    -> true,
         "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri"                                                             -> "mongodb://localhost:27017/agent-invitations-frontend?rm.monitorRefreshMS=1000&rm.failover=default"
+        "mongodb.uri"                                                             -> mongoUri
       )
       .configure(extraConfig)
       .overrides(new TestGuiceModule)
