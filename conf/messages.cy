@@ -181,6 +181,7 @@ agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 agent-suspended.fastrack.p2.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig.
+agent-suspended.fastrack.p2.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm TWE
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
