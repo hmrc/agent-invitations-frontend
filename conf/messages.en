@@ -180,6 +180,7 @@ agent-suspended.fastrack.p2.HMRC-TERS-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=maintain their trust or estate.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=manage their Capital Gains Tax on UK property account.
 agent-suspended.fastrack.p2.HMRC-PPT-ORG=manage their Plastic Packaging Tax.
+agent-suspended.fastrack.p2.PERSONAL-INCOME-RECORD=view their PAYE income record
 
 agent-suspended.fastrack.p3=You can still access any other service available to you.
 agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
