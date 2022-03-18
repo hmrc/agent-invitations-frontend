@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.domain.Nino
@@ -115,7 +115,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "GET /agents/cancel-authorisation/select-service" should {
     "show the select service page for personal services" in {
-      journeyState.set(SelectService(ClientType.Personal), Nil)
+      journeyState.set(SelectService(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -134,7 +134,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val myController: AgentLedDeauthJourneyController = myApp.injector.instanceOf[AgentLedDeauthJourneyController]
       val myJourneyState = myApp.injector.instanceOf[TestAgentLedDeauthJourneyService]
 
-      myJourneyState.set(SelectService(ClientType.Business), Nil)
+      myJourneyState.set(SelectService(ClientType.Business, Set(Service.Vat)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-business-service")
       val result = myController.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -151,7 +151,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       checkResultContainsBackLink(result, "/invitations/agents/cancel-authorisation/client-type")
     }
     "show the select service page for business service (multiple service version when more than one service is available)" in {
-      journeyState.set(SelectService(ClientType.Business), Nil)
+      journeyState.set(SelectService(ClientType.Business, Set(Service.Vat, Service.Ppt)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -167,7 +167,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "show the select service page for trust service" in {
-      journeyState.set(SelectService(ClientType.Trust), Nil)
+      journeyState.set(SelectService(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust)), Nil)
       val request = FakeRequest("GET", "/agents/cancel-authorisation/select-service")
       val result = controller.showSelectService(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
@@ -187,7 +187,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/select-personal-service" should {
     "redirect to identify client for personal service" in {
-      journeyState.set(SelectService(ClientType.Personal), Nil)
+      journeyState.set(SelectService(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal)), Nil)
       val request = FakeRequest("POST", "/agents/cancel-authorisation/select-personal-service")
 
       val result =
@@ -206,7 +206,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val myController: AgentLedDeauthJourneyController = myApp.injector.instanceOf[AgentLedDeauthJourneyController]
       val myJourneyState = myApp.injector.instanceOf[TestAgentLedDeauthJourneyService]
 
-      myJourneyState.set(SelectService(ClientType.Business), Nil)
+      myJourneyState.set(SelectService(ClientType.Business, Set(Service.Vat)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-business-service-single")
 
       val result =
@@ -222,7 +222,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   "POST /agents/cancel-authorisation/select-business-service" should {
     "redirect to identify client for business service when a valid service is selected" in {
       // there should be two services enabled for Business by default so no config change is required
-      journeyState.set(SelectService(ClientType.Business), Nil)
+      journeyState.set(SelectService(ClientType.Business, Set(Service.Vat, Service.Ppt)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-business-service")
 
       val result =
@@ -236,7 +236,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
   "POST /agents/cancel-authorisation/select-trust-service" should {
     "redirect to identify trust client when trust is selected" in {
-      journeyState.set(SelectService(ClientType.Trust), Nil)
+      journeyState.set(SelectService(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =
@@ -248,7 +248,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
     }
 
     "redirect to identify cgt client when cgt is selected" in {
-      journeyState.set(SelectService(ClientType.Trust), Nil)
+      journeyState.set(SelectService(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust)), Nil)
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/select-trust-service")
 
       val result =

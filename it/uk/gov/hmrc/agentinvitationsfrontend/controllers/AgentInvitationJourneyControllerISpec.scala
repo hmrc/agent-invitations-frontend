@@ -1957,14 +1957,15 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     }
 
     "redirect to select-service when yes is selected" in {
+      val testAvailableServices: Set[Service] = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt)
       journeyState.set(
-        ReviewAuthorisations(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
+        ReviewAuthorisations(Personal, testAvailableServices, emptyBasket),
         List(
           ConfirmClient(
             AuthorisationRequest("Sylvia Plath", Invitation(Some(ClientType.Personal), Service.MtdIt, nino)),
             emptyBasket),
           IdentifyClient(Personal, Service.MtdIt, emptyBasket),
-          SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.Ppt), emptyBasket),
+          SelectService(Personal, testAvailableServices, emptyBasket),
           SelectClientType(emptyBasket)
         )
       )
@@ -1975,7 +1976,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService().url)
 
-      journeyState.get should have[State](SelectService(Personal, availablePersonalServices, emptyBasket))
+      journeyState.get should have[State](SelectService(Personal, testAvailableServices, emptyBasket))
     }
 
     "redirect to some authorisations failed when some of the invitation creations fail" in {

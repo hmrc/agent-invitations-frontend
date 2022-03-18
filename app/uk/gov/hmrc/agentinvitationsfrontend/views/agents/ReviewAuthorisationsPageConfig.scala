@@ -20,7 +20,7 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, ClientType, InvitationsBasket}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisationRequest, AuthorisedAgent, ClientType, InvitationsBasket}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class ReviewAuthorisationsPageConfig(
@@ -40,7 +40,8 @@ case class ReviewAuthorisationsPageConfig(
 
   val clientNamesAreDifferent: Boolean = basket.toSeq.map(_.clientName).distinct.length != 1
 
-  val basketFull: Boolean = InvitationsBasket(clientType, services, basket, featureFlags).availableServices.isEmpty
+  def basketFull: Boolean =
+    InvitationsBasket(clientType, services, basket, featureFlags).availableServices.isEmpty
 
   def showDeleteCall(itemId: String): Call =
     routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)

@@ -107,6 +107,7 @@ class AgentsRequestTrackingController @Inject()(
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(
                            agent.arn,
+                           agent.isAllowlisted,
                            appConfig.trackRequestsShowLastDays,
                            pageInfo,
                            client,
@@ -131,7 +132,7 @@ class AgentsRequestTrackingController @Inject()(
     withAuthorisedAsAgent { agent =>
       implicit val now: LocalDate = LocalDate.now()
       trackService
-        .clientNames(agent.arn, appConfig.trackRequestsShowLastDays)
+        .clientNames(agent.arn, agent.isAllowlisted, appConfig.trackRequestsShowLastDays)
         .flatMap { clientNames =>
           FilterTrackRequestsForm
             .form(clientNames)
