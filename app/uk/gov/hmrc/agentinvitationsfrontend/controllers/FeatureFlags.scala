@@ -20,7 +20,7 @@ import com.google.inject.ImplementedBy
 
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
@@ -34,19 +34,21 @@ trait FeatureFlags {
   val enableTrackCancelAuth: Boolean
   val showAgentLedDeAuth: Boolean
   val agentSuspensionEnabled: Boolean
+  val enableIrvAllowlist: Boolean
   val acceptTrustURNIdentifier: Boolean
 
-  def isServiceEnabled(service: Service): Boolean = service match {
+  def isServiceEnabled(service: Service, agent: Option[AuthorisedAgent]): Boolean = service match {
     case Service.MtdIt                => showHmrcMtdIt
-    case Service.PersonalIncomeRecord => showPersonalIncome
+    case Service.PersonalIncomeRecord => showPersonalIncome && !(enableIrvAllowlist && agent.exists(!_.isAllowlisted))
     case Service.Vat                  => showHmrcMtdVat
     case Service.Trust                => showHmrcTrust
     case Service.CapitalGains         => showHmrcCgt
     case Service.Ppt                  => showPlasticPackagingTax
   }
 
-  def enabledServices: Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled)
-  def enabledServicesFor(clientType: ClientType): Set[Service] = Services.supportedServicesFor(clientType).filter(isServiceEnabled)
+  def enabledServices(agent: Option[AuthorisedAgent]): Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled(_, agent))
+  def enabledServicesFor(clientType: ClientType, agent: Option[AuthorisedAgent]): Set[Service] =
+    Services.supportedServicesFor(clientType).filter(isServiceEnabled(_, agent))
 }
 
 @Singleton
@@ -61,6 +63,7 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val agentSuspensionEnabled = appConfig.featuresAgentSuspension
+  val enableIrvAllowlist = appConfig.featuresIrvAllowlist
   val acceptTrustURNIdentifier = appConfig.featuresEnableTrustURNIdentifier
 
 }

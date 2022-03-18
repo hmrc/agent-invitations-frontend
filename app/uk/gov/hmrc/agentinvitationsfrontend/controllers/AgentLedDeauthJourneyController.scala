@@ -243,15 +243,14 @@ class AgentLedDeauthJourneyController @Inject()(
           ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType(), featureFlags.showHmrcTrust)
         ))
 
-    case SelectService(clientType) =>
-      val enabledServices = featureFlags.enabledServicesFor(clientType)
+    case SelectService(clientType, availableServices) =>
       val pageConfig = SelectServicePageConfigCancel(
         clientType,
-        enabledServices,
+        availableServices,
         routes.AgentLedDeauthJourneyController.submitSelectService,
         backLinkFor(breadcrumbs).url
       )
-      enabledServices.size match {
+      availableServices.size match {
         case 1 =>
           Ok(
             businessSelectSingleServiceView(

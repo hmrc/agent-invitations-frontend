@@ -22,7 +22,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyState
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, PptRef, Service, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
@@ -79,7 +79,7 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
         )
         Json
           .parse(
-            """{"state":"SelectService", "properties": {"clientType": "personal", "basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
+            """{"state":"SelectService", "properties": {"clientType": "personal", "basket": [], "services": ["PERSONAL-INCOME-RECORD", "HMRC-MTD-IT", "HMRC-MTD-VAT"], "agent":{"arn":"123","isAllowlisted":true}}}""")
           .as[State] shouldBe SelectService(Personal, Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat), Set.empty)
       }
 

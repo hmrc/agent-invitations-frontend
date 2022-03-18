@@ -294,7 +294,7 @@ class AgentInvitationJourneyController @Inject()(
               Future successful Redirect(externalUrls.agentMappingFrontendUrl)
                 .addingToSession(toReturnFromMapping)
             else
-              helpers.apply(transitions.confirmedLegacyAuthorisation, helpers.redirect)
+              helpers.apply(transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
           }
         )
     }

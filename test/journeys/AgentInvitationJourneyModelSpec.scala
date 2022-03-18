@@ -49,8 +49,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   }
 
   val emptyBasket: Basket = Set.empty
-  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
-  val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"))
+  val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
+  val authorisedAgentNotAllowlisted = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
   private val availableServices: Set[Service] = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
   private val availableBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
   private val availableTrustServices: Set[Service] = Set(Service.Trust, Service.CapitalGains, Service.Ppt)
@@ -172,6 +172,24 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(SelectClientType(emptyBasket)) when
           transitions.selectedClientType(authorisedAgent)("personal") should
           thenGo(SelectService(Personal, availableServices, emptyBasket))
+      }
+
+      "transition to SelectPersonalService with all services when agent is allowlisted" in {
+
+        given(SelectClientType(emptyBasket)) when
+          transitions.selectedClientType(authorisedAgent)("personal") should
+          thenMatch {
+            case SelectService(ClientType.Personal, services, _) if services.contains(Service.PersonalIncomeRecord) =>
+          }
+      }
+
+      "transition to SelectPersonalService with fewer services when agent is not allowlisted" in {
+
+        given(SelectClientType(emptyBasket)) when
+          transitions.selectedClientType(authorisedAgentNotAllowlisted)("personal") should
+          thenMatch {
+            case SelectService(ClientType.Personal, services, _) if !services.contains(Service.PersonalIncomeRecord) =>
+          }
       }
 
       "transition to SelectBusinessService" in {

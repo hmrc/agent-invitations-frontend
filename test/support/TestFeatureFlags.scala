@@ -30,6 +30,7 @@ case class TestFeatureFlags(
   override val showAgentLedDeAuth: Boolean = false,
   override val agentSuspensionEnabled: Boolean = false,
   override val acceptTrustURNIdentifier: Boolean = false,
+  override val enableIrvAllowlist: Boolean = false,
 ) extends FeatureFlags {
   def setServiceFlag(service: Service, flag: Boolean): TestFeatureFlags = service match {
     case Service.MtdIt                   => this.copy(showHmrcMtdIt = flag)
@@ -45,5 +46,5 @@ case class TestFeatureFlags(
 
 object TestFeatureFlags {
   def allDisabled: TestFeatureFlags = TestFeatureFlags()
-  def allEnabled: TestFeatureFlags = TestFeatureFlags(true, true, true, true, true, true, true, true, true, true)
+  def allEnabled: TestFeatureFlags = TestFeatureFlags(true, true, true, true, true, true, true, true, true, true, true)
 }

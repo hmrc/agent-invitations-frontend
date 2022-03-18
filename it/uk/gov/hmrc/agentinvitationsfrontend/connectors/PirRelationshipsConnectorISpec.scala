@@ -4,7 +4,7 @@ import org.joda.time.LocalDate
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.ACRStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.agentmtdidentifiers.model.Service
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,6 +32,20 @@ class PirRelationshipsConnectorISpec extends BaseISpec with ACRStubs {
       givenInactiveAfiRelationshipNotFound
       val result = await(connector.getInactiveIrvRelationships)
       result shouldBe Seq.empty
+    }
+
+    "checkIrvAllowed" should {
+      "return true when agent-fi-relationship returns 204 No Content" in {
+        val arn = Arn("TARN0000001")
+        givenArnIsAllowlistedForIrv(arn)
+        await(connector.checkIrvAllowed(arn)) shouldBe true
+      }
+
+      "return false when agent-fi-relationship returns 404 Not Found" in {
+        val arn = Arn("TARN0000001")
+        givenArnIsNotAllowlistedForIrv(arn)
+        await(connector.checkIrvAllowed(arn)) shouldBe false
+      }
     }
   }
 }

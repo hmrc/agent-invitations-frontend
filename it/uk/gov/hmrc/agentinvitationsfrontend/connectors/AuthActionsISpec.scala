@@ -29,16 +29,16 @@ class AuthActionsISpec extends BaseISpec {
     FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
 
   object TestController
-      extends AuthActionsImpl(externalUrls, env, config, authConnector, appConfig) {
+      extends AuthActionsImpl(externalUrls, env, config, authConnector, pirRelationshipConnector, appConfig, featureFlags) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
-        Future.successful(Ok(agent.arn.value))
+        Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString))
       })
   }
 
   "withAuthorisedAsAgent" should {
 
-    "call body with arn when valid agent" in {
+    "call body with arn and isAllowlisted flag when valid agent" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -48,10 +48,11 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin
       )
+      givenArnIsAllowlistedForIrv(Arn("fooArn"))
 
       val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 200
-      bodyOf(result) shouldBe "fooArn"
+      bodyOf(result) shouldBe "(fooArn,true)"
     }
 
     "redirect to /subscription when agent not enrolled for service" in {

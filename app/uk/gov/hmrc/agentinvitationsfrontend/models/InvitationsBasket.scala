@@ -36,7 +36,7 @@ case class InvitationsBasket(clientType: ClientType, services: Set[Service], bas
       .map(service => service -> Messages(s"select-service.${service.id}.${clientType.toString}"))
 
   def showService(service: Service): Boolean =
-    featureFlags.isServiceEnabled(service) && serviceAvailableForSelection(service)
+    featureFlags.isServiceEnabled(service, None) && serviceAvailableForSelection(service)
 
   protected def serviceAvailableForSelection(service: Service): Boolean =
     if (service == Service.Trust) {

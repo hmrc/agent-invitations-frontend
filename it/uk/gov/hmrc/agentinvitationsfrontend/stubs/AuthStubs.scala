@@ -3,7 +3,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, TrustTaxIdentifier, Urn, Utr}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs extends AfiRelationshipStub {
@@ -12,6 +12,7 @@ trait AuthStubs extends AfiRelationshipStub {
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+    givenArnIsAllowlistedForIrv(Arn(arn))
     authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
   }
 

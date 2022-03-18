@@ -20,10 +20,10 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Service, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 import support.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
 
 class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
@@ -41,9 +41,9 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
         json.as[State] shouldBe state
       }
       "SelectService" in {
-        val state = SelectService(ClientType.Personal)
+        val state = SelectService(ClientType.Personal, Set(Service.MtdIt, Service.Vat))
         val json =
-          Json.parse("""{"state":"SelectService", "properties": {"clientType": "personal"}}""")
+          Json.parse("""{"state":"SelectService", "properties": {"clientType": "personal", "availableServices": ["HMRC-MTD-IT", "HMRC-MTD-VAT"]}}""")
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

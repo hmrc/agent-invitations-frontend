@@ -121,4 +121,14 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
       }
     }
   }
+
+  def checkIrvAllowed(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+    val url = new URL(baseUrl, s"/agent-fi-relationship/${arn.value}/irv-allowed")
+    http
+      .GET[HttpResponse](url.toString)
+      .map {
+        case HttpResponse(NO_CONTENT, _, _) => true
+        case HttpResponse(NOT_FOUND, _, _)  => false
+      }
+  }
 }

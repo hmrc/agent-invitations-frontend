@@ -142,7 +142,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def selectedClientType(agent: AuthorisedAgent)(clientTypeStr: String): Transition = Transition {
       case SelectClientType(basket) =>
         val clientType = ClientType.toEnum(clientTypeStr)
-        goto(SelectService(clientType, Services.supportedServicesFor(clientType), basket))
+        val services = Services.supportedServicesFor(clientType).filter(featureFlags.isServiceEnabled(_, Some(agent)))
+        goto(SelectService(clientType, services, basket))
     }
 
     def gotoIdentify(
@@ -174,7 +175,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
               else goto(ReviewAuthorisations(clientType, services, basket)) // otherwise proceed to review
             case Some(service) if services.contains(service) =>
               gotoIdentify(
-                featureFlags.isServiceEnabled(service),
+                featureFlags.isServiceEnabled(service, Some(agent)),
                 featureFlags.agentSuspensionEnabled,
                 service,
                 IdentifyClient(clientType, service, basket),
@@ -550,7 +551,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       *  This transition may go to agent-mapping
       *  Or review authorisations as if from confirm client
       * */
-    def confirmedLegacyAuthorisation: Transition =
+    def confirmedLegacyAuthorisation(agent: AuthorisedAgent): Transition =
       Transition {
         case LegacyAuthorisationDetected(basket) =>
           goto(ReviewAuthorisations(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal), basket))
@@ -567,9 +568,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                               (confirmation: Confirmation) =
       // format: on
     Transition {
-      case ReviewAuthorisations(clientType, _, basket) =>
+      case ReviewAuthorisations(clientType, services, basket) =>
         if (confirmation.choice)
-          goto(SelectService(clientType, Services.supportedServicesFor(clientType), basket))
+          goto(SelectService(clientType, services, basket))
         else {
           for {
             agencyEmail    <- getAgencyEmail()
@@ -598,13 +599,14 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def confirmDeleteAuthorisationRequest(agent: AuthorisedAgent)(confirmation: Confirmation) =
       Transition {
         case DeleteAuthorisationRequest(clientType, authorisationRequest, basket) =>
+          val availableServices = Services.supportedServicesFor(clientType).filter(featureFlags.isServiceEnabled(_, Some(agent)))
           if (confirmation.choice) {
             if ((basket - authorisationRequest).nonEmpty)
-              goto(ReviewAuthorisations(clientType, Services.supportedServicesFor(clientType), basket - authorisationRequest))
+              goto(ReviewAuthorisations(clientType, availableServices, basket - authorisationRequest))
             else
               goto(AllAuthorisationsRemoved)
           } else {
-            goto(ReviewAuthorisations(clientType, Services.supportedServicesFor(clientType), basket))
+            goto(ReviewAuthorisations(clientType, availableServices, basket))
           }
       }
   }
