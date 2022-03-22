@@ -590,6 +590,7 @@ confirm-decline.vat.service-name=rheoli’ch TAW
 confirm-decline.trust.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.trustNT.service-name=cynnal ymddiriedolaeth neu ystâd
 confirm-decline.cgt.service-name=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
+confirm-decline.cgt.trust.service-name=rheoli Treth Enillion Cyfalaf ymddiriedolaeth ar gyfrif eiddo yn y DU
 confirm-decline.ppt.service-name=rheoli’ch Treth Deunydd Pacio Plastig.
 
 # Confirm Terms
