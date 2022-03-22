@@ -19,7 +19,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, h1: h1, p: p, ul_html: ul_html)
+@this(mainTemplate: MainTemplate, h1: h1, p: p, a: a, ul_html: ul_html)
 
 @(backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
@@ -32,10 +32,11 @@
 
     @h1("tax-service.header")
     @p("tax-service.p1")
-
-    <ul class="govuk-list govuk-list--bullet">
-        <li><a href="@externalUrls.guidanceCgtUkProperty">@msgs("tax-service.l1")</a></li>
-        <li><a href="@externalUrls.guidanceVatSignup">@msgs("tax-service.l2")</a></li>
-    </ul>
+    @ul_html(
+        items = Seq(
+            Html(a("tax-service.l1", href = externalUrls.guidanceCgtUkProperty).toString),
+            Html(a("tax-service.l2", href = externalUrls.guidanceVatSignup).toString),
+        )
+    )
 
 }

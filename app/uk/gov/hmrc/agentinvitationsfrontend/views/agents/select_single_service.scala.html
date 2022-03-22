@@ -15,15 +15,14 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.SelectServicePageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukDetails, Details, HtmlContent, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Details, ErrorSummary, FormWithCSRF, GovukDetails, GovukErrorSummary, HtmlContent, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
     mainTemplate: MainTemplate,
@@ -32,20 +31,18 @@
     govukDetails: GovukDetails,
     formWithCSRF: FormWithCSRF,
     inputYesNoRadios: InputYesNoRadios,
-    submitButton: SubmitButton
+    submitButton: SubmitButton, a: a
 )
 
 @(choiceForm: Form[Option[Service]], config: SelectServicePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
-<p id="selectServiceSuggestion">@Html(msgs("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
+    <p id="selectServiceSuggestion">@Html(msgs("select-service.alt-suggestion", "https://www.gov.uk/guidance/client-authorisation-an-overview#how-to-set-up-agent-authorisation"))</p>
 }
 
 @mainTemplate(
-title = errorPrefix(choiceForm) + msgs("generic.title", config.selectSingleHeaderMessage, msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(config.backLink)
-) {
+    title = errorPrefix(choiceForm) + msgs("generic.title", config.selectSingleHeaderMessage, msgs("service.name.agents.auth")),
+    isAgent = true, backLinkHref = Some(config.backLink) ) {
 
     @if(choiceForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
@@ -71,11 +68,7 @@ backLinkHref = Some(config.backLink)
 
     @if(config.basket.nonEmpty) {
         <p class="govuk-!-margin-top-6 govuk-body-s">
-            <a href="@config.reviewAuthsCall">@msgs("select-service.review-auth-link")</a>
+            @a("select-service.review-auth-link", href = config.reviewAuthsCall.url)
         </p>
     }
-
 }
-
-
-

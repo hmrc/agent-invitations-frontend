@@ -26,8 +26,12 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 @import views.html.helper.CSPNonce
 
-
-@this(mainTemplate: MainTemplate, govukPanel: GovukPanel, a:a, p:p, h1:h1, h2:h2,ul:ul)
+@this(
+    mainTemplate: MainTemplate,
+    govukPanel: GovukPanel,
+    a:a, p:p, h1:h1, h2:h2,
+    ul:ul, ul_html: ul_html
+)
 
 @(
     service: Service,
@@ -67,16 +71,15 @@
 
     @if(service == Service.MtdIt) {
         @h2("authorisation-cancelled.check-sa.subheader")
-
         @p("authorisation-cancelled.check-sa.p1")
+        @ul_html(items =
+            Seq(
+                Html(msgs("authorisation-cancelled.check-sa.l1")),
+                Html(a(href = externalUrls.guidanceSa, key="authorisation-cancelled.check-sa.l2").toString),
+                Html(msgs("authorisation-cancelled.check-sa.l3"))
+            )
+        )
 
-        <ul class="govuk-list govuk-list--bullet govuk-body">
-            <li>@msgs("authorisation-cancelled.check-sa.l1")</li>
-            <li>
-                <a href="@externalUrls.guidanceSa">@msgs("authorisation-cancelled.check-sa.l2")</a>
-            </li>
-            <li>@msgs("authorisation-cancelled.check-sa.l3")</li>
-        </ul>
     }
 
     @a(href=routes.AgentsRequestTrackingController.showTrackRequests().url,

@@ -38,8 +38,7 @@
     checkAnswersRow: CheckAnswersRow,
     inputRadio: InputRadios,
     submitButton: SubmitButton,
-    h1: h1,
-    p: p,
+    h1: h1, h2: h2, p: p, a: a, span: span,
     insetText: inset_text
 )
 
@@ -79,7 +78,7 @@ backLinkHref = config.backLinkUrl
 
     @insetText(html = Html(msgs(s"check-details.p.${config.fastTrackRequest.service.id}")))
 
-    <h2>@msgs("check-details.table.heading")</h2>
+    @h2("check-details.table.heading")
 
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
         @if(config.fastTrackRequest.clientType.nonEmpty){
@@ -128,8 +127,8 @@ backLinkHref = config.backLinkUrl
     </dl>
 
     @if(config.needClientType || config.needKnownFact) {
-        <a href="@config.changeDetailsCall.url" id="changeInfo">@msgs("check-details.change.link")</a>
-        <p class="govuk-!-margin-top-4">@msgs("check-details.change.p1")</p>
+        @a("check-details.change.link", href = config.changeDetailsCall.url, id = Some("changeInfo"))
+        @p("check-details.change.p1", classes = Some("govuk-!-margin-top-4"))
 
 
       @if(config.needClientType) {
