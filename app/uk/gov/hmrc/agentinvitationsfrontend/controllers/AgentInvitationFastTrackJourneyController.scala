@@ -164,7 +164,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   val showSuspended: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SuspendedAgent]
 
-  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient]
+  val showIdentifyClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[IdentifyClient].orRollback
 
   val submitIdentifyItsaClient: Action[AnyContent] =
     actions
