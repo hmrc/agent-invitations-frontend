@@ -260,18 +260,18 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                    hasActiveRelationshipFor(arn, fastTrackRequest.clientId.value, fastTrackRequest.service)
                      .flatMap {
                        case true => goto(ActiveAuthorisationExists(fastTrackRequest, continueUrl))
-                       case false =>
+                       case false if appConfig.featuresAltItsa & fastTrackRequest.service == Service.MtdIt =>
                          hasPartialAuthorisationFor(arn, fastTrackRequest.clientId.value).flatMap {
                            case true => goto(PartialAuthorisationExists(fastTrackRequest, continueUrl))
                            case false =>
-                             if (appConfig.featuresAltItsa && invitation.service == Service.MtdIt)
-                               legacySaRelationshipStatusFor(arn, fastTrackRequest.clientId.value).flatMap {
-                                 case LegacySaRelationshipFoundAndMapped => goto(AlreadyCopiedAcrossItsa)
-                                 case LegacySaRelationshipFoundNotMapped =>
-                                   goto(LegacyAuthorisationDetected(fastTrackRequest, arn, invitation, continueUrl))
-                                 case LegacySaRelationshipNotFound => invitationSent
-                               } else invitationSent
+                             legacySaRelationshipStatusFor(arn, fastTrackRequest.clientId.value).flatMap {
+                               case LegacySaRelationshipFoundAndMapped => goto(AlreadyCopiedAcrossItsa)
+                               case LegacySaRelationshipFoundNotMapped =>
+                                 goto(LegacyAuthorisationDetected(fastTrackRequest, arn, invitation, continueUrl))
+                               case LegacySaRelationshipNotFound => invitationSent
+                             }
                          }
+                       case false => invitationSent
                      }
                  }
       } yield result
