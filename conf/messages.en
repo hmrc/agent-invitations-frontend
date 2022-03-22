@@ -589,6 +589,7 @@ confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
 confirm-decline.trustNT.service-name=maintain a trust or an estate
 confirm-decline.cgt.service-name=manage your Capital Gains Tax on UK property account.
+confirm-decline.cgt.trust.service-name=manage a trust’s Capital Gains Tax on UK property account
 confirm-decline.ppt.service-name=manage your Plastic Packaging Tax.
 
 # Confirm Terms
