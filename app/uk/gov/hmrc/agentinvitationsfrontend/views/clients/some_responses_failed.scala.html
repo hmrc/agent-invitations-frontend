@@ -44,7 +44,7 @@
         @p(s"some-responses-failed.${config.consents.head.serviceKey}")
     } else {
         @p("some-responses-failed.p1")
-        @ul(items = config.consents.map(s"some-responses-failed.li." + _.serviceKey)))
+        @ul(items = config.consents.map(s"some-responses-failed.li." + _.serviceKey))
     }
 
     @p("some-responses-failed.try-again")
