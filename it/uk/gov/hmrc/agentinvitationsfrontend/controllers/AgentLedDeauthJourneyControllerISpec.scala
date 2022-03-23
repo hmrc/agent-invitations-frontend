@@ -9,9 +9,8 @@ import play.api.test.Helpers.defaultAwaitTimeout
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -1189,11 +1188,24 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val request = FakeRequest("GET", "fsm/agents/cancel-authorisation/not-signed-up")
       val result = controller.showNotSignedUp(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
-      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
-      checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"/invitations/agents/cancel-authorisation","Start new request", roleIsButton = true)
-      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+
+      val html = Jsoup.parse(Helpers.contentAsString(result))
+      html.title() shouldBe "This client has not signed up to Making Tax Digital for Income Tax - Cancel a client’s authorisation - GOV.UK"
+      html.select(Css.H1).text() shouldBe "This client has not signed up to Making Tax Digital for Income Tax"
+
+      val paragraphs = html.select(Css.paragraphs)
+      paragraphs.get(0).text() shouldBe "They cannot authorise you for this service until they have signed up."
+      paragraphs.get(1).text() startsWith "If you copied an existing Self Assessment authorisation for this client to your agent services account, you can "
+      paragraphs.get(1).select("a").text() shouldBe "sign them up to Making Tax Digital pilot for Income Tax (opens in a new tab)."
+      paragraphs.get(1).select("a").attr("href") shouldBe "https://www.gov.uk/guidance/agents-use-software-to-send-income-tax-updates"
+
+      paragraphs.get(2).text() startsWith "Find out how to "
+      paragraphs.get(2).select("a").text() shouldBe "copy across an existing authorisation"
+      paragraphs.get(2).select("a").attr("href") shouldBe "http://localhost:9438/agent-mapping/start"
+      html.select("a#button-link").text() shouldBe "Start new request"
+      html.select("a#button-link").hasClass("govuk-button")
+      html.select("a#button-link").attr("href") shouldBe "/invitations/agents/cancel-authorisation"
+
     }
   }
   "GET /agents/cancel-authorisation/not-authorised" should {

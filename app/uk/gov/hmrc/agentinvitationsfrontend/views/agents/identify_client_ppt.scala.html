@@ -15,14 +15,13 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.PptClient
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputDate, InputText, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukFieldset, Legend, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -37,12 +36,14 @@
     p: p,
 )
 
-@(pptClientForm : Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(pptClientForm: Form[PptClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{
+    if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
 
 @agentInvitationsDateForm = @{
-pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
+    pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.message.contains("error.ppt.required")))
 }
 
 @fieldsetHtml = {
@@ -65,15 +66,13 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
 @mainTemplate(
     bannerTitle = msgs(banner),
     title = errorPrefix(pptClientForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
-    isAgent = true,
-    backLinkHref = Some(backLinkUrl)
-) {
+    isAgent = true, backLinkHref = Some(backLinkUrl)) {
 
     @if(pptClientForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pptClientForm, mapping = dateErrorMapping("registrationDate", agentInvitationsDateForm)))
     }
 
- @formWithCSRF(action = submitFormCall) {
+    @formWithCSRF(action = submitFormCall) {
 
         @govukFieldset(Fieldset(
             legend = Some(Legend(
@@ -85,7 +84,7 @@ pptClientForm.copy(errors = pptClientForm.errors.filterNot(error => error.messag
             html = fieldsetHtml
         ))
 
-     @submitButton()
+        @submitButton()
 
- }
- }
+    }
+}

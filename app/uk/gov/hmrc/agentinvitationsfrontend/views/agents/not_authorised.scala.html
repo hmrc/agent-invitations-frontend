@@ -15,35 +15,33 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(
-  mainTemplate: MainTemplate,
-  errorPrefix: error_prefix,
-  govukErrorSummary: GovukErrorSummary,
-  formWithCSRF: FormWithCSRF,
-  linkStyledAsButton: LinkStyledAsButton
+   mainTemplate: MainTemplate,
+   errorPrefix: error_prefix,
+   govukErrorSummary: GovukErrorSummary,
+   formWithCSRF: FormWithCSRF,
+   linkStyledAsButton: LinkStyledAsButton,
+   h1: h1, p: p
 )
 
 @(service: Service, clientTypeCall: Call, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{
+    if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
 
 @mainTemplate(
-bannerTitle = msgs(banner),
-title = msgs("generic.title", msgs("not-authorised.h1"), msgs(banner)),
-isAgent = true) {
+    title = msgs("generic.title", msgs("not-authorised.h1"), msgs(banner)),
+    bannerTitle = msgs(banner), isAgent = true) {
 
-    <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs("not-authorised.h1")</h1>
-
-    <p id="notMatched">@msgs(s"not-authorised.${service.id}.p")</p>
-
+    @h1("not-authorised.h1", id = Some("notMatchedHeader"))
+    @p(s"not-authorised.${service.id}.p", id = Some("notMatched"))
     @linkStyledAsButton(href = clientTypeCall.url, messageKey = "start-again.button")
 }

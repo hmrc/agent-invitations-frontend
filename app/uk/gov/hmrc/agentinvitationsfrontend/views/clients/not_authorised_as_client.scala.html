@@ -15,22 +15,21 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, h1: h1, p: p)
 
 @(serviceMessageKey: String = "afi")(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = msgs(s"generic.title", msgs("not-authorised.header"), msgs("service.name.clients")),
-isAgent = false) {
+    bannerTitle = "service.name.clients",
+    title = msgs(s"generic.title", msgs("not-authorised.header"), msgs("service.name.clients")),
+    isAgent = false) {
 
     @h1("not-authorised.header")
-
     @p("not-authorised.description.p1")
     @p("not-authorised.description.p2")
 
