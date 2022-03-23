@@ -74,30 +74,19 @@ scriptElem = Some(gtmScript)
             config.agencyName))
     } else {
         @p(msgs(s"client-complete.multi.p1.head", config.agencyName))
-        @ul(items = config.consents.filter(_.consent == true).map("client-complete.multi.p1." +  _.serviceKey)))
+        @ul(items = config.consents.filter(_.consent == true).map("client-complete.multi.p1." +  _.serviceKey))
     }
 
     @h2("client-complete.sub-header")
-
     @p(html = Some(Html(msgs("client-complete.whatHappensNext.p1", externalUrls.agentClientManagementUrl))))
-
-    @ul(items = Seq(
-        "client-complete.whatHappensNext.l1",
-        "client-complete.whatHappensNext.l2",
-    ))
+    @ul(items = Seq("client-complete.whatHappensNext.l1", "client-complete.whatHappensNext.l2"))
 
     @if(config.consents.count(_.consent == false) == 1) {
-        @p(
-            msgs("client-complete.multi.fail", config.agencyName,
-            s"${config.consents.count(_.consent == false)} service")
-        )
-
+        @p(msgs("client-complete.multi.fail", config.agencyName, s"${config.consents.count(_.consent == false)} service"))
     }
+
     @if(config.consents.count(_.consent == false) > 1) {
-        @p(
-            msgs("client-complete.multi.fail", config.agencyName,
-            s"${config.consents.count(_.consent == false)} service")
-        )
+        @p(msgs("client-complete.multi.fail", config.agencyName, s"${config.consents.count(_.consent == false)} service"))
     }
 
     @p( classes= Some("govuk-!-margin-bottom-9"),
