@@ -35,7 +35,7 @@ class ExtendedFrontendFilters @Inject()(defaultFilters: FrontendFilters, configu
   object CSRFExceptionsFilter extends Filter {
 
     lazy val allowlist: Set[String] = configuration
-      .get[Option[Seq[String]]]("csrfexceptions.whitelist")
+      .get[Option[Seq[String]]]("csrfexceptions.allowlist")
       .getOrElse(Seq.empty)
       .toSet
 
