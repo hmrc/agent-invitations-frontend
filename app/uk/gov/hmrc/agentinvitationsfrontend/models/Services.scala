@@ -37,7 +37,13 @@ object Services {
   }
 
   def supportedEnrolmentKeys: Set[String] = supportedServices.map(_.enrolmentKey).toSet
-  def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = supportedServicesFor(clientType).map(_.enrolmentKey)
+  def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = {
+    val enrolmentKeys = supportedServicesFor(clientType).map(_.enrolmentKey)
+    clientType match {
+      case ClientType.Trust => enrolmentKeys + Service.TrustNT.enrolmentKey // add the non-taxable trust enrolment key if the client is a trust
+      case _                => enrolmentKeys
+    }
+  }
 
   def isSupported(clientType: ClientType, service: Service): Boolean = (clientType, service) match {
     case (ClientType.Trust, Service.TrustNT) => true // must check this separately as it is not separately listed in the supported services

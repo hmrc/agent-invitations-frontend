@@ -69,6 +69,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     )
   val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
   val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
+  val authorisedTrustNTClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-TERSNT-ORG"))))
   val authorisedIndividualClientWithoutRelevantEnrolments =
     AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
   val authorisedOrganisationClientWithoutRelevantEnrolments =
@@ -292,7 +293,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedTrustOrEstateClient)) should
             thenGo(TrustNotClaimed)
         }
+        "transition to Consent when the invitation is to manage a trust and the client has the HMRC-TERSNT-ORG enrolment" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq(InvitationDetails(invitationIdTrustNT, expiryDate, invitationStatus, false, List(StatusChangeEvent(DateTime.now(), Pending)))))
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
 
+          given(WarmUp(Trust, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedTrustNTClient)) should
+            thenGo(MultiConsent(Trust, uid, agentName, arn, Seq(ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = false))))
+        }
         "transition to CannotFindRequest when the client has AffinityGroup Individual and no relevant enrolments" in {
           def getInvitationDetails(uid: String) =
             Future(Seq.empty[InvitationDetails])
