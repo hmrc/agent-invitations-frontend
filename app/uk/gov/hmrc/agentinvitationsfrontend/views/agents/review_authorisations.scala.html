@@ -40,7 +40,9 @@
 
 @mainTemplate(
     title = msgs("generic.title", msgs("review-authorisations.heading"), msgs("service.name.agents.auth")),
-    isAgent = true, backLinkHref = Some(backLinkUrl) ) {
+    isAgent = true,
+    backLinkHref = Some(backLinkUrl)
+) {
 
     @if(reviewAuthorisationsForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(reviewAuthorisationsForm))

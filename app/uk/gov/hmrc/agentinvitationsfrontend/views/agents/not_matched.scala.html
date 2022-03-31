@@ -28,7 +28,7 @@
     govukErrorSummary: GovukErrorSummary,
     formWithCSRF: FormWithCSRF,
     linkStyledAsButton: LinkStyledAsButton,
-    p: p, h1: h1, a: a
+    p: p, h1: h1
 )
 
 @(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -44,9 +44,7 @@
 
     @if(hasJourneyCache) {
         <p class="govuk-!-margin-top-6">
-            @a("review-auths.link", id = Some("showReviewAuthLink"),
-                href = reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations).url
-            )
+            <a id="showReviewAuthLink" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations())>@msgs("review-auths.link")</a>
         </p>
     }
 

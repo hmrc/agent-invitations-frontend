@@ -41,7 +41,9 @@
 
 @mainTemplate(
     title = errorPrefix(choiceForm) + msgs("generic.title", msgs("legacy-auth-detected.title"), msgs("service.name.agents.auth")),
-    isAgent = true, backLinkHref = Some(backlink) ) {
+    isAgent = true,
+    backLinkHref = Some(backlink)
+) {
 
     @if(choiceForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))

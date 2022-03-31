@@ -15,30 +15,31 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.agents.PendingAuthorisationExistsPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p: p, h1: h1, h2: h2)
+@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p:p, h1:h1, h2:h2)
 
 @(config: PendingAuthorisationExistsPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@invitationLink = @{
-    s"${externalUrls.agentInvitationsExternalUrl}${config.pendingAuthLink}"
-}
+@invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.pendingAuthLink}"}
 
 @mainTemplate(
     title = msgs("generic.title", msgs(s"pending-authorisation-exists.header"), msgs("service.name.agents.auth")),
-    isAgent = true, backLinkHref = Some(config.backLinkUrl) ) {
+    isAgent = true,
+    backLinkHref = Some(config.backLinkUrl)
+) {
 
-    @h1("pending-authorisation-exists.header")
+   @h1("pending-authorisation-exists.header")
+
     @p(msgs("pending-authorisation-exists.p", config.clientName))
 
     @h2("pending-authorisation-exists.h2")
-    @p(msgs("pending-authorisation-exists.p2", config.clientName))
+    @p(msgs("pending-authorisation-exists.p2", config.clientName ))
     @p(invitationLink, classes = Some("govuk-!-font-weight-bold"))
 
     @if(config.authRequestsExist && !config.fromFastTrack) {
@@ -47,16 +48,17 @@
             messageKey = "pending-authorisation-exists.button"
         )
     } else {
-        @if(!config.fromFastTrack) {
-            @linkStyledAsButton(
-                href = config.clientTypeCall.url,
-                messageKey = "new-request.button"
-            )
-        } else {
-            @linkStyledAsButton(
-                href = routes.AgentsRequestTrackingController.showTrackRequests().url,
-                messageKey = "pending-authorisation-exists.track.button"
-            )
-        }
+      @if(!config.fromFastTrack) {
+        @linkStyledAsButton(
+            href = config.clientTypeCall.url,
+            messageKey = "new-request.button"
+        )
+      } else {
+        @linkStyledAsButton(
+            href = routes.AgentsRequestTrackingController.showTrackRequests().url,
+            messageKey = "pending-authorisation-exists.track.button"
+        )
+      }
     }
+
 }

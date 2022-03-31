@@ -14,17 +14,16 @@
  * limitations under the License.
  *@
 
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Text, Button}
+
 @this()
 
 @(
-   href: String,
-   id: String = "button-link",
-   messageKey: String = "continue.button",
-   submitClass: Option[String] = None
-)(implicit msgs: Messages)
+href: String,
+id: String = "button-link",
+messageKey: String = "continue.button",
+submitClass: Option[String] = None)(implicit msgs: Messages)
 
 
-<a id="@id"
-   href="@href"
-   class="govuk-button @submitClass"
-   draggable="false" role="button">@msgs(messageKey)</a>
+<a id="@id" href="@href" class="govuk-button @submitClass" draggable="false" role="button">@msgs(messageKey)</a>

@@ -38,9 +38,11 @@
 @(ggUserIdForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = msgs("service.name.clients"),
-    title = msgs("generic.title", msgs("gg-user-id-needed.h1"), msgs("service.name.clients")),
-    isAgent = false, backLinkHref = Some(backLinkUrl.url) ) {
+bannerTitle = msgs("service.name.clients"),
+title = msgs("generic.title", msgs("gg-user-id-needed.h1"), msgs("service.name.clients")),
+isAgent = false,
+backLinkHref = Some(backLinkUrl.url)
+) {
 
     @if(ggUserIdForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(ggUserIdForm))
@@ -57,4 +59,5 @@
 
         @submitButton()
     }
+
 }

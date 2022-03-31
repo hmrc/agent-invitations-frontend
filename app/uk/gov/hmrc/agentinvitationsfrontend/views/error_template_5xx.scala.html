@@ -24,18 +24,21 @@
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(title = msgs("global.error.500.title"), isAgent = false) {
-
     @h1("global.error.500.heading")
+
     @p("global.error.500.message")
     @p("global.error.500.p2")
     <p>
-        @a(href=msgs("global.error.500.vat_helpline.link-href"), key="global.error.500.vat_helpline.link-text")
-        @span(" ")
+        @a(
+            href=msgs("global.error.500.vat_helpline.link-href"),
+            key="global.error.500.vat_helpline.link-text"
+        )
         @span("global.error.500.vat_helpline")
     </p>
     <p>
-        @a("global.error.500.sa_helpline.link-text", href=msgs("global.error.500.sa_helpline.link-href"))
-        @span(" ")
-        @span("global.error.500.sa_helpline")
+        <a href="@msgs("global.error.500.sa_helpline.link-href")">
+        @msgs("global.error.500.sa_helpline.link-text")
+        </a>
+            &nbsp;@msgs("global.error.500.sa_helpline")
     </p>
 }

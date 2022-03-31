@@ -26,18 +26,14 @@
 
 @this(
     appConfig: AppConfig,
-    formWithCSRF: FormWithCSRF,
-    a: a
+    formWithCSRF: FormWithCSRF
 )
 
 @(invitationOrRelationship: TrackInformationSorted, index: Int)(implicit msgs: Messages, request: Request[_])
 
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
-@if(invitationOrRelationship.lastUpdated.isDefined) {
-    @a("recent-invitations.invitations.actions.partialauth.signup",
-        href = appConfig.govUkGuidanceSignupUrl)
-}
+<a href="@{appConfig.govUkGuidanceSignupUrl}" target="_blank" rel="noreferrer noopener">@signupInfo(invitationOrRelationship)</a>
 
 @formWithCSRF(
     action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
@@ -55,4 +51,8 @@
     </button>
 }
 
-
+@signupInfo(invitation: TrackInformationSorted)(implicit msgs: Messages) = {
+  @if(invitation.lastUpdated.isDefined) {
+    @msgs("recent-invitations.invitations.actions.partialauth.signup")
+  }
+}

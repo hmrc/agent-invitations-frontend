@@ -15,18 +15,18 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(mainTemplate: MainTemplate, h1: h1, p: p)
 
 @()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    bannerTitle = msgs("service.name.clients"),
-    title = msgs("generic.title", msgs("all-responses-failed.header"), msgs("service.name.clients")),
-    isAgent = false) {
+bannerTitle = msgs("service.name.clients"),
+title = msgs("generic.title", msgs("all-responses-failed.header"), msgs("service.name.clients")),
+isAgent = false) {
 
     @h1("all-responses-failed.header")
     @p("all-responses-failed.p1")

@@ -29,25 +29,30 @@
     govukErrorSummary: GovukErrorSummary,
     formWithCSRF: FormWithCSRF,
     submitButton: SubmitButton,
-    p:p, a:a, h1:h1, ul:ul, h2:h2, span:span
+    p:p,
+    a:a,
+    h1:h1,
+    ul:ul,
+    h2:h2,
+    span:span
 )
 
 @(pageConfig: SuspendedAgentPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @pageBody = {
-    @if(pageConfig.isOneSuspendedService) {
-        @p(msgs("suspended-agent.p1.single", msgs(s"suspended-agent.p1.${pageConfig.suspendedServices.head}")))
-    } else {
-        @p("suspended-agent.p1.multi")
-        @ul(items=pageConfig.suspendedServices.map("suspended-agent.p1." + _).toSeq)
-    }
+@if(pageConfig.isOneSuspendedService) {
+    @p(msgs("suspended-agent.p1.single", msgs(s"suspended-agent.p1.${pageConfig.suspendedServices.head}")))
+} else {
+    @p("suspended-agent.p1.multi")
+    @ul(items=pageConfig.suspendedServices.map("suspended-agent.p1." + _).toSeq)
+}
     @p("suspended-agent.p2")
 }
 
 @mainTemplate(
-    bannerTitle = "service.name.clients",
-    title = msgs("generic.title", msgs("suspended-agent.all.header"), msgs("service.name.clients")),
-    isAgent = false) {
+bannerTitle = "service.name.clients",
+title = msgs("generic.title", msgs("suspended-agent.all.header"), msgs("service.name.clients")),
+isAgent = false) {
 
     @if(pageConfig.isAllSuspended) {
         @h1("suspended-agent.all.header")

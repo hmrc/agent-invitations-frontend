@@ -15,13 +15,14 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.{ConfirmForm, routes}
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -37,16 +38,16 @@
 @(service: String, clientType: ClientType, confirmForm: Form[ConfirmForm], backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = msgs("generic.title", msgs("confirm-cancel.header"), msgs("service.name.agents.auth")),
-    isAgent = true,
-    backLinkHref = Some(backLinkUrl)
+title = msgs("generic.title", msgs("confirm-cancel.header"), msgs("service.name.agents.auth")),
+isAgent = true,
+backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(confirmForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    @formWithCSRF(routes.AgentsRequestTrackingController.submitConfirmCancel) {
+    @formWithCSRF(routes.AgentsRequestTrackingController.submitConfirmCancel){
 
         @inputYesNoRadio(
             field = confirmForm("confirmCancel"),
@@ -56,5 +57,7 @@
         )
 
         @submitButton()
+
     }
-}
+
+    }

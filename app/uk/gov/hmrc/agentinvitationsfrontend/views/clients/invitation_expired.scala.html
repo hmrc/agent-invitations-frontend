@@ -15,19 +15,20 @@
  *@
 
 @import play.api.Configuration
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 
-@this(mainTemplate: MainTemplate, p: p, a: a, h1: h1)
+@this(mainTemplate: MainTemplate, p:p, a:a, h1:h1)
 
 @(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@mainTemplate(bannerTitle = "service.name.clients", title = msgs("generic.title", msgs("invitation-expired.heading"), msgs("service.name.clients")), isAgent = false) {
+@mainTemplate(bannerTitle = "service.name.clients", title = msgs("generic.title", msgs("invitation-expired.heading"), msgs("service.name.clients")),  isAgent = false) {
 
-    @h1("invitation-expired.heading")
-    @p("invitation-expired.p1")
-    @p("invitation-expired.p2")
-    @a(key = "finish.button", href = externalUrls.signOutUrl(false, None))
+ @h1("invitation-expired.heading")
+ @p("invitation-expired.p1")
+ @p("invitation-expired.p2")
+ @a(key = "finish.button", href = externalUrls.signOutUrl(false, None))
 
 }
