@@ -34,20 +34,17 @@
 )
 
 @(
-cgtClientForm : Form[CgtClient],
-submitFormCall: Call,
-backLinkUrl: String,
-isDeAuthJourney: Boolean = false
+    cgtClientForm : Form[CgtClient],
+    submitFormCall: Call,
+    backLinkUrl: String,
+    isDeAuthJourney: Boolean = false
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
 @mainTemplate(
-bannerTitle = msgs(banner),
-title = errorPrefix(cgtClientForm) + msgs("generic.title", msgs(s"identify-cgt-client.header"), msgs(banner)),
-isAgent = true,
-backLinkHref = Some(backLinkUrl)
-) {
+    title = errorPrefix(cgtClientForm) + msgs("generic.title", msgs(s"identify-cgt-client.header"), msgs(banner)),
+    bannerTitle = msgs(banner), isAgent = true, backLinkHref = Some(backLinkUrl)) {
 
     @if(cgtClientForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(cgtClientForm))

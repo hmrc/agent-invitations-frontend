@@ -15,47 +15,46 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
-@this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton)
+@this(
+    mainTemplate: MainTemplate,
+    linkStyledAsButton: LinkStyledAsButton,
+    h1: h1, h2: h2, p: p, a: a, ol: ol
+)
 
 @(hasJourneyCache: Boolean, tryAgainCall: Call, reviewAuthsCallOpt: Option[Call], pptRef: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-title = msgs("generic.title", msgs(s"ppt-not-matched.header"), msgs("service.name.agents.auth")),
-isAgent = true,
-backLinkHref = Some(tryAgainCall.url)
+    title = msgs("generic.title", msgs(s"ppt-not-matched.header"), msgs("service.name.agents.auth")),
+    isAgent = true,
+    backLinkHref = Some(tryAgainCall.url)
 ) {
 
-    <h1 id="notMatchedHeader" class="govuk-heading-xl">@msgs(s"ppt-not-matched.header")</h1>
+    @h1("ppt-not-matched.header", id = Some("notMatchedHeader" ))
 
-    <p id="enteredPptRef">@msgs(s"ppt-not-matched.p1", pptRef)</p>
+    @p(msgs("ppt-not-matched.p1", pptRef), id = Some("enteredPptRef"))
+    @p("ppt-not-matched.p2", id = Some("notMatched"))
+    @p("ppt-not-matched.advice", id = Some("notMatchedAdvice"))
 
-    <p id="notMatched">@msgs(s"ppt-not-matched.p2")</p>
-
-    <p id="notMatchedAdvice">@msgs(s"ppt-not-matched.advice")</p>
-
-    <ol class="govuk-list govuk-list--bullet">
-        <li>@msgs("ppt-not-matched.advice.l1")</li>
-        <li>@msgs("ppt-not-matched.advice.l2")</li>
-    </ol>
+    @ol(items = Seq("ppt-not-matched.advice.l1", "ppt-not-matched.advice.l2"))
 
     @linkStyledAsButton(
-        id="tryAgainButton",
+        id = "tryAgainButton",
         href = tryAgainCall.url,
         messageKey = "try-again.button"
     )
 
-  @if(hasJourneyCache) {
-   <p class="govuk-!-margin-top-6">
-       <a id="showReviewAuthLink" href=@reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations)>
-           @msgs("review-auths.link")
-       </a>
-   </p>
-  }
+    @if(hasJourneyCache) {
+        <p class="govuk-!-margin-top-6">
+            @a("review-auths.link", id = Some("showReviewAuthLink"),
+                href = reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations).url
+            )
+        </p>
+    }
 
 }

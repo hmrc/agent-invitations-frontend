@@ -40,11 +40,9 @@
 @(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-bannerTitle = "service.name.clients",
-title = errorPrefix(confirmDeclineForm) + msgs("generic.title", msgs("confirm-decline.heading"), msgs("service.name.clients")),
-isAgent = false,
-backLinkHref = Some(config.backLink.url)
-) {
+    bannerTitle = "service.name.clients",
+    title = errorPrefix(confirmDeclineForm) + msgs("generic.title", msgs("confirm-decline.heading"), msgs("service.name.clients")),
+    isAgent = false, backLinkHref = Some(config.backLink.url)) {
 
     @if(confirmDeclineForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmDeclineForm))
@@ -83,4 +81,3 @@ backLinkHref = Some(config.backLink.url)
         @submitButton()
     }
 }
-

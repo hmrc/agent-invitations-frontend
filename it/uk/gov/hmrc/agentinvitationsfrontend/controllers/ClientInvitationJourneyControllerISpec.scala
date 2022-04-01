@@ -1654,12 +1654,13 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         givenIVFailureReasonResponse(reason)
         val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
         status(result) shouldBe 403
-        checkHtmlResultWithBodyMsgs(
-          result,
-          "cannot-confirm-identity.header",
-          "cannot-confirm-identity.p1",
-          "cannot-confirm-identity.p2")
-        checkResultContainsLink(result, "/invitations/warm-up", "Try again", linkId = Some("tryAgainButton"), roleIsButton = true)
+        val html = Jsoup.parse(Helpers.contentAsString(result))
+        html.select(Css.H1).text() shouldBe "We could not confirm your identity"
+        val paragraphs = html.select(Css.paragraphs)
+        paragraphs.get(0).text() shouldBe "The information you have entered does not match our records."
+        paragraphs.get(1).text() shouldBe "If you need help with confirming your identity, use the ‘Get help with this page’ link."
+        html.select("a#tryAgainButton").text() shouldBe "Try again"
+        html.select("a#tryAgainButton").attr("href") shouldBe "/invitations/warm-up"
       }
     }
   }
@@ -1682,6 +1683,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           reason match {
             case TechnicalIssue => {
               resultCode shouldBe 403
+
               checkHtmlResultWithBodyMsgs(
                 result,
                 "technical-issues.header",
@@ -1699,12 +1701,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             }
             case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence => {
               resultCode shouldBe 403
-              checkHtmlResultWithBodyMsgs(
-                result,
-                "cannot-confirm-identity.header",
-                "cannot-confirm-identity.p1",
-                "cannot-confirm-identity.p2")
-              checkResultContainsLink(result, "/invitations/warm-up", "Try again", linkId = Some("tryAgainButton"), roleIsButton = true)
+
+              val html = Jsoup.parse(Helpers.contentAsString(result))
+              html.select(Css.H1).text() shouldBe "We could not confirm your identity"
+              val paragraphs = html.select(Css.paragraphs)
+              paragraphs.get(0).text() shouldBe "The information you have entered does not match our records."
+              paragraphs.get(1).text() shouldBe "If you need help with confirming your identity, use the ‘Get help with this page’ link."
+              html.select("a#tryAgainButton").text() shouldBe "Try again"
+              html.select("a#tryAgainButton").attr("href") shouldBe "/invitations/warm-up"
             }
             case UserAborted | TimedOut => resultCode shouldBe 303
             case LockedOut              => resultCode shouldBe 303

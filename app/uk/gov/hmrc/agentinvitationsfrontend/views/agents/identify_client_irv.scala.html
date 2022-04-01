@@ -15,14 +15,13 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, InputDate, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, GovukFieldset, Legend, Fieldset, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputDate, InputText, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukFieldset, Legend, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -37,9 +36,11 @@
     p: p,
 )
 
-@(agentInvitationsForm : Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(agentInvitationsForm: Form[IrvClient], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
+@banner = @{
+    if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
 
 @agentInvitationsDateForm = @{
     agentInvitationsForm.copy(errors = agentInvitationsForm.errors.filterNot(error => error.message.contains("error.nino.required")))
@@ -64,11 +65,8 @@
 }
 
 @mainTemplate(
-bannerTitle = msgs(banner),
-title = errorPrefix(agentInvitationsForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
-isAgent = true,
-backLinkHref = Some(backLinkUrl)
-) {
+    title = errorPrefix(agentInvitationsForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
+    bannerTitle = msgs(banner), isAgent = true, backLinkHref = Some(backLinkUrl)) {
 
     @if(agentInvitationsForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(agentInvitationsForm, mapping = dateErrorMapping("dob", agentInvitationsDateForm)))
