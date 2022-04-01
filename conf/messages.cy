@@ -97,7 +97,7 @@ select-service.p1=Mae angen i chi greu cais ar wahân ar gyfer pob math o awdurd
 service.type.invalid=Dewiswch yr hyn rydych am i’r cleient eich awdurdodi i’w wneud
 
 # multi-choice selections
-select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm TWE
+select-service.PERSONAL-INCOME-RECORD.personal=Bwrw golwg dros ei gofnod incwm
 select-service.HMRC-MTD-IT.personal=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 select-service.HMRC-MTD-VAT.personal=Rheoli ei TAW
 select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
@@ -135,8 +135,8 @@ select-single-service.HMRC-TERS-ORG.business.error=Dewiswch ‘Iawn’ os hoffec
 select-single-service.HMRC-TERS-ORG.trust.header=A hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn?
 select-single-service.HMRC-TERS-ORG.trust.error=Dewiswch ‘Iawn’ os hoffech gynnal ymddiriedolaeth neu ystâd ar gyfer y cleient hwn
 
-select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn?
-select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm TWE y cleient hwn
+select-single-service.PERSONAL-INCOME-RECORD.personal.header=A hoffech fwrw golwg dros gofnod incwm y cleient hwn?
+select-single-service.PERSONAL-INCOME-RECORD.personal.error=Dewiswch ‘Iawn’ os hoffech fwrw golwg dros gofnod incwm y cleient hwn
 
 select-single-service.HMRC-MTD-IT.personal.header=A ydych am reoli Treth Incwm y cleient hwn?
 select-single-service.HMRC-MTD-IT.personal.error=Dewiswch ‘Iawn’ os ydych am reoli Treth Incwm y cleient hwn
@@ -167,7 +167,7 @@ agent-suspended.p1.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd
 agent-suspended.p1.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 agent-suspended.p1.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig
-agent-suspended.p1.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm TWE
+agent-suspended.p1.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm
 agent-suspended.p2.single=Gallwch ddechrau cais am awdurdodiad newydd ar gyfer gwasanaeth gwahanol.
 agent-suspended.p2.multi=Gallwch barhau heb y cais hwn, neu <a href="{0}">ddechrau cais newydd</a>.
 
@@ -181,7 +181,7 @@ agent-suspended.fastrack.p2.HMRC-TERS-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-TERSNT-ORG=cynnal ei ymddiriedolaeth neu ystâd.
 agent-suspended.fastrack.p2.HMRC-CGT-PD=rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU.
 agent-suspended.fastrack.p2.HMRC-PPT-ORG=rheoli ei Dreth Deunydd Pacio Plastig.
-agent-suspended.fastrack.p2.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm TWE
+agent-suspended.fastrack.p2.PERSONAL-INCOME-RECORD=bwrw golwg dros ei gofnod incwm
 
 agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth arall sydd ar gael i chi.
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
@@ -278,7 +278,7 @@ invitation-sent.mtd=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddig
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
 check-details.p.HMRC-MTD-IT=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Incwm cleient.
-check-details.p.PERSONAL-INCOME-RECORD=Rydych ar fin dechrau cais am awdurdodiad i fwrw golwg dros gofnod incwm TWE cleient.
+check-details.p.PERSONAL-INCOME-RECORD=Rydych ar fin dechrau cais am awdurdodiad i fwrw golwg dros gofnod incwm cleient.
 check-details.p.HMRC-MTD-VAT=Rydych ar fin dechrau cais am awdurdodiad i reoli TAW cleient.
 check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
@@ -319,7 +319,7 @@ review-authorisations.p=Rydych wedi ychwanegu {0}.
 review-authorisations.singular=o geisiadau am awdurdodiad
 review-authorisations.plural=o geisiadau am awdurdodiad
 review-authorisations.table.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+review-authorisations.table.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm
 review-authorisations.table.HMRC-MTD-VAT=Rheoli ei TAW
 review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
@@ -339,7 +339,7 @@ error.cancel-authorisation.client-type.empty=Dewiswch y math o gleient y mae ang
 error.fast-track.client-type.empty=Dewiswch y math o gleient y mae angen i chi ganslo’ch awdurdodiad ar ei gyfer
 
 cancel-authorisation.personal.select-service.header=Pa awdurdodiad yr hoffech ei ganslo ar gyfer y cleient hwn?
-cancel-authorisation.personal.select-service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+cancel-authorisation.personal.select-service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm
 cancel-authorisation.personal.select-service.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 cancel-authorisation.personal.select-service.HMRC-MTD-VAT=Rheoli ei TAW
 cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
@@ -356,7 +356,7 @@ cancel-authorisation.cgt.account-ref=Cyfeirnod cyfrif Treth Enillion Cyfalaf: {0
 
 cancel-authorisation.confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r awdurdodiad hwn?
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-IT=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm {0}
-cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu gweld y cofnod incwm TWE ar gyfer y cleient hwn.
+cancel-authorisation.confirm-cancel.p1.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu gweld y cofnod incwm ar gyfer y cleient hwn.
 cancel-authorisation.confirm-cancel.p1.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cyflwyno Ffurflenni TAW drwy feddalwedd ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
@@ -370,7 +370,7 @@ cancel-authorisation.cancelled.header=Awdurdodiad wedi’i ganslo
 cancel-authorisation.cancelled.subheader=Beth y mae hyn yn ei olygu
 cancel-authorisation.cancelled.return-to-account-services.button=Dychwelyd i gyfrif gwasanaethau asiant
 cancel-authorisation.cancelled.p1.HMRC-MTD-IT=Nid oes gan {0} yr awdurdod mwyach i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm {1}.
-cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD=Nid yw {0} wedi’i awdurdodi mwyach i weld ei gofnod incwm TWE.
+cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD=Nid yw {0} wedi’i awdurdodi mwyach i weld ei gofnod incwm.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT=Nid yw {0} wedi’i awdurdodi mwyach i reoli TAW {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
@@ -395,7 +395,7 @@ cancel-authorisation.response-failed.advice=Efallai nad ydym wedi cadw’ch ateb
 #Not authorisation to de-auth
 not-authorised.h1=Nid ydych wedi eich awdurdodi
 not-authorised.HMRC-MTD-IT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
-not-authorised.PERSONAL-INCOME-RECORD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i fwrw golwg dros ei gofnod incwm TWE.
+not-authorised.PERSONAL-INCOME-RECORD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i fwrw golwg dros ei gofnod incwm.
 not-authorised.HMRC-MTD-VAT.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei TAW.
 not-authorised.HMRC-TERS-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-TERSNT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
@@ -405,7 +405,7 @@ not-authorised.HMRC-PPT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli
 #Delete
 delete.heading=A ydych yn siŵr eich bod am ddileu’ch cais am awdurdodiad ar gyfer {0}?
 delete.subheading.HMRC-MTD-IT=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
-delete.subheading.PERSONAL-INCOME-RECORD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn bwrw golwg dros ei gofnod incwm TWE.
+delete.subheading.PERSONAL-INCOME-RECORD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn bwrw golwg dros ei gofnod incwm.
 delete.subheading.HMRC-MTD-VAT=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli ei TAW.
 delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
@@ -478,7 +478,7 @@ cannot-create-request.review-auth=Dychwelyd i’ch ceisiadau am awdurdodiad
 create-auth-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 create-auth-failed.p1=Nid oeddem yn gallu creu’r awdurdodiad canlynol: {0}.
 create-auth-failed.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-create-auth-failed.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+create-auth-failed.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm
 create-auth-failed.HMRC-MTD-VAT=Rheoli ei TAW
 create-auth-failed.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 create-auth-failed.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
@@ -526,15 +526,15 @@ gg-user-id-needed.p=Er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfr
 error.confirm-gg-id.required=Dewiswch ‘Iawn’ os oes gennych Ddynodydd Defnyddiwr ar gyfer Porth y Llywodraeth
 
 # Which Service
-which-service.header=A yw’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm TWE neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm?
+which-service.header=A yw’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm?
 which-service.radio.yes=Iawn
 which-service.radio.no=Na – mae fy asiant yn gofyn am awdurdodiad ar gyfer gwasanaeth treth gwahanol
-error.which-service.answer-required=Dewiswch ‘Iawn’ os yw’ch asiant yn gofyn am awdurdodiad ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm neu gofnod incwm TWE
+error.which-service.answer-required=Dewiswch ‘Iawn’ os yw’ch asiant yn gofyn am awdurdodiad ar gyfer Troi Treth yn Ddigidol ar gyfer Treth Incwm neu gofnod incwm
 
 ## New GG ID
 new-gg-id.header=Mae angen i chi greu Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth
 new-gg-id.p1=Ewch ati i greu Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth dim ond os yw’r canlynol yn berthnasol:
-new-gg-id.li1=mae’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm TWE neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
+new-gg-id.li1=mae’ch asiant yn gofyn am awdurdodiad ar gyfer cofnod incwm neu ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm
 new-gg-id.li2=nid oes gennych Ddynodydd Defnyddiwr (ID) Porth y Llywodraeth ar gyfer materion treth personol neu TAW, er enghraifft, un rydych yn ei ddefnyddio ar gyfer eich cyfrif treth personol neu’ch Hunanasesiad
 new-gg-id.p4=Nesaf, byddwn yn gofyn am eich manylion er mwyn creu’ch Dynodydd Defnyddiwr (ID) newydd ar gyfer Porth y Llywodraeth ac er mwyn cadarnhau pwy ydych.
 
@@ -555,7 +555,7 @@ suspended-agent.p1.VATC=rheoli’ch TAW
 suspended-agent.p1.TRS=cynnal ymddiriedolaeth neu ystâd
 suspended-agent.p1.CGT=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 suspended-agent.p1.PPT=rheoli’ch Treth Deunydd Pacio Plastig
-suspended-agent.p1.PIR=bwrw golwg dros eich cofnod incwm TWE
+suspended-agent.p1.PIR=bwrw golwg dros eich cofnod incwm
 suspended-agent.p2=Os oes gennych unrhyw gwestiynau, cysylltwch â’r asiant treth a anfonodd y cais hwn atoch.
 suspended-agent.p3=Gallwch fynd yn eich blaen heb y gwasanaeth hwn, neu
 suspended-agent.finish=gorffen ac allgofnodi
@@ -639,12 +639,12 @@ confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reol
 confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {0} rhag iddo ddod i ben.
 
 confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm Talu Wrth Ennill (TWE)
-confirm-terms-multi.pir.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i fwrw golwg dros eich cofnod incwm TWE, mae hyn yn golygu y gall {0} weld y canlynol:
+confirm-terms-multi.pir.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y gall {0} weld y canlynol:
 confirm-terms-multi.pir.list.item1=i bwy rydych wedi gweithio yn y gorffennol
 confirm-terms-multi.pir.list.item2=buddiannau trethadwy megis yswiriant meddygol a char cwmni
 confirm-terms-multi.pir.list.item3=pensiynau
 confirm-terms-multi.pir.list.item4=dyddiadau dechrau a dod i ben eich rhan yn y broses TWE
-confirm-terms-multi.afi.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i fwrw golwg dros fy nghofnod incwm TWE.
+confirm-terms-multi.afi.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i fwrw golwg dros fy nghofnod incwm.
 
 confirm-terms-multi.vat.heading=Rheoli fy TAW
 confirm-terms-multi.vat.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i reoli’ch TAW, mae hyn yn golygu y gall {0} wneud y canlynol:
@@ -751,7 +751,7 @@ confirm-terms.vat.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wy
 #Check answers
 check-answers.heading =Gwirio’ch atebion cyn anfon eich ateb
 check-answers.subheading =Caniatâd i {0}
-check-answers.service.afi =Bwrw golwg dros eich cofnod incwm TWE
+check-answers.service.afi =Bwrw golwg dros eich cofnod incwm
 check-answers.service.itsa =Anfon eich diweddariadau Treth Incwm drwy feddalwedd
 check-answers.service.vat =Cyflwyno’ch Ffurflenni TAW drwy feddalwedd
 check-answers.service.trust=Cynnal ymddiriedolaeth neu ystâd
@@ -874,14 +874,14 @@ locked-out.p3=Os oes angen help arnoch i gadarnhau pwy ydych, defnyddiwch y cysy
 some-responses-failed.header=Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth
 some-responses-failed.p1=Nid oeddem yn gallu cadw’ch ymateb o ran y gwasanaethau canlynol:
 some-responses-failed.li.itsa=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-some-responses-failed.li.afi=bwrw golwg dros eich cofnod incwm TWE
+some-responses-failed.li.afi=bwrw golwg dros eich cofnod incwm
 some-responses-failed.li.vat=rheoli’ch TAW
 some-responses-failed.li.trust=cynnal ymddiriedolaeth
 some-responses-failed.li.trustNT=cynnal ymddiriedolaeth
 some-responses-failed.li.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 some-responses-failed.li.ppt=rheoli’ch Treth Deunydd Pacio Plastig
 some-responses-failed.itsa=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Incwm.
-some-responses-failed.afi=Nid oeddem yn gallu cadw’ch ymateb o ran bwrw golwg dros eich cofnod incwm TWE.
+some-responses-failed.afi=Nid oeddem yn gallu cadw’ch ymateb o ran bwrw golwg dros eich cofnod incwm.
 some-responses-failed.vat=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch TAW
 some-responses-failed.trust=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
 some-responses-failed.trustNT=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
@@ -938,7 +938,7 @@ recent-invitations.table-row-header.service=Cais am awdurdodiad wedi’i anfon
 recent-invitations.table-row-header.status=Statws
 recent-invitations.table-row-header.actions=Camau gweithredu
 recent-invitations.invitation.service.HMRC-MTD-IT=Rheoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
-recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm TWE
+recent-invitations.invitation.service.PERSONAL-INCOME-RECORD=Bwrw golwg dros ei gofnod incwm
 recent-invitations.invitation.service.HMRC-MTD-VAT=Rheoli ei TAW
 recent-invitations.invitation.service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 recent-invitations.invitation.service.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
@@ -1004,7 +1004,7 @@ resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
 #Confirm cancel page
 confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r cais am awdurdodiad hwn?
 confirm-cancel.subheader.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm dros y person hwn.
-confirm-cancel.subheader.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE.
+confirm-cancel.subheader.PERSONAL-INCOME-RECORD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm.
 confirm-cancel.subheader.HMRC-MTD-VAT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli TAW ar gyfer y cleient hwn.
 confirm-cancel.subheader.HMRC-TERS-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-cancel.subheader.HMRC-TERSNT-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
@@ -1016,7 +1016,7 @@ error.confirmCancel.invalid=Mae angen llenwi’r maes hwn
 #Request cancelled page
 request-cancelled.header=Cais am awdurdodiad wedi’i ganslo
 request-cancelled.p1.HMRC-MTD-IT=Rydych wedi canslo’ch cais am awdurdodiad i reoli Treth Incwm ar gyfer y cleient hwn.
-request-cancelled.p1.PERSONAL-INCOME-RECORD=Rydych wedi canslo’ch cais am awdurdodiad i fwrw golwg dros ei gofnod incwm TWE.
+request-cancelled.p1.PERSONAL-INCOME-RECORD=Rydych wedi canslo’ch cais am awdurdodiad i fwrw golwg dros ei gofnod incwm.
 request-cancelled.p1.HMRC-MTD-VAT=Rydych wedi canslo’ch cais am awdurdodiad i reoli TAW ar gyfer y cleient hwn.
 request-cancelled.p1.HMRC-TERS-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-TERSNT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
@@ -1030,7 +1030,7 @@ request-cancelled.p2=Os gwnaethoch ganslo’ch cais am awdurdodiad drwy ddamwain
 #Confirm cancel authorisation page
 confirm-authorisation-cancelled.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
 confirm-authorisation-cancelled.p1.HMRC-MTD-IT=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm {0}.
-confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
@@ -1040,7 +1040,7 @@ confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dr
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siŵr eich bod am ganslo awdurdodiad y cleient hwn?
 confirm-authorisation-cancelled.p1.track.HMRC-MTD-IT=Ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm dros y person hwn mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
-confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm TWE mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.PERSONAL-INCOME-RECORD=Ni fyddwch yn gallu bwrw golwg dros ei gofnod incwm mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-MTD-VAT=Ni fyddwch yn gallu rheoli ei TAW mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
@@ -1052,7 +1052,7 @@ confirm-authorisation-cancelled.track.itsa-panel=Ni fyddwch yn gallu rheoli cynl
 authorisation-cancelled.header=Awdurdodiad wedi’i ganslo
 authorisation-cancelled.subheader=Beth y mae hyn yn ei olygu
 authorisation-cancelled.p1.HMRC-MTD-IT=Nid ydych wedi’ch awdurdodi mwyach i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm {0}.
-authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i fwrw golwg dros ei gofnod incwm TWE.
+authorisation-cancelled.p1.PERSONAL-INCOME-RECORD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i fwrw golwg dros ei gofnod incwm.
 authorisation-cancelled.p1.HMRC-MTD-VAT=Nid ydych wedi’ch awdurdodi mwyach i reoli TAW {0}.
 authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
@@ -1080,7 +1080,7 @@ pending-authorisation-exists.track.button=Rheoli eich ceisiadau am awdurdodiad
 #Active authorisation exists
 active-authorisation-exists.header=Rydych eisoes wedi’ch awdurdodi
 active-authorisation-exists.p1.HMRC-MTD-IT=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei gyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
-active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=Mae’r cleient hwn eisoes wedi’ch awdurdodi i fwrw golwg dros ei gofnod incwm TWE.
+active-authorisation-exists.p1.PERSONAL-INCOME-RECORD=Mae’r cleient hwn eisoes wedi’ch awdurdodi i fwrw golwg dros ei gofnod incwm.
 active-authorisation-exists.p1.HMRC-MTD-VAT=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei TAW.
 active-authorisation-exists.p1.HMRC-TERS-ORG.false=Mae’r cleient hwn eisoes wedi’ch awdurdodi i gynnal ymddiriedolaeth neu ystâd.
 active-authorisation-exists.p1.HMRC-TERSNT-ORG.true=Mae’r cleient hwn eisoes wedi’ch awdurdodi i gynnal ymddiriedolaeth neu ystâd.
