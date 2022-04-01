@@ -541,7 +541,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       checkHtmlResultWithBodyText(
         result,
         "Authorisation request cancelled",
-        "You have cancelled your authorisation request to view their PAYE income record.",
+        "You have cancelled your authorisation request to view their Income record.",
         "Your client can no longer respond to this request."
       )
     }
@@ -810,7 +810,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         result,
         "Authorisation cancelled",
         "What this means",
-        "You are no longer authorised by Bubbles Powerpuff to view their PAYE income record.",
+        "You are no longer authorised by Bubbles Powerpuff to view their Income record.",
         "Return to manage your recent authorisation requests"
       )
     }
