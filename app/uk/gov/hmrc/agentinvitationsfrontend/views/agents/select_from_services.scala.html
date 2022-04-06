@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 @import uk.gov.hmrc.govukfrontend.views.html.components.{Details, ErrorSummary, FormWithCSRF, GovukDetails, GovukErrorSummary, HtmlContent, Text}
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.views.components.RadioData
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
@@ -57,7 +58,9 @@
             legend = config.selectHeaderMessage,
             headingIsLegend = true,
             hint = Some(msgs("select-service.p1")),
-            inputs = mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices.map { case (svc, x) => (svc.id, x) })
+            inputs =  mapToRadioItems(agentInvitationsForm("serviceType"), config.availableServices.map { case (service: Service, label: String) =>
+                RadioData(name =  service.id, label = label, id = Some(service.id))
+            })
         )
 
         @govukDetails(Details(

@@ -22,8 +22,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.components.RadioData
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(
@@ -54,7 +54,9 @@ backLinkHref = Some(config.backLink)
         field = agentForm("serviceType"),
         legend = msgs(s"cancel-authorisation.${config.clientType}.select-service.header"),
         headingIsLegend = true,
-        inputs = mapToRadioItems(agentForm("serviceType"), config.orderedServices.map { case (svc, x) => (svc.id, x) })
+        inputs = mapToRadioItems(agentForm("serviceType"), config.orderedServices.map { case (service: Service, label: String) =>
+            RadioData(name =  service.id, label = label, id = Some(service.id))
+        })
     )
 
     @submitButton()
