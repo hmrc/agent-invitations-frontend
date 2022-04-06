@@ -18,6 +18,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.util
 
 import play.api.data.{Field, Form}
 import play.api.i18n.Messages
+import uk.gov.hmrc.agentinvitationsfrontend.views.components.RadioData
+import uk.gov.hmrc.govukfrontend.views.Aliases.{Hint, HtmlContent}
 import uk.gov.hmrc.govukfrontend.views.html.components.{RadioItem, Text}
 //import uk.gov.hmrc.govukfrontend.views.Aliases.{ActionItem, Actions, HtmlContent, Key, SummaryListRow, Value}
 
@@ -38,18 +40,18 @@ object ViewUtils {
   def errorPrefix(form: Form[_])(implicit messages: Messages): String =
     if (form.hasErrors || form.hasGlobalErrors) s"${messages("error.prefix")} " else ""
 
-  // Assumes Seq(id/value, messageKey) - create RadioOption type for inputs to make this safer?
-  def mapToRadioItems(field: Field, inputs: Seq[(String, String)])(implicit messages: Messages): Seq[RadioItem] =
-    inputs.map(
-      a => {
-        RadioItem(
-          id = Some(a._1),
-          value = Some(a._1),
-          checked = field.value.contains(a._1),
-          content = Text(messages(a._2))
-        )
-      }
-    )
+  def mapToRadioItems(field: Field, inputs: Seq[RadioData])(implicit msgs: Messages): Seq[RadioItem] =
+    inputs.map { (radioData: RadioData) =>
+      RadioItem(
+        content = Text(msgs(radioData.label)),
+        value = Some(radioData.name),
+        id = Some(radioData.id.getOrElse(radioData.name)),
+        checked = radioData.isChecked.getOrElse(field.value.contains(radioData.name)),
+        hint = radioData.hint.map(h => {
+          Hint(content = HtmlContent(msgs(h)))
+        })
+      )
+    }
 
   def isDayError(field: String, form: Form[_]): Boolean =
     if (form.errors(field).exists(error => error.message.contains("day"))) true else false

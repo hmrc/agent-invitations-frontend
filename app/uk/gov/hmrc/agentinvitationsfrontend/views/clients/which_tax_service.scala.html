@@ -15,23 +15,23 @@
  *@
 
 @import play.api.Configuration
-@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.components.RadioData
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
-@import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 
 @this(
-    mainTemplate: MainTemplate,
-    formWithCSRF: FormWithCSRF,
-    inputRadio: InputRadios,
-    submitButton: SubmitButton,
-    govukErrorSummary: GovukErrorSummary
+        mainTemplate: MainTemplate,
+        formWithCSRF: FormWithCSRF,
+        inputRadio: InputRadios,
+        submitButton: SubmitButton,
+        govukErrorSummary: GovukErrorSummary
 )
 
 @(confirmForm: Form[Confirmation], backLinkUrl: Call, submitAction: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
@@ -40,20 +40,22 @@
     bannerTitle = msgs("service.name.clients"),
     title = msgs("generic.title", msgs(s"which-service.header")),
     isAgent = false,
-    backLinkHref = Some(backLinkUrl.url)
-) {
+    backLinkHref = Some(backLinkUrl.url)) {
 
-    @if(confirmForm.hasErrors){
+    @if(confirmForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmForm))
     }
 
-    @formWithCSRF(routes.ClientInvitationJourneyController.submitWhichTaxService){
+    @formWithCSRF(routes.ClientInvitationJourneyController.submitWhichTaxService) {
 
         @inputRadio(
             field = confirmForm("accepted"),
             legend = msgs("which-service.header"),
             headingIsLegend = true,
-            inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", msgs("which-service.radio.yes")),("false", msgs("which-service.radio.no"))))
+            inputs = mapToRadioItems(confirmForm("accepted"),
+                Seq(RadioData("true", msgs("which-service.radio.yes"), id = Some("accepted-yes")),
+                    RadioData("false", msgs("which-service.radio.no"), id = Some("accepted-no")))
+            )
         )
 
         @submitButton()

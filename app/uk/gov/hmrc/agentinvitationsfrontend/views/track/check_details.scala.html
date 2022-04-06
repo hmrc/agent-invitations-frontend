@@ -24,7 +24,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton, CheckAnswersRow}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
-@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.components.RadioData
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
 @import uk.gov.hmrc.domain.Nino
@@ -151,7 +151,10 @@ backLinkHref = config.backLinkUrl
                 legend = msgs("confirm-details.sub-header"),
                 legendClass = Some("govuk-fieldset__legend--m"),
                 headingIsLegend = false,
-                inputs = mapToRadioItems(confirmForm("accepted"), Seq(("true", msgs("confirm-details.radio1")), ("false", msgs("confirm-details.radio2"))))
+                inputs = mapToRadioItems(confirmForm("accepted"),
+                    Seq(RadioData("true", msgs("confirm-details.radio1"), id = Some("confirm-yes")),
+                        RadioData("false", msgs("confirm-details.radio2"), id = Some("confirm-no")))
+                )
             )
 
             @submitButton(id="continueMoreInfo")

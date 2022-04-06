@@ -21,13 +21,13 @@
 @this(govukRadios: GovukRadios)
 
 @(
-field: Field,
-legend: String,
-legendClass: Option[String] = None,
-hint: Option[String] = None,
-headingIsLegend: Boolean = false,
-inputs: Seq[RadioItem],
-inline: Boolean = false
+    field: Field,
+    legend: String,
+    legendClass: Option[String] = None,
+    hint: Option[String] = None,
+    headingIsLegend: Boolean = false,
+    inputs: Seq[RadioItem],
+    inline: Boolean = false
 )(implicit msgs: Messages)
 
 @govukRadios(Radios(
