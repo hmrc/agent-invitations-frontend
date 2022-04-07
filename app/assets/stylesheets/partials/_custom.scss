@@ -15,6 +15,8 @@ Ideally, these buttons should be changed into links but they are currently forms
   box-shadow: none;
   color: $govuk-link-colour;
   border-width: 0;
+  padding-left:0;
+  padding-right:0;
 
   &:hover {
     color: $govuk-link-hover-colour;
