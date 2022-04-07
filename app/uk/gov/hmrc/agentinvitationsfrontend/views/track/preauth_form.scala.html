@@ -36,7 +36,8 @@
 
 @if(invitationOrRelationship.lastUpdated.isDefined) {
     @a("recent-invitations.invitations.actions.partialauth.signup",
-        href = appConfig.govUkGuidanceSignupUrl)
+        href = appConfig.govUkGuidanceSignupUrl,
+        classes = Some("button--link-style govuk-!-font-size-16"))
 }
 
 @formWithCSRF(
