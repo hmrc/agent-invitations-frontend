@@ -44,7 +44,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-invitations-frontend",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.12.10",
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
     resolvers := Seq(
@@ -55,8 +55,8 @@ lazy val root = (project in file("."))
     resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
     libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.7" cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % "1.7.7" % Provided cross CrossVersion.full
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.4.4" cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % "1.4.4" % Provided cross CrossVersion.full
     ),
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     publishingSettings,
