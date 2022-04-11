@@ -12,7 +12,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Persona
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,7 +37,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   val emptyBasket = Set.empty[AuthorisationRequest]
 
   def requestWithJourneyIdInCookie(method: String, path: String): FakeRequest[AnyContentAsEmpty.type] =
-    FakeRequest(method, path).withSession(journeyIdKey -> UUID.randomUUID().toString)
+    FakeRequest(method, path).withSession(journeyIdKey -> UUID.randomUUID().toString, SessionKeys.authToken -> "Bearer XYZ")
 
   def requestWithJourneyIdInQuery(method: String, path: String): FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest(method, CallOps.addParamsToUrl(path, journeyIdKey -> Some(UUID.randomUUID().toString)))
