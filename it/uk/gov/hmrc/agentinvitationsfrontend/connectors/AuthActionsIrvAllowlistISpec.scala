@@ -1,13 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.mvc.Results._
+import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActionsImpl
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import play.api.mvc.Results._
-import uk.gov.hmrc.http.HeaderCarrier
-import play.api.test.Helpers._
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,13 +18,16 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
   val authActions = inject[AuthActionsImpl]
 
+  implicit def hc(implicit request: Request[_]): HeaderCarrier =  HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+
   "withAuthorisedAsAgent" when {
     "irv-allowlist is enabled" should {
       "redirect to sign in when the user does not have an active session" in {
         givenUnauthorisedWith("MissingBearerToken")
 
+        implicit val request: Request[_] = FakeRequest()
         val result =
-          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
+          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(request, hc, ExecutionContext.global)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/")
       }
@@ -30,8 +35,11 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
       "redirect to agent subscription when the user does not have a HMRC-AS-AGENT enrolment" in {
         givenUnauthorisedForInsufficientEnrolments()
 
+        implicit val request: Request[_] = FakeRequest().withSession(
+          SessionKeys.authToken -> "Bearer XYZ")
+
         val result =
-          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
+          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(request, hc, ExecutionContext.global)
         status(result) shouldBe SEE_OTHER
         redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
       }
@@ -39,8 +47,11 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
       "return 403 Forbidden if the user is not signed in with Government Gateway" in {
         givenUnauthorisedWith("UnsupportedAuthProvider")
 
+        implicit val request: Request[_] = FakeRequest().withSession(
+          SessionKeys.authToken -> "Bearer XYZ")
+
         val result =
-          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
+          authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(request, hc, ExecutionContext.global)
         status(result) shouldBe FORBIDDEN
       }
 
@@ -64,10 +75,13 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
         givenArnIsAllowlistedForIrv(Arn("TARN0000001"))
 
+        implicit val request: Request[_] = FakeRequest().withSession(
+          SessionKeys.authToken -> "Bearer XYZ")
+
         val result =
           authActions.withAuthorisedAsAgent { agent =>
             Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString))
-          }(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
+          }(request, hc, ExecutionContext.global)
 
         status(result) shouldBe OK
         // `bodyOf(result)` results in some kind of implicit conversion shenanigans
@@ -94,10 +108,13 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
         givenArnIsNotAllowlistedForIrv(Arn("TARN0000001"))
 
+        implicit val request: Request[_] = FakeRequest().withSession(
+          SessionKeys.authToken -> "Bearer XYZ")
+
         val result =
           authActions.withAuthorisedAsAgent { agent =>
             Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString()))
-          }(FakeRequest(), HeaderCarrier(), ExecutionContext.global)
+          }(request, hc, ExecutionContext.global)
 
         status(result) shouldBe OK
         // `bodyOf(result)` results in some kind of implicit conversion shenanigans

@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import play.api.mvc.Results._
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.{AnyContentAsEmpty, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
@@ -11,6 +11,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -24,9 +25,10 @@ class AuthActionsISpec extends BaseISpec {
   val featureFlags = app.injector.instanceOf[FeatureFlags]
   val pirRelationshipConnector = app.injector.instanceOf[PirRelationshipConnector]
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+
   implicit val request: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
+  implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
   object TestController
       extends AuthActionsImpl(externalUrls, env, config, authConnector, pirRelationshipConnector, appConfig, featureFlags) {

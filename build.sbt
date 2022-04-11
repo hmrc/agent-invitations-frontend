@@ -15,8 +15,8 @@ lazy val scoverageSettings = {
 }
 
 lazy val compileDeps = Seq(
-  "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "5.20.0",
-  "uk.gov.hmrc"       %% "play-frontend-hmrc"         % "3.5.0-play-28",
+  "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "5.21.0",
+  "uk.gov.hmrc"       %% "play-frontend-hmrc"         % "3.11.0-play-28",
   "uk.gov.hmrc"       %% "play-fsm"                   % "0.89.0-play-28",
   "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.35.0-play-28",
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.8.0-play-28",
@@ -28,7 +28,7 @@ lazy val compileDeps = Seq(
 def testDeps(scope: String) = Seq(
   "org.scalatestplus.play" %% "scalatestplus-play"  % "5.1.0"         % scope,
   "org.scalatestplus"      %% "mockito-3-12"        % "3.2.10.0"      % scope,
-  "com.github.tomakehurst"  % "wiremock-jre8"       % "2.26.2"        % scope,
+  "com.github.tomakehurst"  % "wiremock-jre8"       % "2.26.1"        % scope,
   "org.jsoup"               % "jsoup"               % "1.14.2"        % scope,
   "uk.gov.hmrc"             %% "reactivemongo-test" % "5.0.0-play-28" % scope,
   "com.vladsch.flexmark"    % "flexmark-all"        % "0.35.10"       % scope
@@ -44,7 +44,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-invitations-frontend",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.12",
+    scalaVersion := "2.12.15",
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
     resolvers := Seq(
@@ -55,8 +55,8 @@ lazy val root = (project in file("."))
     resolvers += Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
     libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.0" cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % "1.7.0" % Provided cross CrossVersion.full
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.7" cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % "1.7.7" % Provided cross CrossVersion.full
     ),
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     publishingSettings,

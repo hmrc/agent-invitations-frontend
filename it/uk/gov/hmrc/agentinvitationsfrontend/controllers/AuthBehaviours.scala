@@ -2,13 +2,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.redirectLocation
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.AuthStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthBehaviours extends AuthStubs {
   self: BaseISpec =>
@@ -16,9 +15,9 @@ trait AuthBehaviours extends AuthStubs {
   def anAuthorisedAgentEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(
     implicit defaultAwaitTimeout: akka.util.Timeout): Unit = {
 
-    "return 303 for an Agent with no enrolments and redirected to Login Page" in {
+    "return 303 for an Agent with no enrolments and redirected to agent subscription" in {
       givenUnauthorisedForInsufficientEnrolments()
-      val result = action(authenticatedClient(request, "", Enrolment("", "", "")))
+      val result = action(authenticatedClient(request.withSession(SessionKeys.authToken -> "Bearer XYZ"), "", Enrolment("", "", "")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
       verifyAuthoriseAttempt()
@@ -37,7 +36,6 @@ trait AuthBehaviours extends AuthStubs {
       val result = action(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/track/")
-      verifyAuthoriseAttempt()
     }
   }
 
