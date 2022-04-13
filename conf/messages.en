@@ -273,7 +273,8 @@ invitation-sent.further-help.link-text.sbs=read a step-by-step guide to authoris
 invitation-sent.further-help.heading=Further help
 invitation-sent.further-help.p=Get help to complete another task, including:
 invitation-sent.all-steps=You must follow all steps.
-invitation-sent.mtd=Sign up your client for Making Tax Digital for Income Tax (opens in new tab).
+signup.client.for.mtd.linkText=Sign up your client for Making Tax Digital for Income Tax (opens in new tab).
+signup.client.for.mtd.href=https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax
 
 #Check Details
 check-details.heading=Check your client’s details before you continue
@@ -1000,6 +1001,9 @@ recent-invitations.filter-status.HMRCCancelledAuthorisation=Accepted by client. 
 
 #ResendLink page
 resend-link.header=Resend this link to your client
+resend-link.altItsa.header=What you need to do next
+resend-link.altItsa.ol.hint=You must follow all four steps.
+resend-link.altItsa.sign-up-mtd=Sign up your client for Making Tax Digital for Income Tax (opens in new tab)
 
 #Confirm cancel page
 confirm-cancel.header=Are you sure you want to cancel this authorisation request?

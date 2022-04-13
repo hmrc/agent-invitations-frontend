@@ -101,12 +101,12 @@ class TrackService @Inject()(
     implicit val now = LocalDate.now(DateTimeZone.UTC)
 
     val futureInvitations = getRecentAgentInvitations(arn, isPirAllowlisted, showLastDays)
-      .map(_.map {
-        case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb) if st == "Pending" || st == "Expired" =>
-          TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu))
-        case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb) =>
-          TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb, Some(lu))
-        case _ => TrackInformationSorted(None, None, "", "", None, "", None, None, None, isRelationshipEnded = false, None, None)
+      .map(_.flatMap {
+        case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb, altItsa) if st == "Pending" || st == "Expired" =>
+          Some(TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu), altItsa))
+        case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, _, iid, ire, reb, altItsa) =>
+          Some(TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, Some(lu), None, Some(iid), ire, reb, Some(lu), altItsa))
+        case _ => None
       })
 
     val futureRelationships = getInactiveClients
@@ -154,9 +154,8 @@ class TrackService @Inject()(
     now: LocalDate): Future[Seq[TrackedInvitation]] =
     acaConnector
       .getAllInvitations(arn, now.minusDays(showLastDays))
-      .map { invitations =>
-        invitations
-          .filter(allowlistedInvitation(isPirAllowlisted))
+      .map {
+        _.filter(allowlistedInvitation(isPirAllowlisted))
           .map(TrackedInvitation.fromStored)
       }
 

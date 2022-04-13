@@ -273,7 +273,7 @@ invitation-sent.further-help.link-text.sbs=darllen canllaw cam wrth gam ynghylch
 invitation-sent.further-help.heading=Help bellach
 invitation-sent.further-help.p=Mae help ar gael i chi gwblhau tasgau eraill, gan gynnwys:
 invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
-invitation-sent.mtd=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
+signup.client.for.mtd.linkText=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
@@ -1000,6 +1000,8 @@ recent-invitations.filter-status.HMRCCancelledAuthorisation=Derbyniwyd gan y cle
 
 #ResendLink page
 resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
+resend-link.altItsa.header=Yr hyn y mae angen i chi ei wneud nesaf
+resend-link.altItsa.ol.hint=Rhaid i chi ddilyn pob un o'r pedwar cam.
 
 #Confirm cancel page
 confirm-cancel.header=A ydych yn siŵr eich bod am ganslo’r cais am awdurdodiad hwn?
