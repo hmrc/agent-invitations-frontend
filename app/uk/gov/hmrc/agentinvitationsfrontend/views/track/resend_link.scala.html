@@ -38,7 +38,7 @@
     @h1(if(config.isAltItsa) "resend-link.altItsa.header" else "resend-link.header")
 
     @if(config.isAltItsa){
-        @p("resend-link.altItsa.ol.hint")
+        @p("resend-link.altItsa.ol.hint", id = Some("altItsa-list-hint"))
     }
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">

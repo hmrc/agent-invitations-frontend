@@ -27,7 +27,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
-import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -313,22 +313,48 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val request = FakeRequest("GET", "/resend-link/")
     val getResendLink = controller.showResendLink
 
-    "return 200" in {
+    "return 200 and expected content for default (non altItsa) scenario" in {
       val result =
         getResendLink(authorisedAsValidAgent(request.withSession(
           "agentLink" -> "/agent/",
           "clientType" -> "personal",
           "expiryDate" -> "2017-05-05",
           "service" -> "HMRC-MTD-IT",
-          "agencyEmail" -> "abc@xyz.com"), arn.value))
+          "agencyEmail" -> "abc@xyz.com",
+          "isAltItsa" -> "false"
+        ), arn.value))
 
-      checkHtmlResultWithBodyMsgs(result,
-        "invitation-sent.link-text",
-        "invitation-sent.select-link",
-        "invitation-sent.client-warning",
-        "invitation-sent.further-help.heading",
-        "invitation-sent.further-help.link-text.sbs",
-        "invitation-sent.further-help.link-text.asa")
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+      html.title() shouldBe "Resend this link to your client - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "Resend this link to your client"
+      html.select("p#altItsa-list-hint").size() shouldBe 0
+      val listItems = html.select("ol li")
+      listItems.size() shouldBe 3
+    }
+
+    "return expected content for isAltItsa" in {
+
+      val result = getResendLink(authorisedAsValidAgent(request.withSession(
+          "agentLink" -> "/agent/",
+          "clientType" -> "personal",
+          "expiryDate" -> "2017-05-05",
+          "service" -> "HMRC-MTD-IT",
+          "agencyEmail" -> "abc@xyz.com",
+          "isAltItsa" -> "true"
+        ), arn.value))
+
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      html.title() shouldBe "What you need to do next - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "What you need to do next"
+      html.select("p#altItsa-list-hint").text() shouldBe "You must follow all four steps."
+      val listItems = html.select("ol li")
+      listItems.size() shouldBe 4
+      listItems.get(3).select("a").attr("href")
+        .shouldBe("https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax")
+      listItems.get(3).text() shouldBe "Sign up your client for Making Tax Digital for Income Tax (opens in new tab)."
     }
 
     "return 200 when service is not present in session" in {
