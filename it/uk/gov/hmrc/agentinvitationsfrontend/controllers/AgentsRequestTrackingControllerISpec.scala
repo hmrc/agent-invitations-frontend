@@ -254,12 +254,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
 
       status(result) shouldBe 200
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
 
-      checkHtmlResultWithBodyText(result,
-      "There is a problem",
-        "You must select a name from the list",
-        "You must select a status from the list"
-      )
+      html.title() shouldBe "Manage your recent authorisation requests - Ask a client to authorise you - GOV.UK"
+      html.select(Css.ERROR_SUMMARY_TITLE).text() shouldBe "There is a problem"
+      html.select(Css.errorSummaryLinkWithHref("#client")).text() shouldBe "You must select a name from the list"
+      html.select(Css.errorSummaryLinkWithHref("#status")).text() shouldBe "You must select a status from the list"
+
+      html.select(Css.errorSummaryForField("client")).text() shouldBe "You must select a name from the list"
+      html.select(Css.errorSummaryForField("status")).text() shouldBe "You must select a status from the list"
     }
   }
 
@@ -350,31 +354,51 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.title() shouldBe "What you need to do next - Ask a client to authorise you - GOV.UK"
       html.select(Css.H1).text() shouldBe "What you need to do next"
       html.select("p#altItsa-list-hint").text() shouldBe "You must follow all four steps."
+
       val listItems = html.select("ol li")
       listItems.size() shouldBe 4
+      listItems.get(0).text() matches "Copy this authorisation request link and send it to your client: http://localhost:\\d+/agent/"
+      listItems.get(0).select("strong").text() matches  "http://localhost:\\d+/agent/"
+      listItems.get(1).text() shouldBe "Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID."
+      listItems.get(2).select("p").text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
+      listItems.get(2).select(".govuk-warning-text strong").text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
       listItems.get(3).select("a").attr("href")
         .shouldBe("https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax")
       listItems.get(3).text() shouldBe "Sign up your client for Making Tax Digital for Income Tax (opens in new tab)."
+
+      html.select("h2#further-help-heading").get(0).text() shouldBe "Further help"
+      html.select("p#further-help-text").text() shouldBe "Get help to complete another task, including:"
     }
 
     "return 200 when service is not present in session" in {
       val service = ""
 
-      val result =
-        getResendLink(authorisedAsValidAgent(request.withSession(
+      val result = getResendLink(
+        authorisedAsValidAgent(
+          request.withSession(
           "agentLink" -> "/agent/",
           "clientType" -> "personal",
           "expiryDate" -> "2017-05-05",
           "service" -> service,
-          "agencyEmail" -> "abc@xyz.com"), arn.value))
+          "agencyEmail" -> "abc@xyz.com"), arn.value
+        )
+      )
 
-      checkHtmlResultWithBodyMsgs(result,
-        "invitation-sent.link-text",
-        "invitation-sent.select-link",
-        "invitation-sent.client-warning",
-        "invitation-sent.further-help.heading",
-        "invitation-sent.further-help.link-text.sbs",
-        "invitation-sent.further-help.link-text.asa")
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+      html.title() shouldBe "Resend this link to your client - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "Resend this link to your client"
+
+      val olLis = html.select("ol.govuk-list li")
+      olLis.size() shouldBe 3
+      olLis.get(0).text() matches "Copy this authorisation request link and send it to your client: http://localhost:\\d+/agent/"
+      olLis.get(0).select("strong").text() matches  "http://localhost:\\d+/agent/"
+      olLis.get(1).text() shouldBe "Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID."
+      olLis.get(2).select("p").text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
+      olLis.get(2).select(".govuk-warning-text strong").text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
+      html.select("h2#further-help-heading").get(0).text() shouldBe "Further help"
+      html.select("p#further-help-text").text() shouldBe "Get help to complete another task, including:"
+
     }
   }
 
@@ -541,18 +565,20 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
 
+      html.title() shouldBe "Authorisation request cancelled - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "Authorisation request cancelled"
+      html.select(".govuk-panel__title").text() shouldBe "Authorisation request cancelled"
+      html.select("p#request-cancelled-text").text() shouldBe "You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax."
+      html.select("p#request-cancelled-for-client").text() shouldBe "Joe Volcano can no longer respond to this request."
+      html.select("p#cancelled-by-mistake-link-text").text() shouldBe "If you cancelled your authorisation request by mistake, you will need to start a new authorisation request."
+      html.select("p#cancelled-by-mistake-link-text a").attr("href") shouldBe "/invitations/agents/client-type"
+
       val trackLink = html.select("a[href='/invitations/track']")
       trackLink.text() shouldBe "Manage your recent authorisation requests"
       trackLink.hasClass("govuk-link")
 
-      checkHtmlResultWithBodyText(
-        result,
-        "Authorisation request cancelled",
-        "You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax.",
-        "Joe Volcano can no longer respond to this request.",
-        hasMessage("request-cancelled.p2", "/invitations/agents/client-type")
-      )
     }
+
     "render a request cancelled page without the client's name during an IRV journey" in {
       val result = showRequestCancelled(
         authorisedAsValidAgent(
@@ -620,18 +646,22 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     val showConfirmCancelAuth = controller.showCancelAuthorisationConfirm
 
     "render a confirm cancel authorisation page" in {
-      val result =
-        showConfirmCancelAuth(authorisedAsValidAgent(request.withSession("service" -> serviceITSA), arn.value))
+      val result = showConfirmCancelAuth(
+        authorisedAsValidAgent(request.withSession("service" -> serviceITSA), arn.value)
+      )
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        "Are you sure you want to cancel this client’s authorisation?",
-        "You will no longer be able to manage their Making Tax Digital for Income Tax.",
-        "You will not be able to undo this action.",
-        "Yes",
-        "No"
-      )
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      html.title() shouldBe "Are you sure you want to cancel this client’s authorisation? - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "Are you sure you want to cancel this client’s authorisation?"
+
+      html.select("div.govuk-inset-text").text() shouldBe "Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment."
+      html.select("#confirmCancelAuthorisation-hint").text() shouldBe "You will no longer be able to manage their Making Tax Digital for Income Tax. You will not be able to undo this action."
+      html.select("label[for=confirmCancelAuthorisation]").text() shouldBe "Yes"
+      html.select("label[for=confirmCancelAuthorisation-2]").text() shouldBe "No"
+      html.select("button.govuk-button#continue").text() shouldBe "Continue"
     }
   }
 

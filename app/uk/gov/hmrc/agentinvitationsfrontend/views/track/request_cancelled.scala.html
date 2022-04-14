@@ -36,13 +36,13 @@
 @mainTemplate(title = msgs("generic.title", msgs("request-cancelled.header"), msgs("service.name.agents.auth")),  isAgent = true) {
 
     @govukPanel(Panel(
-        title = Text(msgs("request-cancelled.header"))
+        title = Text(msgs("request-cancelled.header")),
     ))
 
-    @p(s"request-cancelled.p1.${pageConfig.service}")
+    @p(s"request-cancelled.p1.${pageConfig.service}", id = Some("request-cancelled-text"))
 
     <div class="govuk-inset-text govuk-!-margin-top-6 govuk-!-margin-bottom-6">
-        @p(msgs("request-cancelled.panel", pageConfig.hideClientName))
+        @p(msgs("request-cancelled.panel", pageConfig.hideClientName), id = Some("request-cancelled-for-client"))
     </div>
 
     <div class="govuk-!-margin-bottom-6">
@@ -53,6 +53,7 @@
         )
     </div>
 
-    @p(html = Some(Html(msgs("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))))
+    @p(html = Some(Html(msgs("request-cancelled.p2", routes.AgentInvitationJourneyController.showClientType()))),
+        id = Some("cancelled-by-mistake-link-text"))
 
 }

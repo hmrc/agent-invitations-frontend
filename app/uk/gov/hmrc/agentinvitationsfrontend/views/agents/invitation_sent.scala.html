@@ -48,7 +48,7 @@
     @h1("invitation-sent.header")
 
     @if(config.isAltItsa) {
-        @p("invitation-sent.all-steps")
+        @p("invitation-sent.all-steps", id = Some("altItsa-list-hint"))
     }
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
@@ -57,7 +57,7 @@
         }
 
         <li>
-            @p("invitation-sent.link-text")
+            @p("invitation-sent.link-text", id = Some("invitation-sent"))
             <strong id="invitationUrl" class="govuk-warning-text__text word-wrap">@invitationLink</strong>
         </li>
 
@@ -86,7 +86,7 @@
     </ol>
 
     @h2("invitation-sent.further-help.heading")
-    @p("invitation-sent.further-help.p")
+    @p("invitation-sent.further-help.p", id = Some("further-help"))
     @ul_html(items =
         Seq(
             Html(
