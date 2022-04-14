@@ -39,7 +39,7 @@
 @(confirmForm: Form[ConfirmForm], service: Service, clientType: ClientType, backLinkUrl: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
-    title = msgs("generic.title", msgs("confirm-authorisation-cancelled.header"), msgs("service.name.agents.auth")),
+    title = msgs("generic.title", msgs("confirm-authorisation-cancelled.track.header"), msgs("service.name.agents.auth")),
     isAgent = true, backLinkHref = Some(backLinkUrl) ) {
 
   @if(confirmForm.hasErrors) {
