@@ -448,13 +448,15 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyText(
-        result,
-        "Are you sure you want to cancel this authorisation request?",
-        "If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.",
-        "Yes",
-        "No"
-      )
+
+      val htmlString = Helpers.contentAsString(result)
+      val html = Jsoup.parse(htmlString)
+
+      html.title() shouldBe "Are you sure you want to cancel this authorisation request? - Ask a client to authorise you - GOV.UK"
+      html.select(Css.H1).text() shouldBe "Are you sure you want to cancel this authorisation request?"
+      html.select("div#confirmCancel-hint").text().shouldBe("If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.")
+      html.select("label[for=confirmCancel]").text() shouldBe "Yes"
+      html.select("label[for=confirmCancel-2]").text() shouldBe "No"
     }
   }
 
