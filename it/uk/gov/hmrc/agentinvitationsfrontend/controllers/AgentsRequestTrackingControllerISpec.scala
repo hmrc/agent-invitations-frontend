@@ -355,6 +355,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.select(Css.H1).text() shouldBe "What you need to do next"
       html.select("p#altItsa-list-hint").text() shouldBe "You must follow all four steps."
 
+
       val listItems = html.select("ol li")
       listItems.size() shouldBe 4
       listItems.get(0).text() matches "Copy this authorisation request link and send it to your client: http://localhost:\\d+/agent/"
@@ -368,6 +369,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       html.select("h2#further-help-heading").get(0).text() shouldBe "Further help"
       html.select("p#further-help-text").text() shouldBe "Get help to complete another task, including:"
+
     }
 
     "return 200 when service is not present in session" in {
