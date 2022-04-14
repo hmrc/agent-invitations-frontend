@@ -65,7 +65,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id7"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(7))
+            lastUpdated = Some(dateTime.plusDays(7)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -79,7 +80,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id1"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime)
+            lastUpdated = Some(dateTime),
+            isAltItsa = true
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -93,7 +95,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id5"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(9))
+            lastUpdated = Some(dateTime.plusDays(9)),
+            isAltItsa = true
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -107,7 +110,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id4"),
             isRelationshipEnded = true,
             relationshipEndedBy = Some("Agent"),
-            lastUpdated = Some(dateTime.plusDays(8))
+            lastUpdated = Some(dateTime.plusDays(8)),
+            isAltItsa = true
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -121,7 +125,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id3"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(7))
+            lastUpdated = Some(dateTime.plusDays(7)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -135,7 +140,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id6"),
             isRelationshipEnded = true,
             relationshipEndedBy = Some("Client"),
-            lastUpdated = Some(dateTime.plusDays(4))
+            lastUpdated = Some(dateTime.plusDays(4)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -149,7 +155,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id2"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(1))
+            lastUpdated = Some(dateTime.plusDays(1)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -163,7 +170,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id8"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime)
+            lastUpdated = Some(dateTime),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("business"),
@@ -177,7 +185,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id9"),
             isRelationshipEnded = true,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.minusDays(25))
+            lastUpdated = Some(dateTime.minusDays(25)),
+            isAltItsa = false
           )
         ),
         totalResults = 9,
@@ -225,7 +234,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id3"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(7))
+            lastUpdated = Some(dateTime.plusDays(7)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -239,7 +249,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id2"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(1))
+            lastUpdated = Some(dateTime.plusDays(1)),
+            isAltItsa = false
           )
         ),
         totalResults = 2,
@@ -287,7 +298,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id7"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime.plusDays(7))
+            lastUpdated = Some(dateTime.plusDays(7)),
+            isAltItsa = false
           ),
           TrackInformationSorted(
             clientType = Some("personal"),
@@ -301,7 +313,8 @@ class TrackServiceSpecWithFilter extends UnitSpec with TrackServiceStubsAndData 
             invitationId = Some("id1"),
             isRelationshipEnded = false,
             relationshipEndedBy = None,
-            lastUpdated = Some(dateTime)
+            lastUpdated = Some(dateTime),
+            isAltItsa = true
           )
         ),
         totalResults = 2,

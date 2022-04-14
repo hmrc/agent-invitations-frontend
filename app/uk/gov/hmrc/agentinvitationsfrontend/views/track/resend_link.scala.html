@@ -26,18 +26,20 @@
 
 @(config: ResendLinkPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
-@invitationLink = @{
-    s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"
-}
+@invitationLink = @{s"${externalUrls.agentInvitationsExternalUrl}${config.agentLink}"}
 
 @mainTemplate(
-    title = msgs("generic.title", msgs("resend-link.header"), msgs("service.name.agents.auth")),
+    title = msgs("generic.title", msgs(if(config.isAltItsa) "resend-link.altItsa.header" else "resend-link.header"), msgs("service.name.agents.auth")),
     isAgent = true,
     completedInviteGoSurvey = Some(true),
     backLinkHref = Some(config.backLinkUrl)
 ) {
 
-    @h1("resend-link.header")
+    @h1(if(config.isAltItsa) "resend-link.altItsa.header" else "resend-link.header")
+
+    @if(config.isAltItsa){
+        @p("resend-link.altItsa.ol.hint", id = Some("altItsa-list-hint"))
+    }
 
     <ol class="govuk-list govuk-list--number govuk-list--spaced">
         @if(config.step1Instructions.isDefined) {
@@ -50,14 +52,19 @@
         </li>
         <li>@msgs("invitation-sent.select-link")</li>
         <li>
-            @p(msgs("invitation-sent.client-respond",
-                displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail))
+            @p(msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail))
 
             <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">@msgs("invitation-sent.client-warning")</strong>
             </div>
         </li>
+        @if(config.isAltItsa) {
+            <li>
+                @a("signup.client.for.mtd.linkText", openInNewWindow = true,
+                    href = msgs("signup.client.for.mtd.href"))
+            </li>
+        }
     </ol>
 
     @h2("invitation-sent.further-help.heading")

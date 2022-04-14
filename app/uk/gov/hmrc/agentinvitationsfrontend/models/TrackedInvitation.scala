@@ -30,7 +30,8 @@ case class TrackedInvitation(
   expiryDate: DateTime,
   invitationId: String,
   isRelationshipEnded: Boolean = false,
-  relationshipEndedBy: Option[String] = None
+  relationshipEndedBy: Option[String] = None,
+  isAltItsa: Boolean = false
 ) {
   def lastUpdatedFormatted: LocalDate = LocalDate.parse(lastUpdated.toString)
 }
@@ -58,7 +59,8 @@ object TrackedInvitation {
       i.expiryDate.toDateTimeAtStartOfDay,
       i.invitationId,
       i.isRelationshipEnded,
-      i.relationshipEndedBy
+      i.relationshipEndedBy,
+      i.altItsa.getOrElse(false)
     )
   }
 }

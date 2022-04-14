@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers.testing
 
 import play.api.data.Form
-import play.api.data.Forms.{mapping, optional, text}
+import play.api.data.Forms.{boolean, mapping, optional, text}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment, Mode}
@@ -146,7 +146,8 @@ object TestEndpointsController {
           text
             .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
             .transform(ClientType.toEnum, ClientType.fromEnum)),
-        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
+        "isAltItsa"  -> boolean
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
 

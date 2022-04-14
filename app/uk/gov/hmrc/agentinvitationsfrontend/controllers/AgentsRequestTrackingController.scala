@@ -44,7 +44,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-case class TrackResendForm(service: String, clientType: Option[ClientType], expiryDate: String)
+case class TrackResendForm(service: String, clientType: Option[ClientType], expiryDate: String, isAltItsa: Boolean = false)
 
 case class CancelRequestForm(invitationId: String, service: String, clientType: String, clientName: String)
 
@@ -169,7 +169,8 @@ class AgentsRequestTrackingController @Inject()(
             request.session.get("expiryDate").getOrElse(""),
             request.session.get("service").flatMap(srv => Try(Service.forId(srv)).toOption),
             request.session.get("agencyEmail").getOrElse(""),
-            routes.AgentsRequestTrackingController.showTrackRequests(1).url
+            routes.AgentsRequestTrackingController.showTrackRequests(1).url,
+            request.session.get("isAltItsa").getOrElse("false").toBoolean
           )))
       }
     }
@@ -183,17 +184,18 @@ class AgentsRequestTrackingController @Inject()(
             logger.error("Error in form when redirecting to resend-link page.")
             Future successful BadRequest
           },
-          data => {
+          (form: TrackResendForm) => {
             for {
-              agentLink   <- invitationsService.createAgentLink(agent.arn, data.clientType)
+              agentLink   <- invitationsService.createAgentLink(agent.arn, form.clientType)
               agencyEmail <- acaConnector.getAgencyEmail()
             } yield {
-              val service = if (data.clientType.contains(Personal)) "personal" else data.service
+              val service = if (form.clientType.contains(Personal)) "personal" else form.service
               Redirect(routes.AgentsRequestTrackingController.showResendLink()).addingToSession(
                 "agentLink"   -> agentLink,
-                "clientType"  -> data.clientType.map(ClientType.fromEnum).getOrElse(""),
-                "expiryDate"  -> data.expiryDate,
+                "clientType"  -> form.clientType.map(ClientType.fromEnum).getOrElse(""),
+                "expiryDate"  -> form.expiryDate,
                 "service"     -> service,
+                "isAltItsa"   -> form.isAltItsa.toString,
                 "agencyEmail" -> agencyEmail
               )
             }
@@ -369,7 +371,8 @@ class AgentsRequestTrackingController @Inject()(
           text
             .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
             .transform(ClientType.toEnum, ClientType.fromEnum)),
-        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate))
+        "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
+        "isAltItsa"  -> boolean
       )(TrackResendForm.apply)(TrackResendForm.unapply))
   }
 

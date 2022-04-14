@@ -31,7 +31,8 @@ case class TrackInformationSorted(
   invitationId: Option[String],
   isRelationshipEnded: Boolean,
   relationshipEndedBy: Option[String],
-  lastUpdated: Option[DateTime]) {
+  lastUpdated: Option[DateTime],
+  isAltItsa: Boolean = false) {
 
   def sortDate: Option[DateTime] =
     if (dateTime.isEmpty) expiryDate
