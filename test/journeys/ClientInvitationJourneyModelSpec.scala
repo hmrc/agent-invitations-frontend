@@ -68,6 +68,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       )
     )
   val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
+  val authorisedBusinessClientWithBusinessOnly = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"), Enrolment("HMRC-PPT-ORG"))))
   val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
   val authorisedTrustNTClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-TERSNT-ORG"))))
   val authorisedIndividualClientWithoutRelevantEnrolments =
@@ -75,6 +76,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val authorisedOrganisationClientWithoutRelevantEnrolments =
     AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("some-key"))))
   val availableServices = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat)
+  val authorisedOrganisationClientWithIRVOnlyEnrolment =
+    AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("HMRC-NI"))))
 
   val nino = "AB123456A"
   val arn = Arn("TARN0000001")
@@ -321,7 +324,6 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               Some(authorisedOrganisationClientWithoutRelevantEnrolments)) should
             thenGo(CannotFindRequest(Business, agentName))
         }
-
         "transition to CannotFindRequest when the client has AffinityGroup Individual and some " +
           "relevant enrolments and there are no authorisation requests 'old' or current" in {
           def getInvitationDetails(uid: String) =
@@ -338,6 +340,27 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Future(Seq.empty[InvitationDetails])
           def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
           given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
+              Some(authorisedIndividualClientWithAllSupportedEnrolments)) should
+            thenGo(NoOutstandingRequests)
+        }
+
+        "transition to NoOutstandingRequests when the client has AffinityGroup Organisation and all " +
+          "relevant enrolments and there are no authorisation requests 'old' or current" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(Business, uid, arn, agentName, normalisedAgentName)) when
+            submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(Some(authorisedBusinessClientWithBusinessOnly)) should
+            thenGo(NoOutstandingRequests)
+        }
+
+        "transition to NoOutstandingRequests when the client has AffinityGroup Organisation and all " +
+          "relevant enrolments  - including HMRC-NI - and there are no authorisation requests 'old' or current" in {
+          def getInvitationDetails(uid: String) =
+            Future(Seq.empty[InvitationDetails])
+          def getNotSuspended(arn: Arn) = Future(SuspensionDetails(suspensionStatus = false, None))
+          given(WarmUp(Business, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(agentSuspensionEnabled = true)(getInvitationDetails, getNotSuspended)(
               Some(authorisedIndividualClientWithAllSupportedEnrolments)) should
             thenGo(NoOutstandingRequests)

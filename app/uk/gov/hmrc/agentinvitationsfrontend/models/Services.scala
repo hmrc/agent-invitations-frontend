@@ -40,8 +40,9 @@ object Services {
   def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = {
     val enrolmentKeys = supportedServicesFor(clientType).map(_.enrolmentKey)
     clientType match {
-      case ClientType.Trust => enrolmentKeys + Service.TrustNT.enrolmentKey // add the non-taxable trust enrolment key if the client is a trust
-      case _                => enrolmentKeys
+      case ClientType.Trust    => enrolmentKeys + Service.TrustNT.enrolmentKey // add the non-taxable trust enrolment key if the client is a trust
+      case ClientType.Business => enrolmentKeys + Service.PersonalIncomeRecord.enrolmentKey // NINO is sometimes found on Org type creds
+      case _                   => enrolmentKeys
     }
   }
 

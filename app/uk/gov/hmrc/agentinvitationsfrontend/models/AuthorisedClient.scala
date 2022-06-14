@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.auth.core.AffinityGroup.{Individual, Organisation}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolments}
+
+import scala.collection.immutable.Set
 
 case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments) {
 
@@ -39,11 +42,16 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
             AllSupportedMTDEnrolments
           else SomeSupportedMTDEnrolments
         } else {
-          if (businessCoverage.size == Services.supportedEnrolmentKeysFor(ClientType.Business).size) AllSupportedMTDEnrolments
-          else SomeSupportedMTDEnrolments
+          organisationCoverageResultIgnoringIRV(enrolKeys)
         }
       }
       case e => throw new RuntimeException(s"client had unexpected Affinity Group: $e")
     }
   }
+
+  private def organisationCoverageResultIgnoringIRV(enrolKeys: Set[String]): EnrolmentCoverage =
+    Services.supportedEnrolmentKeysFor(ClientType.Business) diff enrolKeys match {
+      case set if set == Set(Service.PersonalIncomeRecord.enrolmentKey) | set.isEmpty => AllSupportedMTDEnrolments
+      case _                                                                          => SomeSupportedMTDEnrolments
+    }
 }
