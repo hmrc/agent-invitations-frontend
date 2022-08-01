@@ -896,7 +896,7 @@ technical-issues.p1=Try again later.
 technical-issues.p2=We may not have saved your answers. When the service is available, you may have to start again.
 technical-issues.sa-url=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
 technical-issues.vat-url=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
-technical-issues.vat=<a href="{0}">Call the VAT online services helpline</a> if you need help with Making Tax Digital for VAT.
+technical-issues.vat=<a href="{0}">Call the VAT online services helpline</a> if you need help with VAT.
 technical-issues.it=<a href="{0}">Call the HMRC Self Assessment online services helpline</a> if you need help with Making Tax Digital for Income Tax.
 
 #All responses failed
@@ -1210,7 +1210,7 @@ global.error.500.message=Try again later.
 global.error.500.p2=We may not have saved your answers. When the service is available, you may have to start again.
 global.error.500.vat_helpline.link-text=Call the VAT online services helpline
 global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk
-global.error.500.vat_helpline=if you need help with Making Tax Digital for VAT.
+global.error.500.vat_helpline=if you need help with VAT.
 global.error.500.sa_helpline.link-text=Call the HMRC Self Assessment online services helpline
 global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk
 global.error.500.sa_helpline=if you need help with Making Tax Digital for Income Tax.
