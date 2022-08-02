@@ -1631,7 +1631,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(
         result,
         "Call the VAT online services helpline",
-        "if you need help with Making Tax Digital for VAT.",
+        "if you need help with VAT.",
         "Call the HMRC Self Assessment online services helpline",
         "if you need help with Making Tax Digital for Income Tax."
       )

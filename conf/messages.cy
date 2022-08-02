@@ -895,7 +895,7 @@ technical-issues.p1=Rhowch gynnig arall arni yn nes ymlaen.
 technical-issues.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
 technical-issues.sa-url=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
 technical-issues.vat-url= https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
-technical-issues.vat=<a href="{0}">Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM</a> os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+technical-issues.vat=<a href="{0}">Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM</a> os oes angen help arnoch gyda’r cynllun TAW.
 technical-issues.it=<a href="{0}">Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM</a> os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
 #All responses failed
@@ -1208,7 +1208,7 @@ global.error.500.message=Rhowch gynnig arall arni yn nes ymlaen.
 global.error.500.p2=Efallai nad ydym wedi cadw’ch atebion. Pan fydd y gwasanaeth ar gael, efallai y bydd yn rhaid i chi ddechrau eto.
 global.error.500.vat_helpline.link-text=Ffoniwch linell Ymholiadau TAW, Tollau ac Ecséis CThEM
 global.error.500.vat_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-customs-and-excise-and-duties-enquiries-for-welsh-speaking-customers
-global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer TAW.
+global.error.500.vat_helpline=os oes angen help arnoch gyda’r cynllun TAW.
 global.error.500.sa_helpline.link-text=Ffoniwch Wasanaeth Cwsmeriaid Cymraeg CThEM
 global.error.500.sa_helpline.link-href=https://www.gov.uk/government/organisations/hm-revenue-customs/contact/welsh-language-helplines
 global.error.500.sa_helpline=os oes angen help arnoch gyda’r cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm.
