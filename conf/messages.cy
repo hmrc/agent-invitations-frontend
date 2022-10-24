@@ -638,15 +638,15 @@ confirm-terms-multi.itsa.label=Rwyâ€™n rhoi caniatÃ¢d i CThEM alluogi {0} i reol
 
 
 confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm
-confirm-terms-multi.pir.p1=Os byddwch yn rhoi?ch caniatâd i CThEF alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y bydd {0} yn gallu gwneud y canlynol:
-confirm-terms-multi.pir.list.item1=cysylltwch â CThEM yngl?n â'ch cofnod incwm
+confirm-terms-multi.pir.p1=Os byddwch yn rhoiâ€™ch caniatâd i CThEF alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y bydd {0} yn gallu gwneud y canlynol:
+confirm-terms-multi.pir.list.item1=cysylltwch â CThEM ynglâ€™n â'ch cofnod incwm
 confirm-terms-multi.pir.list.item2=cael mynediad at wybodaeth am y canlynol:
 confirm-terms-multi.pir.list.item2.1=i bwy rydych wedi gweithio yn y gorffennol
 confirm-terms-multi.pir.list.item2.2=buddiannau trethadwy megis yswiriant meddygol ac yswiriant car cwmni
 confirm-terms-multi.pir.list.item2.3=eich pensiynau
 confirm-terms-multi.pir.list.item2.4=dyddiadau dechrau a dod i ben eich rhan yn y broses TWE
-confirm-terms-multi.afi.label=Rwy?n rhoi caniatâd i CThEF alluogi {0} i fwrw golwg dros fy nghofnod incwm a chysylltu â CThEF yngl?n ag ef.
-confirm-terms-multi.expires.p2=Mae?n rhaid i chi ymateb i?r cais hwn cyn {date} neu, fell arall, bydd yn dod i ben.
+confirm-terms-multi.afi.label=Rwyâ€™n rhoi caniatâd i CThEF alluogi {0} i fwrw golwg dros fy nghofnod incwm a chysylltu â CThEF ynglâ€™n ag ef.
+confirm-terms-multi.expires.p2=Maeâ€™n rhaid i chi ymateb iâ€™r cais hwn cyn {date} neu, fell arall, bydd yn dod i ben.
 confirm-terms-multi.afi.label=Rwyâ€™n rhoi caniatÃ¢d i CThEM alluogi {0} i fwrw golwg dros fy nghofnod incwm.
 
 confirm-terms-multi.vat.heading=Rheoli fy TAW
