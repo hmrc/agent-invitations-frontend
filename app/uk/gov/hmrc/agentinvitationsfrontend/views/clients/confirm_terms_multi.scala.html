@@ -50,7 +50,17 @@
     @p(classes = Some("govuk-!-margin-bottom-4"),
         key = msgs("confirm-terms-multi.pir.p1", pageConfig.agencyName)
     )
-    @ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item$i"))
+
+    @ul_html(
+        items =  Seq(span(s"confirm-terms-multi.pir.list.item1"))
+                .union(
+            Seq(
+                Html(
+                    msgs("confirm-terms-multi.pir.list.item2") +
+                            ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item2.$i")))
+            )
+        )
+    )
 }
 
 @vatTerms = {

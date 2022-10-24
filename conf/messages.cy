@@ -636,14 +636,16 @@ confirm-terms-multi.itsa.list.item9=canslo’ch cofrestriad Hunanasesiad
 confirm-terms-multi.itsa.list.item10=cael mynediad at eich manylion Hunanasesiad, megis eich enw, cyfeiriad, rhif Yswiriant Gwladol a Chyfeirnod Unigryw y Trethdalwr
 confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy Nhreth Incwm.
 
-confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {0} rhag iddo ddod i ben.
 
-confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm Talu Wrth Ennill (TWE)
-confirm-terms-multi.pir.p1=Os ydych yn rhoi’ch caniatâd i CThEM alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y gall {0} weld y canlynol:
-confirm-terms-multi.pir.list.item1=i bwy rydych wedi gweithio yn y gorffennol
-confirm-terms-multi.pir.list.item2=buddiannau trethadwy megis yswiriant meddygol a char cwmni
-confirm-terms-multi.pir.list.item3=pensiynau
-confirm-terms-multi.pir.list.item4=dyddiadau dechrau a dod i ben eich rhan yn y broses TWE
+confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm
+confirm-terms-multi.pir.p1=Os byddwch yn rhoi’ch caniat�d i CThEF alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y bydd {0} yn gallu gwneud y canlynol:
+confirm-terms-multi.pir.list.item1=cysylltwch � CThEM yngl’n �'ch cofnod incwm
+confirm-terms-multi.pir.list.item2=cael mynediad at wybodaeth am y canlynol:
+confirm-terms-multi.pir.list.item2.1=i bwy rydych wedi gweithio yn y gorffennol
+confirm-terms-multi.pir.list.item2.2=buddiannau trethadwy megis yswiriant meddygol ac yswiriant car cwmni
+confirm-terms-multi.pir.list.item2.3=eich pensiynau
+confirm-terms-multi.pir.list.item2.4=dyddiadau dechrau a dod i ben eich rhan yn y broses TWE
+confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {0} neu, fell arall, bydd yn dod i ben.
 confirm-terms-multi.afi.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i fwrw golwg dros fy nghofnod incwm.
 
 confirm-terms-multi.vat.heading=Rheoli fy TAW
