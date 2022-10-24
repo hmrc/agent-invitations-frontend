@@ -646,7 +646,7 @@ confirm-terms-multi.pir.list.item2.1=who you have worked for in the past
 confirm-terms-multi.pir.list.item2.2=taxable benefits like medical insurance and company car
 confirm-terms-multi.pir.list.item2.3=pensions
 confirm-terms-multi.pir.list.item2.4=your PAYE involvement start and end dates
-confirm-terms-multi.expires.p2=You need to respond to this request before {date}, or else it will expire.
+confirm-terms-multi.expires.p2=You need to respond to this request before {0}, or else it will expire.
 confirm-terms-multi.afi.label=I consent to HMRC allowing {0} to view my Income record.
 
 confirm-terms-multi.vat.heading=Manage my VAT

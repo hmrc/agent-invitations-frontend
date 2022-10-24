@@ -645,7 +645,7 @@ confirm-terms-multi.pir.list.item2.1=i bwy rydych wedi gweithio yn y gorffennol
 confirm-terms-multi.pir.list.item2.2=buddiannau trethadwy megis yswiriant meddygol ac yswiriant car cwmni
 confirm-terms-multi.pir.list.item2.3=eich pensiynau
 confirm-terms-multi.pir.list.item2.4=dyddiadau dechrau a dod i ben eich rhan yn y broses TWE
-confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {date} neu, fell arall, bydd yn dod i ben.
+confirm-terms-multi.expires.p2=Mae’n rhaid i chi ymateb i’r cais hwn cyn {0} neu, fell arall, bydd yn dod i ben.
 confirm-terms-multi.afi.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i fwrw golwg dros fy nghofnod incwm.
 
 confirm-terms-multi.vat.heading=Rheoli fy TAW
