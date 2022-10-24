@@ -659,7 +659,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item8"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item9"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item10"))
-      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Income Tax.")
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Making Tax Digital for Income Tax.")
 
     }
 
@@ -692,7 +692,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item8"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item9"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms-multi.itsa.list.item10"))
-      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Income Tax.")
+      checkIncludesText(result, "I consent to HMRC allowing My Agency to manage my Making Tax Digital for Income Tax.")
 
     }
 
