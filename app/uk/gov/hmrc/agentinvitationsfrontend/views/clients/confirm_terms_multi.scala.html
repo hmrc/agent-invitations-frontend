@@ -50,7 +50,18 @@
     @p(classes = Some("govuk-!-margin-bottom-4"),
         key = msgs("confirm-terms-multi.pir.p1", pageConfig.agencyName)
     )
-    @ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item$i"))
+
+    @ul_html(
+        items = (1 to 2)
+                .map(i => span(s"confirm-terms-multi.pir.list.item$i"))
+                .union(
+            Seq(
+                Html(
+                    msgs("confirm-terms-multi.pir.list.item2") +
+                            ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item2.$i")))
+            )
+        )
+    )
 }
 
 @vatTerms = {
@@ -89,7 +100,7 @@
             key = msgs("confirm-terms-multi.cgt.personal.p1", pageConfig.agencyName)
         )
         @ul_html(
-            items = (1 to 5).map(i => span(s"confirm-terms-multi.cgt.personal.p1.l$i"))
+            items = (1 to 4).map(i => span(s"confirm-terms-multi.cgt.personal.p1.l$i"))
                     .union(
                 Seq(
                     Html(
