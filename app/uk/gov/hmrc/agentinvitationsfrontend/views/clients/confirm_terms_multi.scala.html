@@ -52,8 +52,7 @@
     )
 
     @ul_html(
-        items = (1 to 2)
-                .map(i => span(s"confirm-terms-multi.pir.list.item$i"))
+        items =  Seq(span(s"confirm-terms-multi.pir.list.item1"))
                 .union(
             Seq(
                 Html(
