@@ -105,11 +105,11 @@ select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
 select-service.HMRC-TERS-ORG.trust=Maintain their trust or an estate
 
 select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
-select-service.HMRC-CGT-PD.business=Manage their trust?s Capital Gains Tax on UK property account
-select-service.HMRC-CGT-PD.trust=Manage their trust?s Capital Gains Tax on UK property account
+select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
+select-service.HMRC-CGT-PD.trust=Manage their trust’s Capital Gains Tax on UK property account
 select-service.HMRC-PPT-ORG.personal=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.business=Manage their Plastic Packaging Tax
-select-service.HMRC-PPT-ORG.trust=Manage their trust?s Plastic Packaging Tax
+select-service.HMRC-PPT-ORG.trust=Manage their trust’s Plastic Packaging Tax
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -592,7 +592,7 @@ confirm-decline.vat.service-name=manage your VAT
 confirm-decline.trust.service-name=maintain a trust or an estate
 confirm-decline.trustNT.service-name=maintain a trust or an estate
 confirm-decline.cgt.service-name=manage your Capital Gains Tax on UK property account.
-confirm-decline.cgt.trust.service-name=manage a trust?s Capital Gains Tax on UK property account
+confirm-decline.cgt.trust.service-name=manage a trust’s Capital Gains Tax on UK property account
 confirm-decline.ppt.service-name=manage your Plastic Packaging Tax.
 
 # Confirm Terms
@@ -677,8 +677,8 @@ confirm-terms-multi.trustNT.list.item2=report changes relating to the estate’s
 confirm-terms-multi.trustNT.label=I consent to HMRC allowing {0} to maintain a trust or an estate.
 
 confirm-terms-multi.cgt.personal.heading=Manage my Capital Gains Tax on UK property account
-confirm-terms-multi.cgt.business.heading=Manage a trust?s Capital Gains Tax on UK property account
-confirm-terms-multi.cgt.trust.heading=Manage a trust?s Capital Gains Tax on UK property account
+confirm-terms-multi.cgt.business.heading=Manage a trust’s Capital Gains Tax on UK property account
+confirm-terms-multi.cgt.trust.heading=Manage a trust’s Capital Gains Tax on UK property account
 confirm-terms-multi.cgt.personal.p1=If you consent to HMRC allowing {0} to manage your Capital Gains Tax on UK property account, this means {0} can:
 confirm-terms-multi.cgt.personal.p1.l1=view, change and submit your current returns
 confirm-terms-multi.cgt.personal.p1.l2=view and change your previous return details
@@ -698,22 +698,22 @@ confirm-terms-multi.cgt.personal.p2.l2=view and change my previous return detail
 confirm-terms-multi.cgt.personal.p2.l3=view and change my contact preferences
 confirm-terms-multi.cgt.personal.p2.l4=contact HMRC to discuss my returns, payments and any penalties
 
-confirm-terms-multi.cgt.business.p1=If you consent to HMRC allowing {0} to manage a trust?s Capital Gains Tax on UK property account, this means {0} can:
-confirm-terms-multi.cgt.business.p1.l1=view, change and submit the trust?s current returns
-confirm-terms-multi.cgt.business.p1.l2=view and change the trust?s previous return details
-confirm-terms-multi.cgt.business.p1.l3=view and change the trust?s contact preferences
-confirm-terms-multi.cgt.business.p1.l4=contact HMRC about the trust?s returns, payments and any penalties
-confirm-terms-multi.cgt.business.p1.l5=access and update the trust?s:
+confirm-terms-multi.cgt.business.p1=If you consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account, this means {0} can:
+confirm-terms-multi.cgt.business.p1.l1=view, change and submit the trust’s current returns
+confirm-terms-multi.cgt.business.p1.l2=view and change the trust’s previous return details
+confirm-terms-multi.cgt.business.p1.l3=view and change the trust’s contact preferences
+confirm-terms-multi.cgt.business.p1.l4=contact HMRC to discuss the trust’s returns, payments and any penalties
+confirm-terms-multi.cgt.business.p1.l5=access the trust’s:
 confirm-terms-multi.cgt.business.p1.l6=name and contact details
 confirm-terms-multi.cgt.business.p1.l7=residence status
 confirm-terms-multi.cgt.business.p1.l8=liability for current and previous tax years
 confirm-terms-multi.cgt.business.p1.l9=amounts due and paid
 confirm-terms-multi.cgt.business.p1.l10=penalty details
-confirm-terms-multi.cgt.business.label=I consent to HMRC allowing {0} to manage a trust?s Capital Gains Tax on UK property account.
+confirm-terms-multi.cgt.business.label=I consent to HMRC allowing {0} to manage a trust’s Capital Gains Tax on UK property account.
 
 confirm-terms-multi.ppt.personal.heading=Manage my Plastic Packaging Tax
 confirm-terms-multi.ppt.business.heading=Manage my Plastic Packaging Tax
-confirm-terms-multi.ppt.trust.heading=Manage a trust?s Plastic Packaging Tax
+confirm-terms-multi.ppt.trust.heading=Manage a trust’s Plastic Packaging Tax
 confirm-terms-multi.ppt.personal.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax (PPT), this means {0} can:
 confirm-terms-multi.ppt.personal.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.personal.p1.l2=submit your PPT returns
@@ -736,7 +736,7 @@ confirm-terms-multi.ppt.business.p1.l7=view your calculations and amounts owed a
 confirm-terms-multi.ppt.business.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.business.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax.
 
-confirm-terms-multi.ppt.trust.p1=If you consent to HMRC allowing {0} to manage a trust?s Plastic Packaging Tax, this means {0} can:
+confirm-terms-multi.ppt.trust.p1=If you consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax, this means {0} can:
 confirm-terms-multi.ppt.trust.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.trust.p1.l2=submit your PPT returns
 confirm-terms-multi.ppt.trust.p1.l3=adjust your PPT returns
@@ -745,7 +745,7 @@ confirm-terms-multi.ppt.trust.p1.l5=provide repayment bank details to HMRC when 
 confirm-terms-multi.ppt.trust.p1.l6=finalise your overall tax position
 confirm-terms-multi.ppt.trust.p1.l7=view your calculations and amounts owed and paid
 confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
-confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust?s Plastic Packaging Tax.
+confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
 
 confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Making Tax Digital for Income Tax.
 
