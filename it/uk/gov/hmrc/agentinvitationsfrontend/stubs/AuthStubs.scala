@@ -51,7 +51,7 @@ trait AuthStubs extends AfiRelationshipStub {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsIndividualClientWithNoSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+  def authorisedAsIndividualClientWithNoSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 250, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
@@ -85,7 +85,7 @@ trait AuthStubs extends AfiRelationshipStub {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsIndividualClientWithSomeSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+  def authorisedAsIndividualClientWithSomeSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 250, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
@@ -131,7 +131,7 @@ trait AuthStubs extends AfiRelationshipStub {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("ClientSession123456"))
   }
 
-  def authorisedAsIndividualClientWithAllSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 200, hasNino: Boolean = true)(
+  def authorisedAsIndividualClientWithAllSupportedEnrolments[A](request: FakeRequest[A], confidenceLevel: Int = 250, hasNino: Boolean = true)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     val ninoRetrieval = if (hasNino) ",\"nino\": \"AB123456A\"" else ""
     givenAuthorisedFor(
@@ -290,7 +290,7 @@ trait AuthStubs extends AfiRelationshipStub {
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("clientSession123456"))
   }
 
-  def authorisedAsITSAOrganisationClient[A](request: FakeRequest[A], confidenceLevel: Int = 200)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authorisedAsITSAOrganisationClient[A](request: FakeRequest[A], confidenceLevel: Int = 250)(implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       """
       {
@@ -340,7 +340,7 @@ trait AuthStubs extends AfiRelationshipStub {
       s"""
          |{
          |  "affinityGroup": "Agent",
-         |  "confidenceLevel": 200,
+         |  "confidenceLevel": 250,
          |  "allEnrolments": []
          |}
           """.stripMargin
@@ -354,7 +354,7 @@ trait AuthStubs extends AfiRelationshipStub {
     request: FakeRequest[A],
     affinityGroup: String,
     enrolment: Enrolment,
-    confidenceLevel: String = "200"): FakeRequest[A] = {
+    confidenceLevel: String = "250"): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
          |{
