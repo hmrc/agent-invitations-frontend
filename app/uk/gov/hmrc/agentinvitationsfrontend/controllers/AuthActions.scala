@@ -46,7 +46,7 @@ class AuthActionsImpl @Inject()(
   val featureFlags: FeatureFlags
 ) extends AuthorisedFunctions with AuthRedirects with Logging {
 
-  private val requiredCL = ConfidenceLevel.L200
+  private val requiredCL = ConfidenceLevel.L250
 
   private def getArn(enrolments: Enrolments) =
     for {
