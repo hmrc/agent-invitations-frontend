@@ -54,7 +54,8 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"
   val companyAuthFrontendSignInUrl = s"$companyAuthUrl$companyAuthSignInPath"
 
-  def contactFrontendServiceId(isAgent: Boolean): String = if (isAgent) agentOriginToken else clientOriginToken
+  def contactFrontendServiceId(isAgent: Boolean): String =
+    if (isAgent) agentOriginToken else clientOriginToken
 
   def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
     val continueUrl = if (isAgent) {
