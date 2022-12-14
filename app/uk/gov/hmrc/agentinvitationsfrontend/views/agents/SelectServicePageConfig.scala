@@ -41,7 +41,7 @@ case class SelectServicePageConfig(
 
   def submitCall: Call = (clientType, showMultiSelect) match {
     case (clientType, false) => routes.AgentInvitationJourneyController.submitSelectServiceSingle(remainingService.id, clientType.toString)
-    case (clientType, true)  => routes.AgentInvitationJourneyController.submitSelectServiceMulti()
+    case (clientType, true)  => routes.AgentInvitationJourneyController.submitSelectServiceMulti
   }
 
   /** The list of available services for the user to select,

@@ -190,7 +190,7 @@ class AgentsRequestTrackingController @Inject()(
               agencyEmail <- acaConnector.getAgencyEmail()
             } yield {
               val service = if (form.clientType.contains(Personal)) "personal" else form.service
-              Redirect(routes.AgentsRequestTrackingController.showResendLink()).addingToSession(
+              Redirect(routes.AgentsRequestTrackingController.showResendLink).addingToSession(
                 "agentLink"   -> agentLink,
                 "clientType"  -> form.clientType.map(ClientType.fromEnum).getOrElse(""),
                 "expiryDate"  -> form.expiryDate,
@@ -214,7 +214,7 @@ class AgentsRequestTrackingController @Inject()(
             Future successful BadRequest
           },
           data =>
-            Future successful Redirect(routes.AgentsRequestTrackingController.showConfirmCancel()).addingToSession(
+            Future successful Redirect(routes.AgentsRequestTrackingController.showConfirmCancel).addingToSession(
               "invitationId" -> data.invitationId,
               "service"      -> data.service,
               "clientType"   -> data.clientType,
@@ -256,7 +256,7 @@ class AgentsRequestTrackingController @Inject()(
                       acaConnector
                         .cancelInvitation(agent.arn, invitationId)
                         .map {
-                          case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled())
+                          case Some(true)  => Redirect(routes.AgentsRequestTrackingController.showRequestCancelled)
                           case Some(false) => NotFound
                           case _           => Forbidden
                         }
@@ -290,7 +290,7 @@ class AgentsRequestTrackingController @Inject()(
             Future successful BadRequest
           },
           (data: CancelAuthorisationForm) =>
-            Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm())
+            Future successful Redirect(routes.AgentsRequestTrackingController.showCancelAuthorisationConfirm)
               .addingToSession(
                 "service"      -> data.service,
                 "clientId"     -> data.clientId,
@@ -333,7 +333,7 @@ class AgentsRequestTrackingController @Inject()(
                 success = if (isAltItsa) response.exists(x => x) else response.isDefined
               } yield {
                 if (success)
-                  Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled())
+                  Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled)
                 else
                   Ok(cancelAuthProblemView())
               }

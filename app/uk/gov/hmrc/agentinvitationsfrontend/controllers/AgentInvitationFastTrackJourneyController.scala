@@ -314,8 +314,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             Future successful Ok(
               legacyAuthorisationDetectedView(
                 hasErrors,
-                routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected(),
-                routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url
+                routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected,
+                routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url
               ))
           }, { valid =>
             if (valid.choice)
@@ -346,39 +346,39 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       failureUrlOpt match {
         case Some(failureUrl) =>
           Call("GET", failureUrl + s"?issue=${agentFastTrackForm.bindFromRequest.errorsAsJson.as[FastTrackErrors].formErrorsMessages}")
-        case None => routes.AgentInvitationFastTrackJourneyController.showClientType()
+        case None => routes.AgentInvitationFastTrackJourneyController.showClientType
       }
-    case _: SelectClientType            => routes.AgentInvitationFastTrackJourneyController.showClientType()
-    case _: NoPostcode                  => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: NoDob                       => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: NoVatRegDate                => routes.AgentInvitationFastTrackJourneyController.showKnownFact()
-    case _: CheckDetailsComplete        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoPostcode      => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoDob           => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoVatRegDate    => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: CheckDetailsNoClientTypeVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails()
-    case _: IdentifyClient              => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient()
-    case _: ConfirmClientTrust          => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient()
-    case _: ConfirmPostcodeCgt          => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode()
-    case _: ConfirmCountryCodeCgt       => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode()
-    case _: ConfirmRegDatePpt           => routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate()
-    case _: ConfirmClientCgt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt()
-    case _: ConfirmClientPpt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt()
-    case _: InvitationSent              => routes.AgentInvitationFastTrackJourneyController.showInvitationSent()
-    case TryAgainWithoutFastTrack       => routes.AgentInvitationJourneyController.agentsRoot()
-    case _: ClientNotSignedUp           => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp()
+    case _: SelectClientType            => routes.AgentInvitationFastTrackJourneyController.showClientType
+    case _: NoPostcode                  => routes.AgentInvitationFastTrackJourneyController.showKnownFact
+    case _: NoDob                       => routes.AgentInvitationFastTrackJourneyController.showKnownFact
+    case _: NoVatRegDate                => routes.AgentInvitationFastTrackJourneyController.showKnownFact
+    case _: CheckDetailsComplete        => routes.AgentInvitationFastTrackJourneyController.showCheckDetails
+    case _: CheckDetailsNoPostcode      => routes.AgentInvitationFastTrackJourneyController.showCheckDetails
+    case _: CheckDetailsNoDob           => routes.AgentInvitationFastTrackJourneyController.showCheckDetails
+    case _: CheckDetailsNoVatRegDate    => routes.AgentInvitationFastTrackJourneyController.showCheckDetails
+    case _: CheckDetailsNoClientTypeVat => routes.AgentInvitationFastTrackJourneyController.showCheckDetails
+    case _: IdentifyClient              => routes.AgentInvitationFastTrackJourneyController.showIdentifyClient
+    case _: ConfirmClientTrust          => routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient
+    case _: ConfirmPostcodeCgt          => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode
+    case _: ConfirmCountryCodeCgt       => routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode
+    case _: ConfirmRegDatePpt           => routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate
+    case _: ConfirmClientCgt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientCgt
+    case _: ConfirmClientPpt            => routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt
+    case _: InvitationSent              => routes.AgentInvitationFastTrackJourneyController.showInvitationSent
+    case TryAgainWithoutFastTrack       => routes.AgentInvitationJourneyController.agentsRoot
+    case _: ClientNotSignedUp           => routes.AgentInvitationFastTrackJourneyController.showClientNotSignedUp
     case _: PendingInvitationExists =>
-      routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists()
+      routes.AgentInvitationFastTrackJourneyController.showPendingAuthorisationExists
     case _: ActiveAuthorisationExists =>
-      routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
+      routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
     case _: PartialAuthorisationExists =>
-      routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists()
-    case _: ClientNotRegistered         => routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered()
-    case _: ClientNotFound              => routes.AgentInvitationFastTrackJourneyController.showNotMatched()
-    case _: SuspendedAgent              => routes.AgentInvitationFastTrackJourneyController.showSuspended()
-    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa()
-    case _: LegacyAuthorisationDetected => routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected()
-    case CannotCreateFastTrackRequest   => routes.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest()
+      routes.AgentInvitationFastTrackJourneyController.showActiveAuthorisationExists
+    case _: ClientNotRegistered         => routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered
+    case _: ClientNotFound              => routes.AgentInvitationFastTrackJourneyController.showNotMatched
+    case _: SuspendedAgent              => routes.AgentInvitationFastTrackJourneyController.showSuspended
+    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa
+    case _: LegacyAuthorisationDetected => routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected
+    case CannotCreateFastTrackRequest   => routes.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest
     case ClientInsolventFastTrack       => routes.AgentInvitationFastTrackJourneyController.showClientInsolvent
 
     case _ => throw new Exception(s"Link not found for $state")
@@ -397,10 +397,10 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         CheckDetailsPageConfig(
           fastTrackRequest,
           featureFlags,
-          routes.AgentInvitationFastTrackJourneyController.progressToClientType(),
-          routes.AgentInvitationFastTrackJourneyController.progressToKnownFact(),
-          routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient(),
-          routes.AgentInvitationFastTrackJourneyController.submitCheckDetails(),
+          routes.AgentInvitationFastTrackJourneyController.progressToClientType,
+          routes.AgentInvitationFastTrackJourneyController.progressToKnownFact,
+          routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient,
+          routes.AgentInvitationFastTrackJourneyController.submitCheckDetails,
           backLinkOpt
         )
       ))
@@ -469,7 +469,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(ClientTypeForm.fastTrackForm),
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
-              routes.AgentInvitationFastTrackJourneyController.submitClientType(),
+              routes.AgentInvitationFastTrackJourneyController.submitClientType,
               featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.Vat)
             )
@@ -481,7 +481,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(ClientTypeForm.cgtClientTypeForm),
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
-              routes.AgentInvitationFastTrackJourneyController.submitClientType(),
+              routes.AgentInvitationFastTrackJourneyController.submitClientType,
               featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.CapitalGains)
             )
@@ -493,7 +493,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(ClientTypeForm.pptClientTypeForm),
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
-              routes.AgentInvitationFastTrackJourneyController.submitClientType(),
+              routes.AgentInvitationFastTrackJourneyController.submitClientType,
               featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.Ppt)
             )
@@ -505,7 +505,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             trustName,
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitConfirmTrustClient,
             ftr.clientId
           ))
 
@@ -513,7 +513,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientItsaView(
             formWithErrors.or(IdentifyItsaClientForm),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyItsaClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -522,7 +522,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -531,7 +531,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IdentifyIrvClientForm),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyIrvClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -540,7 +540,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -549,7 +549,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientTrustView(
             formWithErrors.or(TrustClientForm.form(urnEnabled)),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -558,7 +558,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientCgtView(
             formWithErrors.or(CgtClientForm.form()),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyCgtClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyCgtClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -567,7 +567,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyPptClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyPptClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -576,7 +576,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           identifyClientVatView(
             formWithErrors.or(IdentifyVatClientForm),
-            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitIdentifyVatClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -587,7 +587,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             name,
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitConfirmCgtClient,
             ftr.clientId
           ))
 
@@ -615,7 +615,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           confirmRegDatePptView(
             formWithErrors.or(agentFastTrackPptRegDateForm),
-            submitFormCall = routes.AgentInvitationFastTrackJourneyController.submitConfirmPptRegDate(),
+            submitFormCall = routes.AgentInvitationFastTrackJourneyController.submitConfirmPptRegDate,
             backLinkUrl = backLinkFor(breadcrumbs).url,
             isDeAuth = false
           ))
@@ -626,7 +626,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             name,
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationFastTrackJourneyController.submitConfirmPptClient(),
+            routes.AgentInvitationFastTrackJourneyController.submitConfirmPptClient,
             ftr.clientId
           ))
 
@@ -650,24 +650,24 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             Ok(
               cgtRefNotFoundView(
                 false,
-                routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
-                Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+                routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact,
+                Some(routes.AgentInvitationJourneyController.showReviewAuthorisations),
                 ftr.clientId.value
               ))
           case Service.Ppt =>
             Ok(
               pptRefNotFoundView(
                 false,
-                routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
-                Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+                routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact,
+                Some(routes.AgentInvitationJourneyController.showReviewAuthorisations),
                 ftr.clientId.value
               ))
           case _ =>
             Ok(
               notMatchedView(
                 hasJourneyCache = false,
-                tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact(),
-                reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+                tryAgainCall = routes.AgentInvitationFastTrackJourneyController.redirectTryAgainNotMatchedKnownFact,
+                reviewAuthsCallOpt = Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)
               ))
         }
 
@@ -678,8 +678,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             agentFastTrackRequest.service,
             agentFastTrackRequest.clientType.getOrElse(Personal),
             fromFastTrack = true,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationFastTrackJourneyController.showClientType()
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationFastTrackJourneyController.showClientType
           ))
 
       case PendingInvitationExists(_, agentLink, clientName, _) =>
@@ -691,8 +691,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
               authRequestsExist = false,
               backLinkFor(breadcrumbs).url,
               fromFastTrack = true,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-              routes.AgentInvitationFastTrackJourneyController.showClientType()
+              routes.AgentInvitationJourneyController.showReviewAuthorisations,
+              routes.AgentInvitationFastTrackJourneyController.showClientType
             )))
 
       case PartialAuthorisationExists(_, _) =>
@@ -700,8 +700,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           partialAuthExistsView(
             authRequestsExist = false,
             fromFastTrack = true,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationFastTrackJourneyController.showClientType()
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationFastTrackJourneyController.showClientType
           )
         )
 
@@ -718,8 +718,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
           clientNotRegisteredView(
             authRequestsExist = false,
             fromFastTrack = true,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationFastTrackJourneyController.showClientType()
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationFastTrackJourneyController.showClientType
           )
         )
 
@@ -731,8 +731,8 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           legacyAuthorisationDetectedView(
             formWithErrors.or(LegacyAuthorisationForm),
-            routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected(),
-            routes.AgentInvitationFastTrackJourneyController.showCheckDetails().url
+            routes.AgentInvitationFastTrackJourneyController.submitLegacyAuthorisationDetected,
+            routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url
           ))
 
       case ClientInsolventFastTrack =>
@@ -846,10 +846,10 @@ object AgentInvitationFastTrackJourneyController {
 
   def getSubmitKFFor(service: Service) =
     service match {
-      case Service.MtdIt                => routes.AgentInvitationFastTrackJourneyController.submitKnownFactItsa()
-      case Service.PersonalIncomeRecord => routes.AgentInvitationFastTrackJourneyController.submitKnownFactIrv()
-      case Service.Vat                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactVat()
-      case Service.Ppt                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactPpt()
+      case Service.MtdIt                => routes.AgentInvitationFastTrackJourneyController.submitKnownFactItsa
+      case Service.PersonalIncomeRecord => routes.AgentInvitationFastTrackJourneyController.submitKnownFactIrv
+      case Service.Vat                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactVat
+      case Service.Ppt                  => routes.AgentInvitationFastTrackJourneyController.submitKnownFactPpt
     }
 
 }

@@ -282,7 +282,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showResendLink().url)
+      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showResendLink.url)
     }
 
     "return 400 BadRequest when form data contains errors in service" in {

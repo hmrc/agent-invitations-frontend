@@ -42,7 +42,7 @@ case class ResendLinkPageConfig(
     routes.AgentsRequestTrackingController.showTrackRequests()
 
   def newRequestLink: Call =
-    routes.AgentInvitationJourneyController.showClientType()
+    routes.AgentInvitationJourneyController.showClientType
 
   val asaUrl = externalUrls.agentServicesAccountUrl
 

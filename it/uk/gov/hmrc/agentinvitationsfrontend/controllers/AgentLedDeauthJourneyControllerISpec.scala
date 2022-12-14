@@ -48,7 +48,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val result = root(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showClientType().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showClientType.url)
     }
   }
 
@@ -79,7 +79,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 303
-        Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showClientType().url)
+        Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showClientType.url)
       }
       "there is a state and breadcrumbs" in {
         journeyState
@@ -90,7 +90,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
         status(result) shouldBe 200
         checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("cancel-authorisation.client-type.header"))
-        checkResultContainsBackLink(result, routes.AgentLedDeauthJourneyController.showAuthorisationCancelled().url)
+        checkResultContainsBackLink(result, routes.AgentLedDeauthJourneyController.showAuthorisationCancelled.url)
       }
     }
   }
@@ -106,7 +106,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
             authorisedAsValidAgent(request.withFormUrlEncodedBody("clientType" -> clientType), arn.value))
         status(result) shouldBe 303
 
-        Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService().url
+        Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showSelectService.url
       }
 
     }
@@ -194,7 +194,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-IT"), arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient.url
     }
   }
 
@@ -213,7 +213,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient.url
     }
   }
 
@@ -229,7 +229,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-MTD-VAT"), arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient.url
     }
   }
 
@@ -243,7 +243,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-TERS-ORG"), arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient.url
     }
 
     "redirect to identify cgt client when cgt is selected" in {
@@ -255,7 +255,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           authorisedAsValidAgent(request.withFormUrlEncodedBody("serviceType" -> "HMRC-CGT-PD"), arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showIdentifyClient.url
     }
   }
 
@@ -357,7 +357,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient.url
     }
     "redirect to not matched when the clientId and postcode don't match" in {
       journeyState.set(IdentifyClient(ClientType.Personal, Service.MtdIt), Nil)
@@ -372,7 +372,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showKnownFactNotMatched()
+        .showKnownFactNotMatched
         .url
     }
     "redirect to not signed up when the client is not enrolled for ITSA" in {
@@ -388,7 +388,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showNotSignedUp()
+        .showNotSignedUp
         .url
     }
   }
@@ -412,7 +412,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
             arn.value))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel.url
     }
   }
   "POST /agents/cancel-authorisation/identify-vat-client" should {
@@ -435,7 +435,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient.url
     }
 
     "redirect to confirm client for personal VAT when client insolvent" in {
@@ -457,7 +457,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient.url
     }
     "redirect to confirm client for business VAT" in {
       journeyState.set(IdentifyClient(ClientType.Business, Service.Vat), Nil)
@@ -478,7 +478,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient.url
     }
   }
 
@@ -514,7 +514,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmClient.url
     }
     "redirect to /not-found for trust if trust details are not found for given utr" in {
       givenTrustClientReturns(validUtr, 200, trustNotFoundJson)
@@ -530,7 +530,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched.url
     }
     "redirect to /not-found for trust if trust details are not found for given urn" in {
       givenTrustClientReturns(validUrn, 200, trustNotFoundJson)
@@ -546,7 +546,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showKnownFactNotMatched.url
     }
   }
 
@@ -566,7 +566,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showPostcodeCgt().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showPostcodeCgt.url
     }
 
     "redirect to ConfirmCountryCodeCgt for UK based clients" in {
@@ -583,7 +583,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showCountryCodeCgt().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showCountryCodeCgt.url
     }
 
     "redirect to /agents/not-matched when cgtRef passed in does not match to any cgt client" in {
@@ -600,7 +600,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         ))
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched.url)
 
     }
   }
@@ -639,7 +639,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient.url)
     }
 
     "redirect to /not-matched if postcode does not match for a UK client" in {
@@ -650,7 +650,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched.url)
     }
   }
 
@@ -687,7 +687,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showConfirmClient.url)
     }
 
     "redirect to /not-matched if country code does not match for a non UK client" in {
@@ -698,7 +698,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched().url)
+      Helpers.redirectLocation(result)(timeout) shouldBe Some(routes.AgentLedDeauthJourneyController.showKnownFactNotMatched.url)
     }
   }
 
@@ -810,7 +810,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel.url
     }
     "redirect to confirm cancel when YES is selected for alt-itsa" in {
       journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
@@ -827,7 +827,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel.url
     }
     "redirect to not authorised when there are is no active relationship or partial auth to de-authorise" in {
       journeyState.set(ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Sufjan Stevens"), nino), Nil)
@@ -844,7 +844,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised.url
     }
 
     "redirect to confirm cancel when YES is selected for trust - UTR" in {
@@ -861,7 +861,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel.url
     }
 
     "redirect to confirm cancel when YES is selected for trust - URN" in {
@@ -878,7 +878,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showConfirmCancel.url
     }
 
     "redirect to not authorised when there are is no active relationship to de-authorise for trusts - UTR" in {
@@ -895,7 +895,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised.url
     }
 
     "redirect to not authorised when there are is no active relationship to de-authorise for trusts - URN" in {
@@ -912,7 +912,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
           ))
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised().url
+      Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController.showNotAuthorised.url
     }
   }
   "GET /agents/cancel-authorisation/confirm-cancel" should {
@@ -983,7 +983,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1004,7 +1004,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1025,7 +1025,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1046,7 +1046,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1067,7 +1067,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1088,7 +1088,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showAuthorisationCancelled()
+        .showAuthorisationCancelled
         .url
     }
 
@@ -1108,7 +1108,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 303
 
       Helpers.redirectLocation(result)(timeout).get shouldBe routes.AgentLedDeauthJourneyController
-        .showResponseFailed()
+        .showResponseFailed
         .url
     }
   }

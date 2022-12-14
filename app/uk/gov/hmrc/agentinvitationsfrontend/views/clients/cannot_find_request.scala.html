@@ -35,7 +35,7 @@
     </p>
     @p(html = Some(Html(
         msgs("cannot-find-request.p3",
-            routes.ClientInvitationJourneyController.signOutAndRedirect(),
+            routes.ClientInvitationJourneyController.signOutAndRedirect,
             msgs(s"cannot-find-request.${clientType}"))))
     )
 }

@@ -36,14 +36,14 @@ isAgent = true) {
     @if(hasRequests) {
          @linkStyledAsButton(
              id = "return",
-             href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url,
+             href = routes.AgentInvitationJourneyController.showReviewAuthorisations.url,
              messageKey = "review-auths.link"
          )
     } else {
         @if(!isFastTrack) {
             @linkStyledAsButton(
                 id = "new-request",
-                href = routes.AgentInvitationJourneyController.showClientType().url,
+                href = routes.AgentInvitationJourneyController.showClientType.url,
                 messageKey = "new-request.button"
             )
         }

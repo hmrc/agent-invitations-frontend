@@ -62,7 +62,7 @@
     @if(hasJourneyCache) {
         <p class="govuk-!-margin-top-6">
             @a(
-                href = reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations()).url,
+                href = reviewAuthsCallOpt.getOrElse(routes.AgentInvitationJourneyController.showReviewAuthorisations).url,
                 key = "review-auths.link"
             )
         </p>

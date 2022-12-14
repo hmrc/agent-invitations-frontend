@@ -107,7 +107,7 @@ class AgentLedDeauthJourneyController @Inject()(
     getTrustName = taxId => invitationsService.acaConnector.getTrustName(taxId.value)
   )
 
-  val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType()))
+  val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType))
 
   def showClientType: Action[AnyContent] =
     if (featureFlags.showAgentLedDeAuth) actions.whenAuthorised(AsAgent).show[SelectClientType.type]
@@ -212,20 +212,20 @@ class AgentLedDeauthJourneyController @Inject()(
   def showResponseFailed: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ResponseFailed]
 
   override def getCallFor(state: journeyService.model.State)(implicit request: Request[_]): Call = state match {
-    case SelectClientType          => routes.AgentLedDeauthJourneyController.showClientType()
-    case _: SelectService          => routes.AgentLedDeauthJourneyController.showSelectService()
-    case _: IdentifyClient         => routes.AgentLedDeauthJourneyController.showIdentifyClient()
-    case _: ConfirmPostcodeCgt     => routes.AgentLedDeauthJourneyController.showPostcodeCgt()
-    case _: ConfirmCountryCodeCgt  => routes.AgentLedDeauthJourneyController.showCountryCodeCgt()
-    case _: ConfirmClient          => routes.AgentLedDeauthJourneyController.showConfirmClient()
-    case _: ConfirmCancel          => routes.AgentLedDeauthJourneyController.showConfirmCancel()
-    case _: AuthorisationCancelled => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled()
-    case KnownFactNotMatched       => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
-    case TrustNotFound             => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
-    case _: CgtRefNotFound         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched()
-    case _: NotSignedUp            => routes.AgentLedDeauthJourneyController.showNotSignedUp()
-    case _: NotAuthorised          => routes.AgentLedDeauthJourneyController.showNotAuthorised()
-    case _: ResponseFailed         => routes.AgentLedDeauthJourneyController.showResponseFailed()
+    case SelectClientType          => routes.AgentLedDeauthJourneyController.showClientType
+    case _: SelectService          => routes.AgentLedDeauthJourneyController.showSelectService
+    case _: IdentifyClient         => routes.AgentLedDeauthJourneyController.showIdentifyClient
+    case _: ConfirmPostcodeCgt     => routes.AgentLedDeauthJourneyController.showPostcodeCgt
+    case _: ConfirmCountryCodeCgt  => routes.AgentLedDeauthJourneyController.showCountryCodeCgt
+    case _: ConfirmClient          => routes.AgentLedDeauthJourneyController.showConfirmClient
+    case _: ConfirmCancel          => routes.AgentLedDeauthJourneyController.showConfirmCancel
+    case _: AuthorisationCancelled => routes.AgentLedDeauthJourneyController.showAuthorisationCancelled
+    case KnownFactNotMatched       => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched
+    case TrustNotFound             => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched
+    case _: CgtRefNotFound         => routes.AgentLedDeauthJourneyController.showKnownFactNotMatched
+    case _: NotSignedUp            => routes.AgentLedDeauthJourneyController.showNotSignedUp
+    case _: NotAuthorised          => routes.AgentLedDeauthJourneyController.showNotAuthorised
+    case _: ResponseFailed         => routes.AgentLedDeauthJourneyController.showResponseFailed
     case _                         => throw new Exception(s"Link not found for $state")
   }
 
@@ -239,7 +239,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         clientTypeView(
           formWithErrors.or(ClientTypeForm.deAuthorisationForm),
-          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType(), featureFlags.showHmrcTrust)
+          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType, featureFlags.showHmrcTrust)
         ))
 
     case SelectService(clientType, availableServices) =>
@@ -254,7 +254,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             businessSelectSingleServiceView(
               formWithErrors.or(ServiceTypeForm.selectSingleServiceForm(Services.supportedServicesFor(clientType).head, clientType)),
-              routes.AgentLedDeauthJourneyController.submitBusinessServiceSingle(),
+              routes.AgentLedDeauthJourneyController.submitBusinessServiceSingle,
               backLinkFor(breadcrumbs).url
             )
           )
@@ -273,7 +273,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientItsaView(
               formWithErrors.or(ItsaClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -281,7 +281,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientIrvView(
               formWithErrors.or(IrvClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyIrvClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             )
@@ -290,7 +290,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientVatView(
               formWithErrors.or(VatClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -298,7 +298,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientCgtView(
               formWithErrors.or(CgtClientForm.form()),
-              routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -306,7 +306,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientPptView(
               formWithErrors.or(PptClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyPptClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -318,7 +318,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientVatView(
               formWithErrors.or(VatClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -326,7 +326,7 @@ class AgentLedDeauthJourneyController @Inject()(
           Ok(
             identifyClientPptView(
               formWithErrors.or(PptClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyPptClient(),
+              routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
             ))
@@ -336,7 +336,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         identifyClientTrustView(
           formWithErrors.or(TrustClientForm.form(urnEnabled)),
-          routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient(),
+          routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true,
           showUrnEnabledContent = urnEnabled
@@ -346,7 +346,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         identifyClientCgtView(
           formWithErrors.or(CgtClientForm.form()),
-          routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient(),
+          routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
         ))
@@ -355,7 +355,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         identifyClientPptView(
           formWithErrors.or(PptClientForm.form),
-          routes.AgentLedDeauthJourneyController.submitIdentifyPptClient(),
+          routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
         ))
@@ -365,7 +365,7 @@ class AgentLedDeauthJourneyController @Inject()(
         confirmClientView(
           clientName.getOrElse(""),
           formWithErrors.or(confirmCancelForm),
-          routes.AgentLedDeauthJourneyController.submitConfirmClient(),
+          routes.AgentLedDeauthJourneyController.submitConfirmClient,
           backLinkFor(breadcrumbs).url
         ))
 
@@ -389,7 +389,7 @@ class AgentLedDeauthJourneyController @Inject()(
           ConfirmCancelPageConfig(
             service,
             clientName.getOrElse(""),
-            routes.AgentLedDeauthJourneyController.submitConfirmCancel(),
+            routes.AgentLedDeauthJourneyController.submitConfirmCancel,
             backLinkFor(breadcrumbs).url)
         ))
 
@@ -398,21 +398,21 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(authCancelledView(service, clientName.getOrElse(""), agencyName, externalUrls.agentServicesAccountUrl))
 
     case KnownFactNotMatched =>
-      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType))
 
     case TrustNotFound =>
-      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType))
 
     case CgtRefNotFound(_) =>
-      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType()))
+      Ok(noClientFoundView(routes.AgentLedDeauthJourneyController.showClientType))
 
     case NotSignedUp(service) =>
       Ok(notSignedupView(service, hasRequests = false, isDeAuthJourney = true, notSignedUpPageConfig.render(service)))
 
     case NotAuthorised(service) =>
-      Ok(notAuthorisedView(service, routes.AgentLedDeauthJourneyController.showClientType(), isDeAuthJourney = true))
+      Ok(notAuthorisedView(service, routes.AgentLedDeauthJourneyController.showClientType, isDeAuthJourney = true))
 
-    case _: ResponseFailed => Ok(responseFailedView(routes.AgentLedDeauthJourneyController.submitConfirmCancel()))
+    case _: ResponseFailed => Ok(responseFailedView(routes.AgentLedDeauthJourneyController.submitConfirmCancel))
 
   }
 }

@@ -33,7 +33,7 @@
 
 @banner = @{if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"}
 
-@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot()}")}"}
+@backLink = @{s"${request.headers.get("Referer").getOrElse(s"${routes.AgentInvitationJourneyController.agentsRoot}")}"}
 
 @mainTemplate(
     bannerTitle = msgs(banner),
@@ -49,18 +49,18 @@
 
     @if(hasRequests) {
         @linkStyledAsButton(
-            href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url,
+            href = routes.AgentInvitationJourneyController.showReviewAuthorisations.url,
             messageKey = "review-auths.link"
         )
     } else {
         @if(!isDeAuthJourney) {
             @linkStyledAsButton(
-                href = routes.AgentInvitationJourneyController.showClientType().url,
+                href = routes.AgentInvitationJourneyController.showClientType.url,
                 messageKey = "new-request.button"
             )
         } else {
             @linkStyledAsButton(
-                href = routes.AgentLedDeauthJourneyController.agentLedDeauthRoot().url,
+                href = routes.AgentLedDeauthJourneyController.agentLedDeauthRoot.url,
                 messageKey = "new-request.button"
             )
         }

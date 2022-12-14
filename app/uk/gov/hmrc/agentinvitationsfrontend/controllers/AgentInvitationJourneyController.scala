@@ -135,7 +135,7 @@ class AgentInvitationJourneyController @Inject()(
     checkPptKnownFact = invitationsService.checkPptRegistrationDateMatches
   )
 
-  val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType()))
+  val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType))
 
   val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType]
 
@@ -286,8 +286,8 @@ class AgentInvitationJourneyController @Inject()(
             Future successful Ok(
               legacyAuthorisationDetectedView(
                 hasErrors,
-                routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(),
-                routes.AgentInvitationJourneyController.showConfirmClient().url))
+                routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected,
+                routes.AgentInvitationJourneyController.showConfirmClient.url))
           }, { valid =>
             if (valid.choice)
               Future successful Redirect(externalUrls.agentMappingFrontendUrl)
@@ -323,33 +323,33 @@ class AgentInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case _: SelectClientType      => routes.AgentInvitationJourneyController.showClientType()
-    case _: SelectService         => routes.AgentInvitationJourneyController.showSelectService()
-    case _: IdentifyClient        => routes.AgentInvitationJourneyController.showIdentifyClient()
-    case _: ConfirmClient         => routes.AgentInvitationJourneyController.showConfirmClient()
-    case _: ConfirmPostcodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtPostcode()
-    case _: ConfirmCountryCodeCgt => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode()
-    case _: ReviewAuthorisations  => routes.AgentInvitationJourneyController.showReviewAuthorisations()
+    case _: SelectClientType      => routes.AgentInvitationJourneyController.showClientType
+    case _: SelectService         => routes.AgentInvitationJourneyController.showSelectService
+    case _: IdentifyClient        => routes.AgentInvitationJourneyController.showIdentifyClient
+    case _: ConfirmClient         => routes.AgentInvitationJourneyController.showConfirmClient
+    case _: ConfirmPostcodeCgt    => routes.AgentInvitationJourneyController.showConfirmCgtPostcode
+    case _: ConfirmCountryCodeCgt => routes.AgentInvitationJourneyController.showConfirmCgtCountryCode
+    case _: ReviewAuthorisations  => routes.AgentInvitationJourneyController.showReviewAuthorisations
     case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
       routes.AgentInvitationJourneyController.showDeleteAuthorisation(authorisationRequest.itemId)
-    case _: InvitationSent              => routes.AgentInvitationJourneyController.showInvitationSent()
-    case _: KnownFactNotMatched         => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: TrustNotFound               => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CgtRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: PptRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched()
-    case _: CannotCreateRequest         => routes.AgentInvitationJourneyController.showCannotCreateRequest()
-    case _: SomeAuthorisationsFailed    => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed()
-    case _: AllAuthorisationsFailed     => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed()
-    case _: ClientNotSignedUp           => routes.AgentInvitationJourneyController.showClientNotSignedUp()
-    case _: PendingInvitationExists     => routes.AgentInvitationJourneyController.showPendingAuthorisationExists()
-    case _: ActiveAuthorisationExists   => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case _: PartialAuthorisationExists  => routes.AgentInvitationJourneyController.showActiveAuthorisationExists()
-    case AllAuthorisationsRemoved       => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved()
-    case _: AgentSuspended              => routes.AgentInvitationJourneyController.showAgentSuspended()
-    case _: ClientNotRegistered         => routes.AgentInvitationJourneyController.showClientNotRegistered()
-    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa()
-    case _: LegacyAuthorisationDetected => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected()
-    case _: ClientInsolvent             => routes.AgentInvitationJourneyController.showClientInsolvent()
+    case _: InvitationSent              => routes.AgentInvitationJourneyController.showInvitationSent
+    case _: KnownFactNotMatched         => routes.AgentInvitationJourneyController.showNotMatched
+    case _: TrustNotFound               => routes.AgentInvitationJourneyController.showNotMatched
+    case _: CgtRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched
+    case _: PptRefNotFound              => routes.AgentInvitationJourneyController.showNotMatched
+    case _: CannotCreateRequest         => routes.AgentInvitationJourneyController.showCannotCreateRequest
+    case _: SomeAuthorisationsFailed    => routes.AgentInvitationJourneyController.showSomeAuthorisationsFailed
+    case _: AllAuthorisationsFailed     => routes.AgentInvitationJourneyController.showAllAuthorisationsFailed
+    case _: ClientNotSignedUp           => routes.AgentInvitationJourneyController.showClientNotSignedUp
+    case _: PendingInvitationExists     => routes.AgentInvitationJourneyController.showPendingAuthorisationExists
+    case _: ActiveAuthorisationExists   => routes.AgentInvitationJourneyController.showActiveAuthorisationExists
+    case _: PartialAuthorisationExists  => routes.AgentInvitationJourneyController.showActiveAuthorisationExists
+    case AllAuthorisationsRemoved       => routes.AgentInvitationJourneyController.showAllAuthorisationsRemoved
+    case _: AgentSuspended              => routes.AgentInvitationJourneyController.showAgentSuspended
+    case _: ClientNotRegistered         => routes.AgentInvitationJourneyController.showClientNotRegistered
+    case AlreadyCopiedAcrossItsa        => routes.AgentInvitationJourneyController.showAlreadyCopiedAcrossItsa
+    case _: LegacyAuthorisationDetected => routes.AgentInvitationJourneyController.showLegacyAuthorisationDetected
+    case _: ClientInsolvent             => routes.AgentInvitationJourneyController.showClientInsolvent
     case _                              => throw new Exception(s"Link not found for $state")
   }
 
@@ -364,7 +364,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.authorisationForm),
-            ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType(), featureFlags.showHmrcTrust)
+            ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType, featureFlags.showHmrcTrust)
           ))
 
       case SelectService(clientType, services, basket) =>
@@ -374,7 +374,7 @@ class AgentInvitationJourneyController @Inject()(
           featureFlags,
           services,
           backLinkFor(breadcrumbs).url,
-          routes.AgentInvitationJourneyController.showReviewAuthorisations()
+          routes.AgentInvitationJourneyController.showReviewAuthorisations
         )
 
         if (config.showMultiSelect)
@@ -391,7 +391,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientTrustView(
             trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
-            submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient(),
+            submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient,
             backLinkUrl = backLinkFor(breadcrumbs).url,
             isDeAuthJourney = false,
             showUrnEnabledContent = urnEnabled
@@ -402,7 +402,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientItsaView(
             formWithErrors.or(ItsaClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyItsaClient(),
+            routes.AgentInvitationJourneyController.submitIdentifyItsaClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -411,7 +411,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientIrvView(
             formWithErrors.or(IrvClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyIrvClient(),
+            routes.AgentInvitationJourneyController.submitIdentifyIrvClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -420,7 +420,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientVatView(
             formWithErrors.or(VatClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyVatClient(),
+            routes.AgentInvitationJourneyController.submitIdentifyVatClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -429,7 +429,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientCgtView(
             formWithErrors.or(CgtClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyCgtClient(),
+            routes.AgentInvitationJourneyController.submitIdentifyCgtClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -438,7 +438,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
-            routes.AgentInvitationJourneyController.submitIdentifyPptClient(),
+            routes.AgentInvitationJourneyController.submitIdentifyPptClient,
             backLinkFor(breadcrumbs).url
           )
         )
@@ -449,7 +449,7 @@ class AgentInvitationJourneyController @Inject()(
             authorisationRequest.clientName,
             formWithErrors.or(ConfirmClientForm),
             backLinkFor(breadcrumbs).url,
-            routes.AgentInvitationJourneyController.submitConfirmClient(),
+            routes.AgentInvitationJourneyController.submitConfirmClient,
             authorisationRequest.invitation.clientIdentifier
           ))
 
@@ -480,7 +480,7 @@ class AgentInvitationJourneyController @Inject()(
               basket,
               featureFlags,
               services,
-              routes.AgentInvitationJourneyController.submitReviewAuthorisations()),
+              routes.AgentInvitationJourneyController.submitReviewAuthorisations),
             formWithErrors.or(ReviewAuthorisationsForm),
             backLinkFor(breadcrumbs).url
           ))
@@ -490,8 +490,8 @@ class AgentInvitationJourneyController @Inject()(
           deleteView(
             DeletePageConfig(
               authorisationRequest,
-              routes.AgentInvitationJourneyController.submitDeleteAuthorisation(),
-              routes.AgentInvitationJourneyController.showReviewAuthorisations().url
+              routes.AgentInvitationJourneyController.submitDeleteAuthorisation,
+              routes.AgentInvitationJourneyController.showReviewAuthorisations.url
             ),
             formWithErrors.or(DeleteAuthorisationForm)
           ))
@@ -514,23 +514,23 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           notMatchedView(
             basket.nonEmpty,
-            routes.AgentInvitationJourneyController.showIdentifyClient(),
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())))
+            routes.AgentInvitationJourneyController.showIdentifyClient,
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)))
 
       case TrustNotFound(basket) =>
         Ok(
           notMatchedView(
             basket.nonEmpty,
-            routes.AgentInvitationJourneyController.showIdentifyClient(),
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations())
+            routes.AgentInvitationJourneyController.showIdentifyClient,
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)
           ))
 
       case CgtRefNotFound(cgtRef, basket) =>
         Ok(
           cgtRefNotFoundView(
             basket.nonEmpty,
-            routes.AgentInvitationJourneyController.showIdentifyClient(),
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+            routes.AgentInvitationJourneyController.showIdentifyClient,
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations),
             cgtRef.value
           ))
 
@@ -538,8 +538,8 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           pptRefNotFoundView(
             basket.nonEmpty,
-            routes.AgentInvitationJourneyController.showIdentifyClient(),
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations()),
+            routes.AgentInvitationJourneyController.showIdentifyClient,
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations),
             pptRef.value
           )
         )
@@ -560,8 +560,8 @@ class AgentInvitationJourneyController @Inject()(
             service,
             clientType,
             fromFastTrack = false,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationJourneyController.showClientType()
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationJourneyController.showClientType
           ))
 
       case PendingInvitationExists(_, clientName, agentLink, basket) =>
@@ -573,8 +573,8 @@ class AgentInvitationJourneyController @Inject()(
               basket.nonEmpty,
               backLinkFor(breadcrumbs).url,
               fromFastTrack = false,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-              routes.AgentInvitationJourneyController.showClientType()
+              routes.AgentInvitationJourneyController.showReviewAuthorisations,
+              routes.AgentInvitationJourneyController.showClientType
             )))
 
       case PartialAuthorisationExists(basket) =>
@@ -582,8 +582,8 @@ class AgentInvitationJourneyController @Inject()(
           partialAuthExistsView(
             basket.nonEmpty,
             fromFastTrack = false,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationJourneyController.showClientType()
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationJourneyController.showClientType
           ))
 
       case ClientNotSignedUp(service, basket) =>
@@ -595,11 +595,11 @@ class AgentInvitationJourneyController @Inject()(
           clientNotRegisteredView(
             basket.nonEmpty,
             false,
-            routes.AgentInvitationJourneyController.showReviewAuthorisations(),
-            routes.AgentInvitationJourneyController.showClientType()))
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationJourneyController.showClientType))
 
       case AllAuthorisationsRemoved =>
-        Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType()))
+        Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType))
 
       case AgentSuspended(suspendedService, basket) =>
         Ok(agentSuspendedView(basket, suspendedService, backLinkFor(breadcrumbs).url))
@@ -610,7 +610,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           legacyAuthorisationDetectedView(
             formWithErrors.or(LegacyAuthorisationForm),
-            routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected(),
+            routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected,
             backLinkFor(breadcrumbs).url
           ))
 

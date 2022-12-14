@@ -61,14 +61,14 @@
         @p(html = Some(Html(msgs("create-auth-failed.p2.all", "/invitations/agents/client-type"))))
 
         @formWithCSRF(
-            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
+            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations.url),
             'id -> "tryAgainInvitationCreation") {
             <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
             @submitButton(id = "resendRequest", messageKey = "try-again.button")
         }
     } else {
         @formWithCSRF(
-            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations().url),
+            action = Call("POST", routes.AgentInvitationJourneyController.submitReviewAuthorisations.url),
             'id -> "tryAgainInvitationCreation") {
             <input type="hidden" name="accepted" id="accepted" value=@Some("false")>
             @if(config.hasSingleRequest) {
@@ -78,7 +78,7 @@
             }
         }
 
-        @formWithCSRF(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed().url)) {
+        @formWithCSRF(action = Call("POST", routes.AgentInvitationJourneyController.submitSomeAuthorisationsFailed.url)) {
             @submitButton()
         }
     }

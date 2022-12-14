@@ -41,7 +41,7 @@ case class InvitationSentPageConfig(
 
   val trackUrl: Call = routes.AgentsRequestTrackingController.showTrackRequests()
 
-  val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType()
+  val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
     if (services(Service.PersonalIncomeRecord) && services(Service.Vat)) Some(Messages("invitation-sent.step1.personal.paye-vat"))
