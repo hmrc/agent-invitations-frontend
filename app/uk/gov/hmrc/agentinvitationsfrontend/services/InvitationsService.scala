@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.LocalDate
 import play.api.Logging
 import play.api.mvc.{Request, RequestHeader}
 import uk.gov.hmrc.agentinvitationsfrontend.audit.AuditService
@@ -30,6 +29,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -149,10 +150,11 @@ class InvitationsService @Inject()(
     ec: ExecutionContext): Future[VatKnownFactCheckResult] =
     acaConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
 
+  val dateTimeFormatter = DateTimeFormatter.ISO_DATE
   def checkPptRegistrationDateMatches(pptRef: PptRef, userInputRegistrationDate: LocalDate)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Boolean] =
-    acaConnector.checkKnownFactPPT(PptClient(pptRef, userInputRegistrationDate.toString("yyyy-MM-dd")))
+    acaConnector.checkKnownFactPPT(PptClient(pptRef, userInputRegistrationDate.format(dateTimeFormatter)))
 
   def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     acaConnector.checkCitizenRecord(nino, dob)

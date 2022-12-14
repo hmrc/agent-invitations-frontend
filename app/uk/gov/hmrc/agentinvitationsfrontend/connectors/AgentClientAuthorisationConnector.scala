@@ -18,25 +18,22 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
-import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{DateTime, LocalDate}
 import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.agentmtdidentifiers.model.{SuspensionDetails, SuspensionDetailsNotFound}
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgencyEmail, AgencyEmailNotFound, AgencyNameNotFound, AgentInvitation, AgentReferenceRecord, CgtSubscription, CustomerDetails, DetailsForEmail, InvitationDetails, PptClient, PptSubscription, SetRelationshipEndedPayload, SimplifiedAgentReferenceRecord, StoredInvitation, TrustResponse, VatKnownFactCheckResult}
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, SimpleObjectReads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.controllers.RestFormats.{dateTimeFormats, localDateFormats}
 import uk.gov.hmrc.http.{HttpClient, _}
 
 import java.net.URL
+import java.time.{LocalDate, LocalDateTime}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,8 +46,6 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   val baseUrl: URL = new URL(appConfig.agentClientAuthorisationBaseUrl)
 
   import Reads._
-
-  private val dateFormatter = ISODateTimeFormat.date()
 
   private[connectors] def createInvitationUrl(arn: Arn): URL =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent")
@@ -67,8 +62,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
   private[connectors] def getAgencyInvitationsUrl(arn: Arn, createdOnOrAfter: LocalDate): URL =
     new URL(
       baseUrl,
-      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?createdOnOrAfter=${dateFormatter
-        .print(createdOnOrAfter)}"
+      s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent?createdOnOrAfter=${createdOnOrAfter.toString}"
     )
 
   private[connectors] def getAllPendingInvitationsForClientUrl(arn: Arn, clientId: String, service: String): URL =
@@ -712,6 +706,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
       implicit val urlReads: SimpleObjectReads[URL] = new SimpleObjectReads[URL]("href", s => new URL(baseUrl, s))
 
+      implicit val localDateTimeFormat = MongoLocalDateTimeFormat.localDateTimeFormat
+
       ((JsPath \ "arn").read[Arn] and
         (JsPath \ "clientType").readNullable[String] and
         (JsPath \ "service").read[Service] and
@@ -721,8 +717,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         (JsPath \ "suppliedClientIdType").read[String] and
         (JsPath \ "detailsForEmail").readNullable[DetailsForEmail] and
         (JsPath \ "status").read[String] and
-        (JsPath \ "created").read[DateTime] and
-        (JsPath \ "lastUpdated").read[DateTime] and
+        (JsPath \ "created").read[LocalDateTime] and
+        (JsPath \ "lastUpdated").read[LocalDateTime] and
         (JsPath \ "expiryDate").read[LocalDate] and
         (JsPath \ "invitationId").read[String] and
         (JsPath \ "isRelationshipEnded").read[Boolean] and

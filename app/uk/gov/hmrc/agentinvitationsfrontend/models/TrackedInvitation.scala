@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
+import java.time.{LocalDate, LocalDateTime}
 
 case class TrackedInvitation(
   clientType: Option[String],
@@ -26,8 +27,8 @@ case class TrackedInvitation(
   clientIdType: String,
   clientName: Option[String],
   status: String,
-  lastUpdated: DateTime,
-  expiryDate: DateTime,
+  lastUpdated: LocalDateTime,
+  expiryDate: LocalDateTime,
   invitationId: String,
   isRelationshipEnded: Boolean = false,
   relationshipEndedBy: Option[String] = None,
@@ -56,7 +57,7 @@ object TrackedInvitation {
       i.detailsForEmail.map(_.clientName),
       i.status,
       i.lastUpdated,
-      i.expiryDate.toDateTimeAtStartOfDay,
+      i.expiryDate.atStartOfDay(),
       i.invitationId,
       i.isRelationshipEnded,
       i.relationshipEndedBy,

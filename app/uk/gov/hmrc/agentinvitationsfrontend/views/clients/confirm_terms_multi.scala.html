@@ -212,7 +212,7 @@
                         classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
                 }
 
-                @suitableTerms(consent.serviceKey, displayDateForLang(consent.expiryDate), consent.isAltItsa)
+                @suitableTerms(consent.serviceKey, displayDateForLang(Some(consent.expiryDate)), consent.isAltItsa)
 
                 @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                     @inputSingleCheckbox(

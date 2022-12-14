@@ -17,7 +17,7 @@
 package models
 
 import java.net.URL
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import uk.gov.hmrc.agentinvitationsfrontend.models.{StoredInvitation, TrackedInvitation}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 import support.UnitSpec
@@ -31,14 +31,14 @@ class TrackedInvitationSpec extends UnitSpec {
 
       "have status Pending if expires tomorrow" in {
         val invitation = exampleInvitation
-          .copy(status = "Pending", created = DateTime.now, expiryDate = now.plusDays(1))
+          .copy(status = "Pending", created = LocalDateTime.now, expiryDate = now.plusDays(1))
         val tracked = TrackedInvitation.fromStored(invitation)
         tracked.status shouldBe "Pending"
-        tracked.expiryDate shouldBe now.plusDays(1).toDateTimeAtStartOfDay
+        tracked.expiryDate shouldBe now.plusDays(1).atStartOfDay
       }
 
       "have status Accepted" in {
-        val dateTime = DateTime.now.minusDays(5)
+        val dateTime = LocalDateTime.now.minusDays(5)
         val invitation = exampleInvitation
           .copy(status = "Accepted", lastUpdated = dateTime)
         val tracked = TrackedInvitation.fromStored(invitation)
@@ -83,8 +83,8 @@ class TrackedInvitationSpec extends UnitSpec {
     "",
     None,
     "",
-    DateTime.now.minusDays(20),
-    DateTime.now.minusDays(20),
+    LocalDateTime.now.minusDays(20),
+    LocalDateTime.now.minusDays(20),
     now.plusDays(10),
     "",
     false,

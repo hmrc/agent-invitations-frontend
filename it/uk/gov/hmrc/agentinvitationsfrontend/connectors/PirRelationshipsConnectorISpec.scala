@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.stubs.ACRStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec

@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.support
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
@@ -74,7 +74,7 @@ trait TestDataCommonSupport {
 
   val cgtNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 
-  val pptDefaultRegDate: LocalDate = new LocalDate(2021, 1, 1)
+  val pptDefaultRegDate: LocalDate = LocalDate.parse("2021-01-01")
   def pptSubscription(regDate: LocalDate = pptDefaultRegDate) = PptSubscription("PPT", regDate, None)
 
   def pptSubscriptionSuccessBodyJson(pptRef: PptRef, registrationDate: LocalDate) =

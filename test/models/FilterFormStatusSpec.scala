@@ -16,10 +16,11 @@
 
 package models
 
-import org.joda.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{FilterFormStatus, TrackInformationSorted}
 import support.UnitSpec
+
+import java.time.LocalDate
 
 class FilterFormStatusSpec extends UnitSpec {
 
@@ -90,8 +91,8 @@ class FilterFormStatusSpec extends UnitSpec {
       "clientIdType",
       None,
       status,
-      date.map(_.toDateTimeAtStartOfDay),
-      expiryDate.map(_.toDateTimeAtStartOfDay),
+      date.map(_.atStartOfDay),
+      expiryDate.map(_.atStartOfDay),
       None,
       isRelationshipEnded,
       relationshipEndedBy,

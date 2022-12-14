@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.util
 
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
 import play.api.mvc.Request
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import scala.util.Try
 
 object DisplayDateUtils {
@@ -62,19 +62,11 @@ object DisplayDateUtils {
       } else dateStrEnglish
     })
 
-  import org.joda.time.LocalDate
-  def displayDateForLang(jodaDate: LocalDate)(implicit request: Request[_]): String = {
-    val javaTimeLocalDate = java.time.LocalDate.parse(jodaDate.toString)
-    displayDateForLang(Some(javaTimeLocalDate), dateFormatter)
-  }
-
   def displayDateForLangFromString(strDate: String)(implicit request: Request[_]): String = {
     val localDate = Try(LocalDate.parse(strDate))
-    localDate.map(d => displayDateForLang(d)).getOrElse(strDate)
+    localDate.map(d => displayDateForLang(Some(d))).getOrElse(strDate)
   }
 
-  def displayDateForLangWithLeadingZero(jodaDate: LocalDate)(implicit request: Request[_]): String = {
-    val javaTimeLocalDate = java.time.LocalDate.parse(jodaDate.toString)
-    displayDateForLang(Some(javaTimeLocalDate), dateFormatterLeadingZero)
-  }
+  def displayDateForLangWithLeadingZero(localDate: LocalDate)(implicit request: Request[_]): String =
+    displayDateForLang(Some(localDate), dateFormatterLeadingZero)
 }

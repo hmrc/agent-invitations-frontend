@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import java.time.LocalDateTime
-import org.joda.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
 
 sealed trait TrackRelationship extends Product with Serializable {

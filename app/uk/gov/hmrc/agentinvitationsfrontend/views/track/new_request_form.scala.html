@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import org.joda.time.LocalDate
+@import java.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
@@ -27,6 +27,7 @@
     govukErrorSummary: GovukErrorSummary,
     formWithCSRF: FormWithCSRF
 )
+
 
 @(
 invitationOrRelationship: TrackInformationSorted,

@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import com.google.inject.ImplementedBy
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
+import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.repository.{SessionCache, SessionCacheRepository}
-import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.fsm.PersistentJourneyService
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[MongoDBCachedAgentInvitationJourneyService])
@@ -43,7 +43,7 @@ class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: Ses
 
   final val cache = new SessionCache[PersistentState] {
     override val sessionName: String = journeyKey
-    override val cacheRepository: CacheRepository = _cacheRepository
+    override val cacheRepository: SessionCacheRepository = _cacheRepository
   }
 
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =

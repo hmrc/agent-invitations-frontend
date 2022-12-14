@@ -16,8 +16,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
  * limitations under the License.
  */
 
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
-import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import org.jsoup.Jsoup
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -33,6 +32,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
 
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours {
@@ -40,11 +40,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-   val fmt: DateTimeFormatter  = DateTimeFormat.forPattern("d MMMM yyyy")
+   val fmt: DateTimeFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private def displayDate(dt: LocalDate): String =
-    dt.toString(fmt)
+    dt.format(fmt)
 
-  def nowMinus(d: Int): DateTime = DateTime.now().minusDays(d)
+  def nowMinus(d: Int): LocalDateTime = LocalDateTime.now().minusDays(d)
 
   "GET /track/" should {
 
@@ -275,7 +275,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     "return 303 and redirect to show resend link page" in {
       givenAgentReference(arn, "uid", Personal)
       givenGetAgencyEmailAgentStub
-      val expirationDate = LocalDate.now(DateTimeZone.UTC).plusDays(21)
+      val expirationDate = LocalDate.now.plusDays(21)
       val formData =
         controller.trackInformationForm.fill(TrackResendForm("HMRC-MTD-IT", Some(Personal), expirationDate.toString))
       val result =
@@ -286,7 +286,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in service" in {
-      val expirationDate: String = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+      val expirationDate: String = LocalDate.now.plusDays(5).toString
       val formData = controller.trackInformationForm.fill(TrackResendForm("foo", Some(Personal), expirationDate))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))

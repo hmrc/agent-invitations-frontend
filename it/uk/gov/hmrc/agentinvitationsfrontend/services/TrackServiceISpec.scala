@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+import java.time.{LocalDateTime, LocalDate}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, TrackInformationSorted}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -8,6 +8,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Service}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class TrackServiceISpec extends BaseISpec {
@@ -20,7 +21,7 @@ class TrackServiceISpec extends BaseISpec {
   override val mtdItId = MtdItId("ABCDE1234567890")
   val mtdItId2 = MtdItId("JKKL80894713304")
 
-  def nowMinus(days: Int) = DateTime.now(DateTimeZone.UTC).minusDays(days).withTimeAtStartOfDay()
+  def nowMinus(days: Int) = Instant.now.atZone(ZoneOffset.UTC).toLocalDate.minusDays(days).atStartOfDay()
 
   val itsaRelationship = InactiveClient(
     Some("personal"),
@@ -87,7 +88,7 @@ class TrackServiceISpec extends BaseISpec {
     clientIdType = "vrn",
     clientName = Some("Dave"),
     status = status,
-    dateTime = Some(DateTime.now().minusDays(daysInPast).withTimeAtStartOfDay()),
+    dateTime = Some(Instant.now.atZone(ZoneOffset.UTC).toLocalDate.minusDays(daysInPast).atStartOfDay()),
     expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = isRelationshipEnded, relationshipEndedBy = Some("Agent"),
     lastUpdated = None
   )
@@ -133,7 +134,7 @@ class TrackServiceISpec extends BaseISpec {
 
   "allResults" should {
     "match an invitation that has relationshipIsEnded = true with an invalid relationship, discarding the inactive relationship" in {
-      val lastUpdated = DateTime.now().withZone(DateTimeZone.UTC).minusDays(20).withTimeAtStartOfDay()
+      val lastUpdated = Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(20).atStartOfDay()
       givenASingleInvitationWithRelationshipEnded("123456789", Service.Vat, "vrn", lastUpdated)
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship(Service.Vat, "123456789", LocalDate.now().minusDays(20).toString, LocalDate.now().minusDays(4).toString)
@@ -149,9 +150,9 @@ class TrackServiceISpec extends BaseISpec {
         clientIdType = "vrn",
         clientName = Some("Dave"),
         status = "AcceptedThenCancelledByAgent",
-        dateTime = Some(DateTime.now().minusDays(4).withTimeAtStartOfDay()),
+        dateTime = Some(Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(4).atStartOfDay()),
         expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = true, relationshipEndedBy = Some("Agent"),
-        lastUpdated = Some(DateTime.parse(lastUpdated.toString))
+        lastUpdated = Some(LocalDateTime.parse(lastUpdated.toString))
       ))
     }
 
@@ -189,7 +190,7 @@ class TrackServiceISpec extends BaseISpec {
 
     "match an invalid relationship with the corresponding invitation when the relationship was de-authorised as a " +
       "consequence of another authorisation with another agent" in {
-      givenASingleInvitationWithRelationshipStillActive("123456789", Service.Vat, "vrn", DateTime.now().minusDays(10))
+      givenASingleInvitationWithRelationshipStillActive("123456789", Service.Vat, "vrn", Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(10).atStartOfDay())
       givenInactiveAfiRelationshipNotFound
       givenASingleInactiveRelationship(Service.Vat, "123456789", LocalDate.now().minusDays(10).toString, LocalDate.now().minusDays(3).toString)
 

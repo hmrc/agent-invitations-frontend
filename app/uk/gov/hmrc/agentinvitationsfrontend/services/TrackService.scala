@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import javax.inject.{Inject, Singleton}
-import org.joda.time.{DateTimeZone, LocalDate}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.{Instant, LocalDate, ZoneOffset}
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -98,7 +98,7 @@ class TrackService @Inject()(
   def allResults(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(
     implicit hc: HeaderCarrier,
     ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
-    implicit val now = LocalDate.now(DateTimeZone.UTC)
+    implicit val now = Instant.now().atZone(ZoneOffset.UTC).toLocalDate
 
     val futureInvitations = getRecentAgentInvitations(arn, isPirAllowlisted, showLastDays)
       .map(_.flatMap {
@@ -119,7 +119,7 @@ class TrackService @Inject()(
             clientIdType,
             None,
             "InvalidRelationship",
-            dateTo.map(_.toDateTimeAtStartOfDay),
+            dateTo.map(_.atStartOfDay()),
             None,
             None,
             isRelationshipEnded = true,

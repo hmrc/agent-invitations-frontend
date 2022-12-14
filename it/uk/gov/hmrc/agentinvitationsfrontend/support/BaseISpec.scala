@@ -2,7 +2,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.support
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-
 import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.google.inject.AbstractModule
@@ -21,6 +20,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.Future
@@ -28,7 +28,7 @@ import scala.concurrent.Future
 abstract class BaseISpec
     extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs
     with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with MongoSupport with IVStubs {
+    with TestDataCommonSupport with CleanMongoCollectionSupport with IVStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -148,11 +148,6 @@ abstract class BaseISpec
 
   protected def checkHtmlResultWithBodyMsgs(result: Future[Result], expectedMessageKeys: String*): Unit =
     checkHtmlResultWithBodyMsgs(result.futureValue, expectedMessageKeys: _*)
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    dropMongoDb()
-  }
 
   private class TestGuiceModule extends AbstractModule {
     override def configure(): Unit = {}

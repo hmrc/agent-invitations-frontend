@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{LocalDateTime, LocalDate}
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
@@ -972,7 +972,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenCancelledAuthorisationItsa(arn, nino, 204)
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", DateTime.now())
+      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", LocalDateTime.now())
 
       val result =
         controller.submitConfirmCancel(
@@ -992,7 +992,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       val request = FakeRequest("POST", "fsm/agents/cancel-authorisation/confirm-cancel")
 
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", DateTime.now(), isPartialAuth = true)
+      givenASingleAcceptedInvitation(arn, nino.value, Service.MtdIt, "NI", LocalDateTime.now(), isPartialAuth = true)
       givenSetRelationshipEndedReturns(arn, nino.value,Service.MtdIt, 204)
 
       val result =
@@ -1014,7 +1014,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenCancelledAuthorisationTrust(arn,validUtr, 204)
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, validUtr.value, Service.Trust, "UTR", DateTime.now())
+      givenASingleAcceptedInvitation(arn, validUtr.value, Service.Trust, "UTR", LocalDateTime.now())
 
       val result =
         controller.submitConfirmCancel(
@@ -1035,7 +1035,7 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
 
       givenCancelledAuthorisationTrust(arn,validUrn, 204)
       givenGetAgencyNameClientStub(arn)
-      givenASingleAcceptedInvitation(arn, validUrn.value, Service.TrustNT, "URN", DateTime.now())
+      givenASingleAcceptedInvitation(arn, validUrn.value, Service.TrustNT, "URN", LocalDateTime.now())
 
       val result =
         controller.submitConfirmCancel(

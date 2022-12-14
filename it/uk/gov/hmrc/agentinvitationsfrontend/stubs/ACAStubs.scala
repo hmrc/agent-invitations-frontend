@@ -2,7 +2,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock.{put, _}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.joda.time.{DateTime, DateTimeZone, LocalDate}
+
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
@@ -458,8 +459,8 @@ trait ACAStubs {
                          |  "suppliedClientId" : "$clientId",
                          |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "$status",
-                         |  "created" : "2017-10-31T23:22:50.971Z",
-                         |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                         |  "created" : "2017-10-31T23:22:50.971",
+                         |  "lastUpdated" : "2017-10-31T23:22:50.971",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
                          |  "isRelationshipEnded": false,
@@ -486,8 +487,8 @@ trait ACAStubs {
                  |  "suppliedClientId" : "${suppliedClientId.getOrElse(clientId)}",
                  |  "suppliedClientIdType" : "${suppliedClientIdType.getOrElse(suppliedClientIdType)}",
                  |  "status" : "Pending",
-                 |  "created" : "2017-10-31T23:22:50.971Z",
-                 |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                 |  "created" : "2017-10-31T23:22:50.971",
+                 |  "lastUpdated" : "2017-10-31T23:22:50.971",
                  |  "expiryDate" : "2017-12-18",
                  |  "invitationId": "$invitationId",
                  |  "isRelationshipEnded": false,
@@ -522,8 +523,8 @@ trait ACAStubs {
                          |  "suppliedClientId" : "$clientId",
                          |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Expired",
-                         |  "created" : "2017-7-31T23:22:50.971Z",
-                         |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                         |  "created" : "2017-7-31T23:22:50.971",
+                         |  "lastUpdated" : "2017-10-31T23:22:50.971",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
                          |  "isRelationshipEnded": false,
@@ -555,8 +556,8 @@ trait ACAStubs {
                          |  "suppliedClientId" : "$clientId",
                          |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Cancelled",
-                         |  "created" : "2017-7-31T23:22:50.971Z",
-                         |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                         |  "created" : "2017-7-31T23:22:50.971",
+                         |  "lastUpdated" : "2017-10-31T23:22:50.971",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
                          |  "isRelationshipEnded": false,
@@ -588,8 +589,8 @@ trait ACAStubs {
                          |  "suppliedClientId" : "$clientId",
                          |  "suppliedClientIdType" : "${service.supportedSuppliedClientIdType}",
                          |  "status" : "Accepted",
-                         |  "created" : "2017-10-31T23:22:50.971Z",
-                         |  "lastUpdated" : "2017-10-31T23:22:50.971Z",
+                         |  "created" : "2017-10-31T23:22:50.971",
+                         |  "lastUpdated" : "2017-10-31T23:22:50.971",
                          |  "expiryDate" : "2017-12-18",
                          |  "invitationId": "$invitationId",
                          |  "isRelationshipEnded": false,
@@ -942,7 +943,7 @@ trait ACAStubs {
   def givenGetInvitations(arn: Arn) =
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment(arn.value)}/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -968,11 +969,11 @@ trait ACAStubs {
             ).mkString("[", ",", "]")))))
 
   def givenGetInvitationsTrack() = {
-    def nowMinus(d: Int) = DateTime.now().minusDays(d).withTimeAtStartOfDay()
+    def nowMinus(d: Int) = LocalDate.now().minusDays(d).atStartOfDay()
     val expiryDate = nowMinus(10).toLocalDate.toString
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment("TARN0000001")}/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -999,10 +1000,10 @@ trait ACAStubs {
                                                    clientId: String,
                                                    service: Service,
                                                    clientIdType: String,
-                                                   lastUpdated: DateTime) = {
+                                                   lastUpdated: LocalDateTime) = {
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -1016,7 +1017,7 @@ trait ACAStubs {
                                     clientId: String,
                                     service: Service,
                                     clientIdType: String,
-                                    lastUpdated: DateTime,
+                                    lastUpdated: LocalDateTime,
                                     isPartialAuth: Boolean = false
                                     ) = {
     stubFor(
@@ -1049,10 +1050,10 @@ trait ACAStubs {
                                                    clientId: String,
                                                    service: Service,
                                                    clientIdType: String,
-                                                   lastUpdated: DateTime) = {
+                                                   lastUpdated: LocalDateTime) = {
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -1065,11 +1066,11 @@ trait ACAStubs {
     clientId: String,
     service: Service,
     clientIdType: String,
-    accepted: DateTime,
-    deauthed: DateTime) = {
+    accepted: LocalDateTime,
+    deauthed: LocalDateTime) = {
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -1083,11 +1084,11 @@ trait ACAStubs {
                                                    clientId: String,
                                                    service: Service,
                                                    clientIdType: String,
-                                                   accepted1: DateTime,
-                                                   accepted2: DateTime) = {
+                                                   accepted1: LocalDateTime,
+                                                   accepted2: LocalDateTime) = {
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -1098,10 +1099,10 @@ trait ACAStubs {
   }
 
   def givenGetInvitations() = {
-    def nowMinus(d: Int) = DateTime.now(DateTimeZone.UTC).minusDays(d).withTimeAtStartOfDay()
+    def nowMinus(d: Int) = Instant.now.atZone(ZoneOffset.UTC).toLocalDate.minusDays(d).atStartOfDay()
     stubFor(
       get(urlPathEqualTo(s"/agent-client-authorisation/agencies/TARN0000001/invitations/sent"))
-        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString("yyyy-MM-dd")))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -1178,8 +1179,8 @@ trait ACAStubs {
                               |   },
                               |  "suppliedClientIdType" : "$clientIdType",
                               |  "status" : "$status",
-                              |  "created" : "2017-10-31T23:22:50.971Z",
-                              |  "lastUpdated" : "2018-09-11T00:00:00.000Z",
+                              |  "created" : "2017-10-31T23:22:50.971",
+                              |  "lastUpdated" : "2018-09-11T00:00:00.000",
                               |  "expiryDate" : "$expiryDate",
                               |  "invitationId": "$invitationId",
                               |  "isRelationshipEnded": $isRelationshipEnded,
@@ -1192,7 +1193,7 @@ trait ACAStubs {
                               |}""".stripMargin
 
   val invitationTemporal = (
-                     lastUpdated: DateTime,
+                     lastUpdated: LocalDateTime,
                      status: String,
                      service: Service,
                      clientIdType: String,
@@ -1216,7 +1217,7 @@ trait ACAStubs {
                                                                 |   },
                                                                 |  "suppliedClientIdType" : "$clientIdType",
                                                                 |  "status" : "$status",
-                                                                |  "created" : "2017-10-31T23:22:50.971Z",
+                                                                |  "created" : "2017-10-31T23:22:50.971",
                                                                 |  "lastUpdated" : "${lastUpdated.toString}",
                                                                 |  "expiryDate" : "$expiryDate",
                                                                 |  "invitationId": "$invitationId",

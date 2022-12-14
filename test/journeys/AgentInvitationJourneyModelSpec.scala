@@ -16,7 +16,7 @@
 
 package journeys
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.Mockito.{mock, when}
 import play.api.test.Helpers._
 import support.{TestFeatureFlags, UnitSpec}
@@ -74,8 +74,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val vatRegDate = Some("2010-10-10")
   val dob = Some("1990-10-10")
   val pptRef = "XAPPT000012345"
-  val pptRegDate = new LocalDate(2021, 1, 1)
-  val pptRegDateStr = pptRegDate.toString("yyyy-MM-dd")
+  val pptRegDate = LocalDate.parse("2021-01-01")
+  val pptRegDateStr = pptRegDate.toString
   val utr = Utr("1977030537")
   val urn = Urn("XXTRUST10010010")
 

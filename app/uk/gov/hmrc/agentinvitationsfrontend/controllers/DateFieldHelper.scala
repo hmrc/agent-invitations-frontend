@@ -16,20 +16,23 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import play.api.data.Forms.{text, tuple}
 import play.api.data.Mapping
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.validateDateFields
+
+import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, ResolverStyle}
 
 object DateFieldHelper {
 
   def validateDate(value: String): Boolean = if (parseDate(value)) true else false
 
-  val dateTimeFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+  val dateTimeFormat: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("uuuu-M-d").withResolverStyle(ResolverStyle.STRICT)
 
   def parseDate(date: String): Boolean =
     try {
-      dateTimeFormat.parseDateTime(date)
+      LocalDate.parse(date, dateTimeFormat)
       true
     } catch {
       case _: Throwable => false
@@ -53,8 +56,8 @@ object DateFieldHelper {
         },
         date =>
           try {
-            val l = dateTimeFormat.parseLocalDate(date)
-            (l.getYear.toString, l.getMonthOfYear.toString, l.getDayOfMonth.toString)
+            val l = LocalDate.parse(date)
+            (l.getYear.toString, l.getMonthValue.toString, l.getDayOfMonth.toString)
           } catch {
             case e: Exception => throw new IllegalArgumentException(s"unexpected date input pattern $e")
         }

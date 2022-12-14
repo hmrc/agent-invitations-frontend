@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatest.Assertion
 import play.api.Application
@@ -14,6 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
+import java.time.LocalDate
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

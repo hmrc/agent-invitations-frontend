@@ -17,7 +17,7 @@
 package services
 
 import java.net.URL
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{mock, when}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
@@ -42,9 +42,9 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
   val vrn = Vrn("101747696")
   val nino = Nino("AB123456A")
-  val dateTime = DateTime.now.minusDays(10)
+  val dateTime = LocalDateTime.now.minusDays(10)
 
-  implicit val now: DateTime = DateTime.now
+  implicit val now: LocalDateTime = LocalDateTime.now
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val nowLocalDate = LocalDate.now()
 

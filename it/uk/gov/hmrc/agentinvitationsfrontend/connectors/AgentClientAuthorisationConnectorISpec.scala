@@ -1,7 +1,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{LocalDateTime, LocalDate}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
@@ -172,8 +172,8 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         "AB123456A",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Pending",
-        DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T00:00:00.000Z"),
+        LocalDateTime.parse("2017-10-31T23:22:50.971"),
+        LocalDateTime.parse("2018-09-11T00:00:00.000"),
         LocalDate.parse("2017-12-18"),
         "foo1",
         false,
@@ -187,8 +187,8 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         "101747696",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Accepted",
-        DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T00:00:00.000Z"),
+        LocalDateTime.parse("2017-10-31T23:22:50.971"),
+        LocalDateTime.parse("2018-09-11T00:00:00.000"),
         LocalDate.parse("2017-12-18"),
         "foo5",
         false,
@@ -202,8 +202,8 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         "AB123456B",
         Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
         "Rejected",
-        DateTime.parse("2017-10-31T23:22:50.971Z"),
-        DateTime.parse("2018-09-11T00:00:00.000Z"),
+        LocalDateTime.parse("2017-10-31T23:22:50.971"),
+        LocalDateTime.parse("2018-09-11T00:00:00.000"),
         LocalDate.parse("2017-12-18"),
         "foo8",
         false,

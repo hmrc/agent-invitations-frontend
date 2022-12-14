@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
-import com.github.nscala_time.time.Imports.DateTimeFormat
-import org.joda.time.DateTime
 import play.api.Logging
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
@@ -27,6 +25,8 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
 import uk.gov.hmrc.play.fsm.JourneyModel
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -353,9 +353,9 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         })
     }
 
-    private def dateString(date: DateTime): String = {
-      val fmt = DateTimeFormat.forPattern("d/M/yyy")
-      date.toString(fmt)
+    private def dateString(date: LocalDateTime): String = {
+      val fmt = DateTimeFormatter.ofPattern("d/M/yyy")
+      date.format(fmt)
     }
 
     private def gotoState(targetState: State, fallbackState: State)(enrolmentCoverage: EnrolmentCoverage): Future[State] =

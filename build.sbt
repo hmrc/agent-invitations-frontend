@@ -18,20 +18,19 @@ lazy val compileDeps = Seq(
   "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "5.21.0",
   "uk.gov.hmrc"       %% "play-frontend-hmrc"         % "3.11.0-play-28",
   "uk.gov.hmrc"       %% "play-fsm"                   % "0.89.0-play-28",
-  "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.35.0-play-28",
+  "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.51.0-play-28",
   "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.8.0-play-28",
   "uk.gov.hmrc"       %% "play-partials"              % "8.3.0-play-28",
-  "uk.gov.hmrc"       %% "mongo-caching"              % "7.1.0-play-28",
-  "com.typesafe.play" %% "play-json-joda"             % "2.9.2"
+  "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"         % "0.74.0"
 )
 
 def testDeps(scope: String) = Seq(
-  "org.scalatestplus.play" %% "scalatestplus-play"  % "5.1.0"         % scope,
-  "org.scalatestplus"      %% "mockito-3-12"        % "3.2.10.0"      % scope,
-  "com.github.tomakehurst"  % "wiremock-jre8"       % "2.26.2"        % scope,
-  "org.jsoup"               % "jsoup"               % "1.14.2"        % scope,
-  "uk.gov.hmrc"             %% "reactivemongo-test" % "5.0.0-play-28" % scope,
-  "com.vladsch.flexmark"    % "flexmark-all"        % "0.35.10"       % scope
+  "org.scalatestplus.play"  %% "scalatestplus-play"       % "5.1.0"         % scope,
+  "org.scalatestplus"       %% "mockito-3-12"             % "3.2.10.0"      % scope,
+  "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"  % "0.74.0"        % scope,
+  "com.github.tomakehurst"  % "wiremock-jre8"             % "2.26.2"        % scope,
+  "org.jsoup"               % "jsoup"                     % "1.14.2"        % scope,
+  "com.vladsch.flexmark"    % "flexmark-all"              % "0.36.8"        % scope
 )
 
 TwirlKeys.templateImports ++= Seq(
@@ -73,12 +72,9 @@ lazy val root = (project in file("."))
     IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
     IntegrationTest / parallelExecution := false
   )
-  .settings(addCompilerPlugin(scalafixSemanticdb))
   .settings(
     scalacOptions ++= List(
       "-Yrangepos",
-      "-Xplugin-require:semanticdb",
-      "-P:semanticdb:synthetics:on",
       "-Xlint:-missing-interpolator,_",
       "-Yno-adapted-args",
       "-Ywarn-dead-code",

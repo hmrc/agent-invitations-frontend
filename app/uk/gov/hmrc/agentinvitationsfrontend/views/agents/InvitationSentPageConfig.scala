@@ -15,12 +15,14 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
-import org.joda.time.LocalDate
+
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
+import java.time.LocalDate
 
 case class InvitationSentPageConfig(
   relativeInvitationUrl: String,
