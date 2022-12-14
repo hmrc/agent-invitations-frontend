@@ -1,10 +1,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.joda.time.DateTime
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 import uk.gov.hmrc.domain.Nino
+
+import java.time.LocalDateTime
 
 trait AfiRelationshipStub {
   me: WireMockSupport =>
@@ -159,7 +160,7 @@ trait AfiRelationshipStub {
                  |}]""".stripMargin
             )))
 
-  def given2InactiveAfiRelationships(endDate1: DateTime, endDate2: DateTime) =
+  def given2InactiveAfiRelationships(endDate1: LocalDateTime, endDate2: LocalDateTime) =
     stubFor(
       get(urlEqualTo(s"/agent-fi-relationship/relationships/inactive"))
         .willReturn(

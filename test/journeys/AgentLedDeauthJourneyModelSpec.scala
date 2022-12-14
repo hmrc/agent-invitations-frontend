@@ -16,7 +16,7 @@
 
 package journeys
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.test.Helpers._
 import support.{TestFeatureFlags, UnitSpec}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.TransitionEffects._

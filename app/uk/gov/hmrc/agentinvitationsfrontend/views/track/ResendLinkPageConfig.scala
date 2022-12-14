@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
-import org.joda.time.LocalDate
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
+import java.time.LocalDate
 
 case class ResendLinkPageConfig(
   externalUrl: String,
@@ -41,7 +42,7 @@ case class ResendLinkPageConfig(
     routes.AgentsRequestTrackingController.showTrackRequests()
 
   def newRequestLink: Call =
-    routes.AgentInvitationJourneyController.showClientType()
+    routes.AgentInvitationJourneyController.showClientType
 
   val asaUrl = externalUrls.agentServicesAccountUrl
 

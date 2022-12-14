@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time._
 import play.api.libs.json._
 import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats._
+
+import java.time.LocalDateTime
 
 case class NinoClStoreEntry(
   credId: String,

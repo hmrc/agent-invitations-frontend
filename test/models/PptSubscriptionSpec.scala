@@ -16,10 +16,11 @@
 
 package models
 
-import org.joda.time.LocalDate
 import play.api.libs.json.{JsResultException, Json}
 import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.models.PptSubscription
+
+import java.time.LocalDate
 
 class PptSubscriptionSpec extends UnitSpec {
 

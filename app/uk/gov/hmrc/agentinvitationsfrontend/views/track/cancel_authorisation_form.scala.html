@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import org.joda.time.LocalDate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 @import uk.gov.hmrc.agentinvitationsfrontend.models.TrackInformationSorted
@@ -22,6 +21,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import java.time.LocalDate
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +34,7 @@
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
 @formWithCSRF(
-    action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm().url),
+    action = Call("POST", routes.AgentsRequestTrackingController.submitToCancelAuthorisationConfirm.url),
     'id -> s"cancelAuthorisation-$index"
 ) {
     <input type="hidden" name="service" id="service-@{index}" value="@serviceId">

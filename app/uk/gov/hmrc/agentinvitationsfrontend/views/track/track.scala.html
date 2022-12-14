@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import org.joda.time.{DateTime, LocalDate}
+@import java.time.LocalDate
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
@@ -44,6 +44,7 @@
 
 @(config: TrackPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig, now: LocalDate)
 
+@import java.time.LocalDateTime
 @clientFieldError = @{
     config.filterForm.flatMap { f => f.error("client") }
 }
@@ -155,7 +156,7 @@
     } else {
         @p(s"recent-invitations.empty")
         <p>
-            @a(href=routes.AgentInvitationJourneyController.showSelectService().url,
+            @a(href=routes.AgentInvitationJourneyController.showSelectService.url,
                 key = "recent-invitations.empty.continue")
         </p>
     }
@@ -208,7 +209,7 @@
 }
 }
 
-@displayDate(date: Option[DateTime]) = {
+@displayDate(date: Option[LocalDateTime]) = {
 @{
     date match {
         case Some(d) => displayDateForLangWithLeadingZero(d.toLocalDate)

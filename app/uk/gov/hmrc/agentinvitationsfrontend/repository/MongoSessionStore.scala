@@ -18,17 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.repository
 
 import play.api.Logging
 import play.api.libs.json._
-import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
-import uk.gov.hmrc.cache.model.Id
-import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.cache.DataKey
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MongoSessionStore[T] extends Logging {
 
   val sessionName: String
-  val cacheRepository: CacheRepository
+  val cacheRepository: SessionCacheRepository
 
   def getSessionId(implicit hc: HeaderCarrier): Option[String] =
     hc.sessionId.map(_.value)
@@ -37,70 +35,32 @@ trait MongoSessionStore[T] extends Logging {
     getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
-          .findById(Id(sessionId))
-          .map(_.flatMap(_.data))
-          .flatMap {
-            case Some(cache) =>
-              (cache \ sessionName).asOpt[JsObject] match {
-                case None => toFuture(Right(None))
-                case Some(obj) =>
-                  obj.validate[T] match {
-                    case JsSuccess(p, _) => toFuture(Right(Some(p)))
-                    case JsError(errors) =>
-                      val allErrors = errors.map(_._2.map(_.message).mkString(",")).mkString(",")
-                      toFuture(Left(allErrors))
-                  }
-              }
-            case None => toFuture(Right(None))
+          .findById(sessionId)
+          .map {
+            case Some(entity) => Right(Some(entity.asInstanceOf[T]))
+            case _            => Left("No entry found with session Id")
           }
-          .recover {
-            case e ⇒
-              Left(e.getMessage)
-          }
-
-      case None ⇒
-        toFuture(Right(None))
+      case None => Future successful Left("Could not get session as no session Id found.")
     }
 
   def store(newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
     getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
-          .createOrUpdate(Id(sessionId), sessionName, Json.toJson(newSession))
-          .map[Either[String, Unit]] { dbUpdate ⇒
-            if (dbUpdate.writeResult.inError) {
-              Left(dbUpdate.writeResult.errmsg.getOrElse("unknown error during inserting session data in mongo"))
-            } else {
-              Right(())
-            }
-          }
+          .put(sessionId)(DataKey[T](sessionName), newSession)
+          .map(_ => Right(()))
           .recover {
-            case e ⇒
-              Left(e.getMessage)
+            case e: Exception => Left(e.getMessage)
           }
-
-      case None ⇒
-        toFuture(Left(s"no sessionId found in the HeaderCarrier to store in mongo"))
+      case None => Future successful Left("Could not store session as no session Id found.")
     }
 
   def delete()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
     getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
-          .removeById(Id(sessionId))
-          .map[Either[String, Unit]] { dbUpdate ⇒
-            if (dbUpdate.writeErrors.nonEmpty) {
-              Left(dbUpdate.writeErrors.map(_.errmsg).mkString(","))
-            } else {
-              Right(())
-            }
-          }
-          .recover {
-            case e ⇒
-              Left(e.getMessage)
-          }
-
-      case None ⇒
-        toFuture(Right(()))
+          .delete(sessionId)(DataKey[T](sessionName))
+          .map(_ => Right(()))
+      case None => Future successful Left("Could not delete as no session Id found.")
     }
 }

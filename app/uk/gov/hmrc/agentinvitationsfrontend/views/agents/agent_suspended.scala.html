@@ -44,19 +44,19 @@
         @p("agent-suspended.p2.single")
         @linkStyledAsButton(
             id = "start-again",
-            href = routes.AgentInvitationJourneyController.agentsRoot().url,
+            href = routes.AgentInvitationJourneyController.agentsRoot.url,
             messageKey = "start-again.button"
         )
     } else {
         @p(
             html = Some(
                 Html(msgs("agent-suspended.p2.multi",
-                    routes.AgentInvitationJourneyController.agentsRoot().url))
+                    routes.AgentInvitationJourneyController.agentsRoot.url))
             )
         )
         @linkStyledAsButton(
             id = "continue",
-            href = routes.AgentInvitationJourneyController.showReviewAuthorisations().url
+            href = routes.AgentInvitationJourneyController.showReviewAuthorisations.url
         )
     }
 

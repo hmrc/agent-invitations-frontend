@@ -17,10 +17,9 @@
 package support
 
 import java.net.URL
-import org.joda.time.{DateTime, LocalDate}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
-import org.xbill.DNS.Options
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
@@ -44,11 +43,9 @@ trait TrackServiceStubsAndData {
   val nino2 = Nino("RS652949D")
   val cgtRef1 = CgtRef("XMCGTP704066305")
 
-  val ANYTRUST = Options.set("TRUST", "TRUSTNT")
+  val dateTime: LocalDateTime = Instant.now.atZone(ZoneOffset.UTC).toLocalDate.atStartOfDay().minusDays(10)
 
-  val dateTime = DateTime.now.minusDays(10).withTimeAtStartOfDay()
-
-  implicit val now: DateTime = DateTime.now.withTimeAtStartOfDay()
+  implicit val now: LocalDateTime = LocalDate.now.atStartOfDay()
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   def givenGetTradingName() =

@@ -46,9 +46,9 @@
 
 @timeOutUrl = {
     @if(isAgent) {
-        @routes.AgentInvitationJourneyController.timedOut()
+        @routes.AgentInvitationJourneyController.timedOut
     } else {
-        @routes.ClientInvitationJourneyController.timedOut()
+        @routes.ClientInvitationJourneyController.timedOut
     }
 }
 
@@ -57,9 +57,9 @@
         @externalUrls.signOutUrl(isAgent, completedInviteGoSurvey)
     } else {
         @if(isAgent){
-            @routes.AgentInvitationJourneyController.signOut()
+            @routes.AgentInvitationJourneyController.signOut
         } else {
-            @routes.ClientInvitationJourneyController.signOut()
+            @routes.ClientInvitationJourneyController.signOut
         }
     }
 }

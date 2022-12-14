@@ -16,7 +16,6 @@
 
 package forms
 
-import org.joda.time.{DateTimeZone, LocalDate}
 import play.api.data.FormError
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.TrackResendForm
@@ -24,11 +23,13 @@ import uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsCon
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import support.UnitSpec
 
+import java.time.LocalDate
+
 class TrackInformationFormSpec extends UnitSpec {
 
   val itsaService = "HMRC-MTD-IT"
   val clientTypePersonal = "personal"
-  val expiryDate = LocalDate.now(DateTimeZone.UTC).plusDays(5).toString
+  val expiryDate = LocalDate.now().plusDays(5).toString
 
   "ConfirmInvite form" should {
     "return no error with valid input" in {

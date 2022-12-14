@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import org.joda.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatest.Assertion
 import play.api.Application
@@ -14,6 +13,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, CallOps, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
+import java.time.LocalDate
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -222,7 +222,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent.url)
       }
     }
 
@@ -235,7 +235,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent.url)
       }
 
       "redirect to /respond/error/cannot-find-request if there are no invitations found " +
@@ -245,7 +245,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest.url)
       }
 
       "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
@@ -255,7 +255,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests.url)
       }
 
       "redirect to /cannot-find-request if the client has no supported MTD enrolments" in {
@@ -263,7 +263,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithNoSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest.url)
       }
 
       "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Accepted or Rejected " +
@@ -273,7 +273,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
       }
 
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
@@ -283,7 +283,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
       }
 
       "redirect to /respond/error/agent-cancelled-request if the most recent authorisation request has status of Cancelled " +
@@ -293,7 +293,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
       }
 
       "redirect to /respond/error/authorisation-request-cancelled if the most recent authorisation request has status of Cancelled " +
@@ -303,7 +303,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
       }
 
       "redirect to /respond/error/authorisation-request-expired if the most recent authorisation request has status of Expired " +
@@ -313,7 +313,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
       }
 
       "redirect to /respond/error/authorisation-request-expired if the invitation has mixed statuses, none of which are Pending" in {
@@ -322,7 +322,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
       }
 
       "redirect to suspended agent if the agent is suspended for all consent services" in {
@@ -332,7 +332,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSuspendedAgent().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSuspendedAgent.url)
       }
 
       "redirect to /trust-not-claimed if client doesn't have the trust enrolment but invitation contains trust" in {
@@ -342,7 +342,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val result = controller.submitWarmUp(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
 
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed.url)
       }
     }
 
@@ -378,7 +378,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitWarmUp(request())
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showGGUserIdNeeded().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showGGUserIdNeeded.url)
     }
 
     "redirect to /warm-up/session-required when there is no session and client type is business" in {
@@ -389,7 +389,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitWarmUp(request())
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired.url)
     }
   }
 
@@ -419,7 +419,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired.url)
     }
 
     "redirect to /which-tax-service when 'No' was selected" in {
@@ -430,7 +430,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showWhichTaxService().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showWhichTaxService.url)
     }
   }
 
@@ -459,7 +459,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCreateNewUserId().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCreateNewUserId.url)
     }
 
     "redirect to /invitations/sign-up-to-tax-service when 'No' was selected" in {
@@ -470,7 +470,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSignUpToTaxService().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSignUpToTaxService.url)
     }
   }
 
@@ -517,7 +517,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitWarmUpSessionRequired(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent.url)
     }
   }
 
@@ -561,7 +561,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConfirmDecline.url)
       }
 
       "redirect to /respond/error/cannot-find-request" in {
@@ -570,7 +570,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest.url)
       }
 
       "redirect to TrustNotClaimed if client doesn't have the HMRC-TERS-ORG enrolment" in {
@@ -579,7 +579,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
         val result = controller.submitWarmUpConfirmDecline(authorisedAsAnyOrganisationClient(request()))
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showTrustNotClaimed.url)
       }
     }
   }
@@ -850,7 +850,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result =
         controller.submitConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCheckAnswers.url)
     }
 
     "user is authenticated as valid client" should {
@@ -981,7 +981,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted.url)
     }
     "redirect to invitations rejected when all invitations are successfully rejected" in {
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino.value))
@@ -1009,7 +1009,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined.url)
     }
 
     "redirect to some responses failed when some of the invitations are not successfully accepted" in {
@@ -1035,7 +1035,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed.url)
     }
     "redirect to all responses failed when all of the invitations are not successfully accepted" in {
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino.value))
@@ -1060,7 +1060,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitCheckAnswers(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed.url)
     }
   }
 
@@ -1146,7 +1146,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitConfirmDecline(
         authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined.url)
     }
 
     "redirect to confirm terms when no is selected" in {
@@ -1162,7 +1162,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitConfirmDecline(
         authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent.url)
     }
 
     "redirect to /all-responses-failed in-case the ACA is down to accept/reject" in {
@@ -1181,7 +1181,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitConfirmDecline(
         authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed.url)
     }
 
     "redirect to /some-responses-failed in-case there is an issue in processing some consents only" in {
@@ -1206,7 +1206,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val result = controller.submitConfirmDecline(
         authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed.url)
     }
   }
 
@@ -1353,7 +1353,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       val result = controller.submitSomeResponsesFailed(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted.url)
 
       journeyState.get.get._1 shouldBe
         InvitationsAccepted(
@@ -1375,7 +1375,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(MissingJourneyHistory, Nil)
       val result = controller.showMissingJourneyHistory(FakeRequest("GET", "/session-timeout"))
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory.url)
     }
   }
 
@@ -1611,7 +1611,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUp().url)
+      redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.submitWarmUp.url)
     }
 
     "redirect to /gg/-sign-out when journeyId is not in session" in {
@@ -1747,7 +1747,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         journeyState.setEmpty()
         val result = action(request)
         status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory().url)
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showMissingJourneyHistory.url)
       }
     }
 }

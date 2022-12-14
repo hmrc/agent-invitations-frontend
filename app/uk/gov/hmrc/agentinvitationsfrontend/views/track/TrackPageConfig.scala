@@ -42,7 +42,7 @@ case class TrackPageConfig(
 
   val hasInvitationsOrRelationships: Boolean = invitationsAndRelationships.nonEmpty
   val showFilterForm: Boolean = filterByClient.isDefined || filterByStatus.isDefined || totalResults > pageInfo.resultsPerPage
-  val filterFormSubmitUrl: Call = routes.AgentsRequestTrackingController.submitFilterTrackRequests()
+  val filterFormSubmitUrl: Call = routes.AgentsRequestTrackingController.submitFilterTrackRequests
   val additionalQueryParams: String =
     s"""${filterByClient.fold("")(clientName => s"&client=$clientName")}${filterByStatus.fold("")(status => s"&status=$status")}"""
 

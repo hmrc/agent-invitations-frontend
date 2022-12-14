@@ -52,7 +52,7 @@
         </li>
         <li>@msgs("invitation-sent.select-link")</li>
         <li>
-            @p(msgs("invitation-sent.client-respond", displayDateForLang(config.expiryDateAsLocalDate), config.agencyEmail))
+            @p(msgs("invitation-sent.client-respond", displayDateForLang(Some(config.expiryDateAsLocalDate)), config.agencyEmail))
 
             <div class="govuk-warning-text">
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>

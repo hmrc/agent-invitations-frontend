@@ -30,7 +30,7 @@
 @serviceId = @{invitationOrRelationship.service.getOrElse(throw new RuntimeException("No service supplied!")).id}
 
 @formWithCSRF(
-    action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink().url),
+    action = Call("POST", routes.AgentsRequestTrackingController.submitToResendLink.url),
     'id -> s"resendLink-${index}", 'class -> "govuk-!-margin-bottom-2") {
     <input type="hidden" name="service" id="serviceResendLink-@{index}" value="@{invitationOrRelationship.service}">
     <input type="hidden" name="clientType" id="clientType-@{index}" value="@{invitationOrRelationship.clientType}">
@@ -46,7 +46,7 @@
 }
 
 @formWithCSRF(
-    action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel().url),
+    action = Call("POST", routes.AgentsRequestTrackingController.submitToConfirmCancel.url),
     'id -> s"postToConfirmCancel-$index"
 ) {
     <input type="hidden" name="service" id="serviceConfirmCancel-@{index}" value="@serviceId">

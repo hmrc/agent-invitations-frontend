@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
-import org.joda.time.LocalDate
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
+
+import java.time.LocalDate
 
 case class ConfirmTermsPageConfig(
   agencyName: String,

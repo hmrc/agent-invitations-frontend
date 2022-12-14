@@ -16,30 +16,30 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.{DateTime, LocalDate}
 import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 
-case class StatusChangeEvent(time: DateTime, status: InvitationStatus)
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
+
+case class StatusChangeEvent(time: LocalDateTime, status: InvitationStatus)
 
 object StatusChangeEvent {
+  implicit val localDateFormat = MongoLocalDateTimeFormat.localDateTimeFormat
   implicit val statusChangeEventFormat = new Format[StatusChangeEvent] {
     override def reads(json: JsValue): JsResult[StatusChangeEvent] = {
-      val time = new DateTime((json \ "time").as[Long])
+      val time = Instant.ofEpochMilli((json \ "time").as[Long]).atZone(ZoneOffset.UTC).toLocalDateTime
       val status = InvitationStatus((json \ "status").as[String])
       JsSuccess(StatusChangeEvent(time, status))
     }
 
     override def writes(o: StatusChangeEvent): JsValue =
       Json.obj(
-        "time"   -> o.time.getMillis,
+        "time"   -> o.time.toInstant(ZoneOffset.UTC).toEpochMilli,
         "status" -> o.status.toString
       )
   }
 
-  implicit val ord: Ordering[StatusChangeEvent] = Ordering.by(_.time.getMillis)
+  implicit val ord: Ordering[StatusChangeEvent] = Ordering.by(_.time.toInstant(ZoneOffset.UTC).toEpochMilli)
 
 }
 

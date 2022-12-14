@@ -16,7 +16,6 @@
 
 package journeys
 
-import org.joda.time.LocalDate
 import org.mockito.Mockito.{mock, when}
 import org.scalatest.BeforeAndAfter
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
@@ -33,6 +32,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent}
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -104,7 +104,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
     CgtRef => Future(Some(cgtSubscription(countryCode)))
 
-  def getPptSubscription(regDate: LocalDate = new LocalDate(2021, 1, 1)): GetPptSubscription =
+  def getPptSubscription(regDate: LocalDate = LocalDate.parse("2021-01-01")): GetPptSubscription =
     PptRef => Future(Some(pptSubscription(regDate)))
 
   def getClientName(clientId: String, service: Service): Future[Option[String]] = Future(Some("firstName lastName"))
@@ -488,7 +488,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
     "at CheckDetailsCompletePpt" should {
       "transition to ConfirmRegDatePpt" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
-        val regDate = new LocalDate(2021, 1, 1)
+        val regDate = LocalDate.parse("2021-01-01")
         given(CheckDetailsComplete(fastTrackRequest, None)) when transitions
           .copy(getPptSubscription = getPptSubscription(regDate))
           .checkedDetailsNoKnownFact(authorisedAgent) should
@@ -504,7 +504,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
     }
 
     "at SelectClientTypePpt" should {
-      val regDate = new LocalDate(2021, 1, 1)
+      val regDate = LocalDate.parse("2021-01-01")
 
       def getPptSubscription(regDate: LocalDate = regDate): GetPptSubscription =
         PptRef => Future(Some(pptSubscription(regDate)))
@@ -531,13 +531,13 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
     }
 
     "at ConfirmRegDatePpt" should {
-      val regDate = new LocalDate(2021, 1, 1)
+      val regDate = LocalDate.parse("2021-01-01")
 
       "transition to ConfirmClientPpt when country codes are matched" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
 
         given(ConfirmRegDatePpt(fastTrackRequest, None, regDate, "some-ppt-name")) when
-          transitions.confirmRegDatePpt(authorisedAgent)(regDate.toString("yyyy-MM-dd")) should
+          transitions.confirmRegDatePpt(authorisedAgent)(regDate.toString) should
           thenGo(ConfirmClientPpt(fastTrackRequest, None, "some-ppt-name"))
       }
 
@@ -545,7 +545,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
 
         given(ConfirmRegDatePpt(fastTrackRequest, None, regDate, "some-ppt-name")) when
-          transitions.confirmRegDatePpt(authorisedAgent)(regDate.plusDays(1).toString("yyyy-MM-dd")) should
+          transitions.confirmRegDatePpt(authorisedAgent)(regDate.plusDays(1).toString) should
           thenGo(ClientNotFound(fastTrackRequest, None))
       }
     }

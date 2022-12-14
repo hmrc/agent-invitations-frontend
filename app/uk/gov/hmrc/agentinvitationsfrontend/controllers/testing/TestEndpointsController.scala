@@ -73,7 +73,7 @@ class TestEndpointsController @Inject()(
             .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
               case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
-              case _          => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched())
+              case _          => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched)
             }
         }
       )
@@ -92,8 +92,8 @@ class TestEndpointsController @Inject()(
           pirRelationshipConnector
             .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
-              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship())
-              case _       => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched())
+              case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship)
+              case _       => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched)
             }
         }
       )

@@ -16,7 +16,7 @@
 
 package models
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState}
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import support.UnitSpec

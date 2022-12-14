@@ -38,6 +38,7 @@ import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -263,7 +264,7 @@ class ClientInvitationJourneyController @Inject()(
       .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(
         jid =>
           journeyService.stepBack.map(_ =>
-            Redirect(routes.ClientInvitationJourneyController.submitWarmUp()).withNewSession
+            Redirect(routes.ClientInvitationJourneyController.submitWarmUp).withNewSession
               .addingToSession("clientInvitationJourney" -> jid)))
   }
 
@@ -274,7 +275,7 @@ class ClientInvitationJourneyController @Inject()(
   }
 
   def handleIVTimeout(success: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp().url)
+    val successUrl = success.getOrElse(routes.ClientInvitationJourneyController.submitWarmUp.url)
     val continueUrl = CallOps
       .localFriendlyUrl(env)(successUrl, request.host)
     Future successful Forbidden(timedOutView(s"$ggLoginUrl?continue=$continueUrl"))
@@ -329,33 +330,33 @@ class ClientInvitationJourneyController @Inject()(
 
   /* Here we map states to the GET endpoints for redirecting and back linking */
   override def getCallFor(state: State)(implicit request: Request[_]): Call = state match {
-    case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory()
+    case MissingJourneyHistory => routes.ClientInvitationJourneyController.showMissingJourneyHistory
     case WarmUp(clientType, uid, _, _, normalisedAgentName) =>
       routes.ClientInvitationJourneyController.warmUp(ClientType.fromEnum(clientType), uid, normalisedAgentName)
-    case _: CreateNewUserId => routes.ClientInvitationJourneyController.showCreateNewUserId()
+    case _: CreateNewUserId => routes.ClientInvitationJourneyController.showCreateNewUserId
     case _: WhichTaxService =>
-      routes.ClientInvitationJourneyController.showWhichTaxService()
-    case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired()
-    case _: SignUpToTaxService    => routes.ClientInvitationJourneyController.showSignUpToTaxService()
-    case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded()
-    case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation()
-    case NoOutstandingRequests    => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests()
+      routes.ClientInvitationJourneyController.showWhichTaxService
+    case _: WarmUpSessionRequired => routes.ClientInvitationJourneyController.submitWarmUpSessionRequired
+    case _: SignUpToTaxService    => routes.ClientInvitationJourneyController.showSignUpToTaxService
+    case _: GGUserIdNeeded        => routes.ClientInvitationJourneyController.showGGUserIdNeeded
+    case NotFoundInvitation       => routes.ClientInvitationJourneyController.showNotFoundInvitation
+    case NoOutstandingRequests    => routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests
     case _: RequestExpired | _: AgentCancelledRequest | _: AlreadyRespondedToRequest =>
-      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid()
-    case _: CannotFindRequest => routes.ClientInvitationJourneyController.showErrorCannotFindRequest()
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid
+    case _: CannotFindRequest => routes.ClientInvitationJourneyController.showErrorCannotFindRequest
     case _: AuthorisationRequestExpired | _: AuthorisationRequestCancelled | _: AuthorisationRequestAlreadyResponded =>
-      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful()
-    case _: ActionNeeded        => routes.ClientInvitationJourneyController.showActionNeeded()
-    case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent()
-    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange()
-    case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers()
-    case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline()
-    case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted()
-    case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined()
-    case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed()
-    case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed()
-    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed()
-    case _: SuspendedAgent      => routes.ClientInvitationJourneyController.showSuspendedAgent()
+      routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful
+    case _: ActionNeeded        => routes.ClientInvitationJourneyController.showActionNeeded
+    case _: MultiConsent        => routes.ClientInvitationJourneyController.showConsent
+    case _: SingleConsent       => routes.ClientInvitationJourneyController.showConsentChange
+    case _: CheckAnswers        => routes.ClientInvitationJourneyController.showCheckAnswers
+    case _: ConfirmDecline      => routes.ClientInvitationJourneyController.showConfirmDecline
+    case _: InvitationsAccepted => routes.ClientInvitationJourneyController.showInvitationsAccepted
+    case _: InvitationsDeclined => routes.ClientInvitationJourneyController.showInvitationsDeclined
+    case AllResponsesFailed     => routes.ClientInvitationJourneyController.showAllResponsesFailed
+    case _: SomeResponsesFailed => routes.ClientInvitationJourneyController.showSomeResponsesFailed
+    case TrustNotClaimed        => routes.ClientInvitationJourneyController.showTrustNotClaimed
+    case _: SuspendedAgent      => routes.ClientInvitationJourneyController.showSuspendedAgent
     case _                      => throw new Exception(s"Link not found for $state")
   }
 
@@ -373,11 +374,11 @@ class ClientInvitationJourneyController @Inject()(
               agentName,
               clientType,
               uid,
-              routes.ClientInvitationJourneyController.submitWarmUp(),
-              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline(),
+              routes.ClientInvitationJourneyController.submitWarmUp,
+              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline,
               addParamsToUrl(
                 appConfig.ggRegistrationFrontendExternalUrl,
-                "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp().url)
+                "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
               )
             )))
 
@@ -394,17 +395,17 @@ class ClientInvitationJourneyController @Inject()(
           ggUserIdNeededView(
             formWithErrors.or(confirmHasGGIdForm),
             backLinkFor(breadcrumbs),
-            routes.ClientInvitationJourneyController.submitGGUserIdNeeded()))
+            routes.ClientInvitationJourneyController.submitGGUserIdNeeded))
 
       case _: WarmUpSessionRequired =>
-        Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired())
+        Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired)
 
       case _: WhichTaxService =>
         Ok(
           whichTaxServiceView(
             formWithErrors.or(whichTaxServiceForm),
             backLinkFor(breadcrumbs),
-            routes.ClientInvitationJourneyController.submitWhichTaxService()
+            routes.ClientInvitationJourneyController.submitWhichTaxService
           ))
 
       case _: SignUpToTaxService =>
@@ -466,8 +467,8 @@ class ClientInvitationJourneyController @Inject()(
               clientTypeStr,
               uid,
               consents,
-              submitUrl = routes.ClientInvitationJourneyController.submitConsent(),
-              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+              submitUrl = routes.ClientInvitationJourneyController.submitConsent,
+              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers,
               backLink =
                 if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
                 else Call("GET", externalUrls.agentClientManagementUrl)
@@ -483,8 +484,8 @@ class ClientInvitationJourneyController @Inject()(
               ClientType.fromEnum(clientType),
               uid,
               Seq(consent),
-              submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents(),
-              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers(),
+              submitUrl = routes.ClientInvitationJourneyController.submitChangeConsents,
+              checkAnswersUrl = routes.ClientInvitationJourneyController.showCheckAnswers,
               backLink = backLinkFor(breadcrumbs)
             ),
             changingConsent = true
@@ -498,7 +499,7 @@ class ClientInvitationJourneyController @Inject()(
               agentName,
               ClientType.fromEnum(clientType),
               uid,
-              submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers(),
+              submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers,
               changeCall = (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
               backLink = backLinkFor(breadcrumbs)
             )))
@@ -512,7 +513,7 @@ class ClientInvitationJourneyController @Inject()(
               ClientType.fromEnum(clientType),
               uid,
               consents.map(_.serviceKey).distinct,
-              submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline(),
+              submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
               backLink = backLinkFor(breadcrumbs)
             )
           ))
@@ -526,8 +527,9 @@ class ClientInvitationJourneyController @Inject()(
       case AllResponsesFailed => Ok(allResponsesFailedView())
 
       case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
-        Ok(someResponsesFailedView(
-          SomeResponsesFailedPageConfig(failedConsents, agentName, routes.ClientInvitationJourneyController.submitSomeResponsesFailed(), clientType)))
+        Ok(
+          someResponsesFailedView(
+            SomeResponsesFailedPageConfig(failedConsents, agentName, routes.ClientInvitationJourneyController.submitSomeResponsesFailed, clientType)))
 
       case TrustNotClaimed =>
         val backLink =
@@ -543,7 +545,7 @@ class ClientInvitationJourneyController @Inject()(
     request.session.get("clientService").getOrElse("service_is_missing")
 
   private def continueUrlWithJourneyId()(implicit request: Request[_]): String = {
-    val url = s"${appConfig.agentInvitationsFrontendExternalUrl}${routes.ClientInvitationJourneyController.submitCreateNewUserId().url}"
+    val url = s"${appConfig.agentInvitationsFrontendExternalUrl}${routes.ClientInvitationJourneyController.submitCreateNewUserId.url}"
     journeyId.fold(url)(_ => addParamsToUrl(url, "clientInvitationJourney" -> journeyId))
   }
 

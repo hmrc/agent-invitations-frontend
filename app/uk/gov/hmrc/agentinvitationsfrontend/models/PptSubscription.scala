@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import org.joda.time.LocalDate
 import play.api.libs.json._
-import play.api.libs.json.JodaReads
+
+import java.time.LocalDate
 
 case class PptSubscription(customerName: String, dateOfApplication: LocalDate, deregistrationDate: Option[LocalDate])
 
 object PptSubscription {
-
-  implicit val jodaReads = JodaReads.DefaultJodaLocalDateReads
 
   implicit val reads: Reads[PptSubscription] = new Reads[PptSubscription] {
     override def reads(json: JsValue): JsResult[PptSubscription] = {

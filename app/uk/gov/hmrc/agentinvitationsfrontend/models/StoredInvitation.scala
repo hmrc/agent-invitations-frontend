@@ -17,8 +17,9 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import java.net.URL
-import org.joda.time.{DateTime, LocalDate}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service}
+
+import java.time.{LocalDate, LocalDateTime}
 
 case class StoredInvitation(
   arn: Arn,
@@ -30,8 +31,8 @@ case class StoredInvitation(
   suppliedClientIdType: String,
   detailsForEmail: Option[DetailsForEmail],
   status: String,
-  created: DateTime,
-  lastUpdated: DateTime,
+  created: LocalDateTime,
+  lastUpdated: LocalDateTime,
   expiryDate: LocalDate,
   invitationId: String,
   isRelationshipEnded: Boolean,
@@ -49,8 +50,8 @@ object StoredInvitation {
     clientId: String,
     detailsForEmail: Option[DetailsForEmail],
     status: String,
-    created: DateTime,
-    lastUpdated: DateTime,
+    created: LocalDateTime,
+    lastUpdated: LocalDateTime,
     expiryDate: LocalDate,
     invitationId: String,
     isRelationshipEnded: Boolean,

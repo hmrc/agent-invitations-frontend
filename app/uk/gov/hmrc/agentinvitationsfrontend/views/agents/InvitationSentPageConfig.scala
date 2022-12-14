@@ -15,12 +15,14 @@
  */
 
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
-import org.joda.time.LocalDate
+
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
+import java.time.LocalDate
 
 case class InvitationSentPageConfig(
   relativeInvitationUrl: String,
@@ -39,7 +41,7 @@ case class InvitationSentPageConfig(
 
   val trackUrl: Call = routes.AgentsRequestTrackingController.showTrackRequests()
 
-  val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType()
+  val clientTypeUrl: Call = routes.AgentInvitationJourneyController.showClientType
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
     if (services(Service.PersonalIncomeRecord) && services(Service.Vat)) Some(Messages("invitation-sent.step1.personal.paye-vat"))

@@ -119,7 +119,7 @@ class AuthActionsImpl @Inject()(
               } else body(AuthorisedClient(affinity, enrols))
             }
             case (AffinityGroup.Agent, _) => {
-              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
+              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest)
             }
             case (affinityGroup, _) =>
               logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
@@ -150,7 +150,7 @@ class AuthActionsImpl @Inject()(
               } else body(Some(AuthorisedClient(affinity, enrols)))
             }
             case (AffinityGroup.Agent, _) => {
-              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest())
+              Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest)
             }
             case (affinityGroup, _) =>
               logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")

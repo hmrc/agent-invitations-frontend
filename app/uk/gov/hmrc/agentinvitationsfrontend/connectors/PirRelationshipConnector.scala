@@ -21,7 +21,6 @@ import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
@@ -32,6 +31,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -46,7 +47,7 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   def createRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor(s"ConsumedAPI-Put-TestOnlyRelationship-PUT") {
       val url = craftUrl(createAndDeleteRelationshipUrl(arn, service, clientId))
-      val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+      val body = Json.obj("startDate" -> LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
       http
         .PUT[JsObject, HttpResponse](url.toString, body)
         .map(_.status)
@@ -102,7 +103,7 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   /* TEST ONLY Connector method for create relationship. This method should not be used in production code */
   def testOnlyCreateRelationship(arn: Arn, service: String, clientId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     val url = new URL(baseUrl, s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
-    val body = Json.obj("startDate" -> DateTime.now().toString(ISO_LOCAL_DATE_TIME_FORMAT))
+    val body = Json.obj("startDate" -> LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
     http
       .PUT[JsObject, HttpResponse](url.toString, body)
       .map(_.status)
