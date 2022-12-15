@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.repository
 import play.api.Logging
 import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.cache.DataKey
+import uk.gov.hmrc.mongo.cache.{CacheItem, DataKey}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,10 +37,13 @@ trait MongoSessionStore[T] extends Logging {
         cacheRepository
           .findById(sessionId)
           .map {
-            case Some(entity) => Right(Some(entity.asInstanceOf[T]))
-            case _            => Left("No entry found with session Id")
+            case Some(entity) => Right(Some((entity.data \ sessionName).as[T]))
+            case _            => Right(None)
           }
-      case None => Future successful Left("Could not get session as no session Id found.")
+          .recover {
+            case e: Exception => Left(e.getMessage)
+          }
+      case None => Future successful Right(None)
     }
 
   def store(newSession: T)(implicit writes: Writes[T], hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
