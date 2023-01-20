@@ -1,4 +1,3 @@
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import AppDependencies._
 import CodeCoverageSettings._
 
@@ -16,7 +15,7 @@ lazy val root = (project in file("."))
     scalaVersion := "2.12.15",
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
-    resolvers := Seq(
+    resolvers ++= Seq(
       Resolver.typesafeRepo("releases"),
       "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
       Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
