@@ -1,6 +1,3 @@
-import play.core.PlayVersion
-import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import AppDependencies._
 import CodeCoverageSettings._
 
@@ -18,18 +15,17 @@ lazy val root = (project in file("."))
     scalaVersion := "2.12.15",
     majorVersion := 0,
     PlayKeys.playDefaultPort := 9448,
-    resolvers := Seq(
+    resolvers ++= Seq(
       Resolver.typesafeRepo("releases"),
       "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
       Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     ),
-    libraryDependencies ++= compileDeps ++ testDeps("test") ++ testDeps("it"),
+    libraryDependencies ++= compileDeps ++ testDeps,
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.7" cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % "1.7.7" % Provided cross CrossVersion.full
     ),
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
-    publishingSettings,
     scoverageSettings,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     Compile / scalafmtOnCompile := true,

@@ -7,7 +7,7 @@ import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient, StoredInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino

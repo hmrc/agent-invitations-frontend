@@ -6,12 +6,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.test.Helpers._
-import uk.gov.hmrc.domain.Nino
 
 class IdentityVerificationConnectorISpec extends BaseISpec {
 
-  implicit val hc = HeaderCarrier()
-  val connector = app.injector.instanceOf[IdentityVerificationConnector]
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val connector: IdentityVerificationConnector = app.injector.instanceOf[IdentityVerificationConnector]
 
   "getIVResult" should {
 
