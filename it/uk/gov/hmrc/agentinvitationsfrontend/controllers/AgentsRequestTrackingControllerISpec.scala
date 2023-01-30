@@ -386,6 +386,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         )
       )
 
+      status(result) shouldBe OK
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
       html.title() shouldBe "Resend this link to your client - Ask a client to authorise you - GOV.UK"
@@ -401,6 +402,51 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.select("h2#further-help-heading").get(0).text() shouldBe "Further help"
       html.select("p#further-help-text").text() shouldBe "Get help to complete another task, including:"
 
+    }
+
+    "redirect to /track when agentLink is not present in session" in {
+
+      val result = getResendLink(
+        authorisedAsValidAgent(
+          request.withSession(
+            "clientType" -> "personal",
+            "expiryDate" -> "2017-05-05",
+            "service" -> "HMRC-MTD-IT",
+            "agencyEmail" -> "abc@xyz.com"), arn.value
+        )
+      )
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsRequestTrackingController.showTrackRequests(1, None, None).url
+    }
+
+    "redirect to /track when expiryDate is not present in session" in {
+
+      val result = getResendLink(
+        authorisedAsValidAgent(
+          request.withSession(
+            "clientType" -> "personal",
+            "agentLink" -> "/agent/",
+            "service" -> "HMRC-MTD-IT",
+            "agencyEmail" -> "abc@xyz.com"), arn.value
+        )
+      )
+      status(result) shouldBe SEE_OTHER
+      redirectLocation(result).get shouldBe routes.AgentsRequestTrackingController.showTrackRequests(1, None, None).url
+    }
+
+    "return 200 when altItsa is not present in session" in {
+
+      val result = getResendLink(
+        authorisedAsValidAgent(
+          request.withSession(
+            "clientType" -> "personal",
+            "agentLink" -> "/agent/",
+            "service" -> "HMRC-MTD-IT",
+            "expiryDate" -> "2017-05-05",
+            "agencyEmail" -> "abc@xyz.com"), arn.value
+        )
+      )
+      status(result) shouldBe OK
     }
   }
 

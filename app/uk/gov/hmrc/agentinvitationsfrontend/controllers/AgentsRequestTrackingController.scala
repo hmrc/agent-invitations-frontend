@@ -161,17 +161,28 @@ class AgentsRequestTrackingController @Inject()(
   def showResendLink: Action[AnyContent] =
     Action.async { implicit request =>
       withAuthorisedAsAgent { _ =>
-        Future successful Ok(
-          resendLinkView(ResendLinkPageConfig(
+        val pageConfig = for {
+          link       <- request.session.get("agentLink")
+          clientType <- request.session.get("clientType")
+          expiry     <- request.session.get("expiryDate")
+          service = request.session.get("service")
+          email   <- request.session.get("agencyEmail")
+          altItsa <- request.session.get("isAltItsa").orElse(Some("false"))
+        } yield {
+          ResendLinkPageConfig(
             appConfig.agentInvitationsFrontendExternalUrl,
-            request.session.get("agentLink").getOrElse(""),
-            request.session.get("clientType").getOrElse(""),
-            request.session.get("expiryDate").getOrElse(""),
-            request.session.get("service").flatMap(srv => Try(Service.forId(srv)).toOption),
-            request.session.get("agencyEmail").getOrElse(""),
+            link,
+            clientType,
+            expiry,
+            service.flatMap(svc => Try(Service.forId(svc)).toOption),
+            email,
             routes.AgentsRequestTrackingController.showTrackRequests(1).url,
-            request.session.get("isAltItsa").getOrElse("false").toBoolean
-          )))
+            altItsa.toBoolean
+          )
+        }
+        pageConfig
+          .fold(Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests(1, None, None)))(config =>
+            Future successful Ok(resendLinkView(config)))
       }
     }
 
