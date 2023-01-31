@@ -152,22 +152,19 @@ class ClientInvitationJourneyController @Inject()(
 
   val submitWarmUp: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsMaybeLoggedInClient)
-    .applyWithRequest(implicit request =>
-      Transitions.submitWarmUp(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .applyWithRequest(implicit request => Transitions.submitWarmUp(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
   val submitCreateNewUserId: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsClient)
-    .applyWithRequest(implicit request =>
-      Transitions.submitCreateNewUserId(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .applyWithRequest(implicit request => Transitions.submitCreateNewUserId(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
   val showCreateNewUserId: Action[AnyContent] = actions.show[CreateNewUserId].orRollback
 
   val submitWarmUpSessionRequired: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsClient)
-    .applyWithRequest(implicit request =>
-      Transitions.submitWarmUpSessionRequired(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+    .applyWithRequest(implicit request => Transitions.submitWarmUpSessionRequired(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
     .redirect
 
   val showWhichTaxService: Action[AnyContent] = actions.show[WhichTaxService].orRollback
@@ -221,8 +218,7 @@ class ClientInvitationJourneyController @Inject()(
   val submitWarmUpConfirmDecline: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsClient)
-      .applyWithRequest(implicit request =>
-        Transitions.submitWarmUpToDecline(featureFlags.agentSuspensionEnabled)(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
+      .applyWithRequest(implicit request => Transitions.submitWarmUpToDecline(getAllClientInvitationDetailsForAgent, getSuspensionDetails))
       .redirect
 
   val showConfirmDecline: Action[AnyContent] = actions.whenAuthorised(AsClient).show[ConfirmDecline].orRollback

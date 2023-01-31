@@ -169,36 +169,23 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             consent = false,
             isAltItsa = invitation.isAltItsa))
 
-    def submitWarmUp(agentSuspensionEnabled: Boolean)(
-      getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
-      getSuspensionStatus: GetSuspensionDetails)(client: Option[AuthorisedClient]) =
-      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(
-        client)
+    def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
+      client: Option[AuthorisedClient]) =
+      transitionFromWarmup(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
-    def submitCreateNewUserId(agentSuspensionEnabled: Boolean)(
-      getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
-      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
-      transitionFromCreateNewUserId(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
-        getPendingInvitationIdsAndExpiryDates,
-        getSuspensionStatus)(client)
+    def submitCreateNewUserId(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
+      client: AuthorisedClient) =
+      transitionFromCreateNewUserId(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
-    def submitWarmUpSessionRequired(agentSuspensionEnabled: Boolean)(
-      getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
-      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
-      transitionFromWarmUpWithSession(agentSuspensionEnabled, idealTargetState = MultiConsent.apply)(
-        getPendingInvitationIdsAndExpiryDates,
-        getSuspensionStatus)(client)
+    def submitWarmUpSessionRequired(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
+      client: AuthorisedClient) =
+      transitionFromWarmUpWithSession(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
-    def submitWarmUpToDecline(agentSuspensionEnabled: Boolean)(
-      getPendingInvitationIdsAndExpiryDates: GetInvitationDetails,
-      getSuspensionStatus: GetSuspensionDetails)(client: AuthorisedClient) =
-      transitionFromWarmup(agentSuspensionEnabled, idealTargetState = ConfirmDecline.apply)(
-        getPendingInvitationIdsAndExpiryDates,
-        getSuspensionStatus)(Some(client))
+    def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
+      client: AuthorisedClient) =
+      transitionFromWarmup(idealTargetState = ConfirmDecline.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(Some(client))
 
-    private def transitionFromWarmUpWithSession(
-      agentSuspensionEnabled: Boolean,
-      idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
+    private def transitionFromWarmUpWithSession(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
@@ -210,15 +197,12 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             getInvitationDetails,
             getSuspensionDetails,
             uid,
-            agentSuspensionEnabled,
             arn,
             idealTargetState
           )
       }
 
-    private def transitionFromWarmup(
-      agentSuspensionEnabled: Boolean,
-      idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
+    private def transitionFromWarmup(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails)(client: Option[AuthorisedClient]) =
       Transition {
@@ -230,7 +214,6 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             getInvitationDetails,
             getSuspensionDetails,
             uid,
-            agentSuspensionEnabled,
             arn,
             idealTargetState
           )
@@ -247,7 +230,6 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails,
       uid: String,
-      agentSuspensionEnabled: Boolean,
       arn: Arn,
       idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State
     ) => {
@@ -278,7 +260,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                     goto(TrustNotClaimed)
                   } else {
                     consents match {
-                      case _ if consents.nonEmpty && agentSuspensionEnabled =>
+                      case _ if consents.nonEmpty =>
                         getSuspensionDetails(arn).flatMap { suspensionDetails =>
                           val consentServices: Set[Service] =
                             consents.map(consent => consent.service).toSet
@@ -297,7 +279,6 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                             goto(idealTargetState(clientType, uid, agentName, arn, nonSuspendedConsents))
                           }
                         }
-                      case _ if consents.nonEmpty => goto(idealTargetState(clientType, uid, agentName, arn, consents))
                       case _ =>
                         logger.warn(s"No pending invitations are found for uid: $uid")
                         goto(NotFoundInvitation)
@@ -309,23 +290,12 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       }
     }
 
-    private def transitionFromCreateNewUserId(
-      agentSuspensionEnabled: Boolean,
-      idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
+    private def transitionFromCreateNewUserId(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
       getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
       Transition {
         case CreateNewUserId(clientType, uid, arn, agentName) =>
-          transitionFromWarmUpFunction(
-            client,
-            clientType,
-            agentName,
-            getInvitationDetails,
-            getSuspensionDetails,
-            uid,
-            agentSuspensionEnabled,
-            arn,
-            idealTargetState)
+          transitionFromWarmUpFunction(client, clientType, agentName, getInvitationDetails, getSuspensionDetails, uid, arn, idealTargetState)
       }
 
     private def determineStateForNonPending(
