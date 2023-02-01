@@ -211,15 +211,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         showPirFlag: Boolean = true,
         showVatFlag: Boolean = true,
         showCgtFlag: Boolean = true,
-        showPptFlag: Boolean = true,
-        agentSuspensionEnabled: Boolean = true): Option[Service] => AgentInvitationJourneyModel.Transition = {
+        showPptFlag: Boolean = true): Option[Service] => AgentInvitationJourneyModel.Transition = {
         val featureFlags = TestFeatureFlags.allDisabled.copy(
           showHmrcMtdIt = showItsaFlag,
           showPersonalIncome = showPirFlag,
           showHmrcMtdVat = showVatFlag,
           showHmrcCgt = showCgtFlag,
           showPlasticPackagingTax = showPptFlag,
-          agentSuspensionEnabled = agentSuspensionEnabled
         )
         transitions.copy(featureFlags = featureFlags).selectedService(authorisedAgent)
       }

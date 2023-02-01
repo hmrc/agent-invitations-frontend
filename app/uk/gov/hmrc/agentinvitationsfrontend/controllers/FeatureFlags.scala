@@ -33,7 +33,6 @@ trait FeatureFlags {
   val showPlasticPackagingTax: Boolean
   val enableTrackCancelAuth: Boolean
   val showAgentLedDeAuth: Boolean
-  val agentSuspensionEnabled: Boolean
   val enableIrvAllowlist: Boolean
   val acceptTrustURNIdentifier: Boolean
 
@@ -62,7 +61,6 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
   val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
-  val agentSuspensionEnabled = appConfig.featuresAgentSuspension
   val enableIrvAllowlist = appConfig.featuresIrvAllowlist
   val acceptTrustURNIdentifier = appConfig.featuresEnableTrustURNIdentifier
 

@@ -143,7 +143,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
           maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
             legacy.whenAuthorisedWithBootstrapAndForm(transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm)(
-              transitions.start(featureFlags.agentSuspensionEnabled)(redirectUrl))
+              transitions.start(redirectUrl))
           }
         }
       }

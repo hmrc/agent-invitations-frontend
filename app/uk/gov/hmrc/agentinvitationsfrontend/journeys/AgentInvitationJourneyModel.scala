@@ -146,23 +146,17 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         goto(SelectService(clientType, services, basket))
     }
 
-    def gotoIdentify(
-      serviceEnabled: Boolean,
-      agentSuspensionEnabled: Boolean,
-      service: Service,
-      identifyClientState: State,
-      suspendedState: State): Future[State] =
-      (serviceEnabled, agentSuspensionEnabled) match {
-        case (true, true) =>
-          getSuspensionDetails().flatMap { suspensionDetails =>
-            if (suspensionDetails.isRegimeSuspended(service)) {
-              goto(suspendedState)
-            } else {
-              goto(identifyClientState)
-            }
+    def gotoIdentify(serviceEnabled: Boolean, service: Service, identifyClientState: State, suspendedState: State): Future[State] =
+      if (serviceEnabled) {
+        getSuspensionDetails().flatMap { suspensionDetails =>
+          if (suspensionDetails.isRegimeSuspended(service)) {
+            goto(suspendedState)
+          } else {
+            goto(identifyClientState)
           }
-        case (true, false) => goto(identifyClientState)
-        case (false, _)    => fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
+        }
+      } else {
+        fail(new Exception(s"Service: ${service.id} feature flag is switched off"))
       }
 
     def selectedService(agent: AuthorisedAgent)(mService: Option[Service]) =
@@ -176,7 +170,6 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             case Some(service) if services.contains(service) =>
               gotoIdentify(
                 featureFlags.isServiceEnabled(service, Some(agent)),
-                featureFlags.agentSuspensionEnabled,
                 service,
                 IdentifyClient(clientType, service, basket),
                 AgentSuspended(service, basket)

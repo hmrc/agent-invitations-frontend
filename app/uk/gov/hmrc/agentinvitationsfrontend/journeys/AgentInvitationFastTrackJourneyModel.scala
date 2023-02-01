@@ -168,16 +168,15 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
       case _ => goto(Prologue(failureUrl, refererUrl))
     }
 
-    def start(agentSuspensionEnabled: Boolean)(continueUrl: Option[String])(agent: AuthorisedAgent)(fastTrackRequest: AgentFastTrackRequest) =
+    def start(continueUrl: Option[String])(agent: AuthorisedAgent)(fastTrackRequest: AgentFastTrackRequest) =
       Transition {
         case _ =>
-          if (agentSuspensionEnabled) getSuspensionDetails().flatMap { suspensionDetails =>
-            suspensionDetails.isRegimeSuspended(fastTrackRequest.service) match {
-              case true  => goto(SuspendedAgent(fastTrackRequest.service, continueUrl))
-              case false => getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
+          getSuspensionDetails().flatMap { suspensionDetails =>
+            if (suspensionDetails.isRegimeSuspended(fastTrackRequest.service)) {
+              goto(SuspendedAgent(fastTrackRequest.service, continueUrl))
+            } else {
+              getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
             }
-          } else {
-            getStateForNonSuspendedAgent(fastTrackRequest, continueUrl)
           }
       }
 
