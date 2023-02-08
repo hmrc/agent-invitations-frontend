@@ -28,7 +28,6 @@ case class TestFeatureFlags(
   override val showPlasticPackagingTax: Boolean = false,
   override val enableTrackCancelAuth: Boolean = false,
   override val showAgentLedDeAuth: Boolean = false,
-  override val acceptTrustURNIdentifier: Boolean = false,
   override val enableIrvAllowlist: Boolean = false,
 ) extends FeatureFlags {
   def setServiceFlag(service: Service, flag: Boolean): TestFeatureFlags = service match {
@@ -55,7 +54,6 @@ object TestFeatureFlags {
       showPlasticPackagingTax = true,
       enableTrackCancelAuth = true,
       showAgentLedDeAuth = true,
-      acceptTrustURNIdentifier = true,
       enableIrvAllowlist = true
     )
 }

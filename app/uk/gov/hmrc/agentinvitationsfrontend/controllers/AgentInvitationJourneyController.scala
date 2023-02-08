@@ -104,7 +104,6 @@ class AgentInvitationJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -201,7 +200,7 @@ class AgentInvitationJourneyController @Inject()(
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(TrustClientForm.form(urnEnabled))
+      .bindForm(TrustClientForm.form(true))
       .applyWithRequest(implicit request => transitions.identifiedTrustClient)
 
   val submitIdentifyCgtClient: Action[AnyContent] =
@@ -390,11 +389,11 @@ class AgentInvitationJourneyController @Inject()(
       case IdentifyClient(ClientType.Trust, Service.Trust, _) =>
         Ok(
           identifyClientTrustView(
-            trustClientForm = formWithErrors.or(TrustClientForm.form(urnEnabled)),
+            trustClientForm = formWithErrors.or(TrustClientForm.form(true)),
             submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient,
             backLinkUrl = backLinkFor(breadcrumbs).url,
             isDeAuthJourney = false,
-            showUrnEnabledContent = urnEnabled
+            showUrnEnabledContent = true
           )
         )
 

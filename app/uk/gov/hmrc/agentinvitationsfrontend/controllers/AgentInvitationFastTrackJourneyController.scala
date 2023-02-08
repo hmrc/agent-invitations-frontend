@@ -109,7 +109,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -187,7 +186,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(TrustClientForm.form(urnEnabled))
+      .bindForm(TrustClientForm.form(true))
       .applyWithRequest(implicit request => transitions.showConfirmTrustClient)
 
   val submitIdentifyCgtClient: Action[AnyContent] =
@@ -548,7 +547,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case IdentifyClient(ftr, _) if List(Service.Trust, Service.TrustNT).contains(ftr.service) =>
         Ok(
           identifyClientTrustView(
-            formWithErrors.or(TrustClientForm.form(urnEnabled)),
+            formWithErrors.or(TrustClientForm.form(true)),
             routes.AgentInvitationFastTrackJourneyController.submitIdentifyTrustClient,
             backLinkFor(breadcrumbs).url
           )
