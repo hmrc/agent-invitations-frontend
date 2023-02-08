@@ -34,7 +34,6 @@ trait FeatureFlags {
   val enableTrackCancelAuth: Boolean
   val showAgentLedDeAuth: Boolean
   val enableIrvAllowlist: Boolean
-  val acceptTrustURNIdentifier: Boolean
 
   def isServiceEnabled(service: Service, agent: Option[AuthorisedAgent]): Boolean = service match {
     case Service.MtdIt                => showHmrcMtdIt
@@ -62,6 +61,5 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
   val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val enableIrvAllowlist = appConfig.featuresIrvAllowlist
-  val acceptTrustURNIdentifier = appConfig.featuresEnableTrustURNIdentifier
 
 }

@@ -85,7 +85,6 @@ class AgentLedDeauthJourneyController @Inject()(
 
   private val countries = countryNamesLoader.load
   private val validCountryCodes = countries.keys.toSet
-  private val urnEnabled = appConfig.featuresEnableTrustURNIdentifier
 
   val AsAgent: WithAuthorised[AuthorisedAgent] = { implicit request: Request[Any] =>
     withAuthorisedAsAgent(_)
@@ -156,7 +155,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val submitIdentifyTrustClient: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsAgent)
-    .bindForm(TrustClientForm.form(urnEnabled))
+    .bindForm(TrustClientForm.form(true))
     .applyWithRequest(implicit request => transitions.submitIdentifyClientTrust)
 
   val submitIdentifyCgtClient: Action[AnyContent] = actions
@@ -335,11 +334,11 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
       Ok(
         identifyClientTrustView(
-          formWithErrors.or(TrustClientForm.form(urnEnabled)),
+          formWithErrors.or(TrustClientForm.form(true)),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true,
-          showUrnEnabledContent = urnEnabled
+          showUrnEnabledContent = true
         ))
 
     case IdentifyClient(_, Service.CapitalGains) =>

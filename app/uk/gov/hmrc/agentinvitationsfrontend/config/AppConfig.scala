@@ -108,8 +108,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
 
   val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
 
-  val featuresEnableTrustURNIdentifier: Boolean = servicesConfig.getBoolean("features.enable-trust-urn-identifier")
-
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
 
   val featuresIrvAllowlist: Boolean = servicesConfig.getBoolean("features.enable-irv-allowlist")
