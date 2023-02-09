@@ -41,8 +41,7 @@
         trustClientForm: Form[TrustClient],
         submitFormCall: Call,
         backLinkUrl: String,
-        isDeAuthJourney: Boolean = false,
-        showUrnEnabledContent: Boolean = false
+        isDeAuthJourney: Boolean = false
 )(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @banner = @{
@@ -60,7 +59,7 @@
 
 @mainTemplate(
     bannerTitle = msgs(banner),
-    title = errorPrefix(trustClientForm) + msgs("generic.title", msgs(s"identify-trust-client.title.$showUrnEnabledContent"), msgs(banner)),
+    title = errorPrefix(trustClientForm) + msgs("generic.title", msgs(s"identify-trust-client.header"), msgs(banner)),
     isAgent = true,
     backLinkHref = Some(backLinkUrl)
 ) {
@@ -71,10 +70,9 @@
 
     @formWithCSRF(action = submitFormCall) {
 
-        @h1(s"identify-trust-client.header.$showUrnEnabledContent")
+        @h1(s"identify-trust-client.header")
         @p(id = Some("taxId-info"), classes = Some("govuk-!-margin-bottom-4"), key = "identify-trust-client.p1")
 
-        @if(showUrnEnabledContent) {
             @govukDetails(Details(
                 id = Some("identifyTrustHelper"),
                 summary = Text(msgs("identify-trust-alternative")),
@@ -83,31 +81,13 @@
 
             @inputText(
                 field = trustClientForm("taxId"),
-                label = msgs(s"identify-trust-client.header.$showUrnEnabledContent"),
+                label = msgs(s"identify-trust-client.header"),
                 labelClass = Some("govuk-visually-hidden"),
                 labelAsHeading = false,
-                hint = Some(msgs(s"identify-trust-client.p2.$showUrnEnabledContent")),
+                hint = Some(msgs(s"identify-trust-client.p2")),
                 inputClass = Some("govuk-input--width-10")
             )
 
-        } else {
-
-            @govukInput(Input(
-                label = Label(
-                    isPageHeading = false,
-                    classes = "govuk-visually-hidden",
-                    content = Text(msgs(s"identify-trust-client.header.$showUrnEnabledContent"))
-                ),
-                hint = Some(Hint(
-                    content = HtmlContent(Html(msgs(s"identify-trust-client.p2.$showUrnEnabledContent")))
-                )),
-                spellcheck = Some(false),
-                inputmode = Some("numeric"),
-                pattern = Some("[0-9]*"),
-                classes = "govuk-input--width-10"
-            ).withFormField(trustClientForm("taxId")))
-
-        }
 
         @submitButton()
 

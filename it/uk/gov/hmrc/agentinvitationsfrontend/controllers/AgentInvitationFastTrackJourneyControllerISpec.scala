@@ -965,8 +965,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-trust-client.header.false", "identify-trust-client.p1")
-      checkHtmlResultWithBodyText(result.futureValue, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-trust-client.header", "identify-trust-client.p1")
+      checkHtmlResultWithBodyText(result.futureValue, "Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.")
     }
 
     "show the client-details page for CGT" in {

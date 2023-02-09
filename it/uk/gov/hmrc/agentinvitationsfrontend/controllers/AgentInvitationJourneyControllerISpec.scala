@@ -516,9 +516,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result.futureValue,
-        "identify-trust-client.header.true",
+        "identify-trust-client.header",
         "identify-trust-client.p1",
-        "identify-trust-client.p2.true",
+        "identify-trust-client.p2",
         "identify-trust-alternative",
         "identify-trust.suggestion",
         "continue.button"

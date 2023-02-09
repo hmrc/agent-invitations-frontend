@@ -321,14 +321,14 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(
         result.futureValue,
-        "identify-trust-client.header.true",
+        "identify-trust-client.header",
         "identify-trust-client.p1",
-        "identify-trust-client.p2.true",
+        "identify-trust-client.p2",
         "identify-trust-alternative",
         "identify-trust.suggestion",
         "continue.button"
       )
-      checkHtmlResultWithBodyText(result.futureValue, "A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’")
+      checkHtmlResultWithBodyText(result.futureValue, "Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.")
 
     }
 
