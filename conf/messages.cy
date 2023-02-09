@@ -655,11 +655,12 @@ confirm-terms-multi.vat.list.item3=bwrw golwg dros eich manylion TAW, eu newid a
 confirm-terms-multi.vat.list.item4=bwrw golwg dros eich taliadau a’ch rhwymedigaethau TAW
 confirm-terms-multi.vat.list.item5=rheoli’ch TAW drwy ddefnyddio meddalwedd
 confirm-terms-multi.vat.list.item6=canslo’ch cofrestriad TAW
-confirm-terms-multi.vat.list.item7=gweld:
-confirm-terms-multi.vat.list.item8=manylion eich cofrestriad TAW, megis enw’ch busnes a’ch manylion cyswllt
-confirm-terms-multi.vat.list.item9=y Ffurflenni TAW a gyflwynwyd gennych
-confirm-terms-multi.vat.list.item10=cyfrifiadau Ffurflenni TAW
-confirm-terms-multi.vat.list.item11=y symiau sydd arnoch neu a dalwyd gennych
+confirm-terms-multi.vat.list.item7=apelio yn erbyn cosb am gyflwyno’n hwyr neu dalu’n hwyr
+confirm-terms-multi.vat.list.item8=gweld:
+confirm-terms-multi.vat.list.item9=manylion eich cofrestriad TAW, megis enw’ch busnes a’ch manylion cyswllt
+confirm-terms-multi.vat.list.item10=y Ffurflenni TAW a gyflwynwyd gennych
+confirm-terms-multi.vat.list.item11=cyfrifiadau Ffurflenni TAW
+confirm-terms-multi.vat.list.item12=y symiau sydd arnoch neu a dalwyd gennych
 confirm-terms-multi.vat.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy TAW.
 
 confirm-terms-multi.trust.heading=Cynnal ymddiriedolaeth neu ystâd

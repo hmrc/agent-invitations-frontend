@@ -657,11 +657,12 @@ confirm-terms-multi.vat.list.item3=view, change and submit your VAT details
 confirm-terms-multi.vat.list.item4=view your VAT payments and liabilities
 confirm-terms-multi.vat.list.item5=manage your VAT through software
 confirm-terms-multi.vat.list.item6=cancel your VAT registration
-confirm-terms-multi.vat.list.item7=access your:
-confirm-terms-multi.vat.list.item8=VAT registration details, such as your business and contact details
-confirm-terms-multi.vat.list.item9=submitted VAT Returns
-confirm-terms-multi.vat.list.item10=VAT Return calculations
-confirm-terms-multi.vat.list.item11=amounts owed or paid
+confirm-terms-multi.vat.list.item7=appeal a late submission or late payment penalty
+confirm-terms-multi.vat.list.item8=access your:
+confirm-terms-multi.vat.list.item9=VAT registration details, such as your business and contact details
+confirm-terms-multi.vat.list.item10=submitted VAT Returns
+confirm-terms-multi.vat.list.item11=VAT Return calculations
+confirm-terms-multi.vat.list.item12=amounts owed or paid
 confirm-terms-multi.vat.label=I consent to HMRC allowing {0} to manage my VAT.
 
 confirm-terms-multi.trust.heading=Maintain a trust or an estate

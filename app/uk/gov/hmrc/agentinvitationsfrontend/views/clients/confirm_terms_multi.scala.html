@@ -68,12 +68,12 @@
         key = msgs("confirm-terms-multi.vat.p1", pageConfig.agencyName)
     )
     @ul_html(
-        items = (1 to 6).map(i => span(s"confirm-terms-multi.vat.list.item$i"))
+        items = (1 to 7).map(i => span(s"confirm-terms-multi.vat.list.item$i"))
                 .union(
                     Seq(
                         Html(
-                        msgs("confirm-terms-multi.vat.list.item7") +
-                                ul(items = (8 to 11).map(i => s"confirm-terms-multi.vat.list.item$i")))
+                        msgs("confirm-terms-multi.vat.list.item8") +
+                                ul(items = (9 to 12).map(i => s"confirm-terms-multi.vat.list.item$i")))
                     )
             )
     )
