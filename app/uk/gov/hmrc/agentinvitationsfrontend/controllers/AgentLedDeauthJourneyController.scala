@@ -155,7 +155,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val submitIdentifyTrustClient: Action[AnyContent] = actions
     .whenAuthorisedWithRetrievals(AsAgent)
-    .bindForm(TrustClientForm.form(true))
+    .bindForm(TrustClientForm.form)
     .applyWithRequest(implicit request => transitions.submitIdentifyClientTrust)
 
   val submitIdentifyCgtClient: Action[AnyContent] = actions
@@ -334,11 +334,10 @@ class AgentLedDeauthJourneyController @Inject()(
     case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
       Ok(
         identifyClientTrustView(
-          formWithErrors.or(TrustClientForm.form(true)),
+          formWithErrors.or(TrustClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient,
           backLinkFor(breadcrumbs).url,
-          isDeAuthJourney = true,
-          showUrnEnabledContent = true
+          isDeAuthJourney = true
         ))
 
     case IdentifyClient(_, Service.CapitalGains) =>

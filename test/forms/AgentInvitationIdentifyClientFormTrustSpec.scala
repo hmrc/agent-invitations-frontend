@@ -25,49 +25,17 @@ import support.UnitSpec
 
 class AgentInvitationIdentifyClientFormTrustSpec extends UnitSpec {
 
-  val trustClientFormUrnEnabled = TrustClientForm.form(true)
-
   val validUtrFormData = Json.obj("taxId"   -> "8571842718")
   val validUrnFormData = Json.obj("taxId"   -> "XATRUST59123128")
   val invalidUtrFormData = Json.obj("taxId" -> "012345")
   val invalidUrnFormData = Json.obj("taxId" -> "XXXXXXX12345678")
 
-  val errUtrOnlyEmpty = "error.utr.required"
   val errUtrOnlyInvalid = "enter-utr.invalid-format"
   val errUrnEnabledEmpty = "error.urn.required"
   val errUrnEnabledInvalid = "enter-urn.invalid-format"
 
-  "TrustClientForm - URN enabled = false" when {
-
-    val trustClientForm = TrustClientForm.form(false)
-
-    "return no error message" when {
-      "UTR is valid" in {
-        trustClientForm.bind(validUtrFormData).errors.isEmpty shouldBe true
-      }
-      "unbinding the form" in {
-        val unboundForm = trustClientForm.mapping.unbind(TrustClient(Utr("8571842718")))
-        unboundForm("taxId") shouldBe "8571842718"
-      }
-    }
-
-    "return an error message" when {
-      "Utr is invalid" in {
-        trustClientForm.bind(invalidUtrFormData).errors shouldBe Seq(FormError("taxId", List(errUtrOnlyInvalid)))
-      }
-
-      "nothing entered" in {
-        trustClientForm.bind(Map("taxId" -> "")).errors shouldBe Seq(FormError("taxId", List(errUtrOnlyEmpty)))
-      }
-
-      "Urn is entered" in {
-        trustClientForm.bind(validUrnFormData).errors shouldBe Seq(FormError("taxId", List(errUtrOnlyInvalid)))
-      }
-    }
-  }
-
-  "TrustClientForm - URN enabled = true" when {
-    val trustClientForm = TrustClientForm.form(true)
+  "TrustClientForm" when {
+    val trustClientForm = TrustClientForm.form
 
     "return no error message" when {
       "UTR is valid" in {

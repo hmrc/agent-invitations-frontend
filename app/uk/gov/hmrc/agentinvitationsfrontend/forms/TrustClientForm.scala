@@ -19,13 +19,13 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import uk.gov.hmrc.agentinvitationsfrontend.models.TrustClient
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validTrustTaxId}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validTrustTaxIdentifier}
 
 object TrustClientForm {
 
-  def form(urnEnabled: Boolean): Form[TrustClient] =
+  def form: Form[TrustClient] =
     Form(
       mapping(
-        "taxId" -> normalizedText.verifying(validTrustTaxId(urnEnabled))
-      )(x => TrustClient.apply(x, urnEnabled))(x => Some(x.taxId.value)))
+        "taxId" -> normalizedText.verifying(validTrustTaxIdentifier())
+      )(x => TrustClient.apply(x))(x => Some(x.taxId.value)))
 }

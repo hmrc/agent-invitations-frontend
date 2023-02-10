@@ -22,8 +22,8 @@ case class TrustClient(taxId: TrustTaxIdentifier)
 
 object TrustClient {
 
-  def apply(taxId: String, urnEnabled: Boolean): TrustClient = taxId match {
-    case x if x.matches(utrPattern)              => TrustClient(Utr(x))
-    case x if urnEnabled & x.matches(urnPattern) => TrustClient(Urn(x))
+  def apply(taxId: String): TrustClient = taxId match {
+    case x if x.matches(utrPattern) => TrustClient(Utr(x))
+    case x if x.matches(urnPattern) => TrustClient(Urn(x))
   }
 }

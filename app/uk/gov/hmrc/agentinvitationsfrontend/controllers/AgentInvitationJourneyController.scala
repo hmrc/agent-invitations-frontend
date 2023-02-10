@@ -200,7 +200,7 @@ class AgentInvitationJourneyController @Inject()(
   val submitIdentifyTrustClient: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .bindForm(TrustClientForm.form(true))
+      .bindForm(TrustClientForm.form)
       .applyWithRequest(implicit request => transitions.identifiedTrustClient)
 
   val submitIdentifyCgtClient: Action[AnyContent] =
@@ -389,11 +389,10 @@ class AgentInvitationJourneyController @Inject()(
       case IdentifyClient(ClientType.Trust, Service.Trust, _) =>
         Ok(
           identifyClientTrustView(
-            trustClientForm = formWithErrors.or(TrustClientForm.form(true)),
+            trustClientForm = formWithErrors.or(TrustClientForm.form),
             submitFormCall = routes.AgentInvitationJourneyController.submitIdentifyTrustClient,
             backLinkUrl = backLinkFor(breadcrumbs).url,
-            isDeAuthJourney = false,
-            showUrnEnabledContent = true
+            isDeAuthJourney = false
           )
         )
 

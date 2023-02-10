@@ -158,11 +158,6 @@ object Validators {
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
 
-  def validTrustTaxId(urnEnabled: Boolean): Constraint[String] = if (urnEnabled) validTrustTaxIdentifier() else validUtr()
-
-  def validUtr(): Constraint[String] =
-    patternConstraint(utrPattern, "error.utr.required", "enter-utr.invalid-format")
-
   def validTrustTaxIdentifier(): Constraint[String] =
     validateTrustTaxIdentifier("error.urn.required", "enter-urn.invalid-format")
 

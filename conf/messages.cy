@@ -52,8 +52,6 @@ utr.hint.expandable.l2=UTR Hunanasesiad ar gyfer partneriaeth fusnes gyffredin
 utr.hint.expandable.l3=UTR Hunanasesiad ar gyfer unigolyn os ydych yn unig fasnachwr
 utr.hint.expandable.p2=Fel rheol, os oes ganddo UTR cwmni, gallwch ddod o hyd iddo ym mhennawd llythyrau gan CThEM, wrth ymyl penawdau megis ‘Cyfeirnod Treth’, ‘UTR’ neu ‘Defnydd Swyddogol’.
 utr.hint.expandable.p3=Os oes ganddo UTR Hunanasesiad, gallwch ddod o hyd iddo ar y llythyr a anfonwyd ato gan CThEM pan gofrestrodd ar gyfer Hunanasesiad.
-error.utr.required=Nodwch UTR eich cleient
-enter-utr.invalid-format=Nodwch UTR dilys, megis 3957820631
 
 #URN
 error.urn.required=Nodwch Gyfeirnod Unigryw y Trethdalwr (UTR) neu Gyfeirnod Unigryw (URN)
@@ -189,13 +187,9 @@ agent-suspended.fastrack.p3=Gallwch barhau i gael mynediad at unrhyw wasanaeth a
 agent-suspended.fastrack.p4=Os na ddaeth ein llythyr i law, neu os credwch ein bod wedi gwneud camgymeriad, defnyddiwch y cysylltiad ‘Help gyda’r dudalen hon’.
 
 ## Identify Trust Client
-identify-trust-client.title.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.title.true=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
-identify-trust-client.header.false=Beth yw Cyfeirnod Unigryw y Trethdalwr yr ymddiriedolaeth neu’r ystâd?
-identify-trust-client.header.true=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
+identify-trust-client.header=Nodwch gyfeirnod i’n helpu i ddod o hyd i ymddiriedolaeth neu ystâd eich cleient
 identify-trust-client.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
-identify-trust-client.p2.false=Mae Cyfeirnod Unigryw y Trethdalwr yn 10 rhif, er enghraifft 1234567890. Bydd i’w weld ar Ffurflenni Treth a llythyrau eraill ynghylch Hunanasesiad. Efallai y cyfeirir ato gan ddefnyddio’r geiriau ‘cyfeirnod’, ‘UTR’ neu ‘defnydd swyddogol’. <a href="https://www.gov.uk/dod-o-hyd-i-utr-sydd-ar-goll"  target="_blank" rel="noopener noreferrer">Dod o hyd i UTR sydd ar goll (yn agor ffenestr neu dab newydd).</a>
-identify-trust-client.p2.true=Defnyddiwch Gyfeirnod Unigryw y Trethdalwr (UTR) os yw’r ymddiriedolaeth yn drethadwy, neu Gyfeirnod Unigryw (URN) os nad yw’r ymddiriedolaeth yn drethadwy.
+identify-trust-client.p2=Defnyddiwch Gyfeirnod Unigryw y Trethdalwr (UTR) os yw’r ymddiriedolaeth yn drethadwy, neu Gyfeirnod Unigryw (URN) os nad yw’r ymddiriedolaeth yn drethadwy.
 
 ## Identify Trust Client Helper Text
 identify-trust-alternative=Rhagor am yr UTR a’r URN

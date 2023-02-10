@@ -48,8 +48,6 @@ utr.hint.expandable.l2=Self Assessment UTR for an ordinary business partnership
 utr.hint.expandable.l3=individual Self Assessment UTR for a sole trader
 utr.hint.expandable.p2=If they have a company UTR, you can usually find this in the header of letters from HMRC, next to headings such as ‘Tax Reference’, ‘UTR’ or ‘Official Use’.
 utr.hint.expandable.p3=If they have a Self Assessment UTR, you will find this on the letter HMRC sent them when they registered for Self Assessment.
-error.utr.required=Enter your client’s UTR
-enter-utr.invalid-format=Enter a valid UTR, like 3957820631
 
 #URN
 error.urn.required=Enter the Unique Taxpayer Reference (UTR) or Unique Reference Number (URN)
@@ -187,13 +185,9 @@ agent-suspended.fastrack.p3=You can still access any other service available to 
 agent-suspended.fastrack.p4=If you did not receive our letter, or think we have made a mistake, use the ’get help with this page’ link.
 
 ## Identify Trust Client
-identify-trust-client.title.false=What is the Unique Taxpayer Reference of the trust or estate?
-identify-trust-client.title.true=Enter a reference number to help us identify your client's trust or estate
-identify-trust-client.header.false=What is the Unique Taxpayer Reference of the trust or estate?
-identify-trust-client.header.true=Enter a reference number to help us identify your client's trust or estate
+identify-trust-client.header=Enter a reference number to help us identify your client's trust or estate
 identify-trust-client.p1=This will help us match their details against information we hold.
-identify-trust-client.p2.false=A Unique Taxpayer Reference is 10 numbers, for example 1234567890. It will be on tax returns and other letters about Self Assessment. It may be called ‘reference’, ‘UTR’ or ‘official use’. <a href="https://www.gov.uk/find-lost-utr-number" target="_blank" rel="noopener noreferrer">Find a lost UTR number (opens in a new window or tab).</a>
-identify-trust-client.p2.true=Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.
+identify-trust-client.p2=Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.
 
 ## Identify Trust Client Helper Text
 identify-trust-alternative=More about the UTR and URN
