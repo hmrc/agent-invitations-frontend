@@ -29,7 +29,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, ClientIdType, InvitationId, Service}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController

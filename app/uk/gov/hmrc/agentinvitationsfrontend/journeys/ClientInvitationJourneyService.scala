@@ -18,7 +18,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import com.google.inject.ImplementedBy
 import play.api.libs.json._
-import play.api.mvc.Request
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.WarmUpSessionRequired
 import uk.gov.hmrc.agentinvitationsfrontend.repository.{SessionCache, SessionCacheRepository}
 import uk.gov.hmrc.http.HeaderCarrier

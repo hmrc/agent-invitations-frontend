@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.Configuration
-import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
@@ -72,7 +72,6 @@ class AgentLedDeauthJourneyController @Inject()(
   implicit ec: ExecutionContext,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
-  appConfig: AppConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val cc: MessagesControllerComponents)
