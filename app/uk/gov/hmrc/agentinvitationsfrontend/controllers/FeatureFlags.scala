@@ -32,7 +32,6 @@ trait FeatureFlags {
   val showHmrcCgt: Boolean
   val showPlasticPackagingTax: Boolean
   val enableTrackCancelAuth: Boolean
-  val showAgentLedDeAuth: Boolean
   val enableIrvAllowlist: Boolean
 
   def isServiceEnabled(service: Service, agent: Option[AuthorisedAgent]): Boolean = service match {
@@ -59,7 +58,6 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
   val showHmrcCgt = appConfig.featuresCgt
   val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
   val enableTrackCancelAuth = appConfig.featuresEnableTrackCancelAction
-  val showAgentLedDeAuth = appConfig.featuresAgentLedDeAuth
   val enableIrvAllowlist = appConfig.featuresIrvAllowlist
 
 }
