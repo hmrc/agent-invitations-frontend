@@ -75,9 +75,7 @@
 }
 
 @additionalScripts = {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-            crossorigin="anonymous" @{CSPNonce.attr}></script>
+    <script src="@controllers.routes.Assets.versioned("javascripts/jquery-3.6.3.min.js")" @{CSPNonce.attr}></script>
     <script src="@controllers.routes.Assets.versioned("javascripts/accessible-autocomplete.min.js")" @{CSPNonce.attr}></script>
     <script src="@controllers.routes.Assets.versioned("javascripts/agent-invitations.js")" @{CSPNonce.attr}></script>
     @if(scriptElem != None) { @scriptElem }
