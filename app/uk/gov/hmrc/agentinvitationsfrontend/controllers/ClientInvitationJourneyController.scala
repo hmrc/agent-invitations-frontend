@@ -125,6 +125,8 @@ class ClientInvitationJourneyController @Inject()(
     withMaybeLoggedInClient
   }
 
+  val forbiddenResultNoJourneyId = Results.Forbidden("NO_JOURNEY_ID")
+
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def showMissingJourneyHistory =
@@ -132,12 +134,14 @@ class ClientInvitationJourneyController @Inject()(
       case _ =>
     }
 
-  def warmUp(clientType: String, uid: String, agentName: String): Action[AnyContent] =
+  def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
     Action.async { implicit request =>
-      journeyId match {
-        case None =>
-          // redirect to itself with new journeyId generated
-          Future.successful(appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName)))(request))
+      (journeyId, attempt) match {
+        case (None, None) =>
+          // redirect to itself with new journeyId generated and add attempt=1
+          Future.successful(
+            appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, Some(1))))(request))
+        case (None, Some(_)) => Future successful forbiddenResultNoJourneyId // infinite redirect defender
         case _ =>
           helpers.apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),

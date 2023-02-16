@@ -58,7 +58,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "show new warmup prototype when personal client type" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        val result = controller.warmUp("personal", uid, "My-Agency", Some(1))(reqAuthorisedWithJourneyId)
         val agencyName = "My Agency"
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
@@ -73,7 +73,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "show old warmup prototype when business client type" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("business", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        val result = controller.warmUp("business", uid, "My-Agency", None)(reqAuthorisedWithJourneyId)
         val agencyName = "My Agency"
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
@@ -88,7 +88,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "work when signed in" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency")(reqAuthorisedWithJourneyId)
+        val result = controller.warmUp("personal", uid, "My-Agency", None)(reqAuthorisedWithJourneyId)
         val agencyName = "My Agency"
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
@@ -102,7 +102,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "work when not signed in" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "My-Agency")(reqWithJourneyId)
+        val result = controller.warmUp("personal", uid, "My-Agency", None)(reqWithJourneyId)
         val agencyName = "My Agency"
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
@@ -117,7 +117,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       "remove spaces in the url" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency ")(reqAuthorisedWithJourneyId)
+        val result = controller.warmUp("personal", uid, "My-Agency ", None)(reqAuthorisedWithJourneyId)
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
         val agencyName = "My Agency"
@@ -131,7 +131,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "show not-found content on the same page if the url is corrupted" in new Setup {
         val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "wrong-agency-name")(reqWithJourneyId)
+        val result = controller.warmUp("personal", uid, "wrong-agency-name", None)(reqWithJourneyId)
         status(result) shouldBe 200
 
         checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
@@ -144,19 +144,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     "journey ID is not already present in the session cookie, redirect to same page saving the journey ID in the session" should {
       "work when signed in" in new Setup {
         def request = authorisedAsIndividualClientWithSomeSupportedEnrolments(FakeRequest("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency")(request)
+        val result = controller.warmUp("personal", uid, "My-Agency", None)(request)
         checkRedirectedWithJourneyId(result.futureValue, request, journeyIdKey)
       }
 
       "work when not signed in" in new Setup {
         def request = FakeRequest("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "My-Agency")(request)
+        val result = controller.warmUp("personal", uid, "My-Agency", None)(request)
         checkRedirectedWithJourneyId(result.futureValue, request, journeyIdKey)
       }
 
       def checkRedirectedWithJourneyId(result: Result, request: Request[_], journeyIdKey: String): Assertion = {
         status(result) shouldBe 303
-        redirectLocation(Future.successful(result)) shouldBe Some(request.uri)
+        redirectLocation(Future.successful(result)) shouldBe Some(s"${request.uri}?attempt=1")
 
         val journeyId = result.session(request).get(journeyIdKey)
         journeyId shouldBe a[Some[_]]
