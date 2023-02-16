@@ -11,14 +11,15 @@ Invitations service currently provides these functions:
  - Agent can view their authorisation requests and inactive relationships from the last 30 days (track)
  - Agent fast track service
 
-Clients can be 'personal' or 'business' and includes trusts (taxable and non-taxable).
+Clients can be 'personal' or 'business' or 'trusts' (taxable and non-taxable).
 
 Currently this service supports the following invitations:
-- ITSA, including alternative itsa
+- ITSA, including alternative ITSA (client does not need to be registered for ITSA)
 - Personal Income Record
 - MTD VAT
 - Capital Gains Tax on UK property account
-- Plastic Packaging Tax should be supported in 2022.
+- Trusts (taxable and non-taxable)
+- Plastic Packaging Tax
 
 Feature flags exist for each service and for requirement of known facts.
 
@@ -63,12 +64,13 @@ The following are the supported services and relevant fields required to create 
 
 |clientType|service|clientIdentifierType|clientIdentifier|knownFact|
 |--------|--------|---------|-------|-------|
-|personal|HMRC-MTD-IT|ni|Valid Nino|Postcode|
-|personal|PERSONAL-INCOME-RECORD|ni|Valid Nino|Date of Birth|
-|personal or business|HMRC-MTD-VAT|vrn|Valid Vat Registration Number|Date of Client's VAT Registration|
+|personal|HMRC-MTD-IT|NINO|Valid Nino|Postcode|
+|personal|PERSONAL-INCOME-RECORD|NINO|Valid Nino|Date of Birth|
+|personal or business|HMRC-MTD-VAT|VRN|Valid Vat Registration Number|Date of Client's VAT Registration|
 |personal or business|HMRC-CGT-PD|CGTPDRef|Valid CGT-PD reference number|Postcode|
-|business|HMRC-TERS-ORG|utr|Valid UTR|Date of trust registration|
+|business|HMRC-TERS-ORG|UTR|Valid UTR|Date of trust registration|
 |business|HMRC-TERSNT-ORG|urn|Valid URN|Date of trust registration|
+|personal or business|HMRC-PPT-ORG|EtmpRegistrationNumber|Valid PPT ref|Date of registration|
 
 
 Note: Client Type and Known Fact are optional. If either of those are missing you will be redirected to the appropriate page. However, if any other information is missing / invalid / unsupported, you will be given an error url.
