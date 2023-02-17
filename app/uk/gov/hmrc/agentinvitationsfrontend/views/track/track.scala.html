@@ -137,10 +137,8 @@
                     invitationOrRelationship.status match {
                         case "Partialauth" => preAuthForm(invitationOrRelationship, index)
                         case "Pending" => pendingForm(invitationOrRelationship, index)
-                        case "Accepted" => if(config.cancelAuthActionFlag) {
-                            if(!invitationOrRelationship.isRelationshipEnded) {
+                        case "Accepted" => if(!invitationOrRelationship.isRelationshipEnded) {
                                 cancelAuthForm(invitationOrRelationship, index)
-                            }
                         }
                         case _ => newRequestForm(invitationOrRelationship, index)
                     }

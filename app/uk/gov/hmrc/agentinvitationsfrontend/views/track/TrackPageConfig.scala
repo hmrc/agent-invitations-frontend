@@ -26,7 +26,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 case class TrackPageConfig(
   invitationsAndRelationships: Seq[TrackInformationSorted], // should be just one page of results
   trackRequestsShowLastDays: Int,
-  cancelAuthActionFlag: Boolean,
   pageInfo: PageInfo,
   totalResults: Int,
   clientSet: Set[String],
