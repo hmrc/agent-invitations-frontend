@@ -117,7 +117,6 @@ class AgentsRequestTrackingController @Inject()(
       TrackPageConfig(
         trackResultsPage.results,
         appConfig.trackRequestsShowLastDays,
-        featureFlags.enableTrackCancelAuth,
         pageInfo,
         trackResultsPage.totalResults,
         trackResultsPage.clientSet,

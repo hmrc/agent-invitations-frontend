@@ -100,8 +100,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val featuresTrust: Boolean = servicesConfig.getBoolean("features.show-hmrc-trust")
   val featuresCgt: Boolean = servicesConfig.getBoolean("features.show-hmrc-cgt")
   val featuresPlasticPackagingTax: Boolean = servicesConfig.getBoolean("features.show-plastic-packaging-tax")
-  val featuresEnableTrackCancelAction: Boolean = servicesConfig.getBoolean("features.enable-track-cancel-auth-action")
-  val featuresAgentLedDeAuth: Boolean = servicesConfig.getBoolean("features.show-agent-led-de-auth")
 
   val passcodeAuthEnabled: Boolean = servicesConfig.getBoolean("passcodeAuthentication.enabled")
   val passcodeAuthRegime: String = servicesConfig.getString("passcodeAuthentication.regime")

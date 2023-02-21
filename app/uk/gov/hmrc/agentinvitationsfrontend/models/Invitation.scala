@@ -17,7 +17,7 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json._
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.agentinvitationsfrontend.models.TaxIdFormat._
 
 case class Invitation(clientType: Option[ClientType], service: uk.gov.hmrc.agentmtdidentifiers.model.Service, clientIdentifier: TaxIdentifier) {

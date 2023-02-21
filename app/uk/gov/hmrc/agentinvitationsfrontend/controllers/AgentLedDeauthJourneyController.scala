@@ -19,8 +19,8 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.{Configuration, Logger}
-import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
+import play.api.Configuration
+import uk.gov.hmrc.agentinvitationsfrontend.config.{CountryNamesLoader, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.CommonConfirmationForms._
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
@@ -72,7 +72,6 @@ class AgentLedDeauthJourneyController @Inject()(
   implicit ec: ExecutionContext,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
-  appConfig: AppConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   val cc: MessagesControllerComponents)
@@ -90,7 +89,7 @@ class AgentLedDeauthJourneyController @Inject()(
     withAuthorisedAsAgent(_)
   }
 
-  def transitions()(implicit ec: ExecutionContext, request: RequestHeader) = Transitions(
+  def transitions()(implicit ec: ExecutionContext, request: RequestHeader): Transitions = Transitions(
     featureFlags = featureFlags,
     checkPostcodeMatches = invitationsService.checkPostcodeMatches,
     hasActiveRelationshipFor = relationshipsService.hasActiveRelationshipFor,
@@ -108,12 +107,7 @@ class AgentLedDeauthJourneyController @Inject()(
 
   val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType))
 
-  def showClientType: Action[AnyContent] =
-    if (featureFlags.showAgentLedDeAuth) actions.whenAuthorised(AsAgent).show[SelectClientType.type]
-    else {
-      Logger(getClass).warn("Agent led de authorisation feature is disabled.")
-      Action(NotImplemented)
-    }
+  def showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType.type]
 
   def submitClientType: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.deAuthorisationForm) applyWithRequest (implicit request =>

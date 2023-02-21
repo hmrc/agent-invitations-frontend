@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, Service}
-import uk.gov.hmrc.http.controllers.RestFormats.localDateFormats
 
 import java.time.LocalDate
 

@@ -25,7 +25,7 @@ import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State.{TrustNotClaimed, _}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.{ClientInvitationJourneyService, MongoDBCachedClientInvitationJourneyService}
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.services._
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
@@ -38,7 +38,6 @@ import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,7 +47,6 @@ class ClientInvitationJourneyController @Inject()(
   invitationsConnector: AgentClientAuthorisationConnector,
   identityVerificationConnector: IdentityVerificationConnector,
   authActions: AuthActionsImpl,
-  mongoDBCachedClientInvitationJourneyService: MongoDBCachedClientInvitationJourneyService,
   override val journeyService: ClientInvitationJourneyService,
   notAuthorisedAsClientView: not_authorised_as_client,
   timedOutView: timed_out,
@@ -58,9 +56,6 @@ class ClientInvitationJourneyController @Inject()(
   sessionLostView: session_lost,
   notFoundInvitationView: not_found_invitation,
   actionNeededView: action_needed,
-  requestCancelledView: request_cancelled,
-  invitationExpiredView: invitation_expired,
-  invitationAlreadyRespondedView: invitation_already_responded,
   warmupView: warm_up,
   createNewUserId: create_new_user_id,
   whichTaxServiceView: which_tax_service,
@@ -86,7 +81,6 @@ class ClientInvitationJourneyController @Inject()(
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
-  featureFlags: FeatureFlags,
   ec: ExecutionContext,
   val appConfig: AppConfig,
   override val actionBuilder: DefaultActionBuilder)

@@ -20,15 +20,15 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyStateFormats
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CgtRef, Service, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service}
 import uk.gov.hmrc.domain.Nino
 import support.UnitSpec
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType}
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
 
   implicit val formats: Format[State] = AgentLedDeauthJourneyStateFormats.formats
-  val cgtRef = CgtRef("XMCGTP123456789")
+  val cgtRef: CgtRef = CgtRef("XMCGTP123456789")
 
   "AgentLedDeauthJourneyStateFormats" should {
     "serialize and deserialize state" when {
