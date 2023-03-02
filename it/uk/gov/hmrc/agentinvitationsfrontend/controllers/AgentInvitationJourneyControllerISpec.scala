@@ -10,6 +10,7 @@ import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.AuthorisationCancelled
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
@@ -30,6 +31,8 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
   lazy private val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
   lazy private val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
   lazy private val externalUrls = app.injector.instanceOf[ExternalUrls]
+
+  lazy private val deAuthJourneyState = app.injector.instanceOf[TestAgentLedDeauthJourneyService]
 
   import journeyState.model._
 
@@ -68,6 +71,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     val request = FakeRequest("GET", "/agents/client-type")
 
     "show the client type page" when {
+
+      "there is a session left over from another journey" in {
+        deAuthJourneyState.set(AuthorisationCancelled(Service.Vat,Some("clienty name"), "agency name"), Nil)
+
+        behave like itShowsClientTypePage(
+          withBackLinkUrl = externalUrls.agentServicesAccountUrl)
+
+        journeyState.get should have[State](SelectClientType(emptyBasket), List.empty)
+
+      }
       "there is no journey history (first visit)" in {
         journeyState.clear
 
