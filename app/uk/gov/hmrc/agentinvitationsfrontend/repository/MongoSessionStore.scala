@@ -36,12 +36,20 @@ trait MongoSessionStore[T] extends Logging {
       case Some(sessionId) ⇒
         cacheRepository
           .findById(sessionId)
-          .map {
-            case Some(entity) => Right(Some((entity.data \ sessionName).as[T]))
-            case _            => Right(None)
-          }
-          .recover {
-            case e: Exception => Left(e.getMessage)
+          .flatMap {
+            case Some(entity) =>
+              entity.data.keys.headOption match {
+                case Some(nameOfExistingSession) =>
+                  if (nameOfExistingSession != sessionName)
+                    delete(nameOfExistingSession).map {
+                      case Left(msg) => Left(msg)
+                      case Right(()) => Right(None)
+                    } else {
+                    Future successful Right(Some((entity.data \ sessionName).as[T]))
+                  }
+                case None => Future successful Right(None)
+              }
+            case None => Future successful Right(None)
           }
       case None => Future successful Right(None)
     }
@@ -58,11 +66,11 @@ trait MongoSessionStore[T] extends Logging {
       case None => Future successful Left("Could not store session as no session Id found.")
     }
 
-  def delete()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
+  def delete(sessionToDelete: String = sessionName)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[String, Unit]] =
     getSessionId match {
       case Some(sessionId) ⇒
         cacheRepository
-          .delete(sessionId)(DataKey[T](sessionName))
+          .delete(sessionId)(DataKey[T](sessionToDelete))
           .map(_ => Right(()))
       case None => Future successful Left("Could not delete as no session Id found.")
     }
