@@ -32,7 +32,7 @@ trait FeatureFlags {
   val showHmrcCgt: Boolean
   val showPlasticPackagingTax: Boolean
 
-  def isServiceEnabled(service: Service, agent: Option[AuthorisedAgent]): Boolean = service match {
+  def isServiceEnabled(service: Service): Boolean = service match {
     case Service.MtdIt                => showHmrcMtdIt
     case Service.PersonalIncomeRecord => showPersonalIncome
     case Service.Vat                  => showHmrcMtdVat
@@ -41,9 +41,9 @@ trait FeatureFlags {
     case Service.Ppt                  => showPlasticPackagingTax
   }
 
-  def enabledServices(agent: Option[AuthorisedAgent]): Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled(_, agent))
-  def enabledServicesFor(clientType: ClientType, agent: Option[AuthorisedAgent]): Set[Service] =
-    Services.supportedServicesFor(clientType).filter(isServiceEnabled(_, agent))
+  def enabledServices: Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled)
+  def enabledServicesFor(clientType: ClientType): Set[Service] =
+    Services.supportedServicesFor(clientType).filter(isServiceEnabled)
 }
 
 @Singleton
