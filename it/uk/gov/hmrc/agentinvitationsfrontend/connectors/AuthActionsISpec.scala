@@ -23,24 +23,22 @@ class AuthActionsISpec extends BaseISpec {
   val env: Environment = app.injector.instanceOf[Environment]
   val externalUrls: ExternalUrls = app.injector.instanceOf[ExternalUrls]
   val featureFlags = app.injector.instanceOf[FeatureFlags]
-  val pirRelationshipConnector = app.injector.instanceOf[PirRelationshipConnector]
-
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
   implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
   object TestController
-      extends AuthActionsImpl(externalUrls, env, config, authConnector, pirRelationshipConnector, appConfig, featureFlags) {
+      extends AuthActionsImpl(externalUrls, env, config, authConnector, appConfig, featureFlags) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
-        Future.successful(Ok((agent.arn.value, agent.isAllowlisted).toString))
+        Future.successful(Ok(agent.arn.value))
       })
   }
 
   "withAuthorisedAsAgent" should {
 
-    "call body with arn and isAllowlisted flag when valid agent" in {
+    "call body with arn when valid agent" in {
       givenAuthorisedFor(
         "{}",
         s"""{
@@ -50,11 +48,10 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin
       )
-      givenArnIsAllowlistedForIrv(Arn("fooArn"))
 
       val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 200
-      bodyOf(result) shouldBe "(fooArn,true)"
+      bodyOf(result) shouldBe "fooArn"
     }
 
     "redirect to /subscription when agent not enrolled for service" in {

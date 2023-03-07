@@ -20,7 +20,6 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
@@ -41,7 +40,6 @@ class AuthActionsImpl @Inject()(
   val env: Environment,
   val config: Configuration,
   val authConnector: AuthConnector,
-  val pirRelationshipConnector: PirRelationshipConnector,
   val appConfig: AppConfig,
   val featureFlags: FeatureFlags
 ) extends AuthorisedFunctions with AuthRedirects with Logging {
@@ -71,11 +69,7 @@ class AuthActionsImpl @Inject()(
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
-          case Some(arn) if appConfig.featuresIrvAllowlist =>
-            pirRelationshipConnector.checkIrvAllowed(arn).flatMap { allowed =>
-              body(AuthorisedAgent(arn, allowed))
-            }
-          case Some(arn) => body(AuthorisedAgent(arn, true))
+          case Some(arn) => body(AuthorisedAgent(arn))
           case None =>
             logger.warn("Arn not found for the logged in agent")
             Future successful Forbidden

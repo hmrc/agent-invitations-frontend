@@ -44,8 +44,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       await(super.apply(transition))
   }
 
-  val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = true)
-  val nonAllowlistedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"), isAllowlisted = false)
+  val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
   val postCode = "BN114AW"
   val vrn = "123456"
   val nino = "AB123456A"
@@ -130,16 +129,6 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         s"transition to SelectService ($clientType) when $clientType is selected" in {
           given(SelectClientType) when transitions.selectedClientType(authorisedAgent)(ClientType.fromEnum(clientType)) should thenGo(
             SelectService(clientType, Services.supportedServicesFor(clientType)))
-        }
-      }
-      "transition to SelectService Personal with IRV-allowlisted agent" in {
-        given(SelectClientType) when transitions.selectedClientType(authorisedAgent)("personal") should thenMatch {
-          case SelectService(ClientType.Personal, services) if services.contains(Service.PersonalIncomeRecord) =>
-        }
-      }
-      "transition to SelectService Personal with non-IRV-allowlisted agent (IRV should not be available)" in {
-        given(SelectClientType) when transitions.selectedClientType(nonAllowlistedAgent)("personal") should thenMatch {
-          case SelectService(ClientType.Personal, services) if !services.contains(Service.PersonalIncomeRecord) =>
         }
       }
     }

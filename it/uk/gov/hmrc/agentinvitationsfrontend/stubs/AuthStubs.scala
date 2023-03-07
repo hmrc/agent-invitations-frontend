@@ -12,7 +12,6 @@ trait AuthStubs extends AfiRelationshipStub {
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
   def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] = {
-    givenArnIsAllowlistedForIrv(Arn(arn))
     authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
   }
 

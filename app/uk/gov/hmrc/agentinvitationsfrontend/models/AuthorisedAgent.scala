@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.Arn
 
-case class AuthorisedAgent(arn: Arn, isAllowlisted: Boolean)
+case class AuthorisedAgent(arn: Arn)
 
 object AuthorisedAgent {
   implicit val format = Json.format[AuthorisedAgent]
