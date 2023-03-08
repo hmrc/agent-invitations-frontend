@@ -108,5 +108,4 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
 
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
 
-  val featuresIrvAllowlist: Boolean = servicesConfig.getBoolean("features.enable-irv-allowlist")
 }

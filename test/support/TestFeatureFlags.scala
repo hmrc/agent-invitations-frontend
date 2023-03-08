@@ -26,7 +26,6 @@ case class TestFeatureFlags(
   override val showHmrcTrust: Boolean = false,
   override val showHmrcCgt: Boolean = false,
   override val showPlasticPackagingTax: Boolean = false,
-  override val enableIrvAllowlist: Boolean = false,
 ) extends FeatureFlags {
   def setServiceFlag(service: Service, flag: Boolean): TestFeatureFlags = service match {
     case Service.MtdIt                   => this.copy(showHmrcMtdIt = flag)
@@ -49,7 +48,6 @@ object TestFeatureFlags {
       showHmrcMtdVat = true,
       showHmrcTrust = true,
       showHmrcCgt = true,
-      showPlasticPackagingTax = true,
-      enableIrvAllowlist = true
+      showPlasticPackagingTax = true
     )
 }

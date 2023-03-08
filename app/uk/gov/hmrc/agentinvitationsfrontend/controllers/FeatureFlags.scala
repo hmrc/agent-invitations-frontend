@@ -31,20 +31,19 @@ trait FeatureFlags {
   val showHmrcTrust: Boolean
   val showHmrcCgt: Boolean
   val showPlasticPackagingTax: Boolean
-  val enableIrvAllowlist: Boolean
 
-  def isServiceEnabled(service: Service, agent: Option[AuthorisedAgent]): Boolean = service match {
+  def isServiceEnabled(service: Service): Boolean = service match {
     case Service.MtdIt                => showHmrcMtdIt
-    case Service.PersonalIncomeRecord => showPersonalIncome && !(enableIrvAllowlist && agent.exists(!_.isAllowlisted))
+    case Service.PersonalIncomeRecord => showPersonalIncome
     case Service.Vat                  => showHmrcMtdVat
     case Service.Trust                => showHmrcTrust
     case Service.CapitalGains         => showHmrcCgt
     case Service.Ppt                  => showPlasticPackagingTax
   }
 
-  def enabledServices(agent: Option[AuthorisedAgent]): Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled(_, agent))
-  def enabledServicesFor(clientType: ClientType, agent: Option[AuthorisedAgent]): Set[Service] =
-    Services.supportedServicesFor(clientType).filter(isServiceEnabled(_, agent))
+  def enabledServices: Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled)
+  def enabledServicesFor(clientType: ClientType): Set[Service] =
+    Services.supportedServicesFor(clientType).filter(isServiceEnabled)
 }
 
 @Singleton
@@ -56,6 +55,5 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
   val showHmrcTrust = appConfig.featuresTrust
   val showHmrcCgt = appConfig.featuresCgt
   val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
-  val enableIrvAllowlist = appConfig.featuresIrvAllowlist
 
 }

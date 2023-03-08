@@ -71,12 +71,11 @@ class TrackService @Inject()(
 
   def bindInvitationsAndRelationships(
     arn: Arn,
-    isPirAllowlisted: Boolean,
     showLastDays: Int,
     pageInfo: PageInfo,
     filterByClient: Option[String],
     filterByStatus: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
-    allResults(arn, isPirAllowlisted, showLastDays).map { all =>
+    allResults(arn, showLastDays).map { all =>
       val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
       val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
       val until = from + pageInfo.resultsPerPage
@@ -92,15 +91,13 @@ class TrackService @Inject()(
     filterByStatus.fold(maybeClientFiltered)(status => maybeClientFiltered.filter(status.filterForStatus))
   }
 
-  def clientNames(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
-    allResults(arn, isPirAllowlisted, showLastDays).map(r => r.flatMap(_.clientName).toSet)
+  def clientNames(arn: Arn, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Set[String]] =
+    allResults(arn, showLastDays).map(r => r.flatMap(_.clientName).toSet)
 
-  def allResults(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
+  def allResults(arn: Arn, showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[TrackInformationSorted]] = {
     implicit val now = Instant.now().atZone(ZoneOffset.UTC).toLocalDate
 
-    val futureInvitations = getRecentAgentInvitations(arn, isPirAllowlisted, showLastDays)
+    val futureInvitations = getRecentAgentInvitations(arn, showLastDays)
       .map(_.flatMap {
         case TrackedInvitation(ct, srv, cId, cidt, an, st, lu, exp, iid, ire, reb, altItsa) if st == "Pending" || st == "Expired" =>
           Some(TrackInformationSorted(ct, Some(srv), cId, cidt, an, st, None, Some(exp), Some(iid), ire, reb, Some(lu), altItsa))
@@ -148,19 +145,14 @@ class TrackService @Inject()(
     } yield finalResults.sorted(TrackInformationSorted.orderingByDate)
   }
 
-  def getRecentAgentInvitations(arn: Arn, isPirAllowlisted: Boolean, showLastDays: Int)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext,
-    now: LocalDate): Future[Seq[TrackedInvitation]] =
+  def getRecentAgentInvitations(
+    arn: Arn,
+    showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext, now: LocalDate): Future[Seq[TrackedInvitation]] =
     acaConnector
       .getAllInvitations(arn, now.minusDays(showLastDays))
       .map {
-        _.filter(allowlistedInvitation(isPirAllowlisted))
-          .map(TrackedInvitation.fromStored)
+        _.map(TrackedInvitation.fromStored)
       }
-
-  def allowlistedInvitation(isPirAllowlisted: Boolean): StoredInvitation => Boolean =
-    i => isPirAllowlisted || i.service != Service.PersonalIncomeRecord
 
   def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] =
     for {
