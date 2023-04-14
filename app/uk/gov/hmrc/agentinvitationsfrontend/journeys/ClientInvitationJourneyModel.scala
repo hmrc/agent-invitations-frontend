@@ -316,7 +316,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
               state(RequestExpired(eventDate), AuthorisationRequestExpired(eventDate, clientType))
             case Cancelled =>
               state(AgentCancelledRequest(eventDate), AuthorisationRequestCancelled(eventDate, clientType))
-            case Accepted | Rejected =>
+            case Accepted | Rejected | Deauthorised | Partialauth =>
               state(AlreadyRespondedToRequest(eventDate), AuthorisationRequestAlreadyResponded(eventDate, clientType))
             case e => throw new RuntimeException(s"transition exception unexpected status $e")
           }
