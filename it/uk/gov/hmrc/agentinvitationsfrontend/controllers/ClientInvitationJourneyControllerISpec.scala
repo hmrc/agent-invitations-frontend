@@ -276,6 +276,26 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
       }
 
+      "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Deauthorised " +
+        "and the client has only SOME supported MTD enrolments" in {
+        givenAllInvitationIdsByStatus(uid, "Deauthorised")
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+      }
+
+      "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Partialauth " +
+        "and the client has only SOME supported MTD enrolments" in {
+        givenAllInvitationIdsByStatus(uid, "Partialauth")
+        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+
+        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+        status(result) shouldBe 303
+        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+      }
+
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
         "and the client has ALL supported MTD enrolments" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Rejected")

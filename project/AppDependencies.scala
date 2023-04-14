@@ -2,15 +2,15 @@ import sbt._
 
 object AppDependencies {
 
-  private val mongoVersion: String = "1.0.0"
+  private val mongoVersion: String = "1.1.0"
 
   lazy val compileDeps = Seq(
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "7.14.0",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "7.15.0",
     "uk.gov.hmrc"       %% "play-frontend-hmrc"         % "5.5.0-play-28",
     "uk.gov.hmrc"       %% "play-fsm"                   % "0.89.0-play-28",
-    "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "0.60.0-play-28",
-    "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "4.8.0-play-28",
-    "uk.gov.hmrc"       %% "play-partials"              % "8.3.0-play-28",
+    "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "1.2.0",
+    "uk.gov.hmrc"       %% "agent-kenshoo-monitoring"   % "5.3.0",
+    "uk.gov.hmrc"       %% "play-partials"              % "8.4.0-play-28",
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"         % mongoVersion
   )
 
