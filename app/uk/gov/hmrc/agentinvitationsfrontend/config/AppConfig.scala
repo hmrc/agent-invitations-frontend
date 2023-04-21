@@ -93,19 +93,14 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val mongoSessionExpireAfterSeconds: Int = servicesConfig.getInt("mongodb.session.expireAfterSeconds")
   val altItsaSignupDays: Int = servicesConfig.getInt("alt-itsa-signup-days")
 
-  //Booleans
+  // Feature flags
   val featuresMtdIt: Boolean = servicesConfig.getBoolean("features.show-hmrc-mtd-it")
   val featuresPersonalIncome: Boolean = servicesConfig.getBoolean("features.show-personal-income")
   val featuresMtdVat: Boolean = servicesConfig.getBoolean("features.show-hmrc-mtd-vat")
   val featuresTrust: Boolean = servicesConfig.getBoolean("features.show-hmrc-trust")
   val featuresCgt: Boolean = servicesConfig.getBoolean("features.show-hmrc-cgt")
   val featuresPlasticPackagingTax: Boolean = servicesConfig.getBoolean("features.show-plastic-packaging-tax")
-
-  val passcodeAuthEnabled: Boolean = servicesConfig.getBoolean("passcodeAuthentication.enabled")
-  val passcodeAuthRegime: String = servicesConfig.getString("passcodeAuthentication.regime")
-
   val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
-
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
 
 }

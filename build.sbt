@@ -1,7 +1,6 @@
 import AppDependencies._
 import CodeCoverageSettings._
 
-
 TwirlKeys.templateImports ++= Seq(
   "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
   "uk.gov.hmrc.govukfrontend.views.html.components._",
