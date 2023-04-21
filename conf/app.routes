@@ -160,11 +160,11 @@ POST        /track/cancel-authorisation                                 uk.gov.h
 GET         /track/cancelled                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentsRequestTrackingController.showAuthorisationCancelled
 
 #Journey Client endpoints
-GET         /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
-GET         /warm-up/session-required                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpSessionRequired
-GET         /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
+POST        /warm-up                                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUp
+POST        /warm-up/session-required                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpSessionRequired
+POST        /warm-up/to-decline                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWarmUpConfirmDecline
 GET         /create-new-user-id                                         uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCreateNewUserId
-GET         /accept-tax-agent-invitation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCreateNewUserId
+POST        /accept-tax-agent-invitation                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCreateNewUserId
 GET         /which-tax-service                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showWhichTaxService
 POST        /which-tax-service                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitWhichTaxService
 GET         /sign-up-to-tax-service                                     uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showSignUpToTaxService
@@ -181,7 +181,7 @@ GET         /change-consent                                             uk.gov.h
 POST        /change-consent                                             uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitChangeConsents
 GET         /check-answers                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showCheckAnswers
 POST        /check-answers                                              uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswers
-GET        /check-answers-change/:serviceMessageKey                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey: String)
+POST        /check-answers-change/:serviceMessageKey                    uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitCheckAnswersChange(serviceMessageKey: String)
 GET         /confirm-decline                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showConfirmDecline
 POST        /confirm-decline                                            uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitConfirmDecline
 GET         /accepted                                                   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showInvitationsAccepted
