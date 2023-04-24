@@ -364,17 +364,16 @@ class ClientInvitationJourneyController @Inject()(
       case WarmUp(clientType, uid, _, agentName, _) =>
         Ok(
           warmupView(
-            WarmUpPageConfig(
-              agentName,
-              clientType,
-              uid,
-              routes.ClientInvitationJourneyController.submitWarmUp,
-              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline,
-              addParamsToUrl(
-                appConfig.ggRegistrationFrontendExternalUrl,
-                "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
-              )
-            )))
+            agentName,
+            clientType,
+            uid,
+            routes.ClientInvitationJourneyController.submitWarmUp,
+            routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline,
+            addParamsToUrl(
+              appConfig.ggRegistrationFrontendExternalUrl,
+              "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
+            )
+          ))
 
       case _: CreateNewUserId =>
         Ok(
@@ -569,7 +568,7 @@ object ClientInvitationJourneyController {
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
+  val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 

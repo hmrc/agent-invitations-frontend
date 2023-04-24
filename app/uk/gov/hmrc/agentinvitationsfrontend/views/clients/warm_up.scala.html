@@ -16,11 +16,11 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.WarmUpPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 @this(
     mainTemplate: MainTemplate,
@@ -32,7 +32,15 @@
 )
 
 
-@(pageConfig: WarmUpPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+agentName: String,
+clientType: ClientType,
+uid: String,
+getConfirmTermsCall: Call,
+getConfirmDeclineCall: Call,
+ggRegistrationUrl: String
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
 
 @mainTemplate(
     title = msgs("generic.title", msgs(s"warm-up.header", "Your Agent"), msgs("service.name.clients")),
@@ -41,26 +49,26 @@
     hasTimeout = false
 ) {
 
-    @h1(msgs("warm-up.header", pageConfig.agentName))
-    @p(msgs("warm-up.p1", pageConfig.agentName))
-    @p(msgs(s"warm-up.p2.${pageConfig.typeOfClient}"))
+    @h1(msgs("warm-up.header", agentName))
+    @p(msgs("warm-up.p1", agentName))
+    @p(msgs(s"warm-up.p2.${ClientType.fromEnum(clientType)}"))
 
-    @if(pageConfig.typeOfClient == "personal") {
+    @if(ClientType.fromEnum(clientType) == "personal") {
         @p("warm-up.p3.personal")
     }
 
-    @inset_text(html = Html(msgs("warm-up.inset", pageConfig.agentName)), id = Some("inset_text"))
+    @inset_text(html = Html(msgs("warm-up.inset", agentName)), id = Some("inset_text"))
 
-    @formWithCSRF(pageConfig.getConfirmTermsCall) {
+    @formWithCSRF(getConfirmTermsCall) {
         @submitButton(id="continueMoreInfo")
     }
 
 <p class="govuk-!-margin-bottom-7">
-    @a(
-        href = pageConfig.getConfirmDeclineCall.url,
-        id = Some("linkConfirmDecline"),
-        key = msgs("warm-up.link", pageConfig.agentName)
-    )
+    @formWithCSRF(getConfirmDeclineCall) {
+        <button type="submit" class="button--link-style govuk-!-font-size-19" data-module="govuk-button" id="linkConfirmDecline">
+            @msgs("warm-up.link", agentName)
+        </button>
+    }
 </p>
 
 
