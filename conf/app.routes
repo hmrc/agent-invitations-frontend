@@ -59,6 +59,7 @@ GET         /agents/already-copied-across-itsa                          uk.gov.h
 GET         /agents/client-insolvent                                    uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.showClientInsolvent
 
 #Fast Track Endpoints
++ nocsrf
 POST        /agents/fast-track                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.agentFastTrack
 GET         /agents/check-details                                       uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.showCheckDetails
 POST        /agents/check-details                                       uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationFastTrackJourneyController.submitCheckDetails
