@@ -1,6 +1,7 @@
 import AppDependencies._
 import CodeCoverageSettings._
 
+val silencerVersion = "1.7.8"
 
 TwirlKeys.templateImports ++= Seq(
   "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
@@ -22,8 +23,8 @@ lazy val root = (project in file("."))
     ),
     libraryDependencies ++= compileDeps ++ testDeps,
     libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.7" cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % "1.7.7" % Provided cross CrossVersion.full
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
     ),
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     scoverageSettings,
