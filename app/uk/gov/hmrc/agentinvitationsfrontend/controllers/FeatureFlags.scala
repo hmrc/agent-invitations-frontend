@@ -17,11 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.ImplementedBy
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
 trait FeatureFlags {
