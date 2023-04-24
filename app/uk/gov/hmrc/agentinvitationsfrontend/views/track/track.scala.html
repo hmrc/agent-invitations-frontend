@@ -164,7 +164,7 @@
     <ul class="pager-items all-sub" >
         @if(config.pageInfo.page > 1) {
             <li>
-                <a href="?page=@(config.pageInfo.page - 1) @config.additionalQueryParams" aria-label="Prev page">
+                <a href="?page=@(config.pageInfo.page - 1)@config.additionalQueryParams" aria-label="Prev page">
                     <span class="govuk-visually-hidden">Prev</span>
                     <span aria-hidden="true" role="presentation" >&lt;</span>
                 </a>
@@ -175,7 +175,7 @@
                 <li class="selected-pagination-item">@pageNum</li>
             } else {
                 <li>
-                    <a href="?page=@pageNum @config.additionalQueryParams">
+                    <a href="?page=@pageNum@config.additionalQueryParams">
                         <span class="govuk-visually-hidden">Page </span>
                         <span>@pageNum</span>
                     </a>
@@ -185,7 +185,7 @@
 
         @if(config.hasNextPage) {
             <li class="next">
-                <a href="?page=@(config.pageInfo.page + 1) @config.additionalQueryParams" aria-label="Next page">
+                <a href="?page=@(config.pageInfo.page + 1)@config.additionalQueryParams" aria-label="Next page">
                     <span class="govuk-visually-hidden">Next</span>
                     <span aria-hidden="true" role="presentation">&gt;</span>
                 </a>
