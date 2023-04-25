@@ -3,9 +3,10 @@ import sbt._
 object AppDependencies {
 
   private val mongoVersion: String = "1.1.0"
+  private val bootstrapVer: String = "7.15.0"
 
   lazy val compileDeps = Seq(
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % "7.15.0",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28" % bootstrapVer,
     "uk.gov.hmrc"       %% "play-frontend-hmrc"         % "5.5.0-play-28",
     "uk.gov.hmrc"       %% "play-fsm"                   % "0.89.0-play-28",
     "uk.gov.hmrc"       %% "agent-mtd-identifiers"      % "1.2.0",

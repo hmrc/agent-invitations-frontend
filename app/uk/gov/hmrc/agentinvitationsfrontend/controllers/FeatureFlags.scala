@@ -17,11 +17,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import com.google.inject.ImplementedBy
+import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, Services}
-import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
 trait FeatureFlags {
@@ -49,11 +49,11 @@ trait FeatureFlags {
 @Singleton
 case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFlags {
 
-  val showHmrcMtdIt = appConfig.featuresMtdIt
-  val showPersonalIncome = appConfig.featuresPersonalIncome
-  val showHmrcMtdVat = appConfig.featuresMtdVat
-  val showHmrcTrust = appConfig.featuresTrust
-  val showHmrcCgt = appConfig.featuresCgt
-  val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
+  val showHmrcMtdIt: Boolean = appConfig.featuresMtdIt
+  val showPersonalIncome: Boolean = appConfig.featuresPersonalIncome
+  val showHmrcMtdVat: Boolean = appConfig.featuresMtdVat
+  val showHmrcTrust: Boolean = appConfig.featuresTrust
+  val showHmrcCgt: Boolean = appConfig.featuresCgt
+  val showPlasticPackagingTax: Boolean = appConfig.featuresPlasticPackagingTax
 
 }

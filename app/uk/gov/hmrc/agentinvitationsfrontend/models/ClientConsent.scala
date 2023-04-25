@@ -33,7 +33,7 @@ case class ClientConsent(
 }
 
 object ClientConsent {
-  implicit val format = Json.format[ClientConsent]
+  implicit val format: OFormat[ClientConsent] = Json.format[ClientConsent]
 
   def allAcceptedProcessed(consents: Seq[ClientConsent]): Boolean = {
     val acceptedConsents = consents.filter(_.consent)
