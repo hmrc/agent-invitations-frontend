@@ -364,17 +364,16 @@ class ClientInvitationJourneyController @Inject()(
       case WarmUp(clientType, uid, _, agentName, _) =>
         Ok(
           warmupView(
-            WarmUpPageConfig(
-              agentName,
-              clientType,
-              uid,
-              routes.ClientInvitationJourneyController.submitWarmUp,
-              routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline,
-              addParamsToUrl(
-                appConfig.ggRegistrationFrontendExternalUrl,
-                "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
-              )
-            )))
+            agentName,
+            clientType,
+            uid,
+            routes.ClientInvitationJourneyController.submitWarmUp,
+            routes.ClientInvitationJourneyController.submitWarmUpConfirmDecline,
+            addParamsToUrl(
+              appConfig.ggRegistrationFrontendExternalUrl,
+              "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
+            )
+          ))
 
       case _: CreateNewUserId =>
         Ok(
