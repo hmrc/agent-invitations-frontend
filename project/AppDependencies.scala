@@ -15,7 +15,7 @@ object AppDependencies {
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"         % mongoVersion
   )
 
-  val testDeps = Seq(
+  lazy val testDeps = Seq(
     "org.scalatestplus.play"  %% "scalatestplus-play"       % "5.1.0"         % "test, it",
     "org.scalatestplus"       %% "mockito-3-12"             % "3.2.10.0"      % "test, it",
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"  % mongoVersion    % "test, it",
