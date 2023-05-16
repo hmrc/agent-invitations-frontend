@@ -16,21 +16,20 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
-@import uk.gov.hmrc.agentinvitationsfrontend.config.{ExternalUrls}
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.govukfrontend.views.html.components.TwoThirdsMainContent
-@import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcLayout, HmrcTimeoutDialogHelper}
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcTimeoutDialogHelper, HmrcStandardPage}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.{HmrcReportTechnicalIssue, ReportTechnicalIssue}
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
 @import views.html.helper.CSPNonce
 
 @this(
-    hmrcLayout: HmrcLayout,
-    standardBetaBanner: StandardBetaBanner,
+    hmrcStandardPage: HmrcStandardPage,
+    fullWidthMainContent: fullWidthMainContentLayout,
     hmrcReportTechnicalIssue: HmrcReportTechnicalIssue,
-    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
-    twoThirdsLayout: TwoThirdsMainContent,
+    hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper
 )
 
 @(
@@ -94,17 +93,20 @@
     </div>
 }
 
-@hmrcLayout(
-    pageTitle = Some(title),
-    phaseBanner = Some(standardBetaBanner(url = externalUrls.betaFeedbackUrl(isAgent))),
-    isWelshTranslationAvailable = true,
-    displayHmrcBanner = true,
-    serviceUrl = None,
-    signOutUrl = Some(signOutUrl.toString),
-    additionalHeadBlock = Some(head),
-    additionalScriptsBlock = Some(additionalScripts),
+@hmrcStandardPage(HmrcStandardPageParams(
+    serviceURLs = ServiceURLs(
+        serviceUrl = None,
+        signOutUrl = Some(signOutUrl.toString)
+    ),
+    banners = Banners(displayHmrcBanner = true),
+    templateOverrides = TemplateOverrides(
+        additionalHeadBlock = Some(head),
+        additionalScriptsBlock = Some(additionalScripts),
+        mainContentLayout = if(fullWidth) Some(fullWidthMainContent(_)) else None
+    ),
     serviceName = Some(msgs(bannerTitle)),
-    backLinkUrl = backLinkHref,
-    mainContentLayout = if (fullWidth) None else Some(twoThirdsLayout(_)),
-    nonce = CSPNonce.get
-)(mainContentWithHelpLink)
+    pageTitle = Some(title),
+    isWelshTranslationAvailable = true,
+    backLink = if(backLinkHref.isDefined) Some(BackLink(href = backLinkHref.get)) else None
+))(mainContentWithHelpLink)
+
