@@ -20,7 +20,7 @@ import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{FeatureFlags, routes}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.Basket
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, InvitationsBasket, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, InvitationsBasket, Services}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class SelectServicePageConfig(

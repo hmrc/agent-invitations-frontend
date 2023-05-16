@@ -19,7 +19,6 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 import play.api.i18n.Messages
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.govukfrontend.views.Aliases.{RadioItem, Text}
 
 case class ClientTypePageConfig(

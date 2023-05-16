@@ -21,7 +21,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.stubs._
 import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.test.CleanMongoCollectionSupport
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.Future
 
@@ -119,7 +119,7 @@ abstract class BaseISpec
   protected def checkHtmlResultWithoutBodyMsgs(result: Result, unexpectedMsgs: String*): Unit = {
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
-    unexpectedMsgs.foreach(m => bodyOf(result) should not include (htmlEscapedMessage(m)))
+    unexpectedMsgs.foreach(m => bodyOf(result) should not include htmlEscapedMessage(m))
   }
 
   protected def checkIncludesText(result: Result, expectedSubstrings: String*): Unit =
@@ -166,7 +166,7 @@ abstract class BaseISpec
   protected def hasMessage(key: String, args: Any*): String = Messages(key, args: _*).toString
 
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
-    HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
+    HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
   def checkInviteSentPageContainsSurveyLink(result: Future[Result], isAgent: Boolean): Unit = {
     checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("common.sign-out"))

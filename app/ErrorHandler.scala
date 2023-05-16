@@ -28,7 +28,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template, error_te
 import uk.gov.hmrc.auth.otac.OtacFailureThrowable
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.{JsValidationException, NotFoundException}
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.{AuthRedirects, HttpAuditEvent}
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
@@ -127,7 +127,9 @@ trait ErrorAuditing extends HttpAuditEvent {
     }
     auditConnector.sendEvent(
       dataEvent(eventType, transactionName, request, Map(TransactionFailureReason -> ex.getMessage))(
-        HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+        HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      )
+    )
     ()
   }
 
@@ -137,11 +139,15 @@ trait ErrorAuditing extends HttpAuditEvent {
       case NOT_FOUND =>
         auditConnector.sendEvent(
           dataEvent(ResourceNotFound, notFoundError, request, Map(TransactionFailureReason -> message))(
-            HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+            HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+          )
+        )
       case BAD_REQUEST =>
         auditConnector.sendEvent(
           dataEvent(ServerValidationError, badRequestError, request, Map(TransactionFailureReason -> message))(
-            HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))))
+            HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+          )
+        )
       case _ =>
     }
     ()

@@ -1,8 +1,6 @@
 import AppDependencies._
 import CodeCoverageSettings._
 
-val silencerVersion = "1.7.8"
-
 TwirlKeys.templateImports ++= Seq(
   "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
   "uk.gov.hmrc.govukfrontend.views.html.components._",
@@ -22,10 +20,6 @@ lazy val root = (project in file("."))
       Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     ),
     libraryDependencies ++= compileDeps ++ testDeps,
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-    ),
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     scoverageSettings,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
@@ -50,7 +44,9 @@ lazy val root = (project in file("."))
       "-feature",
       "-unchecked",
       "-language:implicitConversions",
-      "-P:silencer:pathFilters=views;routes;TestStorage"
+      "-Wconf:src=target/.*:s", // silence warnings from compiled files
+      "-Wconf:src=*routes:s", // silence warnings from routes files
+      "-Wconf:src=*html:w", // silence html warnings as they are wrong
     )
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
