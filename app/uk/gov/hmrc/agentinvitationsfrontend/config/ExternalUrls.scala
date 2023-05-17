@@ -30,7 +30,6 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val businessTaxAccountUrl: String = appConfig.btaExternalUrl
   val agentServicesAccountUrl = s"${appConfig.asaFrontendExternalUrl}/agent-services-account/home"
   val contactFrontendUrl: String = appConfig.contactFrontendExternalUrl
-  val betaFeedbackWithoutServiceIdUrl: String = appConfig.betaFeedbackWithoutServiceIdUrl
   val exitSurveyUrl: String = appConfig.feedbackSurveyUrl
   val agentOriginToken: String = appConfig.agentOriginToken
   val clientOriginToken: String = appConfig.clientOriginToken
@@ -66,9 +65,6 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
     }
     s"$companyAuthFrontendSignOutUrl?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
-
-  def betaFeedbackUrl(isAgent: Boolean): String =
-    s"$betaFeedbackWithoutServiceIdUrl${contactFrontendServiceId(isAgent)}"
 
   val guidanceCgtUkProperty = "https://www.tax.service.gov.uk/capital-gains-tax-uk-property/start/report-pay-capital-gains-tax-uk-property"
   val guidanceVatSignup = "https://www.gov.uk/vat-record-keeping/sign-up-for-making-tax-digital-for-vat"

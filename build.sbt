@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
     name := "agent-invitations-frontend",
     organization := "uk.gov.hmrc",
     scalaVersion := "2.12.15",
-    majorVersion := 0,
+    majorVersion := 1,
     PlayKeys.playDefaultPort := 9448,
     resolvers ++= Seq(
       Resolver.typesafeRepo("releases"),

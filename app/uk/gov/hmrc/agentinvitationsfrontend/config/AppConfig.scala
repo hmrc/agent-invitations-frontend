@@ -65,7 +65,6 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val privacyPolicyExternalUrl: String = getConfString("privacy-policy.external-url")
   val acmExternalUrl: String = getConfString("agent-client-management-frontend.external-url")
 
-  val betaFeedbackWithoutServiceIdUrl: String = servicesConfig.getString("betaFeedbackUrl")
   val feedbackSurveyUrl: String = getConfString("feedback-frontend.external-url")
   val agentOriginToken = "INVITAGENT"
   val clientOriginToken = "INVITCLIENT"
