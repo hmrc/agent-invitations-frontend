@@ -21,7 +21,7 @@
 
 @this(mainTemplate: MainTemplate ,a:a, p:p, h1:h1, span:span)
 
-@(serviceMessageKey: String = "afi")(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@()(implicit request: Request[_], configuration: Configuration, msgs: Messages, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
   bannerTitle = "service.name.clients",  isAgent = false,

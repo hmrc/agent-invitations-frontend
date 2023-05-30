@@ -29,7 +29,8 @@ object Services {
   // TODO: Can they be merged with the 'all supported enrolment keys' above?
   val supportedPersonalServices: Set[Service] = Set(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.CapitalGains, Service.Ppt)
   val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
-  val supportedTrustServices: Set[Service] = Set(Service.CapitalGains, Service.Trust, Service.Ppt)
+  val supportedTrustServices: Set[Service] =
+    Set(Service.CapitalGains, Service.Trust, Service.Ppt)
   def supportedServicesFor(clientType: ClientType): Set[Service] = clientType match {
     case ClientType.Personal => supportedPersonalServices
     case ClientType.Business => supportedBusinessServices
@@ -47,51 +48,36 @@ object Services {
   }
 
   def isSupported(clientType: ClientType, service: Service): Boolean = (clientType, service) match {
-    case (ClientType.Trust, Service.TrustNT) => true // must check this separately as it is not separately listed in the supported services
-    case _                                   => supportedServicesFor(clientType).contains(service)
+    case (clientType, Service.TrustNT) =>
+      isSupported(clientType, Service.Trust) // must check this separately as it is not separately listed in the supported services
+    case _ => supportedServicesFor(clientType).contains(service)
   }
 
   def supportedClientTypesFor(service: Service): Seq[ClientType] = ClientType.clientTypes.filter(ct => isSupported(ct, service))
 
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
-    val correctOrdering = List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt)
+    val correctOrdering =
+      List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt)
     override def compare(x: Service, y: Service): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
   }
 
-  def determineServiceMessageKey(invitationId: InvitationId): String =
-    invitationId.value.head match {
-      case 'A' => "itsa"
-      case 'B' => "afi"
-      case 'C' => "vat"
-      case 'D' => "trust"
-      case 'E' => "cgt"
-      case 'F' => "trustNT"
-      case 'G' => "ppt"
-      case x   => "Service is missing: " + x
-    }
+  val serviceMessageKeys: Map[Service, String] = Map(
+    Service.MtdIt                -> "itsa",
+    Service.PersonalIncomeRecord -> "afi",
+    Service.Vat                  -> "vat",
+    Service.Trust                -> "trust",
+    Service.TrustNT              -> "trustNT",
+    Service.CapitalGains         -> "cgt",
+    Service.Ppt                  -> "ppt"
+  )
 
-  def determineServiceMessageKeyFromService(service: Service): String =
-    service match {
-      case Service.MtdIt                => "itsa"
-      case Service.PersonalIncomeRecord => "afi"
-      case Service.Vat                  => "vat"
-      case Service.Trust                => "trust"
-      case Service.TrustNT              => "trustNT"
-      case Service.CapitalGains         => "cgt"
-      case Service.Ppt                  => "ppt"
-    }
-
-  def determineServiceFromServiceMessageKey(serviceMessageKey: String): Service =
-    serviceMessageKey match {
-      case "itsa"    => Service.MtdIt
-      case "afi"     => Service.PersonalIncomeRecord
-      case "vat"     => Service.Vat
-      case "trust"   => Service.Trust
-      case "trustNT" => Service.TrustNT
-      case "cgt"     => Service.CapitalGains
-      case "ppt"     => Service.Ppt
-    }
+  def determineService(invitationId: InvitationId): Service = {
+    val prefix = invitationId.value.head
+    Service.supportedServices
+      .find(_.invitationIdPrefix == prefix)
+      .getOrElse(throw new IllegalArgumentException(s"No service corresponding to prefix '$prefix'"))
+  }
 
   def clientIdType(service: Service) =
     service match {

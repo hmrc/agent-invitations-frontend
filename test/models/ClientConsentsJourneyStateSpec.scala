@@ -18,7 +18,7 @@ package models
 
 import java.time.LocalDate
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientConsentsJourneyState}
-import uk.gov.hmrc.agentmtdidentifiers.model.InvitationId
+import uk.gov.hmrc.agentmtdidentifiers.model.{InvitationId, Service}
 import support.UnitSpec
 
 class ClientConsentsJourneyStateSpec extends UnitSpec {
@@ -29,27 +29,27 @@ class ClientConsentsJourneyStateSpec extends UnitSpec {
     "have allDeclinedProcessed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, false),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = true, true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe false
@@ -57,27 +57,27 @@ class ClientConsentsJourneyStateSpec extends UnitSpec {
     "have allProcessed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
         ),
         Some("My Agency Name")
       ).allProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, false),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
         ),
         Some("My Agency Name")
       ).allProcessed shouldBe false
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = false, processed = true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = false, processed = true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, processed = true)
         ),
         Some("My Agency Name")
       ).allProcessed shouldBe true
@@ -85,18 +85,18 @@ class ClientConsentsJourneyStateSpec extends UnitSpec {
     "have allAcceptanceFailed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).allAcceptanceFailed shouldBe false
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = true, processed = false),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = false)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = true, processed = false),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = false),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = false)
         ),
         Some("My Agency Name")
       ).allAcceptanceFailed shouldBe true
@@ -104,18 +104,18 @@ class ClientConsentsJourneyStateSpec extends UnitSpec {
     "have someAcceptanceFailed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = false),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).someAcceptanceFailed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, "itsa", consent = false, processed = true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, "afi", consent = true, processed = true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, "vat", consent = true, processed = true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).someAcceptanceFailed shouldBe false

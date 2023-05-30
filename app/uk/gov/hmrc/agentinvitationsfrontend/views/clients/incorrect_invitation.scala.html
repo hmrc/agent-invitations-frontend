@@ -22,7 +22,7 @@
 
 @this(mainTemplate: MainTemplate, p:p, a:a, h1:h1)
 
-@(serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@()(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
  bannerTitle = "service.name.clients",

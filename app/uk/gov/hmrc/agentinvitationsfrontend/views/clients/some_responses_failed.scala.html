@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.SubmitButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, GovukErrorSummary}
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 
 @this(
     mainTemplate: MainTemplate,
@@ -40,11 +41,11 @@
 
     @h1("some-responses-failed.header")
 
-    @if(config.consents.map(_.serviceKey).length == 1) {
-        @p(s"some-responses-failed.${config.consents.head.serviceKey}")
+    @if(config.consents.length == 1) {
+        @p(s"some-responses-failed.${serviceMessageKeys(config.consents.head.service)}")
     } else {
         @p("some-responses-failed.p1")
-        @ul(items = config.consents.map(s"some-responses-failed.li." + _.serviceKey))
+        @ul(items = config.consents.map(consent => s"some-responses-failed.li." + serviceMessageKeys(consent.service)))
     }
 
     @p("some-responses-failed.try-again")

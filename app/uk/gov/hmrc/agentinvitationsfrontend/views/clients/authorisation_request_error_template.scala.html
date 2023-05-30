@@ -23,7 +23,7 @@
 
 @this(mainTemplate: MainTemplate, h1: h1, p: p, span: span, a: a)
 
-@(serviceMessageKey: String, clientType: String, eventDate: String, errorCase: AuthRequestErrorCase)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientType: String, eventDate: String, errorCase: AuthRequestErrorCase)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     bannerTitle = "service.name.clients",
