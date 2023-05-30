@@ -25,22 +25,8 @@ import javax.inject.{Inject, Singleton}
 
 @ImplementedBy(classOf[ConfigFeatureFlags])
 trait FeatureFlags {
-  val showHmrcMtdIt: Boolean
-  val showPersonalIncome: Boolean
-  val showHmrcMtdVat: Boolean
-  val showHmrcTrust: Boolean
-  val showHmrcCgt: Boolean
-  val showPlasticPackagingTax: Boolean
 
-  def isServiceEnabled(service: Service): Boolean = service match {
-    case Service.MtdIt                => showHmrcMtdIt
-    case Service.PersonalIncomeRecord => showPersonalIncome
-    case Service.Vat                  => showHmrcMtdVat
-    case Service.Trust                => showHmrcTrust
-    case Service.CapitalGains         => showHmrcCgt
-    case Service.Ppt                  => showPlasticPackagingTax
-  }
-
+  def isServiceEnabled(service: Service): Boolean
   def enabledServices: Set[Service] = Services.supportedServices.toSet.filter(isServiceEnabled)
   def enabledServicesFor(clientType: ClientType): Set[Service] =
     Services.supportedServicesFor(clientType).filter(isServiceEnabled)
@@ -49,11 +35,21 @@ trait FeatureFlags {
 @Singleton
 case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFlags {
 
-  val showHmrcMtdIt = appConfig.featuresMtdIt
-  val showPersonalIncome = appConfig.featuresPersonalIncome
-  val showHmrcMtdVat = appConfig.featuresMtdVat
-  val showHmrcTrust = appConfig.featuresTrust
-  val showHmrcCgt = appConfig.featuresCgt
-  val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
+  private val showHmrcMtdIt = appConfig.featuresMtdIt
+  private val showPersonalIncome = appConfig.featuresPersonalIncome
+  private val showHmrcMtdVat = appConfig.featuresMtdVat
+  private val showHmrcTrust = appConfig.featuresTrust
+  private val showHmrcCgt = appConfig.featuresCgt
+  private val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
+
+  def isServiceEnabled(service: Service): Boolean = service match {
+    case Service.MtdIt                => showHmrcMtdIt
+    case Service.PersonalIncomeRecord => showPersonalIncome
+    case Service.Vat                  => showHmrcMtdVat
+    case Service.Trust                => showHmrcTrust
+    case Service.TrustNT              => showHmrcTrust
+    case Service.CapitalGains         => showHmrcCgt
+    case Service.Ppt                  => showPlasticPackagingTax
+  }
 
 }

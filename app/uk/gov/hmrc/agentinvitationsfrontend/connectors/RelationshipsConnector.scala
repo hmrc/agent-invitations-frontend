@@ -61,15 +61,7 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     Service.Ppt          -> "EtmpRegistrationNumber"
   )
 
-  def isServiceEnabled(service: Service): Boolean = service match {
-    case Service.MtdIt                => featureFlags.showHmrcMtdIt
-    case Service.Vat                  => featureFlags.showHmrcMtdVat
-    case Service.Trust                => featureFlags.showHmrcTrust
-    case Service.TrustNT              => featureFlags.showHmrcTrust
-    case Service.CapitalGains         => featureFlags.showHmrcCgt
-    case Service.Ppt                  => featureFlags.showPlasticPackagingTax
-    case Service.PersonalIncomeRecord => featureFlags.showPersonalIncome
-  }
+  def isServiceEnabled(service: Service): Boolean = featureFlags.isServiceEnabled(service)
 
   private val inactiveRelationshipUrl: String = s"$baseUrl/agent-client-relationships/agent/relationships/inactive"
 
