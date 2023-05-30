@@ -21,11 +21,8 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.govukfrontend.views.Aliases.{RadioItem, Text}
 
-case class ClientTypePageConfig(
-  backLinkUrl: String,
-  submitCall: Call,
-  showTrustFlag: Boolean,
-  availableClientTypes: Seq[ClientType] = ClientType.clientTypes)(implicit messages: Messages) {
+case class ClientTypePageConfig(backLinkUrl: String, submitCall: Call, availableClientTypes: Seq[ClientType] = ClientType.clientTypes)(
+  implicit messages: Messages) {
 
   def radioFor(clientType: ClientType) = clientType match {
     case ClientType.Personal => "personal" -> Messages("client-type.personal")

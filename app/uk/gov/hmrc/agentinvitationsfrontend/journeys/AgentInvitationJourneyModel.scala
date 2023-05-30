@@ -489,7 +489,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
       case cc @ ConfirmClient(request, basket, _) if List(Service.Trust, Service.TrustNT).contains(cc.service) =>
         if (confirmation.choice) {
-          if (featureFlags.showHmrcCgt)
+          if (featureFlags.isServiceEnabled(Service.CapitalGains))
             // if CGT is enabled, we need to go to the review page (since we are multi-select)
             checkIfPendingOrActiveAndGoto(ReviewAuthorisations(ClientType.Trust, Services.supportedServicesFor(ClientType.Trust), basket + request))(
               ClientType.Trust,

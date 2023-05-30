@@ -363,7 +363,7 @@ class AgentInvitationJourneyController @Inject()(
         Ok(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.authorisationForm),
-            ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType, featureFlags.showHmrcTrust)
+            ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType)
           ))
 
       case SelectService(clientType, services, basket) =>

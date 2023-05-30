@@ -19,35 +19,24 @@ package support
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-case class TestFeatureFlags(
-  override val showHmrcMtdIt: Boolean = false,
-  override val showPersonalIncome: Boolean = false,
-  override val showHmrcMtdVat: Boolean = false,
-  override val showHmrcTrust: Boolean = false,
-  override val showHmrcCgt: Boolean = false,
-  override val showPlasticPackagingTax: Boolean = false,
-) extends FeatureFlags {
-  def setServiceFlag(service: Service, flag: Boolean): TestFeatureFlags = service match {
-    case Service.MtdIt                   => this.copy(showHmrcMtdIt = flag)
-    case Service.PersonalIncomeRecord    => this.copy(showPersonalIncome = flag)
-    case Service.Vat                     => this.copy(showHmrcMtdVat = flag)
-    case Service.Trust | Service.TrustNT => this.copy(showHmrcTrust = flag)
-    case Service.CapitalGains            => this.copy(showHmrcCgt = flag)
-    case Service.Ppt                     => this.copy(showPlasticPackagingTax = flag)
+case class TestFeatureFlags(enabled: Set[Service] = Service.supportedServices.toSet) extends FeatureFlags {
+  private def affectedServiceKeys(service: Service): Set[Service] = service match {
+    case Service.MtdIt                   => Set(Service.MtdIt)
+    case Service.PersonalIncomeRecord    => Set(Service.PersonalIncomeRecord)
+    case Service.Vat                     => Set(Service.Vat)
+    case Service.Trust | Service.TrustNT => Set(Service.Trust, Service.TrustNT)
+    case Service.CapitalGains            => Set(Service.CapitalGains)
+    case Service.Ppt                     => Set(Service.Ppt)
   }
-  def enable(service: Service): TestFeatureFlags = setServiceFlag(service, flag = true)
-  def disable(service: Service): TestFeatureFlags = setServiceFlag(service, flag = false)
+  def enable(services: Service*): TestFeatureFlags =
+    this.copy(enabled = services.foldLeft(this.enabled) { case (a, e) => a.union(affectedServiceKeys(e)) })
+  def disable(services: Service*): TestFeatureFlags =
+    this.copy(enabled = services.foldLeft(this.enabled) { case (a, d) => a.diff(affectedServiceKeys(d)) })
+
+  override def isServiceEnabled(service: Service): Boolean = enabled.contains(service)
 }
 
 object TestFeatureFlags {
-  def allDisabled: TestFeatureFlags = TestFeatureFlags()
-  def allEnabled: TestFeatureFlags =
-    TestFeatureFlags(
-      showHmrcMtdIt = true,
-      showPersonalIncome = true,
-      showHmrcMtdVat = true,
-      showHmrcTrust = true,
-      showHmrcCgt = true,
-      showPlasticPackagingTax = true
-    )
+  def allDisabled: TestFeatureFlags = TestFeatureFlags(Set.empty)
+  def allEnabled: TestFeatureFlags = TestFeatureFlags(Service.supportedServices.toSet)
 }

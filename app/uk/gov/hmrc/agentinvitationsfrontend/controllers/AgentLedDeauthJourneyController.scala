@@ -232,7 +232,7 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         clientTypeView(
           formWithErrors.or(ClientTypeForm.deAuthorisationForm),
-          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType, featureFlags.showHmrcTrust)
+          ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType)
         ))
 
     case SelectService(clientType, availableServices) =>

@@ -469,7 +469,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
               routes.AgentInvitationFastTrackJourneyController.submitClientType,
-              featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.Vat)
             )
           ))
@@ -481,7 +480,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
               routes.AgentInvitationFastTrackJourneyController.submitClientType,
-              featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.CapitalGains)
             )
           ))
@@ -493,7 +491,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             ClientTypePageConfig(
               backLinkFor(breadcrumbs).url,
               routes.AgentInvitationFastTrackJourneyController.submitClientType,
-              featureFlags.showHmrcTrust,
               availableClientTypes = Services.supportedClientTypesFor(Service.Ppt)
             )
           ))
