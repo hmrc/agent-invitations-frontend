@@ -65,7 +65,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
   def sendAgentInvitationResponse(
     invitationId: String,
     arn: Arn,
-    clientResponse: String,
+    isAccepted: Boolean,
     clientIdType: String,
     clientId: String,
     service: Service,
@@ -80,7 +80,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "clientIdType"         -> clientIdType,
         "clientId"             -> clientId,
         "service"              -> service,
-        "clientResponse"       -> clientResponse
+        "clientResponse"       -> (if (isAccepted) "Accepted" else "Rejected")
       )
     )
 

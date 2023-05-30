@@ -173,7 +173,7 @@ class TrackService @Inject()(
                               Some(rel.clientType),
                               Some(rel.service),
                               rel.clientId,
-                              Services.clientIdType(rel.service),
+                              rel.service.supportedSuppliedClientIdType.id,
                               rel.dateTo)
 
                           case IrvTrackRelationship(_, dateTo, clientId) =>

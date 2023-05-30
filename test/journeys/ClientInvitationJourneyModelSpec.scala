@@ -68,7 +68,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       )
     )
   val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
-  val authorisedBusinessClientWithBusinessOnly = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"), Enrolment("HMRC-PPT-ORG"))))
+  val authorisedBusinessClientWithBusinessOnly =
+    AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"), Enrolment("HMRC-PPT-ORG"), Enrolment("HMRC-CBC-ORG"))))
   val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
   val authorisedTrustNTClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-TERSNT-ORG"))))
   val authorisedIndividualClientWithoutRelevantEnrolments =
@@ -93,6 +94,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdTrustNT = InvitationId("F1BEOZO7MN06")
   val invitationIdCgt = InvitationId("E1BEOZEO7MNO6")
   val invitationIdPpt = InvitationId("E1BEOZEO7MNO6")
+  val invitationIdCbc = InvitationId("HF99K6PXSBHTG")
+  val invitationIdCbcNonUk = InvitationId("IF99K6PXSBHTG")
   val expiryDate = LocalDate.parse("2010-01-01")
   val invitationStatus = Pending
 
@@ -460,18 +463,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
               ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
               ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = false)
+              ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = false),
+              ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = false)
             )
           )) when
           submitConsents(authorisedIndividualClient)(
-            ConfirmedTerms(
-              itsaConsent = true,
-              afiConsent = true,
-              vatConsent = true,
-              trustConsent = true,
-              trustNTConsent = true,
-              cgtConsent = true,
-              pptConsent = true)) should
+            ConfirmedTerms.forServices(
+              Service.MtdIt,
+              Service.PersonalIncomeRecord,
+              Service.Vat,
+              Service.Trust,
+              Service.TrustNT,
+              Service.CapitalGains,
+              Service.Ppt,
+              Service.Cbc)) should
           thenGo(
             CheckAnswers(
               Personal,
@@ -483,14 +488,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true),
                 ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = true),
                 ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = true),
-                ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = true)
+                ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = true),
+                ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = true)
               )
             )
           )
       }
     }
     "at SingleConsent" should {
-      "transition to CheckAnswers with changed itsa consent" in {
+      "transition to CheckAnswers with changed consent" in {
         given(
           SingleConsent(
             Personal,
@@ -503,14 +509,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = true,
-            afiConsent = false,
-            vatConsent = false,
-            trustConsent = true,
-            trustNTConsent = true,
-            cgtConsent = true,
-            pptConsent = false)) should thenGo(
+          ConfirmedTerms.forServices(Service.MtdIt, Service.Trust, Service.TrustNT, Service.CapitalGains)) should thenGo(
           CheckAnswers(
             Personal,
             uid,
@@ -523,118 +522,39 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           )
         )
       }
-      "transition to CheckAnswers with changed irv consent" in {
-        given(
-          SingleConsent(
-            Personal,
-            uid,
-            "agent name",
-            ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
-            Seq(ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = false,
-            afiConsent = true,
-            vatConsent = false,
-            trustConsent = false,
-            trustNTConsent = false,
-            cgtConsent = false,
-            pptConsent = true
-          )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true)))
-        )
-      }
-      "transition to CheckAnswers with changed vat consent" in {
-        given(
-          SingleConsent(
-            Personal,
-            uid,
-            "agent name",
-            ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
-            Seq(ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = false,
-            afiConsent = false,
-            vatConsent = true,
-            trustConsent = false,
-            trustNTConsent = false,
-            cgtConsent = false,
-            pptConsent = true,
-          )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)))
-        )
-      }
-      "transition to CheckAnswers with changed trust consent" in {
-        given(
-          SingleConsent(
-            Personal,
-            uid,
-            "agent name",
-            ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
-            Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = false,
-            afiConsent = false,
-            vatConsent = false,
-            trustConsent = true,
-            trustNTConsent = true,
-            cgtConsent = false,
-            pptConsent = true
-          )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = true)))
-        )
-      }
-
-      "transition to CheckAnswers with changed cgt consent" in {
-        given(
-          SingleConsent(
-            Personal,
-            uid,
-            "agent name",
-            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false),
-            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = false,
-            afiConsent = false,
-            vatConsent = false,
-            trustConsent = false,
-            trustNTConsent = false,
-            cgtConsent = true,
-            pptConsent = true
-          )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)))
-        )
-      }
-
-      "transition to CheckAnswers with changed ppt consent" in {
-        given(
-          SingleConsent(
-            Personal,
-            uid,
-            "agent name",
-            ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = false),
-            Seq(ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = false))
-          )) when submitChangeConsents(authorisedIndividualClient)(
-          ConfirmedTerms(
-            itsaConsent = false,
-            afiConsent = false,
-            vatConsent = false,
-            trustConsent = false,
-            trustNTConsent = false,
-            cgtConsent = true,
-            pptConsent = true
-          )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = true)))
-        )
+      Seq[(ClientType, Service, InvitationId)](
+        (Personal, Service.MtdIt, invitationIdItsa),
+        (Personal, Service.PersonalIncomeRecord, invitationIdIrv),
+        (Personal, Service.Vat, invitationIdVat),
+        (Trust, Service.Trust, invitationIdTrust),
+        (Trust, Service.TrustNT, invitationIdTrustNT),
+        (Personal, Service.CapitalGains, invitationIdCgt),
+        (Business, Service.Ppt, invitationIdPpt),
+        (Business, Service.Cbc, invitationIdCbc),
+        (Business, Service.CbcNonUk, invitationIdCbcNonUk)
+      ).foreach {
+        case (clientType, service, invitationId) =>
+          val authorisedClient = clientType match {
+            case Personal => authorisedIndividualClient
+            case Business => authorisedBusinessClient
+            case Trust    => authorisedTrustOrEstateClient
+          }
+          s"transition to CheckAnswers with changed $service consent" in {
+            given(SingleConsent(
+              clientType,
+              uid,
+              "agent name",
+              ClientConsent(invitationId, expiryDate, service, consent = false),
+              Seq(ClientConsent(invitationId, expiryDate, service, consent = false))
+            )) when submitChangeConsents(authorisedClient)(ConfirmedTerms.forServices(service)) should thenGo(
+              CheckAnswers(clientType, uid, "agent name", Seq(ClientConsent(invitationId, expiryDate, service, consent = true)))
+            )
+          }
       }
     }
     "at CheckAnswers" should {
       "transition to InvitationsAccepted if all invitations are successfully accepted" in {
-        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) = Future(true)
 
         given(
           CheckAnswers(
@@ -646,7 +566,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
-          )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
+          )) when submitCheckAnswers(respondToInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "agent name",
             Seq(
@@ -658,8 +578,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to InvitationsDeclined if all invitations are successfully declined" in {
-        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) = Future(true)
 
         given(
           CheckAnswers(
@@ -672,7 +591,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
               ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false)
             )
-          )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
+          )) when submitCheckAnswers(respondToInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsDeclined(
             "agent name",
             Seq(
@@ -685,9 +604,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to SomeResponsesFailed if some of the invitation acceptances fail" in {
-        def acceptInvitation(invitationId: InvitationId)(agencyName: String) =
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) =
           if (invitationId == invitationIdItsa) Future(false) else Future(true)
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
 
         given(
           CheckAnswers(
@@ -699,7 +617,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
-          )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
+          )) when submitCheckAnswers(respondToInvitation)(authorisedIndividualClient) should thenGo(
           SomeResponsesFailed(
             "agent name",
             Seq(
@@ -713,8 +631,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
           ))
       }
       "transition to AllResponsesFailed if all of the invitation acceptances fail" in {
-        def acceptInvitation(invitationId: InvitationId)(agencyName: String) = Future(false)
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) = Future(false)
 
         given(
           CheckAnswers(
@@ -726,7 +643,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
-          )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(AllResponsesFailed)
+          )) when submitCheckAnswers(respondToInvitation)(authorisedIndividualClient) should thenGo(AllResponsesFailed)
       }
     }
 
@@ -746,7 +663,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     "at state ConfirmDecline" should {
 
       "transition to InvitationsDeclined if selected YES" in {
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) = Future(true)
 
         given(
           ConfirmDecline(
@@ -760,7 +677,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             )
           )) when
-          submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(true)) should thenGo(
+          submitConfirmDecline(respondToInvitation)(authorisedIndividualClient)(Confirmation(true)) should thenGo(
           InvitationsDeclined(
             "agent pearson",
             Seq(
@@ -774,7 +691,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
       }
 
       "transition to MultiConsent if selected NO" in {
-        def rejectInvitation(invitationId: InvitationId)(agencyName: String) = Future(true)
+        def respondToInvitation(invitationId: InvitationId, agencyName: String, accepted: Boolean) = Future(true)
 
         given(
           ConfirmDecline(
@@ -788,7 +705,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             )
           )) when
-          submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(false)) should thenGo(
+          submitConfirmDecline(respondToInvitation)(authorisedIndividualClient)(Confirmation(false)) should thenGo(
           MultiConsent(
             Personal,
             uid,

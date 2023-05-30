@@ -111,6 +111,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
     type GetPptCustomerName = PptRef => Future[Option[String]]
     type CheckPptKnownFact = (PptRef, LocalDate) => Future[Boolean]
+    type GetCbcSubscription = CbcId => Future[Option[SimpleCbcSubscription]]
+    type CheckCbcKnownFact = (CbcId, String /* email */ ) => Future[Boolean]
   }
 
   import TransitionEffects._
@@ -135,7 +137,9 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     getCgtSubscription: GetCgtSubscription,
     getTrustName: GetTrustName,
     getPptCustomerName: GetPptCustomerName,
-    checkPptKnownFact: CheckPptKnownFact
+    checkPptKnownFact: CheckPptKnownFact,
+    getCbcSubscription: GetCbcSubscription,
+    checkCbcKnownFact: CheckCbcKnownFact
   ) {
     val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
@@ -245,6 +249,26 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
           )
       }
     }
+
+    def identifyCbcClient(agent: AuthorisedAgent)(cbcClient: CbcClient): AgentInvitationJourneyModel.Transition =
+      Transition {
+        case IdentifyClient(clientType, Service.Cbc, basket) =>
+          for {
+            knownFactOk <- checkCbcKnownFact(cbcClient.cbcId, cbcClient.email)
+            nextState <- if (knownFactOk) {
+                          for {
+                            maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
+                            subscription = maybeSubscription.getOrElse(
+                              throw new RuntimeException(s"CBC subscription for ${cbcClient.cbcId} not found!"))
+                            adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
+                            clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
+                          } yield
+                            ConfirmClient(AuthorisationRequest(clientName, Invitation(Some(clientType), adjustedService, cbcClient.cbcId)), basket)
+                        } else {
+                          Future.successful(KnownFactNotMatched(basket))
+                        }
+          } yield nextState
+      }
 
     private def removeSpaceFromPostcode(postcode: String): String =
       postcode.replace(" ", "")
@@ -524,18 +548,18 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
             } yield result
         } else goto(IdentifyClient(ClientType.Trust, Service.Trust, basket))
 
-      case cc @ ConfirmClient(request, basket, _) if cc.service == Service.Ppt =>
+      case cc @ ConfirmClient(request, basket, _) =>
         val (reviewAuthState, state, clientType) = cc.clientType match {
           case Some(clientType) =>
             (
               ReviewAuthorisations(clientType, Services.supportedServicesFor(clientType), basket + request),
-              IdentifyClient(clientType, Service.Ppt, basket),
+              IdentifyClient(clientType, cc.service, basket),
               clientType)
           case None => throw new RuntimeException("unexpected clientType in the AuthorisationRequest")
         }
 
         if (confirmation.choice) {
-          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, Service.Ppt, basket)
+          checkIfPendingOrActiveAndGoto(reviewAuthState)(clientType, authorisedAgent.arn, request, cc.service, basket)
         } else goto(state)
 
     }

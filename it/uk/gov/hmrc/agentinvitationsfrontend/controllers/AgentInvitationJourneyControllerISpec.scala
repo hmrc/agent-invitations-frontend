@@ -36,9 +36,9 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
   import journeyState.model._
 
-  private val availablePersonalServices: Set[Service] = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat, Service.CapitalGains, Service.Ppt)
-  private val availableBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
-  private val availableTrustServices: Set[Service] = Set(Service.Trust, Service.CapitalGains, Service.Ppt)
+  private val availablePersonalServices: Set[Service] = Services.supportedPersonalServices
+  private val availableBusinessServices: Set[Service] = Services.supportedBusinessServices
+  private val availableTrustServices: Set[Service] = Services.supportedTrustServices
   private val emptyBasket = Set.empty[AuthorisationRequest]
 
   implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
@@ -2401,7 +2401,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
     "display the already authorisation present page" in {
 
-      supportedServices.foreach { service =>
+      supportedPersonalServices.foreach { service =>
         journeyState.set(
           ActiveAuthorisationExists(Personal, service, Set(AuthorisationRequest("CGT_NAME", Invitation(Some(Personal), Service.CapitalGains, cgtRef)))),
           List()

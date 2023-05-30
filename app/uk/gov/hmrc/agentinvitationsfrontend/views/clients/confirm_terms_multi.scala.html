@@ -142,6 +142,12 @@
   }
 }
 
+@cbcTerms = {
+    @p("Placeholder text. Please implement terms for CBC.")
+    @* TODO [CBC Onboarding] Implement! *@
+}
+
+
 @suitableTerms(service: Service, expiryDate: String, isAltItsa: Boolean) = {
     @if(isAltItsa) {
         @p(msgs("confirm-terms-multi.expires.p2", expiryDate))
@@ -155,6 +161,7 @@
             case Service.TrustNT              => trustNTTerms
             case Service.CapitalGains         => cgtTerms
             case Service.Ppt                  => pptTerms
+            case Service.Cbc | Service.CbcNonUk => cbcTerms
         }
     }
     @if(!isAltItsa) {

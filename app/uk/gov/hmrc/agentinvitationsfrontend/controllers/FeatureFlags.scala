@@ -35,21 +35,14 @@ trait FeatureFlags {
 @Singleton
 case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFlags {
 
-  private val showHmrcMtdIt = appConfig.featuresMtdIt
-  private val showPersonalIncome = appConfig.featuresPersonalIncome
-  private val showHmrcMtdVat = appConfig.featuresMtdVat
-  private val showHmrcTrust = appConfig.featuresTrust
-  private val showHmrcCgt = appConfig.featuresCgt
-  private val showPlasticPackagingTax = appConfig.featuresPlasticPackagingTax
-
   def isServiceEnabled(service: Service): Boolean = service match {
-    case Service.MtdIt                => showHmrcMtdIt
-    case Service.PersonalIncomeRecord => showPersonalIncome
-    case Service.Vat                  => showHmrcMtdVat
-    case Service.Trust                => showHmrcTrust
-    case Service.TrustNT              => showHmrcTrust
-    case Service.CapitalGains         => showHmrcCgt
-    case Service.Ppt                  => showPlasticPackagingTax
+    case Service.MtdIt                   => appConfig.featuresMtdIt
+    case Service.PersonalIncomeRecord    => appConfig.featuresPersonalIncome
+    case Service.Vat                     => appConfig.featuresMtdVat
+    case Service.Trust | Service.TrustNT => appConfig.featuresTrust
+    case Service.CapitalGains            => appConfig.featuresCgt
+    case Service.Ppt                     => appConfig.featuresPlasticPackagingTax
+    case Service.Cbc | Service.CbcNonUk  => appConfig.featuresCbc
   }
 
 }

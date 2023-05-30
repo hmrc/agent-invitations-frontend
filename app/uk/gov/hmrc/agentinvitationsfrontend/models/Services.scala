@@ -17,20 +17,27 @@
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
 object Services {
 
   val supportedServices: List[Service] =
-    List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.TrustNT, Service.CapitalGains, Service.Ppt)
-  val supportedClientIdentifierTypes = List("ni", "vrn", "utr", "CGTPDRef", "urn", "EtmpRegistrationNumber")
+    List(
+      Service.MtdIt,
+      Service.PersonalIncomeRecord,
+      Service.Vat,
+      Service.Trust,
+      Service.TrustNT,
+      Service.CapitalGains,
+      Service.Ppt,
+      Service.Cbc,
+      Service.CbcNonUk)
 
   // These are the options that the user will be shown on the 'select service' page.
   // TODO: Can they be merged with the 'all supported enrolment keys' above?
   val supportedPersonalServices: Set[Service] = Set(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.CapitalGains, Service.Ppt)
-  val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt)
+  val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
   val supportedTrustServices: Set[Service] =
-    Set(Service.CapitalGains, Service.Trust, Service.Ppt)
+    Set(Service.CapitalGains, Service.Trust /* implies also TrustNT */, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
   def supportedServicesFor(clientType: ClientType): Set[Service] = clientType match {
     case ClientType.Personal => supportedPersonalServices
     case ClientType.Business => supportedBusinessServices
@@ -50,6 +57,8 @@ object Services {
   def isSupported(clientType: ClientType, service: Service): Boolean = (clientType, service) match {
     case (clientType, Service.TrustNT) =>
       isSupported(clientType, Service.Trust) // must check this separately as it is not separately listed in the supported services
+    case (clientType, Service.CbcNonUk) =>
+      isSupported(clientType, Service.Cbc) // must check this separately as it is not separately listed in the supported services
     case _ => supportedServicesFor(clientType).contains(service)
   }
 
@@ -58,7 +67,7 @@ object Services {
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
     val correctOrdering =
-      List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt)
+      List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt, Service.Cbc)
     override def compare(x: Service, y: Service): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
   }
 
@@ -69,7 +78,9 @@ object Services {
     Service.Trust                -> "trust",
     Service.TrustNT              -> "trustNT",
     Service.CapitalGains         -> "cgt",
-    Service.Ppt                  -> "ppt"
+    Service.Ppt                  -> "ppt",
+    Service.Cbc                  -> "cbc",
+    Service.CbcNonUk             -> "cbcNonUk"
   )
 
   def determineService(invitationId: InvitationId): Service = {
@@ -78,28 +89,4 @@ object Services {
       .find(_.invitationIdPrefix == prefix)
       .getOrElse(throw new IllegalArgumentException(s"No service corresponding to prefix '$prefix'"))
   }
-
-  def clientIdType(service: Service) =
-    service match {
-      case Service.MtdIt                => "ni"
-      case Service.Vat                  => "vrn"
-      case Service.CapitalGains         => "CGTPDRef"
-      case Service.Trust                => "utr"
-      case Service.TrustNT              => "urn"
-      case Service.PersonalIncomeRecord => "ni"
-      case Service.Ppt                  => "EtmpRegistrationNumber"
-    }
-
-  // TODO move this to agent-mtd-identifiers
-  def clientIdType(taxId: TaxIdentifier): ClientIdType[TaxIdentifier] = taxId match {
-    case Nino(_)   => NinoType
-    case Vrn(_)    => VrnType
-    case Utr(_)    => UtrType
-    case Urn(_)    => UrnType
-    case CgtRef(_) => CgtRefType
-    case PptRef(_) => PptRefType
-  }
-
-  // TODO move this to agent-mtd-identifiers
-  def createTaxIdentifier(idType: String, id: String) = ClientIdType.forId(idType).createUnderlying(id)
 }

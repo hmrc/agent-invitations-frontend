@@ -36,7 +36,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{confirm_cancel, _}
 import uk.gov.hmrc.agentinvitationsfrontend.views.track.{RequestCancelledPageConfig, ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -363,13 +362,8 @@ class AgentsRequestTrackingController @Inject()(
 
   def deleteRelationshipForService(service: Service, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
     service match {
-      case Service.MtdIt                => relationshipsConnector.deleteRelationshipItsa(arn, Nino(clientId))
       case Service.PersonalIncomeRecord => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case Service.Vat                  => relationshipsConnector.deleteRelationshipVat(arn, Vrn(clientId))
-      case Service.Trust                => relationshipsConnector.deleteRelationshipTrust(arn, Utr(clientId))
-      case Service.TrustNT              => relationshipsConnector.deleteRelationshipTrustNT(arn, Urn(clientId))
-      case Service.CapitalGains         => relationshipsConnector.deleteRelationshipCgt(arn, CgtRef(clientId))
-      case Service.Ppt                  => relationshipsConnector.deleteRelationshipPpt(arn, PptRef(clientId))
+      case _                            => relationshipsConnector.deleteRelationshipForService(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
     }
 
   val trackInformationForm: Form[TrackResendForm] = {

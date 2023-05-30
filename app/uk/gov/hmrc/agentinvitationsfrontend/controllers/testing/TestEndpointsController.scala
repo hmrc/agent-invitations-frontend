@@ -26,10 +26,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
-import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType, Services}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.testing.{create_relationship, delete_relationship, test_fast_track}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, ClientIdType, ClientIdentifier, InvitationId, Service}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -132,9 +132,9 @@ object TestEndpointsController {
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
       )({ (clientType, service, clientIdType, clientId, knownFact) =>
-        AgentFastTrackRequest(clientType, service, Services.createTaxIdentifier(clientIdType, clientId), knownFact)
+        AgentFastTrackRequest(clientType, service, ClientIdType.forId(clientIdType).createUnderlying(clientId), knownFact)
       })({ fastTrack =>
-        Some((fastTrack.clientType, fastTrack.service, Services.clientIdType(fastTrack.clientId).id, fastTrack.clientId.value, fastTrack.knownFact))
+        Some((fastTrack.clientType, fastTrack.service, ClientIdentifier(fastTrack.clientId).typeId, fastTrack.clientId.value, fastTrack.knownFact))
       }))
   }
 

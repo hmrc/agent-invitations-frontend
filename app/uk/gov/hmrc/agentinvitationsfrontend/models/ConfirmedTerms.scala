@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
+
 case class ConfirmedTerms(
   itsaConsent: Boolean,
   afiConsent: Boolean,
@@ -23,4 +25,33 @@ case class ConfirmedTerms(
   trustConsent: Boolean,
   cgtConsent: Boolean,
   trustNTConsent: Boolean,
-  pptConsent: Boolean)
+  pptConsent: Boolean,
+  cbcConsent: Boolean,
+  cbcNonUkConsent: Boolean) {
+
+  def get(service: Service) = service match {
+    case Service.MtdIt                => this.itsaConsent
+    case Service.PersonalIncomeRecord => this.afiConsent
+    case Service.Vat                  => this.vatConsent
+    case Service.Trust                => this.trustConsent
+    case Service.TrustNT              => this.trustNTConsent
+    case Service.CapitalGains         => this.cgtConsent
+    case Service.Ppt                  => this.pptConsent
+    case Service.Cbc                  => this.cbcConsent
+    case Service.CbcNonUk             => this.cbcNonUkConsent
+  }
+}
+
+object ConfirmedTerms {
+  def forServices(services: Service*) = ConfirmedTerms(
+    services.contains(Service.MtdIt),
+    services.contains(Service.PersonalIncomeRecord),
+    services.contains(Service.Vat),
+    services.contains(Service.Trust),
+    services.contains(Service.CapitalGains),
+    services.contains(Service.TrustNT),
+    services.contains(Service.Ppt),
+    services.contains(Service.Cbc),
+    services.contains(Service.CbcNonUk)
+  )
+}

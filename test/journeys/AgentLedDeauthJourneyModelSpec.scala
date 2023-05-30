@@ -55,6 +55,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
   val cgtRef = CgtRef("XMCGTP123456789")
   val pptRef = PptRef("XAPPT0000012345")
+  val cbcId = CbcId("XACBC0000011111")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -65,6 +66,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     case Service.Trust                => utr
     case Service.CapitalGains         => cgtRef
     case Service.Ppt                  => pptRef
+    case Service.Cbc                  => cbcId
   }
 
   def getClientName(clientId: String, service: Service) = Future(Some("John Smith"))
@@ -104,6 +106,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   def vatCheckReturns(result: VatKnownFactCheckResult): VatRegDateMatches = (_, _) => Future.successful(result)
 
+  def cbcKnownFactCheckPasses(cbcId: CbcId, email: String) = Future(true)
+  def cbcKnownFactCheckFails(cbcId: CbcId, email: String) = Future(false)
+
   // This is the default behaviour. Modify as needed in individual tests
   val transitions = Transitions(
     TestFeatureFlags.allEnabled,
@@ -118,6 +123,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     getAgencyName = getAgencyName,
     getCgtSubscription = _ => Future(None),
     getPptSubscription = _ => Future(None),
+    getCbcSubscription = _ => Future(None),
+    checkCbcKnownFact = cbcKnownFactCheckFails,
     getTrustName = _ => Future(TrustResponse(Right(TrustName("some-trust"))))
   )
 

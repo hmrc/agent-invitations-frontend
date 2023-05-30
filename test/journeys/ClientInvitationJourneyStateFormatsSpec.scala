@@ -16,16 +16,16 @@
 
 package journeys
 
-import java.time.LocalDate
-import play.api.libs.json.{Format, JsResultException, Json}
+import play.api.libs.json.{Format, Json}
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats._
-import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service}
-import support.UnitSpec
+
+import java.time.LocalDate
 
 class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
 
