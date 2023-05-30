@@ -27,7 +27,7 @@
     govukDetails: GovukDetails,
 )
 
-@(clientType: ClientType, serviceMessageKey: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(clientType: ClientType)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @detailsContent = {
     @p(msgs("action-needed.details.p1", msgs("action-needed.vat.link-text")))

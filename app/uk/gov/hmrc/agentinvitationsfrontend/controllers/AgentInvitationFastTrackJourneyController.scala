@@ -432,7 +432,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
             KnownFactPageConfig(
               ftr.service,
-              Services.determineServiceMessageKeyFromService(ftr.service),
               getSubmitKFFor(ftr.service),
               backLinkFor(breadcrumbs).url
             )
@@ -444,7 +443,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
             KnownFactPageConfig(
               ftr.service,
-              Services.determineServiceMessageKeyFromService(ftr.service),
               getSubmitKFFor(ftr.service),
               backLinkFor(breadcrumbs).url
             )
@@ -456,7 +454,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
             KnownFactPageConfig(
               ftr.service,
-              Services.determineServiceMessageKeyFromService(ftr.service),
               getSubmitKFFor(ftr.service),
               backLinkFor(breadcrumbs).url
             )

@@ -148,7 +148,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
           given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(getInvitationDetails, getNotSuspended)(Some(authorisedIndividualClient)) should
-            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false))))
         }
         "transition to GGUserIdNeeded when the ClientType is personal and there is no active session" in {
           def getInvitationDetails(uid: String) =
@@ -313,7 +313,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
           given(WarmUp(Trust, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUp(getInvitationDetails, getNotSuspended)(Some(authorisedTrustNTClient)) should
-            thenGo(MultiConsent(Trust, uid, agentName, arn, Seq(ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = false))))
+            thenGo(MultiConsent(Trust, uid, agentName, arn, Seq(ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = false))))
         }
         "transition to CannotFindRequest when the client has AffinityGroup Individual and no relevant enrolments" in {
           def getInvitationDetails(uid: String) =
@@ -392,8 +392,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               agentName,
               arn,
               Set("HMRC-MTD-VAT"),
-              Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false)))) when submitSuspension(authorisedIndividualClient) should
-            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+              Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false)))) when submitSuspension(authorisedIndividualClient) should
+            thenGo(MultiConsent(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false))))
         }
       }
       "submitting intent to decline" should {
@@ -405,7 +405,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
           given(WarmUp(Personal, uid, arn, agentName, normalisedAgentName)) when
             submitWarmUpToDecline(getInvitationDetails, getNotSuspended)(authorisedIndividualClient) should
-            thenGo(ConfirmDecline(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false))))
+            thenGo(ConfirmDecline(Personal, uid, agentName, arn, Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false))))
         }
 
         "transition to AuthorisationRequestAlreadyResponded when the invitation status is Rejected" in {
@@ -455,12 +455,12 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent name",
             arn,
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-              ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
+              ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = false)
             )
           )) when
           submitConsents(authorisedIndividualClient)(
@@ -478,38 +478,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               "uid",
               "agent name",
               Seq(
-                ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-                ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-                ClientConsent(invitationIdVat, expiryDate, "vat", consent = true),
-                ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true),
-                ClientConsent(invitationIdTrustNT, expiryDate, "trustNT", consent = true),
-                ClientConsent(invitationIdTrust, expiryDate, "cgt", consent = true)
+                ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+                ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+                ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true),
+                ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = true),
+                ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = true),
+                ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = true)
               )
             )
           )
-      }
-      "throw an exception when the message key is not supported in the request" in {
-        intercept[IllegalStateException] {
-          given(
-            MultiConsent(
-              Personal,
-              "uid",
-              "agent name",
-              arn,
-              Seq(
-                ClientConsent(invitationIdItsa, expiryDate, "foo", consent = false)
-              )
-            )) when
-            submitConsents(authorisedIndividualClient)(
-              ConfirmedTerms(
-                itsaConsent = true,
-                afiConsent = true,
-                vatConsent = true,
-                trustConsent = true,
-                trustNTConsent = true,
-                cgtConsent = true,
-                pptConsent = true))
-        }.getMessage shouldBe "the service key was not supported"
       }
     }
     "at SingleConsent" should {
@@ -519,11 +496,11 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
+            ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
@@ -539,9 +516,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             uid,
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )
         )
@@ -552,8 +529,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false))
+            ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+            Seq(ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false))
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
             itsaConsent = false,
@@ -564,7 +541,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true)))
         )
       }
       "transition to CheckAnswers with changed vat consent" in {
@@ -573,8 +550,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
-            Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = false))
+            ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
+            Seq(ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false))
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
             itsaConsent = false,
@@ -585,7 +562,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true,
           )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)))
         )
       }
       "transition to CheckAnswers with changed trust consent" in {
@@ -594,8 +571,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-            Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))
+            ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
+            Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false))
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
             itsaConsent = false,
@@ -606,7 +583,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = false,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = true)))
         )
       }
 
@@ -616,8 +593,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false),
-            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false),
+            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
             itsaConsent = false,
@@ -628,7 +605,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = true,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)))
         )
       }
 
@@ -638,8 +615,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             Personal,
             uid,
             "agent name",
-            ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = false),
-            Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = false))
+            ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = false),
+            Seq(ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = false))
           )) when submitChangeConsents(authorisedIndividualClient)(
           ConfirmedTerms(
             itsaConsent = false,
@@ -650,7 +627,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             cgtConsent = true,
             pptConsent = true
           )) should thenGo(
-          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, "ppt", consent = true)))
+          CheckAnswers(Personal, uid, "agent name", Seq(ClientConsent(invitationIdPpt, expiryDate, Service.Ppt, consent = true)))
         )
       }
     }
@@ -665,17 +642,17 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             uid,
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             ),
             Personal
           ))
@@ -690,19 +667,19 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             uid,
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false)
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           InvitationsDeclined(
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false),
-              ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false),
+              ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false)
             ),
             Personal
           ))
@@ -718,19 +695,19 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             uid,
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(
           SomeResponsesFailed(
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true)
             ),
             Seq(
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true, processed = true)
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true, processed = true)
             ),
             Personal
           ))
@@ -745,9 +722,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             uid,
             "agent name",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = true)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = true)
             )
           )) when submitCheckAnswers(acceptInvitation)(rejectInvitation)(authorisedIndividualClient) should thenGo(AllResponsesFailed)
       }
@@ -755,21 +732,15 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
 
     "at state CheckAnswers" should {
       "transition to SingleConsent " in {
-        given(CheckAnswers(Personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
-          submitCheckAnswersChange("itsa")(authorisedIndividualClient) should thenGo(
+        given(CheckAnswers(Personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true)))) when
+          submitCheckAnswersChange(Service.MtdIt)(authorisedIndividualClient) should thenGo(
           SingleConsent(
             Personal,
             "uid",
             "agent name",
-            ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true),
-            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true))
+            ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true),
+            Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true))
           ))
-      }
-      "throw an exception when the key for the consent is not found" in {
-        intercept[IllegalStateException] {
-          given(CheckAnswers(Personal, "uid", "agent name", Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)))) when
-            submitCheckAnswersChange("foo")(authorisedIndividualClient)
-        }.getMessage shouldBe "the key for this consent was not found"
       }
     }
     "at state ConfirmDecline" should {
@@ -784,18 +755,18 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent pearson",
             arn,
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             )
           )) when
           submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(true)) should thenGo(
           InvitationsDeclined(
             "agent pearson",
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             ),
             Personal
           )
@@ -812,9 +783,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent pearson",
             arn,
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             )
           )) when
           submitConfirmDecline(rejectInvitation)(authorisedIndividualClient)(Confirmation(false)) should thenGo(
@@ -824,9 +795,9 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
             "agent pearson",
             arn,
             Seq(
-              ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = false),
-              ClientConsent(invitationIdIrv, expiryDate, "afi", consent = false),
-              ClientConsent(invitationIdVat, expiryDate, "vat", consent = false)
+              ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = false),
+              ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = false),
+              ClientConsent(invitationIdVat, expiryDate, Service.Vat, consent = false)
             )
           )
         )
@@ -838,13 +809,13 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         given(
           SomeResponsesFailed(
             "Mr agent",
-            Seq(ClientConsent(invitationIdItsa, expiryDate, "itsa", consent = true)),
-            Seq(ClientConsent(invitationIdIrv, expiryDate, "afi", consent = true, processed = true)),
+            Seq(ClientConsent(invitationIdItsa, expiryDate, Service.MtdIt, consent = true)),
+            Seq(ClientConsent(invitationIdIrv, expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true)),
             Personal
           )) when continueSomeResponsesFailed(authorisedIndividualClient) should thenGo(
           InvitationsAccepted(
             "Mr agent",
-            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, "afi", consent = true, processed = true)),
+            Seq(ClientConsent(InvitationId("B1BEOZEO7MNO6"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true)),
             Personal))
       }
     }

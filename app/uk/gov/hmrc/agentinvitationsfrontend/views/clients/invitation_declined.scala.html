@@ -20,6 +20,8 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 @this(mainTemplate: MainTemplate, p:p, a:a, h2:h2, ul: ul, govukPanel: GovukPanel)
 
@@ -35,13 +37,13 @@
         title = Text(msgs("invitation-declined.header"))
     ))
 
-    @if(config.serviceKeys.length == 1) {
-        @p(msgs(s"invitation-declined.multi.${config.serviceKeys.head}.p1", config.agencyName))
+    @if(config.services.length == 1) {
+        @p(msgs(s"invitation-declined.multi.${serviceMessageKeys(config.services.head)}.p1", config.agencyName))
     } else {
         @p(msgs(s"invitation-decline.sub-header", config.agencyName))
         @ul(
-            items = config.serviceKeys.map(key => {
-                val k = if(key == "cgt") s"cgt.${config.clientType}" else key
+            items = config.services.map(service => {
+                val k = if(service == Service.CapitalGains) s"${serviceMessageKeys(service)}.${config.clientType}" else serviceMessageKeys(service)
                 s"confirm-decline.$k.service-name"
             })
         )

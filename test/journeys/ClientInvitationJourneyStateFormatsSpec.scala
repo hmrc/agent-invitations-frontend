@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStat
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyStateFormats._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service}
 import support.UnitSpec
 
 class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
@@ -40,7 +40,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |  "value": "A1BEOZEO7MNO6"
                            |  },
                            |"expiryDate": "2010-01-01",
-                           |"serviceKey": "itsa",
+                           |"service": "HMRC-MTD-IT",
                            |"consent": true,
                            |"processed": false,
                            |"isAltItsa":false
@@ -49,7 +49,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                            |  "value": "B1BEOZEO7MNO6"
                            |  },
                            |"expiryDate": "2010-02-02",
-                           |"serviceKey": "afi",
+                           |"service": "PERSONAL-INCOME-RECORD",
                            |"consent": true,
                            |"processed": false,
                            |"isAltItsa":false
@@ -116,11 +116,11 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           "agent name",
           Arn("1234"),
           Seq(
-            ClientConsent(InvitationId("A1BEOZEO7MNO6"), LocalDate.parse("2010-01-01"), "itsa", consent = true),
+            ClientConsent(InvitationId("A1BEOZEO7MNO6"), LocalDate.parse("2010-01-01"), Service.MtdIt, consent = true),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           )
@@ -143,26 +143,26 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           ClientConsent(
             InvitationId("B1BEOZEO7MNO6"),
             LocalDate.parse("2010-02-02"),
-            "afi",
+            Service.PersonalIncomeRecord,
             consent = true
           ),
           Seq(
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           )
         )
         val json = Json.parse(
-          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "serviceKey": "afi", "consent": true, "processed": false, "isAltItsa":false}, $jsonConsents}}""".stripMargin)
+          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "service": "PERSONAL-INCOME-RECORD", "consent": true, "processed": false, "isAltItsa":false}, $jsonConsents}}""".stripMargin)
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -177,13 +177,13 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           )
@@ -201,13 +201,13 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           ),
@@ -226,13 +226,13 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           ),
@@ -261,7 +261,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             )
           ),
@@ -269,7 +269,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true,
               processed = true
             )),
@@ -282,7 +282,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                         |    "value": "A1BEOZEO7MNO6"
                         |  },
                         |  "expiryDate": "2010-01-01",
-                        |  "serviceKey": "itsa",
+                        |  "service": "HMRC-MTD-IT",
                         |  "consent": true,
                         |  "processed": false,
                         |  "isAltItsa":false
@@ -292,7 +292,7 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
                         |    "value": "B1BEOZEO7MNO6"
                         |  },
                         |  "expiryDate": "2010-02-02",
-                        |  "serviceKey": "afi",
+                        |  "service": "PERSONAL-INCOME-RECORD",
                         |  "consent": true,
                         |  "processed": true,
                         |  "isAltItsa":false
@@ -312,13 +312,13 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
             ClientConsent(
               InvitationId("A1BEOZEO7MNO6"),
               LocalDate.parse("2010-01-01"),
-              "itsa",
+              Service.MtdIt,
               consent = true
             ),
             ClientConsent(
               InvitationId("B1BEOZEO7MNO6"),
               LocalDate.parse("2010-02-02"),
-              "afi",
+              Service.PersonalIncomeRecord,
               consent = true
             )
           )

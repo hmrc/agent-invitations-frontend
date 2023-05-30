@@ -25,6 +25,7 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.config.HmrcYesNoRadioItems
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 
 @this(
     mainTemplate: MainTemplate,
@@ -50,11 +51,11 @@
 
     @formWithCSRF(action = config.submitUrl) {
 
-        @if(config.serviceKeys.length == 1){
+        @if(config.services.length == 1){
             @inputYesNoRadio(
                 field = confirmDeclineForm("accepted"),
                 legend = msgs("confirm-decline.heading"),
-                hint = Some(msgs(s"confirm-decline.${config.serviceKeys.head}.sub-header", config.agencyName)),
+                hint = Some(msgs(s"confirm-decline.${serviceMessageKeys(config.services.head)}.sub-header", config.agencyName)),
                 headingIsLegend = true
             )
         } else {
@@ -63,7 +64,7 @@
                 hint = Some(
                     Hint(content = HtmlContent(
                         p(msgs(s"confirm-decline.sub-header", config.agencyName)) + "" +
-                        ul(items = config.serviceKeys.map(key => s"confirm-decline.$key.service-name"))
+                        ul(items = config.services.map(service => s"confirm-decline.${serviceMessageKeys(service)}.service-name"))
                     ))
                 ),
                 fieldset = Some(Fieldset(

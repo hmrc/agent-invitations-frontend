@@ -35,7 +35,7 @@ case class ConfirmTermsPageConfig(
   val serviceKeyAndExpiryDateSeq: Seq[ClientConsent] = {
     consentSeq
       .sortWith(expiryDateDescending)
-      .map(consent => consent.serviceKey -> consent)
+      .map(consent => consent.service -> consent)
       .toMap
       .values
       .toSeq

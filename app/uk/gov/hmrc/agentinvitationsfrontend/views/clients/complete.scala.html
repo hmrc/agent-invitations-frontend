@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
 @import views.html.helper.CSPNonce
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 
 @this(
     mainTemplate: MainTemplate,
@@ -69,12 +70,12 @@ scriptElem = Some(gtmScript)
     ))
 
     @h2("client-complete.p.title")
-    @if(config.consents.filter(_.consent == true).map(_.serviceKey).length == 1) {
-        @p(msgs(s"client-complete.${config.consents.filter(_.consent == true).map(_.serviceKey).head}.p1",
+    @if(config.consents.filter(_.consent == true).length == 1) {
+        @p(msgs(s"client-complete.${config.consents.filter(_.consent == true).map(c => serviceMessageKeys(c.service)).head}.p1",
             config.agencyName))
     } else {
         @p(msgs(s"client-complete.multi.p1.head", config.agencyName))
-        @ul(items = config.consents.filter(_.consent == true).map("client-complete.multi.p1." +  _.serviceKey))
+        @ul(items = config.consents.filter(_.consent == true).map(c => "client-complete.multi.p1." +  serviceMessageKeys(c.service)))
     }
 
     @h2("client-complete.sub-header")

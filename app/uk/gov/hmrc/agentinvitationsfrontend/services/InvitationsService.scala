@@ -167,41 +167,41 @@ class InvitationsService @Inject()(
     hc: HeaderCarrier,
     ec: ExecutionContext) =
     for {
-      result <- Services.determineServiceMessageKey(invitationId) match {
-                 case "itsa" if isAltItsa(si) =>
+      result <- Services.determineService(invitationId) match {
+                 case Service.MtdIt if isAltItsa(si) =>
                    if (response == "Accepted")
                      acaConnector.acceptAltITSAInvitation(Nino(si.clientId), invitationId)
                    else acaConnector.rejectAltITSAInvitation(Nino(si.clientId), invitationId)
 
-                 case "itsa" =>
+                 case Service.MtdIt =>
                    if (response == "Accepted")
                      acaConnector.acceptITSAInvitation(MtdItId(si.clientId), invitationId)
                    else acaConnector.rejectITSAInvitation(MtdItId(si.clientId), invitationId)
 
-                 case "afi" =>
+                 case Service.PersonalIncomeRecord =>
                    if (response == "Accepted") acaConnector.acceptAFIInvitation(Nino(si.clientId), invitationId)
                    else acaConnector.rejectAFIInvitation(Nino(si.clientId), invitationId)
 
-                 case "vat" =>
+                 case Service.Vat =>
                    if (response == "Accepted") acaConnector.acceptVATInvitation(Vrn(si.clientId), invitationId)
                    else acaConnector.rejectVATInvitation(Vrn(si.clientId), invitationId)
 
-                 case "trust" =>
+                 case Service.Trust =>
                    if (response == "Accepted")
                      acaConnector.acceptTrustInvitation(Utr(si.clientId), invitationId)
                    else acaConnector.rejectTrustInvitation(Utr(si.clientId), invitationId)
 
-                 case "trustNT" =>
+                 case Service.TrustNT =>
                    if (response == "Accepted")
                      acaConnector.acceptTrustInvitation(Urn(si.clientId), invitationId)
                    else acaConnector.rejectTrustInvitation(Urn(si.clientId), invitationId)
 
-                 case "cgt" =>
+                 case Service.CapitalGains =>
                    if (response == "Accepted")
                      acaConnector.acceptCgtInvitation(CgtRef(si.clientId), invitationId)
                    else acaConnector.rejectCgtInvitation(CgtRef(si.clientId), invitationId)
 
-                 case "ppt" =>
+                 case Service.Ppt =>
                    if (response == "Accepted")
                      acaConnector.acceptPptInvitation(PptRef(si.clientId), invitationId)
                    else acaConnector.rejectPptInvitation(PptRef(si.clientId), invitationId)

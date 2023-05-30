@@ -24,13 +24,10 @@ import java.time.LocalDate
 case class ClientConsent(
   invitationId: InvitationId,
   expiryDate: LocalDate,
-  serviceKey: String,
+  service: Service,
   consent: Boolean,
   processed: Boolean = false,
-  isAltItsa: Boolean = false) {
-
-  def service: Service = Services.determineServiceFromServiceMessageKey(this.serviceKey)
-}
+  isAltItsa: Boolean = false)
 
 object ClientConsent {
   implicit val format = Json.format[ClientConsent]

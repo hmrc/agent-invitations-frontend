@@ -672,7 +672,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true, isAltItsa = true))),
+          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true, isAltItsa = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -705,7 +705,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), "itsa", consent = true))),
+          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -738,7 +738,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -770,8 +770,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true),
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true))),
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true),
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -788,7 +788,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), "cgt", consent = true))),
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -818,7 +818,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), "trust", consent = true))),
+          Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), Service.Trust, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUtr)(request))
@@ -838,7 +838,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), "trustNT", consent = true))),
+          Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), Service.TrustNT, consent = true))),
         Nil)
 
       val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUrn)(request))
@@ -864,7 +864,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
         Nil)
 
       val result =
@@ -890,12 +890,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           Personal,
           uid,
           "My Agency",
-          ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+          ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
-            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
+            ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)
           )
         ),
         Nil
@@ -909,10 +909,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the individual consent page when coming back to it from the CheckAnswers page" in {
       val consents = Seq(
-        ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
-        ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-        ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
-        ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
+        ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
+        ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = false),
+        ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false),
+        ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)
       )
       val currentState = CheckAnswers(
         Personal,
@@ -929,7 +929,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             Personal,
             uid,
             "My Agency",
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
             consents
           )
         )
@@ -954,8 +954,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)
           )
         ),
         Nil
@@ -990,10 +990,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
-            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = true),
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
+            ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = true),
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)
           )
         ),
         Nil
@@ -1018,10 +1018,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
-            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false),
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
+            ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)
           )
         ),
         Nil
@@ -1045,9 +1045,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
-            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = true)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
+            ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = true)
           )
         ),
         Nil
@@ -1070,9 +1070,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
-            ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = true)
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
+            ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = true)
           )
         ),
         Nil
@@ -1096,7 +1096,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
         Nil)
 
       val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -1113,7 +1113,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))),
+          Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))),
         Nil)
 
       val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
@@ -1131,8 +1131,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "My Agency",
           arn,
           Seq(
-            ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false),
-            ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false))
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))
         ),
         Nil
       )
@@ -1160,7 +1160,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
         Nil)
 
       val result = controller.submitConfirmDecline(
@@ -1176,7 +1176,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false))),
+          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
         Nil)
 
       val result = controller.submitConfirmDecline(
@@ -1195,7 +1195,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "uid",
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false))),
+          Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false))),
         Nil)
 
       val result = controller.submitConfirmDecline(
@@ -1217,8 +1217,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           "My Agency",
           arn,
           Seq(
-            ClientConsent(invitationIdTrust, expiryDate, "trust", consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, "vat", consent = false))
+            ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false))
         ),
         Nil
       )
@@ -1241,8 +1241,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           InvitationsAccepted(
             "My Agency",
             Seq(
-              ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
+              ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
             Personal),
           Nil
         )
@@ -1263,7 +1263,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           InvitationsAccepted(
             "My Agency",
-            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
+            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
             Business),
           Nil)
 
@@ -1284,7 +1284,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           InvitationsDeclined(
             "My Agency",
-            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = false)),
+            Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false)),
             Personal),
           Nil)
 
@@ -1300,7 +1300,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           InvitationsDeclined(
             "My Agency",
-            Seq(ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = false)),
+            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)),
             Personal),
           Nil)
 
@@ -1338,9 +1338,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           SomeResponsesFailed(
             "My Agency",
             Seq(
-              ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true),
-              ClientConsent(invitationIdCgt, expiryDate, "cgt", consent = true)),
-            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+              ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
+              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)),
             Personal
           ),
           Nil
@@ -1364,8 +1364,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         .set(
           SomeResponsesFailed(
             "My Agency",
-            Seq(ClientConsent(invitationIdITSA, expiryDate, "itsa", consent = true)),
-            Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+            Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true)),
+            Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)),
             Personal
           ),
           Nil
@@ -1378,7 +1378,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.get.get._1 shouldBe
         InvitationsAccepted(
           "My Agency",
-          Seq(ClientConsent(invitationIdPIR, expiryDate, "afi", consent = true)),
+          Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)),
           Personal)
     }
   }

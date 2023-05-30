@@ -24,6 +24,8 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, FormWithCSRF, GovukErrorSummary}
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 
 @this(
     mainTemplate: MainTemplate,
@@ -140,19 +142,19 @@
   }
 }
 
-@suitableTerms(serviceKey: String, expiryDate: String, isAltItsa: Boolean) = {
+@suitableTerms(service: Service, expiryDate: String, isAltItsa: Boolean) = {
     @if(isAltItsa) {
         @p(msgs("confirm-terms-multi.expires.p2", expiryDate))
     }
     @{
-        serviceKey match {
-            case "itsa" => itsaTerms
-            case "afi" => pirTerms
-            case "vat" => vatTerms
-            case "trust" => trustTerms
-            case "trustNT" => trustNTTerms
-            case "cgt" => cgtTerms
-            case "ppt" => pptTerms
+        service match {
+            case Service.MtdIt                => itsaTerms
+            case Service.PersonalIncomeRecord => pirTerms
+            case Service.Vat                  => vatTerms
+            case Service.Trust                => trustTerms
+            case Service.TrustNT              => trustNTTerms
+            case Service.CapitalGains         => cgtTerms
+            case Service.Ppt                  => pptTerms
         }
     }
     @if(!isAltItsa) {
@@ -164,11 +166,11 @@
    if(changingConsent) msgs("change.consent.heading") else msgs("confirm-terms.multi.heading")
 }
 
-@label(serviceKey: String) = @{
-    if(pageConfig.clientType == "business" && serviceKey == "cgt") {
-        msgs(s"confirm-terms-multi.${serviceKey}.business.label", pageConfig.agencyName)
+@label(service: Service) = @{
+    if(pageConfig.clientType == "business" && service == Service.CapitalGains) {
+        msgs(s"confirm-terms-multi.${serviceMessageKeys(service)}.business.label", pageConfig.agencyName)
     } else {
-        msgs(s"confirm-terms-multi.${serviceKey}.label", pageConfig.agencyName)
+        msgs(s"confirm-terms-multi.${serviceMessageKeys(service)}.label", pageConfig.agencyName)
     }
 }
 
@@ -204,28 +206,28 @@
 
             @if(pageConfig.isPending(consent)) {
 
-                @if(List("cgt", "ppt").contains(consent.serviceKey)) {
-                    @h2(key = s"confirm-terms-multi.${consent.serviceKey}.${pageConfig.clientType}.heading",
+                @if(List(Service.CapitalGains, Service.Ppt).contains(consent.service)) {
+                    @h2(key = s"confirm-terms-multi.${serviceMessageKeys(consent.service)}.${pageConfig.clientType}.heading",
                         classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
                 }else{
-                    @h2(key = s"confirm-terms-multi.${consent.serviceKey}.heading",
+                    @h2(key = s"confirm-terms-multi.${serviceMessageKeys(consent.service)}.heading",
                         classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
                 }
 
-                @suitableTerms(consent.serviceKey, displayDateForLang(Some(consent.expiryDate)), consent.isAltItsa)
+                @suitableTerms(consent.service, displayDateForLang(Some(consent.expiryDate)), consent.isAltItsa)
 
                 @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                     @inputSingleCheckbox(
-                        field = confirmTermsForm(s"confirmedTerms_${consent.serviceKey}"),
+                        field = confirmTermsForm(s"confirmedTerms_${serviceMessageKeys(consent.service)}"),
                         legend = msgs(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName),
-                        checkboxText = label(consent.serviceKey),
+                        checkboxText = label(consent.service),
                         isChecked = true
                     )
                 } else {
                     @inputSingleCheckbox(
-                        field = confirmTermsForm(s"confirmedTerms.${consent.serviceKey}"),
+                        field = confirmTermsForm(s"confirmedTerms.${serviceMessageKeys(consent.service)}"),
                         legend = msgs(s"confirm-terms.legend.${if(pageConfig.isSingleConsent) "single" else "multi"}",pageConfig.agencyName),
-                        checkboxText = label(consent.serviceKey)
+                        checkboxText = label(consent.service)
                     )
                 }
 

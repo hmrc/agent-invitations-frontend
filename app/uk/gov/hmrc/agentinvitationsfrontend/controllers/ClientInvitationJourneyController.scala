@@ -34,6 +34,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationC
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -210,8 +211,8 @@ class ClientInvitationJourneyController @Inject()(
       )
       .redirect
 
-  def submitCheckAnswersChange(uid: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(uid)).redirect
+  def submitCheckAnswersChange(serviceKey: String): Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(Service.forId(serviceKey))).redirect
 
   val submitWarmUpConfirmDecline: Action[AnyContent] =
     actions
@@ -406,49 +407,28 @@ class ClientInvitationJourneyController @Inject()(
           signUpToTaxServiceView(backLinkFor(breadcrumbs))
         )
 
-      //TODO what's going on with these serviceMessageKey's -  Where are they set and what's the impact on GA?
-      case ActionNeeded(clientType) =>
-        val serviceMessageKey = fromSession
-        Ok(actionNeededView(clientType, serviceMessageKey))
-
-      case NotFoundInvitation =>
-        val serviceMessageKey = fromSession
-        Ok(notFoundInvitationView(serviceMessageKey))
-
-      case NoOutstandingRequests =>
-        val serviceMessageKey = fromSession
-        Ok(noOutstandingRequestsView(serviceMessageKey))
-
-      case RequestExpired(expiredOn) =>
-        val serviceMessageKey = fromSession
-        Ok(requestExpiredView(serviceMessageKey, expiredOn))
-
-      case AgentCancelledRequest(cancelledOn) =>
-        val serviceMessageKey = fromSession
-        Ok(agentCancelledRequestView(serviceMessageKey, cancelledOn))
-
-      case AlreadyRespondedToRequest(respondedOn) =>
-        val serviceMessageKey = fromSession
-        Ok(alreadyRespondedView(serviceMessageKey, respondedOn))
+      case ActionNeeded(clientType)               => Ok(actionNeededView(clientType))
+      case NotFoundInvitation                     => Ok(notFoundInvitationView())
+      case NoOutstandingRequests                  => Ok(noOutstandingRequestsView())
+      case RequestExpired(expiredOn)              => Ok(requestExpiredView(expiredOn))
+      case AgentCancelledRequest(cancelledOn)     => Ok(agentCancelledRequestView(cancelledOn))
+      case AlreadyRespondedToRequest(respondedOn) => Ok(alreadyRespondedView(respondedOn))
 
       case CannotFindRequest(clientType, agentName) =>
         val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
         Ok(cannotFindRequestView(clientTypeStr, agentName))
 
       case AuthorisationRequestExpired(expiredOn, clientType) =>
-        val serviceMessageKey = fromSession
         val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, expiredOn, AuthRequestErrorCase.Expired))
+        Ok(authorisationRequestErrorTemplateView(clientTypeStr, expiredOn, AuthRequestErrorCase.Expired))
 
       case AuthorisationRequestCancelled(cancelledOn, clientType) =>
-        val serviceMessageKey = fromSession
         val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, cancelledOn, AuthRequestErrorCase.Cancelled))
+        Ok(authorisationRequestErrorTemplateView(clientTypeStr, cancelledOn, AuthRequestErrorCase.Cancelled))
 
       case AuthorisationRequestAlreadyResponded(respondedOn, clientType) =>
-        val serviceMessageKey = fromSession
         val clientTypeStr = ClientType.fromEnum(clientType).toLowerCase
-        Ok(authorisationRequestErrorTemplateView(serviceMessageKey, clientTypeStr, respondedOn, AuthRequestErrorCase.AlreadyResponded))
+        Ok(authorisationRequestErrorTemplateView(clientTypeStr, respondedOn, AuthRequestErrorCase.AlreadyResponded))
 
       case MultiConsent(clientType, uid, agentName, _, consents) =>
         val clientTypeStr = ClientType.fromEnum(clientType)
@@ -505,7 +485,7 @@ class ClientInvitationJourneyController @Inject()(
               agentName,
               ClientType.fromEnum(clientType),
               uid,
-              consents.map(_.serviceKey).distinct,
+              consents.map(_.service).distinct,
               submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
               backLink = backLinkFor(breadcrumbs)
             )
@@ -515,7 +495,7 @@ class ClientInvitationJourneyController @Inject()(
         Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
 
       case InvitationsDeclined(agentName, consents, clientType) =>
-        Ok(invitationDeclinedView(InvitationDeclinedPageConfig(agentName, consents.map(_.serviceKey).distinct, clientType)))
+        Ok(invitationDeclinedView(InvitationDeclinedPageConfig(agentName, consents.map(_.service).distinct, clientType)))
 
       case AllResponsesFailed => Ok(allResponsesFailedView())
 

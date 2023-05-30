@@ -23,6 +23,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.components.{FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 
 @this(
     mainTemplate: MainTemplate,
@@ -48,12 +49,12 @@
     <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     @for(consent <- pageConfig.consents) {
         @checkAnswersRow(
-            key = msgs(s"check-answers.service.${consent.serviceKey}"),
-            valueId = s"client-identifier-${consent.serviceKey}",
+            key = msgs(s"check-answers.service.${serviceMessageKeys(consent.service)}"),
+            valueId = s"client-identifier-${serviceMessageKeys(consent.service)}",
             value = msgs(s"check-answers.consent.${consent.consent}"),
             actionText = Some(msgs("check-answers.change-link")) ,
-            actionHref = Some(pageConfig.changeCall(consent.serviceKey).url),
-            hiddenActionText = Some(msgs("check-answers.change-link") + " " + msgs(s"check-answers.service.${consent.serviceKey}"))
+            actionHref = Some(pageConfig.changeCall(serviceMessageKeys(consent.service)).url),
+            hiddenActionText = Some(msgs("check-answers.change-link") + " " + msgs(s"check-answers.service.${serviceMessageKeys(consent.service)}"))
         )
     }
     </dl>

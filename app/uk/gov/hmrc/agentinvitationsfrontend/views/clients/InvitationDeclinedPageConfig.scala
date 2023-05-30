@@ -17,5 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
+import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-case class InvitationDeclinedPageConfig(agencyName: String, serviceKeys: Seq[String], clientType: ClientType)
+case class InvitationDeclinedPageConfig(agencyName: String, services: Seq[Service], clientType: ClientType)

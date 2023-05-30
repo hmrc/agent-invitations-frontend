@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 import play.api.Logging
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, SuspensionDetails}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.Services.{determineServiceMessageKey, determineServiceMessageKeyFromService}
+import uk.gov.hmrc.agentinvitationsfrontend.models.Services.determineService
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, _}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.{Enrolment, Enrolments}
@@ -165,7 +165,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           ClientConsent(
             invitation.invitationId,
             invitation.expiryDate,
-            determineServiceMessageKey(invitation.invitationId),
+            determineService(invitation.invitationId),
             consent = false,
             isAltItsa = invitation.isAltItsa))
 
@@ -248,8 +248,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
               getConsents(invitationDetails.filter(_.status == Pending))(agentName, uid) match {
                 case Nil => determineStateForNonPending(invitationDetails, maybeAll, clientType)
                 case consents =>
-                  val containsTrust = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(Service.Trust))
-                  val containsTrustNT = consents.exists(_.serviceKey == determineServiceMessageKeyFromService(Service.TrustNT))
+                  val containsTrust = consents.exists(_.service == Service.Trust)
+                  val containsTrustNT = consents.exists(_.service == Service.TrustNT)
                   val butNoTrustEnrolment = !client.enrolments.enrolments.exists(_.key == Service.Trust.id)
                   val butNoTrustNtEnrolment = !client.enrolments.enrolments.exists(_.key == Service.TrustNT.id)
                   if (containsTrust && butNoTrustEnrolment) {
@@ -368,15 +368,14 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     def determineNewConsents(oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] =
       oldConsents.map { oldConsent =>
-        oldConsent.serviceKey match {
-          case "itsa"    => oldConsent.copy(consent = formTerms.itsaConsent)
-          case "afi"     => oldConsent.copy(consent = formTerms.afiConsent)
-          case "vat"     => oldConsent.copy(consent = formTerms.vatConsent)
-          case "trust"   => oldConsent.copy(consent = formTerms.trustConsent)
-          case "trustNT" => oldConsent.copy(consent = formTerms.trustNTConsent)
-          case "cgt"     => oldConsent.copy(consent = formTerms.cgtConsent)
-          case "ppt"     => oldConsent.copy(consent = formTerms.pptConsent)
-          case _         => throw new IllegalStateException("the service key was not supported")
+        oldConsent.service match {
+          case Service.MtdIt                => oldConsent.copy(consent = formTerms.itsaConsent)
+          case Service.PersonalIncomeRecord => oldConsent.copy(consent = formTerms.afiConsent)
+          case Service.Vat                  => oldConsent.copy(consent = formTerms.vatConsent)
+          case Service.Trust                => oldConsent.copy(consent = formTerms.trustConsent)
+          case Service.TrustNT              => oldConsent.copy(consent = formTerms.trustNTConsent)
+          case Service.CapitalGains         => oldConsent.copy(consent = formTerms.cgtConsent)
+          case Service.Ppt                  => oldConsent.copy(consent = formTerms.pptConsent)
         }
       }
 
@@ -387,17 +386,16 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     def determineChangedConsents(changedConsent: ClientConsent, oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] = {
-      val newConsent = changedConsent.serviceKey match {
-        case "itsa"    => changedConsent.copy(consent = formTerms.itsaConsent)
-        case "afi"     => changedConsent.copy(consent = formTerms.afiConsent)
-        case "vat"     => changedConsent.copy(consent = formTerms.vatConsent)
-        case "trust"   => changedConsent.copy(consent = formTerms.trustConsent)
-        case "trustNT" => changedConsent.copy(consent = formTerms.trustNTConsent)
-        case "cgt"     => changedConsent.copy(consent = formTerms.cgtConsent)
-        case "ppt"     => changedConsent.copy(consent = formTerms.pptConsent)
-        case _         => throw new IllegalStateException("the service key was not supported")
+      val newConsent = changedConsent.service match {
+        case Service.MtdIt                => changedConsent.copy(consent = formTerms.itsaConsent)
+        case Service.PersonalIncomeRecord => changedConsent.copy(consent = formTerms.afiConsent)
+        case Service.Vat                  => changedConsent.copy(consent = formTerms.vatConsent)
+        case Service.Trust                => changedConsent.copy(consent = formTerms.trustConsent)
+        case Service.TrustNT              => changedConsent.copy(consent = formTerms.trustNTConsent)
+        case Service.CapitalGains         => changedConsent.copy(consent = formTerms.cgtConsent)
+        case Service.Ppt                  => changedConsent.copy(consent = formTerms.pptConsent)
       }
-      oldConsents.map(c => if (c.serviceKey == changedConsent.serviceKey) c.copy(consent = newConsent.consent) else c)
+      oldConsents.map(c => if (c.service == changedConsent.service) c.copy(consent = newConsent.consent) else c)
     }
 
     def submitChangeConsents(client: AuthorisedClient)(confirmedTerms: ConfirmedTerms) = Transition {
@@ -449,9 +447,9 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(InvitationsAccepted(agentName, successfulConsents, if (client.affinityGroup == Individual) Personal else Business)) // TODO ACCOMODATE TRUST
     }
 
-    def submitCheckAnswersChange(serviceMessageKeyToChange: String)(client: AuthorisedClient) = Transition {
+    def submitCheckAnswersChange(serviceToChange: Service)(client: AuthorisedClient) = Transition {
       case CheckAnswers(clientType, uid, agentName, consents) =>
-        val chosenConsent: Option[ClientConsent] = consents.find(_.serviceKey == serviceMessageKeyToChange)
+        val chosenConsent: Option[ClientConsent] = consents.find(_.service == serviceToChange)
         chosenConsent match {
           case Some(consent) => goto(SingleConsent(clientType, uid, agentName, consent, consents))
           case None          => throw new IllegalStateException("the key for this consent was not found")
