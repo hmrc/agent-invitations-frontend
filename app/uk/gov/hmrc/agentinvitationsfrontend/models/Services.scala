@@ -79,7 +79,7 @@ object Services {
       .getOrElse(throw new IllegalArgumentException(s"No service corresponding to prefix '$prefix'"))
   }
 
-  def clientIdType(service: Service) =
+  def clientIdType(service: Service): String =
     service match {
       case Service.MtdIt                => "ni"
       case Service.Vat                  => "vrn"
@@ -101,5 +101,5 @@ object Services {
   }
 
   // TODO move this to agent-mtd-identifiers
-  def createTaxIdentifier(idType: String, id: String) = ClientIdType.forId(idType).createUnderlying(id)
+  def createTaxIdentifier(idType: String, id: String): TaxIdentifier = ClientIdType.forId(idType).createUnderlying(id)
 }

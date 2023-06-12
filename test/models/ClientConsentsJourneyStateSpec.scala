@@ -23,33 +23,33 @@ import support.UnitSpec
 
 class ClientConsentsJourneyStateSpec extends UnitSpec {
 
-  val expiryDate = LocalDate.now()
+  val expiryDate: LocalDate = LocalDate.now()
 
   "ClientConsentsJourneyState" should {
     "have allDeclinedProcessed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, processed = true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false, false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = false), // not processed
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = false, processed = true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = true, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = true, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).allDeclinedProcessed shouldBe false
@@ -57,18 +57,18 @@ class ClientConsentsJourneyStateSpec extends UnitSpec {
     "have allProcessed" in {
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, true),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, processed = true),
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).allProcessed shouldBe true
 
       ClientConsentsJourneyState(
         Seq(
-          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, true),
-          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true, false),
-          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, true)
+          ClientConsent(InvitationId("AG1UGUKTPNJ7W"), expiryDate, Service.MtdIt, consent = false, processed = true),
+          ClientConsent(InvitationId("B9SCS2T4NZBAX"), expiryDate, Service.PersonalIncomeRecord, consent = true), // not processed
+          ClientConsent(InvitationId("CZTW1KY6RTAAT"), expiryDate, Service.Vat, consent = true, processed = true)
         ),
         Some("My Agency Name")
       ).allProcessed shouldBe false

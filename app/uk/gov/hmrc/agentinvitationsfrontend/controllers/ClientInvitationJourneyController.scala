@@ -211,8 +211,20 @@ class ClientInvitationJourneyController @Inject()(
       )
       .redirect
 
-  def submitCheckAnswersChange(serviceKey: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(Service.forId(serviceKey))).redirect
+  def submitCheckAnswersChange(serviceMessageKey: String): Action[AnyContent] = {
+    // needed to avoid changing the CYA url - because the serviceMessageKey is not the same as serviceId/serviceKey
+    val service: Service = serviceMessageKey match {
+      case "itsa"    => Service.MtdIt
+      case "afi"     => Service.PersonalIncomeRecord
+      case "vat"     => Service.Vat
+      case "trust"   => Service.Trust
+      case "trustNT" => Service.TrustNT
+      case "cgt"     => Service.CapitalGains
+      case "ppt"     => Service.Ppt
+      case s         => throw new IllegalArgumentException(s"not a supported service message key: $s")
+    }
+    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(service)).redirect
+  }
 
   val submitWarmUpConfirmDecline: Action[AnyContent] =
     actions
