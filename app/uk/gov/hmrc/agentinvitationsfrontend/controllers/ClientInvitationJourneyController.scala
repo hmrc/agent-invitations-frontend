@@ -211,8 +211,8 @@ class ClientInvitationJourneyController @Inject()(
       )
       .redirect
 
-  def submitCheckAnswersChange(serviceKey: String): Action[AnyContent] =
-    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(Service.forId(serviceKey))).redirect
+  def submitCheckAnswersChange(serviceId: String): Action[AnyContent] =
+    actions.whenAuthorisedWithRetrievals(AsClient)(Transitions.submitCheckAnswersChange(Service.forId(serviceId))).redirect
 
   val submitWarmUpConfirmDecline: Action[AnyContent] =
     actions
