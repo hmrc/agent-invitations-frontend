@@ -90,7 +90,6 @@ class ClientInvitationJourneyController @Inject()(
   import ClientInvitationJourneyController._
   import authActions._
   import invitationsConnector._
-  import invitationsService._
   import journeyService.model.{State, Transitions}
   import uk.gov.hmrc.play.fsm.OptionalFormOps._
 
@@ -207,7 +206,7 @@ class ClientInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsClient)
       .applyWithRequest(
-        implicit request => Transitions.submitCheckAnswers(acceptInvitation)(rejectInvitation)
+        implicit request => Transitions.submitCheckAnswers(invitationsService.respondToInvitation)
       )
       .redirect
 
@@ -226,7 +225,7 @@ class ClientInvitationJourneyController @Inject()(
     actions
       .whenAuthorisedWithRetrievals(AsClient)
       .bindForm(confirmDeclineForm)
-      .applyWithRequest(implicit request => Transitions.submitConfirmDecline(rejectInvitation))
+      .applyWithRequest(implicit request => Transitions.submitConfirmDecline(invitationsService.respondToInvitation))
 
   val showInvitationsAccepted: Action[AnyContent] =
     actions.whenAuthorised(AsClient).show[InvitationsAccepted].andCleanBreadcrumbs()
@@ -531,13 +530,15 @@ object ClientInvitationJourneyController {
   val confirmTermsMultiForm: Form[ConfirmedTerms] =
     Form[ConfirmedTerms](
       mapping(
-        "confirmedTerms.itsa"    -> boolean,
-        "confirmedTerms.afi"     -> boolean,
-        "confirmedTerms.vat"     -> boolean,
-        "confirmedTerms.trust"   -> boolean,
-        "confirmedTerms.cgt"     -> boolean,
-        "confirmedTerms.trustNT" -> boolean,
-        "confirmedTerms.ppt"     -> boolean
+        "confirmedTerms.itsa"     -> boolean,
+        "confirmedTerms.afi"      -> boolean,
+        "confirmedTerms.vat"      -> boolean,
+        "confirmedTerms.trust"    -> boolean,
+        "confirmedTerms.cgt"      -> boolean,
+        "confirmedTerms.trustNT"  -> boolean,
+        "confirmedTerms.ppt"      -> boolean,
+        "confirmedTerms.cbc"      -> boolean,
+        "confirmedTerms.cbcNonUk" -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =

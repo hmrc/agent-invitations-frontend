@@ -75,7 +75,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
           AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino(submittedNinoStr.toUpperCase), Some("BN32TN"))
         journeyState.get shouldBe Some(
           (
-            CheckDetailsComplete(fastTrackRequest = expectedFtr, None),
+            CheckDetails(fastTrackRequest = expectedFtr, None),
             List(Prologue(None, None))))
       }
     }
@@ -123,7 +123,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val expectedFtr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN32TN"))
       journeyState.get shouldBe Some(
         (
-          CheckDetailsComplete(fastTrackRequest = expectedFtr, None),
+          CheckDetails(fastTrackRequest = expectedFtr, None),
           List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))))
     }
 
@@ -522,7 +522,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for ITSA service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN32TN"))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
@@ -536,7 +536,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
     "show the check-details page for IRV service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, Nino("AB123456A"), Some(dateOfBirth))
-      journeyState.set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -550,7 +550,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for personal VAT service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some(validRegistrationDate))
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -564,7 +564,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for business VAT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Vat, vrn, Some(validRegistrationDate))
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -579,7 +579,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for Trust service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Trust, validUtr, None)
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -594,7 +594,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for business CGT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.CapitalGains, cgtRef, None)
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -609,7 +609,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for personal CGT service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.CapitalGains, cgtRef, None)
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -624,7 +624,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for personal PPT service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
       journeyState
-        .set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -638,7 +638,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "show the check-details page for ITSA client with no postcode" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
-      journeyState.set(CheckDetailsNoPostcode(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -652,7 +652,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
     "show the check-details page for IRV client with no date of birth" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, Nino("AB123456A"), None)
-      journeyState.set(CheckDetailsNoDob(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -666,7 +666,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
     "show the check-details page for VAT client with no vat registration date" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
-      journeyState.set(CheckDetailsNoVatRegDate(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -681,7 +681,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the check-details page for VAT client with no client type" in {
       val ftr = AgentFastTrackRequest(None, Service.Vat, vrn, None)
       journeyState
-        .set(CheckDetailsNoClientTypeVat(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
@@ -700,7 +700,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenGetAgencyEmailAgentStub
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -715,7 +715,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -730,7 +730,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -744,7 +744,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to client-identify for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN114AW"))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -757,7 +757,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to client-identify for a business service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Vat, vrn, Some(validRegistrationDate))
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -770,7 +770,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /identify-client for a trust service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Trust, validUtr, None)
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -783,7 +783,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /identify-client for a CGT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.CapitalGains, cgtRef, None)
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -796,7 +796,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /identify-client for a PPT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Ppt, pptRef, None)
       journeyState.set(
-        CheckDetailsComplete(fastTrackRequest = ftr, None),
+        CheckDetails(fastTrackRequest = ftr, None),
         List(Prologue(None, None)))
 
       val result = controller.submitCheckDetails(
@@ -813,7 +813,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to known fact when the postcode is missing for ITSA service" in {
       givenGetAgencyEmailAgentStub
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, None)
-      journeyState.set(CheckDetailsNoPostcode(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -825,7 +825,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to known fact when the dob is missing for PIR service" in {
       givenGetAgencyEmailAgentStub
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, nino, None)
-      journeyState.set(CheckDetailsNoDob(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -837,7 +837,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to known fact when the vat reg date is missing for VAT service" in {
       givenGetAgencyEmailAgentStub
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
-      journeyState.set(CheckDetailsNoVatRegDate(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -849,7 +849,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /client-postcode for a UK based CGT client" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription("GB")).toString())
       val ftr = AgentFastTrackRequest(Some(Personal), Service.CapitalGains, cgtRef, None)
-      journeyState.set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -861,7 +861,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /client-country for a non UK based CGT client" in {
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
       val ftr = AgentFastTrackRequest(Some(Personal), Service.CapitalGains, cgtRef, None)
-      journeyState.set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -873,7 +873,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to /agents/track/ppt-registration-date for a PPT client" in {
       givenGetPptSubscriptionReturns(pptRef, 200, pptSubscriptionSuccessBodyJson(pptRef, LocalDate.parse("2019-10-10")))
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
-      journeyState.set(CheckDetailsComplete(fastTrackRequest = ftr, None), List())
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToKnownFact(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
@@ -889,7 +889,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to identify client" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
       journeyState
-        .set(CheckDetailsNoVatRegDate(fastTrackRequest = ftr, None), List())
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
 
       val result = controller.progressToIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
@@ -905,7 +905,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1025,7 +1025,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         journeyState.set(
           IdentifyClient(ftr, None),
           List(
-            CheckDetailsComplete(ftr, None),
+            CheckDetails(ftr, None),
             Prologue(None, None)
           )
         )
@@ -1061,7 +1061,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         journeyState.set(
           IdentifyClient(ftr, None),
           List(
-            CheckDetailsComplete(ftr, None),
+            CheckDetails(ftr, None),
             Prologue(None, None)
           )
         )
@@ -1089,7 +1089,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1114,7 +1114,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1139,7 +1139,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1165,7 +1165,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1211,7 +1211,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1237,7 +1237,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         journeyState.set(
           IdentifyClient(ftr, None),
           List(
-            CheckDetailsComplete(ftr, None),
+            CheckDetails(ftr, None),
             Prologue(None, None)
           )
         )
@@ -1266,7 +1266,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         IdentifyClient(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1338,7 +1338,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmClientTrust(ftr, None, "trustName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1362,7 +1362,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmClientTrust(ftr, None, "trustName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1386,7 +1386,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         ConfirmClientCgt(ftr, None, "some-cgt-name"),
         List(
           ConfirmCountryCodeCgt(ftr, None, "FR", "some-cgt-name"),
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1407,7 +1407,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         ConfirmClientCgt(ftr, None, "some-cgt-name"),
         List(
           ConfirmCountryCodeCgt(ftr, None, "FR", "some-cgt-name"),
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1431,7 +1431,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmPostcodeCgt(ftr, None, Some("BN13 1FN"), "firstName lastName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1447,7 +1447,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmPostcodeCgt(ftr, None, Some("BN13 1FN"), "firstName lastName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1471,7 +1471,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmCountryCodeCgt(ftr, None, "FR", "firstName lastName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1487,7 +1487,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ConfirmCountryCodeCgt(ftr, None, "FR", "firstName lastName"),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1508,9 +1508,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "show the more-details page for ITSA service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN114AW"))
       journeyState.set(
-        NoPostcode(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1523,7 +1523,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "show the more-details page for IRV service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, Nino("AB123456A"), Some(dateOfBirth))
-      journeyState.set(NoDob(ftr, None), List())
+      journeyState.set(MissingDetail(ftr, None), List())
 
       val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
 
@@ -1536,7 +1536,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "show the more-details page for VAT service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some(validRegistrationDate))
-      journeyState.set(NoVatRegDate(ftr, None), List())
+      journeyState.set(MissingDetail(ftr, None), List())
 
       val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
 
@@ -1550,9 +1550,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to invitation-sent" in new ItsaHappyScenario {
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
       journeyState.set(
-        NoPostcode(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1567,9 +1567,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to not-matched (Postcode)" in new ItsaNotMatchedScenario {
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
       journeyState.set(
-        NoPostcode(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1588,7 +1588,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenPartialAuthNotExists(arn, nino.value)
 
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
-      journeyState.set(NoPostcode(ftr, None), List())
+      journeyState.set(MissingDetail(ftr, None), List())
 
       val result = controller.submitKnownFactItsa(
         authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
@@ -1605,9 +1605,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to invitation-sent" in new IrvHappyScenario {
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, nino, None)
       journeyState.set(
-        NoDob(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1627,9 +1627,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to not-matched (DOB)" in new IrvNotMatchedScenario {
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, nino, None)
       journeyState.set(
-        NoDob(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1652,9 +1652,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to invitation-sent" in new VatHappyScenarioPersonal {
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some("2010-10-10"))
       journeyState.set(
-        NoVatRegDate(ftr, None),
+        MissingDetail(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1675,8 +1675,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val originalFtr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some("1990-10-10"))
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
       journeyState.set(
-        NoVatRegDate(ftr, None),
-        List(CheckDetailsComplete(originalFtr, None), Prologue(None, None))
+        MissingDetail(ftr, None),
+        List(CheckDetails(originalFtr, None), Prologue(None, None))
       )
 
       val requestWithForm = request.withFormUrlEncodedBody(
@@ -1699,7 +1699,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         SelectClientType(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1718,7 +1718,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         InvitationSent(ClientType.Personal, "invitation/sent/url", None, "abc@xyz.com", Service.MtdIt, isAltItsa = Some(false)),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1743,7 +1743,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         InvitationSent(ClientType.Personal, "invitation/sent/url", None, "abc@xyz.com", Service.Vat, isAltItsa = Some(false)),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1768,7 +1768,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         InvitationSent(ClientType.Personal, "invitation/sent/url", None, "abc@xyz.com", Service.MtdIt, isAltItsa = Some(true)),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1806,7 +1806,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ClientNotSignedUp(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1831,7 +1831,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ClientNotFound(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1850,7 +1850,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         PendingInvitationExists(ftr, "/invitation-link/ABC123", "Charmarti Ltd.", None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1878,7 +1878,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ActiveAuthorisationExists(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1894,7 +1894,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         PartialAuthorisationExists(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1925,7 +1925,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         ClientNotRegistered(ftr, None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1944,7 +1944,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, nino), None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1963,7 +1963,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, nino), None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )
@@ -1979,7 +1979,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       journeyState.set(
         LegacyAuthorisationDetected(ftr, arn, Invitation(Some(Personal), Service.MtdIt, nino), None),
         List(
-          CheckDetailsComplete(ftr, None),
+          CheckDetails(ftr, None),
           Prologue(None, None)
         )
       )

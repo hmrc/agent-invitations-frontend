@@ -121,8 +121,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     type GetAgentReferenceRecord = String => Future[Option[AgentReferenceRecord]]
     type GetAgencyName = Arn => Future[String]
     type GetInvitationDetails = String => Future[Seq[InvitationDetails]]
-    type AcceptInvitation = InvitationId => String => Future[Boolean]
-    type RejectInvitation = InvitationId => String => Future[Boolean]
+    type RespondToInvitation = (InvitationId, String, Boolean /* reject/accept */ ) => Future[Boolean]
     type GetSuspensionDetails = Arn => Future[SuspensionDetails]
 
     def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
@@ -350,13 +349,14 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(MultiConsent(clientType, uid, agentName, arn, nonSuspendedConsents))
     }
 
-    def submitConfirmDecline(rejectInvitation: RejectInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
+    def submitConfirmDecline(respondToInvitation: RespondToInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
       Transition {
         case ConfirmDecline(clientType, uid, agentName, arn, consents) =>
           if (confirmation.choice) {
             val newConsentsF =
               Future.sequence {
-                consents.map(consent => rejectInvitation(consent.invitationId)(agentName).map(processed => consent.copy(processed = processed)))
+                consents.map(consent =>
+                  respondToInvitation(consent.invitationId, agentName, false /* reject */ ).map(processed => consent.copy(processed = processed)))
               }
             for {
               newConsents <- newConsentsF
@@ -368,15 +368,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     def determineNewConsents(oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] =
       oldConsents.map { oldConsent =>
-        oldConsent.service match {
-          case Service.MtdIt                => oldConsent.copy(consent = formTerms.itsaConsent)
-          case Service.PersonalIncomeRecord => oldConsent.copy(consent = formTerms.afiConsent)
-          case Service.Vat                  => oldConsent.copy(consent = formTerms.vatConsent)
-          case Service.Trust                => oldConsent.copy(consent = formTerms.trustConsent)
-          case Service.TrustNT              => oldConsent.copy(consent = formTerms.trustNTConsent)
-          case Service.CapitalGains         => oldConsent.copy(consent = formTerms.cgtConsent)
-          case Service.Ppt                  => oldConsent.copy(consent = formTerms.pptConsent)
-        }
+        oldConsent.copy(consent = formTerms.get(oldConsent.service))
       }
 
     def submitConsents(client: AuthorisedClient)(confirmedTerms: ConfirmedTerms) = Transition {
@@ -386,15 +378,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     }
 
     def determineChangedConsents(changedConsent: ClientConsent, oldConsents: Seq[ClientConsent], formTerms: ConfirmedTerms): Seq[ClientConsent] = {
-      val newConsent = changedConsent.service match {
-        case Service.MtdIt                => changedConsent.copy(consent = formTerms.itsaConsent)
-        case Service.PersonalIncomeRecord => changedConsent.copy(consent = formTerms.afiConsent)
-        case Service.Vat                  => changedConsent.copy(consent = formTerms.vatConsent)
-        case Service.Trust                => changedConsent.copy(consent = formTerms.trustConsent)
-        case Service.TrustNT              => changedConsent.copy(consent = formTerms.trustNTConsent)
-        case Service.CapitalGains         => changedConsent.copy(consent = formTerms.cgtConsent)
-        case Service.Ppt                  => changedConsent.copy(consent = formTerms.pptConsent)
-      }
+      val newConsent = changedConsent.copy(consent = formTerms.get(changedConsent.service))
       oldConsents.map(c => if (c.service == changedConsent.service) c.copy(consent = newConsent.consent) else c)
     }
 
@@ -404,25 +388,20 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
-    private def processConsents(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(consents: Seq[ClientConsent])(
+    private def processConsents(respondToInvitation: RespondToInvitation)(consents: Seq[ClientConsent])(
       agentName: String): Future[Seq[ClientConsent]] =
       for {
         result <- Future.traverse(consents) {
                    case chosenConsent @ ClientConsent(invitationId, _, _, consent, _, _) =>
-                     if (consent) {
-                       acceptInvitation(invitationId)(agentName)
-                         .map(acceptSuccess => chosenConsent.copy(processed = acceptSuccess))
-                     } else {
-                       rejectInvitation(invitationId)(agentName)
-                         .map(processed => chosenConsent.copy(processed = processed))
-                     }
+                     respondToInvitation(invitationId, agentName, consent /* reject/accept */ )
+                       .map(processed => chosenConsent.copy(processed = processed))
                  }
       } yield result
 
-    def submitCheckAnswers(acceptInvitation: AcceptInvitation)(rejectInvitation: RejectInvitation)(client: AuthorisedClient) = Transition {
+    def submitCheckAnswers(respondToInvitation: RespondToInvitation)(client: AuthorisedClient) = Transition {
       case CheckAnswers(clientType, _, agentName, consents) =>
         for {
-          newConsents <- processConsents(acceptInvitation)(rejectInvitation)(consents)(agentName)
+          newConsents <- processConsents(respondToInvitation)(consents)(agentName)
           result      <- getRedirectLinkAfterProcessConsents(consents, newConsents, agentName, clientType)
         } yield result
     }

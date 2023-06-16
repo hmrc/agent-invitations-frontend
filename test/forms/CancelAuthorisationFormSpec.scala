@@ -60,7 +60,7 @@ class CancelAuthorisationFormSpec extends UnitSpec {
       result.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
     }
 
-    "return and error when clientId is invalid" in {
+    "return an error when clientId is invalid" in {
       val result =
         testCancelAuthorisationForm.bind(
           Json

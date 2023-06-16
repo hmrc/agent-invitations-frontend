@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, PptRef, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -42,7 +42,8 @@ trait GetClientName extends Logging {
       case Service.TrustNT              => getTrustName(clientId)
       case Service.CapitalGains         => getCgtClientName(CgtRef(clientId))
       case Service.Ppt                  => getPptClientName(PptRef(clientId))
-      case _                            => Future successful None
+      case Service.Cbc                  => getCbcClientName(CbcId(clientId))
+      case Service.CbcNonUk             => getCbcClientName(CbcId(clientId))
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
@@ -89,4 +90,7 @@ trait GetClientName extends Logging {
         logger.warn(s"no pptSubscription found to retrieve name for reference: ${pptRef.value}")
         None
     }
+
+  def getCbcClientName(cbcId: CbcId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    acaConnector.getCbcSubscription(cbcId: CbcId).map(_.flatMap(_.anyAvailableName))
 }

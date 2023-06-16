@@ -23,24 +23,11 @@ import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 case class CheckDetailsPageConfig(
   fastTrackRequest: AgentFastTrackRequest,
-  featureFlags: FeatureFlags,
   clientTypeUrl: Call,
   knownFactUrl: Call,
   changeDetailsCall: Call,
   submitFormCall: Call,
   backLinkUrl: Option[String]) {
-
-  val serviceMessageKey: String = {
-    fastTrackRequest.service match {
-      case Service.MtdIt                => "itsa"
-      case Service.PersonalIncomeRecord => "afi"
-      case Service.Vat                  => "vat"
-      case Service.Trust                => "trust"
-      case Service.TrustNT              => "trust"
-      case Service.CapitalGains         => "cgt"
-      case Service.Ppt                  => "ppt"
-    }
-  }
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 

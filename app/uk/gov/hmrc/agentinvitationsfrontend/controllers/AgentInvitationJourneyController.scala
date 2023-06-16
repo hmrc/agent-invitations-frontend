@@ -60,6 +60,7 @@ class AgentInvitationJourneyController @Inject()(
   identifyClientTrustView: identify_client_trust,
   identifyClientCgtView: identify_client_cgt,
   identifyClientPptView: identify_client_ppt,
+  identifyClientCbcView: identify_client_cbc,
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
@@ -131,7 +132,9 @@ class AgentInvitationJourneyController @Inject()(
     getCgtSubscription = acaConnector.getCgtSubscription,
     getTrustName = (taxId => acaConnector.getTrustName(taxId.value)),
     getPptCustomerName = invitationsService.getPptClientName,
-    checkPptKnownFact = invitationsService.checkPptRegistrationDateMatches
+    checkPptKnownFact = invitationsService.checkPptRegistrationDateMatches,
+    getCbcSubscription = acaConnector.getCbcSubscription,
+    checkCbcKnownFact = invitationsService.checkCbcEmailKnownFact
   )
 
   val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType))
@@ -214,6 +217,12 @@ class AgentInvitationJourneyController @Inject()(
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(PptClientForm.form)
       .applyWithRequest(implicit request => transitions.identifyPptClient)
+
+  val submitIdentifyCbcClient: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(CbcClientForm.form)
+      .applyWithRequest(implicit request => transitions.identifyCbcClient)
 
   val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
@@ -437,6 +446,15 @@ class AgentInvitationJourneyController @Inject()(
           identifyClientPptView(
             formWithErrors.or(PptClientForm.form),
             routes.AgentInvitationJourneyController.submitIdentifyPptClient,
+            backLinkFor(breadcrumbs).url
+          )
+        )
+
+      case IdentifyClient(_, Service.Cbc, _) =>
+        Ok(
+          identifyClientCbcView(
+            formWithErrors.or(CbcClientForm.form),
+            routes.AgentInvitationJourneyController.submitIdentifyCbcClient,
             backLinkFor(breadcrumbs).url
           )
         )

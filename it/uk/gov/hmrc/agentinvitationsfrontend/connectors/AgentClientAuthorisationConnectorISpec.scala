@@ -1,15 +1,15 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import java.net.URL
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, Vrn}
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, Vrn}
+import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -302,234 +302,64 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     }
   }
 
-  "Accept invitation" should {
+  "Responding to an invitation" when {
 
-    "service is for ITSA" should {
-      "return true if invitation was accepted" in {
-        givenAcceptInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe true
-        verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
+    Seq[(String, Service, TaxIdentifier, InvitationId, String)](
+      ("ITSA",         Service.MtdIt,                mtdItId,  invitationIdITSA,     identifierITSA),
+      ("alt-ITSA",     Service.MtdIt,                nino,     invitationIdITSA,     "NI"),
+      ("PIR",          Service.PersonalIncomeRecord, nino,     invitationIdPIR,      identifierPIR),
+      ("VAT",          Service.Vat,                  validVrn, invitationIdVAT,      identifierVAT),
+      ("Trust",        Service.Trust,                validUtr, invitationIdTrust,    identifierTrust),
+      ("Trust (NT)",   Service.TrustNT,              validUrn, invitationIdTrustNT,  "URN"),
+      ("CGT",          Service.CapitalGains,         cgtRef,   invitationIdCgt,      "CGTPDRef"),
+      ("PPT",          Service.Ppt,                  pptRef,   invitationIdPpt,      "EtmpRegistrationNumber"),
+      ("CBC",          Service.Cbc,                  cbcId,    invitationIdCbc,      "cbcId"),
+      ("CBC (non-UK)", Service.CbcNonUk,             cbcId,    invitationIdCbcNonUk, "cbcId")
+    ).foreach { case (serviceName, service, taxId, invitationId, taxIdTag) =>
+      s"accepting an invitation for $serviceName" should {
+        "return true if invitation was accepted" in {
+          givenAcceptInvitationSucceeds(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = true))
+          result shouldBe true
+          verifyAcceptInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
+
+        "return false if invitation is already actioned" in {
+          givenAcceptInvitationReturnsAlreadyActioned(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = true))
+          result shouldBe false
+          verifyAcceptInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
+
+        "return an error if invitation not found" in {
+          givenAcceptInvitationReturnsNotFound(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = true))
+          result shouldBe false
+          verifyAcceptInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
       }
 
-      "return false if invitation is already actioned" in {
-        givenAcceptInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
-      }
+      s"rejecting an invitation for $serviceName" should {
+        "return status 204 if invitation was rejected" in {
+          givenRejectInvitationSucceeds(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = false))
+          result shouldBe true
+          verifyRejectInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
 
-      "return an error if invitation not found" in {
-        givenAcceptInvitationReturnsNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.acceptITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
-      }
+        "return an error if invitation is already actioned" in {
+          givenRejectInvitationReturnsAlreadyActioned(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = false))
+          result shouldBe false
+          verifyRejectInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
 
-      "return true if invitation was accepted and it is alt-Itsa" in {
-        givenAcceptInvitationSucceeds(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe true
-        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-
-      "return false if invitation is already actioned and it is alt-Itsa" in {
-        givenAcceptInvitationReturnsAlreadyActioned(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-
-      "return an error if invitation not found and it is alt-Itsa" in {
-        givenAcceptInvitationReturnsNotFound(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.acceptAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-    }
-
-    "service is for PIR" should {
-      "return status 204 if PIR invitation was accepted" in {
-        givenAcceptInvitationSucceeds(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
-        result shouldBe true
-        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, "NI")
-      }
-
-      "return an error if PIR invitation is already actioned" in {
-        givenAcceptInvitationReturnsAlreadyActioned(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, "NI")
-      }
-
-      "return an error if PIR invitation not found" in {
-        givenAcceptInvitationReturnsNotFound(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.acceptAFIInvitation(nino, invitationIdPIR))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
-      }
-    }
-
-    "service is for VAT" should {
-      "return status 204 if VAT invitation was accepted" in {
-        givenAcceptInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe true
-        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-
-      "return an error if VAT invitation is already actioned" in {
-        givenAcceptInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-
-      "return an error if VAT invitation not found" in {
-        givenAcceptInvitationReturnsNotFound(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.acceptVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-    }
-
-    "service is for Trust" should {
-      "return status 204 if Trust invitation was accepted" in {
-        givenAcceptInvitationSucceeds(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe true
-        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
-      }
-
-      "return an error if Trust invitation is already actioned" in {
-        givenAcceptInvitationReturnsAlreadyActioned(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
-      }
-
-      "return an error if Trust invitation not found" in {
-        givenAcceptInvitationReturnsNotFound(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.acceptTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe false
-        verifyAcceptInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
-      }
-    }
-  }
-
-  "Reject invitation" when {
-
-    "service is for ITSA" should {
-      "return status 204 if invitation was rejected" in {
-        givenRejectInvitationSucceeds(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe true
-        verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
-      }
-
-      "return an error if invitation is already actioned" in {
-        givenRejectInvitationReturnsAlreadyActioned(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe false
-        verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
-      }
-
-      "return an error if invitation not found" in {
-        givenRejectInvitationReturnsWithStatus(mtdItId.value, invitationIdITSA, identifierITSA)
-        val result = await(connector.rejectITSAInvitation(mtdItId, invitationIdITSA))
-        result shouldBe false
-        verifyRejectInvitationAttempt(mtdItId.value, invitationIdITSA, identifierITSA)
-      }
-
-      "return status 204 if invitation was rejected and it is alt-itsa" in {
-        givenRejectInvitationSucceeds(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe true
-        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-
-      "return an error if invitation is already actioned and it is alt-Itsa" in {
-        givenRejectInvitationReturnsAlreadyActioned(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe false
-        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-
-      "return an error if invitation not found and it is alt-Itsa" in {
-        givenRejectInvitationReturnsWithStatus(nino.value, invitationIdITSA, "NI")
-        val result = await(connector.rejectAltITSAInvitation(nino, invitationIdITSA))
-        result shouldBe false
-        verifyRejectInvitationAttempt(nino.value, invitationIdITSA, "NI")
-      }
-    }
-
-    "service is for PIR" should {
-      "return status 204 if PIR invitation was rejected" in {
-        givenRejectInvitationSucceeds(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
-        result shouldBe true
-        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
-      }
-
-      "return an error if PIR invitation is already actioned" in {
-        givenRejectInvitationReturnsAlreadyActioned(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
-        result shouldBe false
-        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
-      }
-
-      "return an error if PIR invitation not found" in {
-        givenRejectInvitationReturnsWithStatus(nino.value, invitationIdPIR, identifierPIR)
-        val result = await(connector.rejectAFIInvitation(nino, invitationIdPIR))
-        result shouldBe false
-        verifyRejectInvitationAttempt(nino.value, invitationIdPIR, identifierPIR)
-      }
-    }
-
-    "service is for VAT" should {
-      "return status 204 if VAT invitation was rejected" in {
-        givenRejectInvitationSucceeds(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe true
-        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-
-      "return an error if VAT invitation is already actioned" in {
-        givenRejectInvitationReturnsAlreadyActioned(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe false
-        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-
-      "return an error if VAT invitation not found" in {
-        givenRejectInvitationReturnsWithStatus(validVrn.value, invitationIdVAT, identifierVAT)
-        val result = await(connector.rejectVATInvitation(validVrn, invitationIdVAT))
-        result shouldBe false
-        verifyRejectInvitationAttempt(validVrn.value, invitationIdVAT, identifierVAT)
-      }
-    }
-
-    "service is for Trust" should {
-      "return status 204 if Trust invitation was rejected" in {
-        givenRejectInvitationSucceeds(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe true
-        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
-      }
-
-      "return an error if Trust invitation is already actioned" in {
-        givenRejectInvitationReturnsAlreadyActioned(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe false
-        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
-      }
-
-      "return an error if Trust invitation not found" in {
-        givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust)
-        val result = await(connector.rejectTrustInvitation(validUtr, invitationIdTrust))
-        result shouldBe false
-        verifyRejectInvitationAttempt(validUtr.value, invitationIdTrust, identifierTrust)
+        "return an error if invitation not found" in {
+          givenRejectInvitationReturnsWithStatus(taxId.value, invitationId, taxIdTag)
+          val result = await(connector.respondToInvitation(service, taxId, invitationId, accepted = false))
+          result shouldBe false
+          verifyRejectInvitationAttempt(taxId.value, invitationId, taxIdTag)
+        }
       }
     }
   }

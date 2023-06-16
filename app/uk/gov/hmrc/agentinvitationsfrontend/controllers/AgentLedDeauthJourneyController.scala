@@ -57,6 +57,7 @@ class AgentLedDeauthJourneyController @Inject()(
   identifyClientTrustView: identify_client_trust,
   identifyClientCgtView: identify_client_cgt,
   identifyClientPptView: identify_client_ppt,
+  identifyClientCbcView: identify_client_cbc,
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
@@ -102,6 +103,8 @@ class AgentLedDeauthJourneyController @Inject()(
     getAgencyName = invitationsService.getAgencyName,
     getCgtSubscription = invitationsService.acaConnector.getCgtSubscription,
     getPptSubscription = invitationsService.acaConnector.getPptSubscription,
+    getCbcSubscription = invitationsService.acaConnector.getCbcSubscription,
+    checkCbcKnownFact = invitationsService.acaConnector.checkCbcEmailKnownFact,
     getTrustName = taxId => invitationsService.acaConnector.getTrustName(taxId.value)
   )
 
@@ -161,6 +164,11 @@ class AgentLedDeauthJourneyController @Inject()(
     .whenAuthorisedWithRetrievals(AsAgent)
     .bindForm(PptClientForm.form)
     .applyWithRequest(implicit request => transitions.submitIdentifyClientPpt)
+
+  val submitIdentifyCbcClient: Action[AnyContent] = actions
+    .whenAuthorisedWithRetrievals(AsAgent)
+    .bindForm(CbcClientForm.form)
+    .applyWithRequest(implicit request => transitions.submitIdentifyClientCbc)
 
   def showPostcodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
@@ -305,25 +313,14 @@ class AgentLedDeauthJourneyController @Inject()(
             ))
       }
 
-    case IdentifyClient(ClientType.Business, service) =>
-      service match {
-        case Service.Vat =>
-          Ok(
-            identifyClientVatView(
-              formWithErrors.or(VatClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
-              backLinkFor(breadcrumbs).url,
-              isDeAuthJourney = true
-            ))
-        case Service.Ppt =>
-          Ok(
-            identifyClientPptView(
-              formWithErrors.or(PptClientForm.form),
-              routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
-              backLinkFor(breadcrumbs).url,
-              isDeAuthJourney = true
-            ))
-      }
+    case IdentifyClient(ClientType.Business, Service.Vat) =>
+      Ok(
+        identifyClientVatView(
+          formWithErrors.or(VatClientForm.form),
+          routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
+          backLinkFor(breadcrumbs).url,
+          isDeAuthJourney = true
+        ))
 
     case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
       Ok(
@@ -348,6 +345,15 @@ class AgentLedDeauthJourneyController @Inject()(
         identifyClientPptView(
           formWithErrors.or(PptClientForm.form),
           routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
+          backLinkFor(breadcrumbs).url,
+          isDeAuthJourney = true
+        ))
+
+    case IdentifyClient(_, Service.Cbc | Service.CbcNonUk) =>
+      Ok(
+        identifyClientCbcView(
+          formWithErrors.or(CbcClientForm.form),
+          routes.AgentLedDeauthJourneyController.submitIdentifyCbcClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
         ))

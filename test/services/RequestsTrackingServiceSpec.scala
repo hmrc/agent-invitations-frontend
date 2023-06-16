@@ -16,19 +16,19 @@
 
 package services
 
-import java.net.URL
-import java.time.{LocalDate, LocalDateTime}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{mock, when}
+import play.api.test.Helpers._
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, IndividualDetails, StoredInvitation, TrackedInvitation}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CustomerDetails, IndividualDetails, StoredInvitation}
 import uk.gov.hmrc.agentinvitationsfrontend.services.TrackService
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import support.UnitSpec
-import play.api.test.Helpers._
 
+import java.net.URL
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -19,16 +19,16 @@ package uk.gov.hmrc.agentinvitationsfrontend.connectors
 import com.codahale.metrics.MetricRegistry
 import com.kenshoo.play.metrics.Metrics
 import play.api.Logging
-import play.api.http.Status._
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, _}
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Json, Reads}
+import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.{Nino, SimpleObjectReads}
+import uk.gov.hmrc.domain.{Nino, SimpleObjectReads, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpClient, _}
 
@@ -85,30 +85,6 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   private[connectors] def getAgentInvitationUrl(invitationId: InvitationId): URL =
     new URL(baseUrl, s"/agent-client-authorisation/invitations/${invitationId.value}")
-
-  private[connectors] def acceptITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/accept")
-
-  private[connectors] def acceptAltITSAInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
-
-  private[connectors] def rejectITSAInvitationUrl(mtdItId: MtdItId, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/MTDITID/${mtdItId.value}/invitations/received/${invitationId.value}/reject")
-
-  private[connectors] def rejectAltITSAInvitationUrl(nino: Nino, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
-
-  private[connectors] def acceptAFIInvitationUrl(nino: Nino, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/accept")
-
-  private[connectors] def rejectAFIInvitationUrl(nino: Nino, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/NI/${nino.value}/invitations/received/${invitationId.value}/reject")
-
-  private[connectors] def acceptVATInvitationUrl(vrn: Vrn, invitationId: InvitationId): URL =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/accept")
-
-  private[connectors] def rejectVATInvitationUrl(vrn: Vrn, invitationId: InvitationId) =
-    new URL(baseUrl, s"/agent-client-authorisation/clients/VRN/${vrn.value}/invitations/received/${invitationId.value}/reject")
 
   private[connectors] def cancelInvitationUrl(arn: Arn, invitationId: InvitationId) =
     new URL(baseUrl, s"/agent-client-authorisation/agencies/${arn.value}/invitations/sent/${invitationId.value}/cancel")
@@ -264,169 +240,42 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def acceptITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http
-        .PUT[Boolean, HttpResponse](acceptITSAInvitationUrl(mtdItId, invitationId).toString, false)
-        .map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create ITSA Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptAltITSAInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http
-        .PUT[Boolean, HttpResponse](acceptAltITSAInvitationUrl(nino, invitationId).toString, false)
-        .map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create Alt-ITSA Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectITSAInvitation(mtdItId: MtdItId, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http
-        .PUT[Boolean, HttpResponse](rejectITSAInvitationUrl(mtdItId, invitationId).toString, false)
-        .map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject ITSA Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectAltITSAInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http
-        .PUT[Boolean, HttpResponse](rejectAltITSAInvitationUrl(nino, invitationId).toString, false)
-        .map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject Alt-ITSA Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](acceptAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create IRV Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectAFIInvitation(nino: Nino, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](rejectAFIInvitationUrl(nino, invitationId).toString, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject IRV Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](acceptVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create VAT Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectVATInvitation(vrn: Vrn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      http.PUT[Boolean, HttpResponse](rejectVATInvitationUrl(vrn, invitationId).toString, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject VAT Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptTrustInvitation(trustTaxIdentifier: TrustTaxIdentifier, invitationId: InvitationId)(
+  def respondToInvitation(service: Service, taxId: TaxIdentifier, invitationId: InvitationId, accepted: Boolean)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val identifier = trustTaxIdentifier match {
-        case Utr(_) => "UTR"
-        case Urn(_) => "URN"
-      }
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/$identifier/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/accept").toString
+    ec: ExecutionContext): Future[Boolean] = {
+    val taxIdType = (service, taxId) match {
+      /* TODO [Service onboarding]
+         another pattern match that could be centralised. But we still have several anomalies which make usage vary...
+         e.g. alt-ITSA (MtdIt with Nino instead of MtdItId)
+         also in some places we use "NI" and elsewhere "NINO" and "ni" :(
+         also sometimes we use "UTR", other times "SAUTR", the upper/lowercase is inconsistent... Sort this out */
+      case (Service.MtdIt, MtdItId(_))                => "MTDITID"
+      case (Service.MtdIt, Nino(_))                   => "NI" // alt-ITSA
+      case (Service.PersonalIncomeRecord, Nino(_))    => "NI"
+      case (Service.Vat, Vrn(_))                      => "VRN"
+      case (Service.Trust | Service.TrustNT, Utr(_))  => "UTR"
+      case (Service.Trust | Service.TrustNT, Urn(_))  => "URN"
+      case (Service.CapitalGains, CgtRef(_))          => "CGTPDRef"
+      case (Service.Ppt, PptRef(_))                   => "EtmpRegistrationNumber"
+      case (Service.Cbc | Service.CbcNonUk, CbcId(_)) => "cbcId"
+    }
+    val isAltItsa = (service, taxId) match {
+      case (Service.MtdIt, Nino(_)) => true
+      case _                        => false
+    }
+    val acceptReject: String = if (accepted) "accept" else "reject"
+    val url = new URL(
+      baseUrl,
+      s"/agent-client-authorisation/clients/$taxIdType/${taxId.value}/invitations/received/${invitationId.value}/$acceptReject").toString
+    monitor(s"ConsumedAPI-${acceptReject.capitalize}-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
     }.recover {
       case e =>
-        logger.error(s"Create Trust Relationship Failed: ${e.getMessage}")
+        val ifAltItsa = if (isAltItsa) "(alt-ITSA)" else ""
+        logger.error(s"${acceptReject.capitalize} $service $ifAltItsa invitation failed: ${e.getMessage}")
         false
     }
-
-  def rejectTrustInvitation(trustTaxIdentifier: TrustTaxIdentifier, invitationId: InvitationId)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val identifier = trustTaxIdentifier match {
-        case Utr(_) => "UTR"
-        case Urn(_) => "URN"
-      }
-      val url = new URL(
-        baseUrl,
-        s"/agent-client-authorisation/clients/$identifier/${trustTaxIdentifier.value}/invitations/received/${invitationId.value}/reject").toString
-      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject Trust Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val url =
-        new URL(baseUrl, s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/accept").toString
-      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create Cgt Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectCgtInvitation(cgtRef: CgtRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val url =
-        new URL(baseUrl, s"/agent-client-authorisation/clients/CGTPDRef/${cgtRef.value}/invitations/received/${invitationId.value}/reject").toString
-      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject CGT Invitation Failed: ${e.getMessage}")
-        false
-    }
-
-  def acceptPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Accept-Invitation-PUT") {
-      val url =
-        new URL(
-          baseUrl,
-          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/accept").toString
-      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Create PPT Relationship Failed: ${e.getMessage}")
-        false
-    }
-
-  def rejectPptInvitation(pptRef: PptRef, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    monitor(s"ConsumedAPI-Reject-Invitation-PUT") {
-      val url =
-        new URL(
-          baseUrl,
-          s"/agent-client-authorisation/clients/EtmpRegistrationNumber/${pptRef.value}/invitations/received/${invitationId.value}/reject").toString
-      http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        logger.error(s"Reject PPT Invitation Failed: ${e.getMessage}")
-        false
-    }
+  }
 
   def cancelInvitation(arn: Arn, invitationId: InvitationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
     monitor("ConsumedApi-Cancel-Invitation-PUT") {
@@ -601,6 +450,25 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     }
   }
 
+  def checkCbcEmailKnownFact(cbcId: CbcId, email: String)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/cbc/${cbcId.value}").toString
+    monitor(s"ConsumedAPI-Get-CBC-KnownFacts-POST") {
+      http
+        .POST[JsObject, HttpResponse](url, Json.obj("email" -> email))
+        .map { response =>
+          response.status match {
+            case OK | NO_CONTENT => true
+            case NOT_FOUND | FORBIDDEN =>
+              logger.warn(s"CBC known fact check failed for cbcId: ${cbcId.value}")
+              false
+            case status =>
+              logger.warn(s"Unexpected response status $status for CBC known fact check for cbcId: ${cbcId.value}")
+              false
+          }
+        }
+    }
+  }
+
   def getAgencyName(arn: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
       http.GET[HttpResponse](s"$baseUrl/agent-client-authorisation/client/agency-name/$arn").map { r =>
@@ -697,6 +565,24 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
           false
       }
     }
+
+  def getCbcSubscription(cbcId: CbcId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[SimpleCbcSubscription]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/cbc/subscriptions/${cbcId.value}").toString
+
+    monitor(s"ConsumedAPI-Get-CBC-subscription-GET") {
+      http.GET[HttpResponse](url).map { response =>
+        response.status match {
+          case OK => Some(response.json.as[SimpleCbcSubscription])
+          case NOT_FOUND =>
+            logger.warn(s"CBC Subscription not found for cbcId: ${cbcId.value}")
+            None
+          case status =>
+            logger.warn(s"getCbcName: unexpected response $status for cbcId ${cbcId.value}")
+            None
+        }
+      }
+    }
+  }
 
   object Reads {
 

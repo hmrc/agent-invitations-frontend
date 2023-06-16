@@ -23,7 +23,7 @@ import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, ClientIdType, MtdItIdType, PptRef}
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
@@ -174,6 +174,14 @@ object Validators {
       }
     }
 
+  val validCbcId: Constraint[String] = Constraint[String] { cbcString: String =>
+    cbcString match {
+      case empty if empty.isEmpty        => Invalid("error.cbcid.required")
+      case cbcId if CbcId.isValid(cbcId) => Valid
+      case _                             => Invalid("error.cbcid.invalid-format")
+    }
+  }
+
   private def validateTrustTaxIdentifier(nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>
       val formattedField = fieldValue.replace(" ", "").trim
@@ -197,19 +205,11 @@ object Validators {
     }
 
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
-    fieldValue match {
-      case clientId if clientId.nonEmpty && clientId.matches(ninoRegex) =>
-        if (Nino.isValid(clientId)) Valid
-        else Invalid(ValidationError("INVALID_NINO"))
-      case clientId if clientId.nonEmpty && clientId.matches(vrnRegex) && Vrn.isValid(clientId) => Valid
-      case clientId if clientId.nonEmpty && clientId.matches(utrPattern)                        => Valid
-      case clientId if clientId.nonEmpty && clientId.matches(urnPattern)                        => Valid
-      case clientId if clientId.nonEmpty && CgtRef.isValid(clientId)                            => Valid
-      case clientId if clientId.nonEmpty && PptRef.isValid(clientId)                            => Valid
-      case _ =>
-        Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
-
-    }
+    /* TODO [Service onboarding]
+      it is really dodgy to try to "validate" a clientId without knowing what it is. We should validate it in conjunction with its type! */
+    val supportedTypesNoMtdIt = ClientIdType.supportedTypes.toSet - MtdItIdType // we need to exclude MTDITID as it is too permissive - it would match everything!
+    val isValid = fieldValue.nonEmpty && supportedTypesNoMtdIt.exists(clientIdType => clientIdType.isValid(fieldValue))
+    if (isValid) Valid else Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
   }
 
   def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>

@@ -47,14 +47,13 @@ trait TestDataCommonSupport {
   val validUrn = Urn("XXTRUST10000100")
   val invitationIdTrust = InvitationId("DF99K6PXSBHTF")
   val invitationIdTrustNT = InvitationId("FF99K6PXSBHTF")
-  val serviceTrust = "HMRC-TERS-ORG"
-  val serviceTrustNT = "HMRC-TERSNT-ORG"
   val identifierTrust = "UTR"
 
-  val serviceCgt = "HMRC-CGT-PD"
   val invitationIdCgt = InvitationId("EF99K6PXSBHTF")
 
-  val invitationIdPpt = InvitationId("EF99K6PXSBHTG")
+  val invitationIdPpt = InvitationId("GF99K6PXSBHTG")
+  val invitationIdCbc = InvitationId("HF99K6PXSBHTG")
+  val invitationIdCbcNonUk = InvitationId("IF99K6PXSBHTG")
 
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val trustNotFoundJson =
@@ -64,6 +63,7 @@ trait TestDataCommonSupport {
 
   val cgtRef = CgtRef("XMCGTP123456789")
   val pptRef = PptRef("XAPPT0000012345")
+  val cbcId = CbcId("XACBC0516273849")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 

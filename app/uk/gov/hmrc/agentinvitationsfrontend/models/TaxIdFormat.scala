@@ -20,9 +20,15 @@ import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
+/**
+  * A single-string and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
+  */
 object TaxIdFormat {
-  //TODO: Move this format into agent-mtd-identifiers
-  // A simple and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
+  /* TODO [Service onboarding]
+     Here we have yet another "client id type <-> tag" mapping that is inconsistent with other places.
+     Consider changing these tags to be the same as the ones used elsewhere.
+     (But we must ensure there is no persistent data stored under this format - other than temp session data)
+   */
   implicit val taxIdFormat = new Format[TaxIdentifier] {
     override def writes(o: TaxIdentifier): JsValue = o match {
       case x: Nino   => JsString(s"Nino|${x.value}")
@@ -31,6 +37,7 @@ object TaxIdFormat {
       case x: Urn    => JsString(s"Urn|${x.value}")
       case x: CgtRef => JsString(s"CgtRef|${x.value}")
       case x: PptRef => JsString(s"PptRef|${x.value}")
+      case x: CbcId  => JsString(s"CbcId|${x.value}")
       case x         => throw new IllegalArgumentException(s"Unsupported tax identifier: $x")
     }
 
@@ -44,6 +51,7 @@ object TaxIdFormat {
           case "Urn"    => JsSuccess(Urn(id))
           case "CgtRef" => JsSuccess(CgtRef(id))
           case "PptRef" => JsSuccess(PptRef(id))
+          case "CbcId"  => JsSuccess(CbcId(id))
           case x        => JsError(s"Invalid tax identifier type: $x")
         }
       case _ => JsError("Invalid tax identifier JSON")

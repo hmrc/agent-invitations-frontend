@@ -75,6 +75,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     type GetAgencyName = Arn => Future[String]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
+    type GetCbcSubscription = CbcId => Future[Option[SimpleCbcSubscription]]
+    type CheckCbcKnownFact = (CbcId, String /* email */ ) => Future[Boolean]
     type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
   }
 
@@ -93,6 +95,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     getAgencyName: GetAgencyName,
     getCgtSubscription: GetCgtSubscription,
     getPptSubscription: GetPptSubscription,
+    getCbcSubscription: GetCbcSubscription,
+    checkCbcKnownFact: CheckCbcKnownFact,
     getTrustName: GetTrustName
   ) {
 
@@ -209,6 +213,23 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
             case None =>
               PptRefNotFound(pptClient.pptRef)
           }
+      }
+
+    def submitIdentifyClientCbc(agent: AuthorisedAgent)(cbcClient: CbcClient): AgentLedDeauthJourneyModel.Transition =
+      Transition {
+        case state @ IdentifyClient(clientType, Service.Cbc | Service.CbcNonUk) =>
+          for {
+            knownFactOk <- checkCbcKnownFact(cbcClient.cbcId, cbcClient.email)
+            nextState <- if (knownFactOk) {
+                          for {
+                            maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
+                            subscription = maybeSubscription.getOrElse(
+                              throw new RuntimeException(s"CBC subscription for ${cbcClient.cbcId} not found!"))
+                            adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
+                            clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
+                          } yield ConfirmClient(clientType, adjustedService, Some(clientName), cbcClient.cbcId)
+                        } else Future.successful(KnownFactNotMatched)
+          } yield nextState
       }
 
     def confirmPostcodeCgt(agent: AuthorisedAgent)(postcode: Postcode): AgentLedDeauthJourneyModel.Transition =
