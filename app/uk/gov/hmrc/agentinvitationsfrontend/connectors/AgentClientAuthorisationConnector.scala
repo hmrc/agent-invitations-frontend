@@ -574,7 +574,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         response.status match {
           case OK => Some(response.json.as[SimpleCbcSubscription])
           case NOT_FOUND =>
-            logger.warn(s"PPT Subscription not found for pptRef: ${cbcId.value}")
+            logger.warn(s"CBC Subscription not found for cbcId: ${cbcId.value}")
             None
           case status =>
             logger.warn(s"getCbcName: unexpected response $status for cbcId ${cbcId.value}")
