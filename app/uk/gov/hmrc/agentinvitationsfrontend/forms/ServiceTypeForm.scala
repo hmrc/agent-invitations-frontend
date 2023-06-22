@@ -29,9 +29,9 @@ object ServiceTypeForm {
   val form: Form[Service] =
     Form[Service](
       single(
-        "serviceType" -> normalizedText
-          .verifying("service.type.invalid", serviceId => supportedServices.exists(_.id == serviceId))
-          .transform[Service](Service.forId, _.id)
+        "serviceType" -> optional(normalizedText)
+          .verifying("service.type.invalid", serviceId => supportedServices.exists(_.id == serviceId.getOrElse("")))
+          .transform[Service](o => Service.forId(o.getOrElse("")), (svc: Service) => Some(svc.id))
       )
     )
 

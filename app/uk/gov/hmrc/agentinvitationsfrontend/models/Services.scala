@@ -38,6 +38,7 @@ object Services {
   val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
   val supportedTrustServices: Set[Service] =
     Set(Service.CapitalGains, Service.Trust /* implies also TrustNT */, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
+
   def supportedServicesFor(clientType: ClientType): Set[Service] = clientType match {
     case ClientType.Personal => supportedPersonalServices
     case ClientType.Business => supportedBusinessServices
@@ -45,12 +46,14 @@ object Services {
   }
 
   def supportedEnrolmentKeys: Set[String] = supportedServices.map(_.enrolmentKey).toSet
+
   def supportedEnrolmentKeysFor(clientType: ClientType): Set[String] = {
     val enrolmentKeys = supportedServicesFor(clientType).map(_.enrolmentKey)
     clientType match {
-      case ClientType.Trust    => enrolmentKeys + Service.TrustNT.enrolmentKey // add the non-taxable trust enrolment key if the client is a trust
-      case ClientType.Business => enrolmentKeys + Service.PersonalIncomeRecord.enrolmentKey // NINO is sometimes found on Org type creds
-      case _                   => enrolmentKeys
+      case ClientType.Trust => enrolmentKeys + Service.TrustNT.enrolmentKey // add the non-taxable trust enrolment key if the client is a trust
+      case ClientType.Business =>
+        enrolmentKeys + Service.PersonalIncomeRecord.enrolmentKey + Service.CbcNonUk.enrolmentKey // NINO is sometimes found on Org type creds
+      case _ => enrolmentKeys
     }
   }
 
