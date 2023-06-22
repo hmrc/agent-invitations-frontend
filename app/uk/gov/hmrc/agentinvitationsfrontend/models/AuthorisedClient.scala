@@ -51,7 +51,8 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
 
   private def organisationCoverageResultIgnoringIRV(enrolKeys: Set[String]): EnrolmentCoverage =
     Services.supportedEnrolmentKeysFor(ClientType.Business) diff enrolKeys match {
-      case set if set == Set(Service.PersonalIncomeRecord.enrolmentKey) | set.isEmpty => AllSupportedMTDEnrolments
-      case _                                                                          => SomeSupportedMTDEnrolments
+      case set if set == Set(Service.PersonalIncomeRecord.enrolmentKey, Service.Cbc.enrolmentKey) | set.isEmpty      => AllSupportedMTDEnrolments
+      case set if set == Set(Service.PersonalIncomeRecord.enrolmentKey, Service.CbcNonUk.enrolmentKey) | set.isEmpty => AllSupportedMTDEnrolments
+      case _                                                                                                         => SomeSupportedMTDEnrolments
     }
 }
