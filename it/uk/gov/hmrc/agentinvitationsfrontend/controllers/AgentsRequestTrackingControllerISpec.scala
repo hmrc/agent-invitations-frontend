@@ -175,6 +175,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
     }
 
+    "render Country by country non UK pending invitations" in {
+
+
+    }
+
     behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
   }
 

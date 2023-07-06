@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import uk.gov.hmrc.agentinvitationsfrontend.connectors._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentmtdidentifiers.model.Service.{HMRCCBCNONUKORG, HMRCCBCORG}
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, MtdItId, Service, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -194,7 +195,9 @@ class TrackService @Inject()(
       val invalid = a.filter(_.status == "InvalidRelationship").sorted(TrackInformationSorted.orderingByDate).reverse
       val accepted = a.filter(_.status == "Accepted")
       val deauthed = a.filter(_.status == "Deauthorised")
-      val acceptedOrDeauthed = (accepted.toList ::: deauthed.toList).sorted(TrackInformationSorted.orderingByDate).reverse
+      val acceptedOrDeauthed = (accepted.toList ::: deauthed.toList)
+        .sorted(TrackInformationSorted.orderingByDate)
+        .reverse
 
       logDiscrepancy(invalid, deauthed)
 
@@ -210,7 +213,7 @@ class TrackService @Inject()(
                   .map(Some(_))
                   .zipAll(
                     invalid
-                      .filter(_.service == hd.service)
+                      .filter(invalid => servicesMatch(invalid, hd))
                       .map(Some(_)),
                     None,
                     None)
@@ -273,6 +276,12 @@ class TrackService @Inject()(
     logger.warn(s"Deauthed contains $deauthedButNotInvalid not in Invalid")
     logger.warn(s"Invalid contains $invalideButNotDeauthed not in Deauthed")
   }
+
+  private def servicesMatch(invalid: TrackInformationSorted, agentReq: TrackInformationSorted): Boolean =
+    agentReq.service match {
+      case Some(Service.CbcNonUk) => invalid.service.contains(Service.Cbc)
+      case _                      => invalid.service == agentReq.service
+    }
 
   case class TrackResultsPage(results: Seq[TrackInformationSorted], totalResults: Int, clientSet: Set[String])
 }
