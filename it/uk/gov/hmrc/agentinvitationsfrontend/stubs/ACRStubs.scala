@@ -119,6 +119,36 @@ trait ACRStubs {
     )
   }
 
+  def givenInactiveCbcRelationships() = {
+    val now = LocalDate.now()
+    stubFor(
+      get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              s"""
+                 |[{
+                 |   "arn":"TARN0000001",
+                 |   "clientType":"business",
+                 |   "dateTo":"${now.minusDays(10)}",
+                 |   "dateFrom":"${now.minusDays(14).toString}",
+                 |   "clientId":"XCBC1111111111",
+                 |   "service":"HMRC-CBC-ORG"
+                 |},
+                 |{  "arn":"TARN0000001",
+                 |   "clientType":"business",
+                 |   "dateTo":"${now.minusDays(10).toString}",
+                 |   "dateFrom":"${now.minusDays(12)}",
+                 |   "clientId":"XCBC2222222222",
+                 |   "service":"HMRC-CBC-ORG"
+                 |}
+                 |]""".stripMargin
+            )
+        )
+    )
+  }
+
 
   def givenInactiveRelationshipsNotFound =
     stubFor(

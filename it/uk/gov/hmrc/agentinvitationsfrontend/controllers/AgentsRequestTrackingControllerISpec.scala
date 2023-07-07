@@ -175,6 +175,27 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
     }
 
+    "render Country by country non UK pending invitations" in {
+
+      givenGetCbcInvitations()
+      givenInactiveCbcRelationships()
+      givenInactiveAfiRelationshipNotFound
+      givenPutAltItsaAuth(arn)
+
+      val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
+      status(resultPageOne) shouldBe 200
+      checkHtmlResultWithBodyText(
+        resultPageOne,
+        "Cbc UK Company",
+        "Cbc Non-UK Company",
+        "You cancelled your authorisation",
+        s"${displayDate(LocalDate.now().minusDays(10))}",
+        s"${displayDate(LocalDate.now().minusDays(10))}",
+        "Start new request",
+        htmlEscapedMessage("recent-invitations.description", 30))
+
+    }
+
     behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
   }
 
