@@ -995,6 +995,22 @@ trait ACAStubs {
             ).mkString("[", ",", "]")))))
   }
 
+  def givenGetCbcInvitations() = {
+    def nowMinus(d: Int) = LocalDate.now().minusDays(d).atStartOfDay()
+    val expiryDate = nowMinus(10).toLocalDate.toString
+    stubFor(
+      get(urlPathEqualTo(s"/agent-client-authorisation/agencies/${encodePathSegment("TARN0000001")}/invitations/sent"))
+        .withQueryParam("createdOnOrAfter", equalTo(LocalDate.now.minusDays(30).toString))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(halEnvelope(Seq(
+              invitationTemporal(nowMinus(10), "Accepted", Service.Cbc, "cbcId", "Cbc UK Company","XCBC1111111111", "foo1", expiryDate, false, None),
+              invitationTemporal(nowMinus(10), "Accepted", Service.CbcNonUk, "cbcId", "Cbc Non-UK Company","XCBC2222222222", "foo2", expiryDate, false, None)
+            ).mkString("[", ",", "]")))))
+  }
+
+
 
   def givenASingleInvitationWithRelationshipEnded(
                                                    clientId: String,
