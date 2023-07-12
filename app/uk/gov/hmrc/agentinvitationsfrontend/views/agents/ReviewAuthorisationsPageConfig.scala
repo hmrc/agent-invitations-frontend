@@ -41,7 +41,7 @@ case class ReviewAuthorisationsPageConfig(
   val clientNamesAreDifferent: Boolean = basket.toSeq.map(_.clientName).distinct.length != 1
 
   def basketFull: Boolean =
-    InvitationsBasket(clientType, services, basket, featureFlags).availableServices.isEmpty
+    InvitationsBasket(clientType, services, basket, featureFlags).availableServicesAndNames.isEmpty
 
   def showDeleteCall(itemId: String): Call =
     routes.AgentInvitationJourneyController.showDeleteAuthorisation(itemId)
