@@ -823,7 +823,7 @@ object AgentInvitationFastTrackJourneyController {
     knownFactsForm(DateFieldHelper.dateFieldsMapping("ppt-registration"))
 
   def agentFastTrackCbcEmailForm: Form[String] =
-    knownFactsForm(normalizedText) // TODO [CBC Onboarding] validate the email.
+    knownFactsForm(emailMapping)
 
   private def getKnownFactFormForService(service: Service) =
     service match {

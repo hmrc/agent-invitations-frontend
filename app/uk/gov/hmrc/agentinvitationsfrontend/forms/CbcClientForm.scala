@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import uk.gov.hmrc.agentinvitationsfrontend.models.CbcClient
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, uppercaseNormalizedText, validCbcId}
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{emailMapping, uppercaseNormalizedText, validCbcId}
 import uk.gov.hmrc.agentmtdidentifiers.model.CbcId
 
 object CbcClientForm {
@@ -27,7 +27,7 @@ object CbcClientForm {
   val form: Form[CbcClient] = Form(
     mapping(
       "cbcId" -> uppercaseNormalizedText.verifying(validCbcId).transform[CbcId](CbcId(_), _.value),
-      "email" -> normalizedText /* TODO [CBC onboarding]: email validation */
+      "email" -> emailMapping
     )(CbcClient.apply)(CbcClient.unapply)
   )
 

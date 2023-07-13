@@ -20,6 +20,12 @@ identify-client.itsa.p1=This will help us match their details against informatio
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
+identify-client.cbc.hint=identify-client.cbc.hint
+identify-client.cbc.p1=identify-client.cbc.p1
+identify-cbc-client.email.label=identify-cbc-client.email.label
+identify-cbc-client.email.hint=identify-cbc-client.email.hint
+
+
 
 # Nino
 identify-client.nino.label=National Insurance number
@@ -279,6 +285,7 @@ check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation
 check-details.p.HMRC-TERSNT-ORG=You are about to start a request for authorisation to submit a client’s tax returns through software.
 check-details.p.HMRC-CGT-PD=You are about to start a request for authorisation to manage a client’s Capital Gains Tax on UK property account.
 check-details.p.HMRC-PPT-ORG=You are about to start a request for authorisation to manage a client’s Plastic Packaging Tax.
+check-details.p.HMRC-CBC-ORG=check-details.p.HMRC-CBC-ORG
 check-details.table.heading=Client’s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
@@ -288,12 +295,14 @@ check-details.client-type.business.HMRC-TERSNT-ORG=Trust or an estate
 check-details.client-type.trust.HMRC-TERS-ORG=Trust or an estate
 check-details.client-type.trust.HMRC-TERSNT-ORG=Trust or an estate
 check-details.client-type.business.HMRC-CGT-PD=A trust or an estate
+check-details.client-type.business.HMRC-CBC-ORG=check-details.client-type.business.HMRC-CBC-ORG
 check-details.client-type.trust.HMRC-CGT-PD=A trust or an estate
 check-details.client-type.business.HMRC-PPT-ORG=Company or partnership
 check-details.client-type.trust.HMRC-PPT-ORG=A trust or an estate
 check-details.nino=National Insurance number
 check-details.vrn=VAT registration number
 check-details.ppt-reg-date=Plastic Packaging Tax registration date
+check-details.cbc-email=check-details.cbc-email
 check-details.postcode=Postcode
 check-details.dob=Date of birth
 check-details.vat-reg-date=VAT registration date
@@ -301,6 +310,7 @@ check-details.utr=Unique Taxpayer Reference
 check-details.urn=Unique Reference Number
 check-details.cgt=Capital Gains Tax account reference
 check-details.ppt=Plastic Packaging Tax reference
+check-details.cbc=check-details.cbc
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
 confirm-details.sub-header=Are these details correct?
