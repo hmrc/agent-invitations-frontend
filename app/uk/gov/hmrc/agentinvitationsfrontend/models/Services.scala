@@ -32,6 +32,15 @@ object Services {
       Service.Cbc,
       Service.CbcNonUk)
 
+  /* The following sets of services have different backend representations, but are presented to the user as one.
+     Therefore if one service is already subscribed to, the other won't be shown as an option, etc.
+   */
+  val aliasedServices: Set[Set[Service]] = Set(
+    Set(Service.Trust, Service.TrustNT),
+    Set(Service.Cbc, Service.CbcNonUk)
+  )
+  def aliases(service: Service): Set[Service] = aliasedServices.find(_.contains(service)).getOrElse(Set(service))
+
   // These are the options that the user will be shown on the 'select service' page.
   // TODO: Can they be merged with the 'all supported enrolment keys' above?
   val supportedPersonalServices: Set[Service] = Set(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.CapitalGains, Service.Ppt)
@@ -57,13 +66,9 @@ object Services {
     }
   }
 
-  def isSupported(clientType: ClientType, service: Service): Boolean = (clientType, service) match {
-    case (clientType, Service.TrustNT) =>
-      isSupported(clientType, Service.Trust) // must check this separately as it is not separately listed in the supported services
-    case (clientType, Service.CbcNonUk) =>
-      isSupported(clientType, Service.Cbc) // must check this separately as it is not separately listed in the supported services
-    case _ => supportedServicesFor(clientType).contains(service)
-  }
+  def isSupported(clientType: ClientType, service: Service): Boolean =
+    // Check if this service or any of its aliases are supported.
+    aliases(service).exists(svc => supportedServicesFor(clientType).contains(svc))
 
   def supportedClientTypesFor(service: Service): Seq[ClientType] = ClientType.clientTypes.filter(ct => isSupported(ct, service))
 

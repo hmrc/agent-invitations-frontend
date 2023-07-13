@@ -49,7 +49,7 @@ case class SelectServicePageConfig(
     * and what they have already selected in their basket
     * */
   def availableServices: Seq[(Service, String)] =
-    InvitationsBasket(clientType, services, basket, featureFlags).availableServices.toSeq.sortBy(_._1)(Services.serviceDisplayOrdering)
+    InvitationsBasket(clientType, services, basket, featureFlags).availableServicesAndNames.toSeq.sortBy(_._1)(Services.serviceDisplayOrdering)
 
   /** The header to use when multiple trust service selections available */
   def selectHeaderMessage(implicit messages: Messages): String = Messages("select-service.header")

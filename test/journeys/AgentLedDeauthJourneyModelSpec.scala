@@ -16,8 +16,8 @@
 
 package journeys
 
-import java.time.LocalDate
 import play.api.test.Helpers._
+import support.TestIdentifiers._
 import support.{TestFeatureFlags, UnitSpec}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.TransitionEffects._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
@@ -27,9 +27,10 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -46,28 +47,12 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
   val postCode = "BN114AW"
-  val vrn = "123456"
-  val nino = "AB123456A"
   val vatRegDate = "2010-10-10"
   val dob = "1990-10-10"
 
-  val utr = Utr("1977030537")
   val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
-  val cgtRef = CgtRef("XMCGTP123456789")
-  val pptRef = PptRef("XAPPT0000012345")
-  val cbcId = CbcId("XACBC0000011111")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
-
-  def anIdentifierFor(service: Service): TaxIdentifier = service match {
-    case Service.MtdIt                => Nino(nino)
-    case Service.PersonalIncomeRecord => Nino(nino)
-    case Service.Vat                  => Vrn(vrn)
-    case Service.Trust                => utr
-    case Service.CapitalGains         => cgtRef
-    case Service.Ppt                  => pptRef
-    case Service.Cbc                  => cbcId
-  }
 
   def getClientName(clientId: String, service: Service) = Future(Some("John Smith"))
 
@@ -182,9 +167,9 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state IdentifyClientPersonal" should {
-      val itsaClient = ItsaClient(nino, postCode)
-      val irvClient = IrvClient(nino, dob)
-      val vatClient = VatClient(vrn, vatRegDate)
+      val itsaClient = ItsaClient(nino.value, postCode)
+      val irvClient = IrvClient(nino.value, dob)
+      val vatClient = VatClient(vrn.value, vatRegDate)
       val cgtClient = CgtClient(cgtRef)
 
       "transition to ConfirmClientItsa when postcode matches" in {
@@ -193,7 +178,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
           .copy(checkPostcodeMatches = postcodeMatches)
           .submitIdentifyClientItsa(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.MtdIt, Some("John Smith"), Nino(nino)))
+          ConfirmClient(ClientType.Personal, Service.MtdIt, Some("John Smith"), nino))
       }
       "transition to KnownFactNotMatched when postcode does not match" in {
         def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
@@ -215,7 +200,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
             .copy(checkPostcodeMatches = postcodeDoesNotMatch)
-            .submitIdentifyClientItsa(authorisedAgent)(ItsaClient(nino, ""))
+            .submitIdentifyClientItsa(authorisedAgent)(ItsaClient(nino.value, ""))
         }.getMessage shouldBe "Postcode expected but none found"
       }
       "transition to ConfirmCancel when dob matches" in {
@@ -223,7 +208,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
         given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
           .copy(checkDOBMatches = dobMatches)
-          .submitIdentifyClientIrv(authorisedAgent)(irvClient) should thenGo(ConfirmCancel(Service.PersonalIncomeRecord, Some("John Smith"), nino))
+          .submitIdentifyClientIrv(authorisedAgent)(irvClient) should thenGo(
+          ConfirmCancel(Service.PersonalIncomeRecord, Some("John Smith"), nino.value))
       }
       "transition to KnownFactNotMatched when dob does not match" in {
         def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
@@ -245,14 +231,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
             .copy(checkDOBMatches = dobDoesNotMatch)
-            .submitIdentifyClientIrv(authorisedAgent)(IrvClient(nino, ""))
+            .submitIdentifyClientIrv(authorisedAgent)(IrvClient(nino.value, ""))
         }.getMessage shouldBe "Date of birth expected but none found"
       }
       "transition to ConfirmClientVat when vat reg date matches" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
           .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactCheckOk))
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn(vrn)))
+          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn(vrn.value)))
       }
       "transition to KnownFactNotMatched when vat reg date does not match" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
@@ -282,7 +268,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
             .copy(checkVatRegDateMatches = vatCheckReturns(VatDetailsNotFound))
-            .submitIdentifyClientVat(authorisedAgent)(VatClient(vrn, ""))
+            .submitIdentifyClientVat(authorisedAgent)(VatClient(vrn.value, ""))
         }.getMessage shouldBe "Vat registration date expected but none found"
       }
 
@@ -302,12 +288,12 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state IdentifyClientBusiness" should {
-      val vatClient = VatClient(vrn, vatRegDate)
+      val vatClient = VatClient(vrn.value, vatRegDate)
       "transition to ConfirmClientVat when known fact matches" in {
         given(IdentifyClient(ClientType.Business, Service.Vat)) when transitionsWithActiveRelationship
           .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactCheckOk))
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Business, Service.Vat, Some("John Smith"), Vrn(vrn)))
+          ConfirmClient(ClientType.Business, Service.Vat, Some("John Smith"), Vrn(vrn.value)))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         given(IdentifyClient(ClientType.Business, Service.Vat)) when transitionsWithActiveRelationship
@@ -389,7 +375,7 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
                 transitions
                   .copy(hasPartialAuthorisationFor = (_, _) => Future(true))
                   .clientConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-                ConfirmCancel(Service.MtdIt, Some("Lucy Rose"), nino, true)
+                ConfirmCancel(Service.MtdIt, Some("Lucy Rose"), nino.value, true)
               )
             }
             "transition to root when there is only a partial auth (auth-itsa) and NO is selected" in {
@@ -407,13 +393,14 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
     "at state ConfirmCancel" should {
       "transition to AuthorisationCancelled when YES is selected" in {
-        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino.value)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
           AuthorisationCancelled(Service.MtdIt, Some("Holly Herndon"), "Popeye")
         )
       }
 
       "transition to AuthorisationCancelled when YES is selected for alt-itsa" in {
-        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino, true)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino.value, true)) when transitions.cancelConfirmed(authorisedAgent)(
+          Confirmation(true)) should thenGo(
           AuthorisationCancelled(Service.MtdIt, Some("Holly Herndon"), "Popeye")
         )
       }
@@ -425,21 +412,22 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to select client type when NO is selected" in {
-        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
+        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino.value)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
           SelectClientType
         )
       }
 
       "transition to select client type when NO is selected for alt-itsa" in {
-        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino, true)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(false)) should thenGo(
+        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino.value, true)) when transitions.cancelConfirmed(authorisedAgent)(
+          Confirmation(false)) should thenGo(
           SelectClientType
         )
       }
       "transition to ResponseFailed when the relationship termination fails" in {
-        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino)) when transitions
+        given(ConfirmCancel(Service.MtdIt, Some("Holly Herndon"), nino.value)) when transitions
           .copy(deleteRelationship = deleteRelationshipFails)
           .cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          ResponseFailed(Service.MtdIt, Some("Holly Herndon"), nino)
+          ResponseFailed(Service.MtdIt, Some("Holly Herndon"), nino.value)
         )
       }
     }
