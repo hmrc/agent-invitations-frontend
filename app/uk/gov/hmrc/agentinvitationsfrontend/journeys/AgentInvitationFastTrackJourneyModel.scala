@@ -368,7 +368,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
                             result <- checkIfPendingOrActiveAndGoto(
                                        ftr,
                                        agent.arn,
-                                       Invitation(ftr.clientType, adjustedService, ftr.clientId),
+                                       Invitation(ftr.clientType, adjustedService, cbcClient.cbcId),
                                        continueUrl
                                      )(appConfig)
                           } yield result
@@ -521,20 +521,22 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
           } else goto(IdentifyClient(fastTrackRequest, continueUrl))
 
         case cdc @ CheckDetails(fastTrackRequest, continueUrl) if Seq(Service.Cbc, Service.CbcNonUk).contains(cdc.service) =>
-          val cbcId = CbcId(fastTrackRequest.clientId.value)
-          val emailKnownFact = fastTrackRequest.knownFact.getOrElse("")
+          if (confirmation.choice) {
+            val cbcId = CbcId(fastTrackRequest.clientId.value)
+            val emailKnownFact = fastTrackRequest.knownFact.getOrElse("")
 
-          checkCbcKnownFact(cbcId, emailKnownFact).flatMap {
-            case true =>
-              checkIfPendingOrActiveAndGoto(
-                fastTrackRequest,
-                agent.arn,
-                Invitation(fastTrackRequest.clientType, cdc.service, fastTrackRequest.clientId),
-                continueUrl
-              )(appConfig)
-            case false =>
-              goto(ClientNotFound(fastTrackRequest, continueUrl))
-          }
+            checkCbcKnownFact(cbcId, emailKnownFact).flatMap {
+              case true =>
+                checkIfPendingOrActiveAndGoto(
+                  fastTrackRequest,
+                  agent.arn,
+                  Invitation(fastTrackRequest.clientType, cdc.service, fastTrackRequest.clientId),
+                  continueUrl
+                )(appConfig)
+              case false =>
+                goto(ClientNotFound(fastTrackRequest, continueUrl))
+            }
+          } else goto(IdentifyClient(fastTrackRequest, continueUrl))
       }
 
     def identifiedClientItsa(appConfig: AppConfig)(agent: AuthorisedAgent)(itsaClient: ItsaClient) =

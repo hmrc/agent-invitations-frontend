@@ -48,6 +48,10 @@ object Validators {
 
   val urnPattern = "^((?i)[a-z]{2}trust[0-9]{8})$"
 
+  // supplied by CBC team
+  val emailPattern = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)" +
+    "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)$"
+
   def validPostcode(invalidFormatFailure: String, emptyFailure: String, invalidCharactersFailure: String): Constraint[String] =
     Constraint[String] { input: String =>
       if (input.isEmpty) Invalid(ValidationError(emptyFailure))
@@ -182,6 +186,9 @@ object Validators {
     }
   }
 
+  val emailMapping =
+    text.verifying(ValidateHelper.validateField("error.email.required", "enter-email-address.invalid-format")(validEmail(_)))
+
   private def validateTrustTaxIdentifier(nonEmptyFailure: String, invalidFailure: String): Constraint[String] =
     Constraint[String] { fieldValue: String =>
       val formattedField = fieldValue.replace(" ", "").trim
@@ -203,6 +210,8 @@ object Validators {
         case _ => Invalid(invalidFailure)
       }
     }
+
+  private def validEmail(emailStr: String): Boolean = emailStr.matches(emailPattern)
 
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     /* TODO [Service onboarding]

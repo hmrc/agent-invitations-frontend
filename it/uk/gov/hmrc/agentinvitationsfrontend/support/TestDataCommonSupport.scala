@@ -95,4 +95,6 @@ trait TestDataCommonSupport {
                                                                                |}}""".stripMargin
 
   val pptNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
+
+  val cbcDefaultEmail = "cbc@email.com"
 }

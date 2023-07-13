@@ -301,6 +301,23 @@ class AgentInvitationFastTrackJourneyControllerISpec
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
 
+    "redirect to check details when service is CBC" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "clientType"           -> "business",
+            "service"              -> "HMRC-CBC-ORG",
+            "clientIdentifierType" -> "cbcId",
+            "clientIdentifier"     -> cbcId.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
+    }
+
     "redirect to check details when service is ITSA with no postcode" in {
       givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
       journeyState.clear
@@ -378,6 +395,22 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-CGT-PD",
             "clientIdentifierType" -> "CGTPDRef",
             "clientIdentifier"     -> cgtRef.value),
+          arn.value
+        ))
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
+    }
+
+    "redirect to check details when service is CBC with no client type or email address" in {
+      givenGetSuspensionDetailsAgentStub(SuspensionDetails(suspensionStatus = false, None))
+      journeyState.clear
+      val request = FakeRequest("POST", "/agents/fast-track")
+      val result = controller.agentFastTrack(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "service"              -> "HMRC-CBC-ORG",
+            "clientIdentifierType" -> "cbcId",
+            "clientIdentifier"     -> cbcId.value),
           arn.value
         ))
       status(result) shouldBe 303
@@ -634,6 +667,23 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.heading",
         "check-details.p.HMRC-PPT-ORG",
         "check-details.client-type.personal")
+    }
+
+    "show the check-details page for business CBC service" in {
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Cbc, cbcId, Some("cbc@email.com"))
+      journeyState
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "check-details.heading",
+        "check-details.client-type.business.HMRC-CBC-ORG",
+        "check-details.cbc-email",
+        "check-details.cbc"
+       )
     }
 
     "show the check-details page for ITSA client with no postcode" in {
@@ -995,6 +1045,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(result.futureValue, "identify-ppt-client.header", "identify-ppt-client.p1", "identify-ppt-client.hint")
     }
 
+    "show the client-details page for CBC" in {
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Cbc, cbcId, None)
+      journeyState.set(
+        IdentifyClient(ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.cbc.p1","identify-client.cbc.hint", "identify-cbc-client.email.label", "identify-cbc-client.email.hint")
+    }
+
     "show the client-details page when there is no client type for VAT" in {
       val ftr = AgentFastTrackRequest(None, Service.Vat, vrn, Some("2009-09-09"))
       journeyState.set(
@@ -1253,6 +1316,39 @@ class AgentInvitationFastTrackJourneyControllerISpec
         status(result) shouldBe 303
         Helpers.redirectLocation(result) shouldBe Some(
           routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt.url)
+    }
+  }
+
+  "POST /agents/client-details-cbc" should {
+    val request = FakeRequest("POST", "/agents/fast-track/identify-cbc-client")
+    "redirect to invitation-sent" in {
+      givenCbcCheckKnownFactReturns(CbcClient(cbcId,cbcDefaultEmail), 204)
+      givenGetCbcSubscription(cbcId, "a cbc customer", false)
+      givenGetAllPendingInvitationsReturnsEmpty(arn, cbcId.value, Service.Cbc)
+      givenGetAgencyEmailAgentStub
+      givenInvitationCreationSucceeds(arn, Some(Business), cbcId.value, invitationIdCbc, cbcId.value, "cbcId", Service.CbcNonUk, "CBC")
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn,"uid", ClientType.Business)
+      givenCheckRelationshipCbcWithStatus(arn, cbcId.value, 404)
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Cbc, cbcId, Some(cbcDefaultEmail))
+      journeyState.set(
+        IdentifyClient(ftr, None),
+        List(
+          CheckDetails(ftr, None),
+          Prologue(None, None)
+        )
+      )
+      val result = controller.submitIdentifyCbcClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "cbcId" -> "XACBC0516273849",
+            "email" -> "cbc@email.com")
+          ,
+          arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
     }
   }
 

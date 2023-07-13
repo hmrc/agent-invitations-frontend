@@ -5,9 +5,10 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsJson
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, PptClient}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CbcClient, ClientType, PptClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
@@ -1475,6 +1476,17 @@ trait ACAStubs {
         )
     )
 
+  def givenCbcCheckKnownFactReturns(cbcClient: CbcClient, status: Int) =
+    stubFor(
+      post(urlEqualTo(s"/agent-client-authorisation/known-facts/cbc/${cbcClient.cbcId.value}"))
+        .withRequestBody(
+          equalToJson(s"""{"email":"${cbcClient.email}"}"""))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
   def givenGetPptCustomerName(pptRef: PptRef, name: String) =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/client/ppt-customer-name/pptref/${pptRef.value}"))
@@ -1483,6 +1495,21 @@ trait ACAStubs {
           .withBody(
             s"""{"customerName":"$name"}""".stripMargin)
           .withStatus(200))
+    )
+
+  def givenGetCbcSubscription(cbcId: CbcId, customerName: String, isGBUser: Boolean) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/cbc/subscriptions/${cbcId.value}"))
+        .willReturn(
+          aResponse()
+            .withBody(
+              s"""{
+                 |"customerName": "$customerName",
+                 |"otherNames": ["John"],
+                 |"isGBUser": $isGBUser
+                 |}""".stripMargin)
+            .withStatus(200)
+        )
     )
 
 }

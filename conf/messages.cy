@@ -24,6 +24,10 @@ identify-client.itsa.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaet
 identify-client.vat.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-client.utr.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
+identify-client.cbc.hint=identify-client.cbc.hint
+identify-client.cbc.p1=identify-client.cbc.p1
+identify-cbc-client.email.label=identify-cbc-client.email.label
+identify-cbc-client.email.hint=identify-cbc-client.email.hint
 
 # Nino
 identify-client.nino.label=Rhif Yswiriant Gwladol
@@ -267,6 +271,7 @@ invitation-sent.further-help.heading=Help bellach
 invitation-sent.further-help.p=Mae help ar gael i chi gwblhau tasgau eraill, gan gynnwys:
 invitation-sent.all-steps=Mae’n rhaid i chi ddilyn pob un o’r pedwar cam.
 signup.client.for.mtd.linkText=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
+signup.client.for.mtd.href=https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax.cy
 
 #Check Details
 check-details.heading=Gwirio manylion eich cleient cyn mynd yn eich blaen
@@ -277,6 +282,7 @@ check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwy
 check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 check-details.p.HMRC-PPT-ORG=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Deunydd Pacio Plastig cleient.
+check-details.p.HMRC-CBC-ORG=check-details.p.HMRC-CBC-ORG
 check-details.table.heading=Manylion y cleient
 check-details.client-type=Math o gleient
 check-details.client-type.personal=Unigolyn neu unig fasnachwr
@@ -286,12 +292,14 @@ check-details.client-type.business.HMRC-TERSNT-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.trust.HMRC-TERS-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.trust.HMRC-TERSNT-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
+check-details.client-type.business.HMRC-CBC-ORG=check-details.client-type.business.HMRC-CBC-ORG
 check-details.client-type.trust.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-PPT-ORG=Cwmni neu bartneriaeth
 check-details.client-type.trust.HMRC-PPT-ORG=Ymddiriedolaeth neu ystâd
 check-details.nino=Rhif Yswiriant Gwladol
 check-details.vrn=Rhif cofrestru TAW
 check-details.ppt-reg-date=Dyddiad cofrestru ar gyfer Treth Deunydd Pacio Plastig
+check-details.cbc-email=check-details.cbc-email
 check-details.postcode=Cod post
 check-details.dob=Dyddiad geni
 check-details.vat-reg-date=Dyddiad cofrestru TAW
@@ -299,6 +307,7 @@ check-details.utr=Cyfeirnod Unigryw y Trethdalwr
 check-details.urn=Cyfeirnod Unigryw
 check-details.cgt=Cyfeirnod cyfrif Treth Enillion Cyfalaf
 check-details.ppt=Cyfeirnod Treth Deunydd Pacio Plastig
+check-details.cbc=check-details.cbc
 check-details.change.link=Newid yr wybodaeth hon
 check-details.change.p1=Mae angen ychydig yn fwy o fanylion arnom am y cleient hwn fel y gallwn greu’ch cais am awdurdodiad.
 confirm-details.sub-header=A yw’r manylion hyn yn gywir?
@@ -998,6 +1007,7 @@ recent-invitations.filter-status.HMRCCancelledAuthorisation=Derbyniwyd gan y cle
 resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
 resend-link.altItsa.header=Yr hyn y mae angen i chi ei wneud nesaf
 resend-link.altItsa.ol.hint=Rhaid i chi ddilyn pob un o'r pedwar cam.
+resend-link.altItsa.sign-up-mtd=Cofrestru’ch cleient ar gyfer y cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm (yn agor tab newydd).
 
 #Confirm cancel page
 confirm-cancel.header=A ydych yn siÅµr eich bod am ganslo’r cais am awdurdodiad hwn?

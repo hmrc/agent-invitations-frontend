@@ -28,6 +28,7 @@ class AgentInvitationServiceFormSpec extends UnitSpec {
   val serviceITSA = "HMRC-MTD-IT"
   val servicePIR = "PERSONAL-INCOME-RECORD"
   val serviceVAT = "HMRC-MTD-VAT"
+  val serviceCbc = "HMRC-CBC-ORG"
 
   "ServiceForm" should {
     "return no error message for valid service ITSA" in {
@@ -47,6 +48,13 @@ class AgentInvitationServiceFormSpec extends UnitSpec {
     "return no error message for valid service VAT" in {
       val data =
         Json.obj("serviceType" -> serviceVAT)
+      val serviceForm = ServiceTypeForm.form.bind(data)
+      serviceForm.errors.isEmpty shouldBe true
+    }
+
+    "return no error message for valid service CBC" in {
+      val data =
+        Json.obj("serviceType" -> serviceCbc)
       val serviceForm = ServiceTypeForm.form.bind(data)
       serviceForm.errors.isEmpty shouldBe true
     }
