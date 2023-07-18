@@ -53,7 +53,7 @@ trait TestDataCommonSupport {
 
   val invitationIdPpt = InvitationId("GF99K6PXSBHTG")
   val invitationIdCbc = InvitationId("HF99K6PXSBHTG")
-  val invitationIdCbcNonUk = InvitationId("IF99K6PXSBHTG")
+  val invitationIdCbcNonUk = InvitationId("JF99K6PXSBHTG")
 
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val trustNotFoundJson =
