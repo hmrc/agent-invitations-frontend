@@ -23,11 +23,17 @@ identify-client.header=Enter your client’s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
+identify-client.cbc.p1=This will help use match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
-identify-client.cbc.hint=identify-client.cbc.hint
-identify-client.cbc.p1=identify-client.cbc.p1
-identify-cbc-client.email.label=identify-cbc-client.email.label
-identify-cbc-client.email.hint=identify-cbc-client.email.hint
+
+identify-client.cbc.id=Country-by-country ID
+identify-client.cbc.hint=For example, XACBC0000999999.
+identify-cbc-client.email.label=Country-by-country contact email
+identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
+error.cbcid.required=Enter your client’s country-by-country ID
+error.email.required=Enter your client’s email address
+error.cbcid.invalid-format=Your client’s country-by-country ID must start with an ‘X’ followed by a letter, then ‘CBC’ and then 10 numbers
+enter-email-address.invalid-format=Enter your client’s email address in the correct format, like name@example.com
 
 # Nino
 identify-client.nino.label=National Insurance number
@@ -107,6 +113,7 @@ select-service.HMRC-MTD-VAT.personal=Manage their VAT
 select-service.HMRC-MTD-VAT.business=Manage their VAT
 select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
 select-service.HMRC-TERS-ORG.trust=Maintain their trust or an estate
+select-service.HMRC-CBC-ORG.business=Manage their trust's country-by-country reports
 
 select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
 select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
