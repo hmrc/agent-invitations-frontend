@@ -252,7 +252,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
     def identifyCbcClient(agent: AuthorisedAgent)(cbcClient: CbcClient): AgentInvitationJourneyModel.Transition =
       Transition {
-        case IdentifyClient(clientType, Service.Cbc, basket) =>
+        case IdentifyClient(clientType, Service.Cbc | Service.CbcNonUk, basket) =>
           for {
             knownFactOk <- checkCbcKnownFact(cbcClient.cbcId, cbcClient.email)
             nextState <- if (knownFactOk) {

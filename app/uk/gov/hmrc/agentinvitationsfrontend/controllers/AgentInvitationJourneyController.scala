@@ -450,7 +450,7 @@ class AgentInvitationJourneyController @Inject()(
           )
         )
 
-      case IdentifyClient(_, Service.Cbc, _) =>
+      case IdentifyClient(_, Service.Cbc | Service.CbcNonUk, _) =>
         Ok(
           identifyClientCbcView(
             formWithErrors.or(CbcClientForm.form),
