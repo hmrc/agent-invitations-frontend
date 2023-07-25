@@ -260,6 +260,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                             maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
                             subscription = maybeSubscription.getOrElse(
                               throw new RuntimeException(s"CBC subscription for ${cbcClient.cbcId} not found!"))
+                            _ = println(subscription)
                             adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
                             clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
                           } yield
