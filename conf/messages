@@ -23,7 +23,7 @@ identify-client.header=Enter your client’s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
-identify-client.cbc.p1=This will help use match their details against information we hold.
+identify-client.cbc.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
 identify-client.cbc.id=Country-by-country ID
