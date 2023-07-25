@@ -50,7 +50,7 @@
     @p(id = Some("identify-client-hint"), key = "identify-client.cbc.p1")
     @inputText(
         field = cbcClientForm("cbcId"),
-        label = msgs("identify-client.cbc.id"),
+        label = msgs("identify-client.header"),
         labelClass = Some("govuk-label--s"),
         hint = Some(msgs("identify-client.cbc.hint")),
         inputClass = Some("govuk-input--width-10")
@@ -59,7 +59,6 @@
     @inputText(
         field = cbcClientForm("email"),
         label = msgs("identify-cbc-client.email.label"),
-        labelClass = Some("govuk-label--s"),
         hint = Some(msgs("identify-cbc-client.email.hint"))
     )
 }

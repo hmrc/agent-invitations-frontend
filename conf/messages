@@ -23,17 +23,11 @@ identify-client.header=Enter your client’s details
 identify-client.itsa.p1=This will help us match their details against information we hold.
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
-identify-client.cbc.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
-
-identify-client.cbc.id=Country-by-country ID
-identify-client.cbc.hint=For example, XACBC0000999999.
-identify-cbc-client.email.label=Country-by-country contact email
-identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
-error.cbcid.required=Enter your client’s country-by-country ID
-error.email.required=Enter your client’s email address
-error.cbcid.invalid-format=Your client’s country-by-country ID must start with an ‘X’ followed by a letter, then ‘CBC’ and then 10 numbers
-enter-email-address.invalid-format=Enter your client’s email address in the correct format, like name@example.com
+identify-client.cbc.hint=identify-client.cbc.hint
+identify-client.cbc.p1=identify-client.cbc.p1
+identify-cbc-client.email.label=identify-cbc-client.email.label
+identify-cbc-client.email.hint=identify-cbc-client.email.hint
 
 # Nino
 identify-client.nino.label=National Insurance number
@@ -113,8 +107,7 @@ select-service.HMRC-MTD-VAT.personal=Manage their VAT
 select-service.HMRC-MTD-VAT.business=Manage their VAT
 select-service.HMRC-TERS-ORG.business=Maintain their trust or an estate
 select-service.HMRC-TERS-ORG.trust=Maintain their trust or an estate
-select-service.HMRC-CBC-ORG.trust=Maintain their country-by-country reports
-select-service.HMRC-CBC-ORG.business=Manage their trust's country-by-country reports
+
 select-service.HMRC-CGT-PD.personal=Manage their Capital Gains Tax on UK property account
 select-service.HMRC-CGT-PD.business=Manage their trust’s Capital Gains Tax on UK property account
 select-service.HMRC-CGT-PD.trust=Manage their trust’s Capital Gains Tax on UK property account
@@ -289,7 +282,7 @@ check-details.p.HMRC-TERS-ORG=You are about to start a request for authorisation
 check-details.p.HMRC-TERSNT-ORG=You are about to start a request for authorisation to submit a client’s tax returns through software.
 check-details.p.HMRC-CGT-PD=You are about to start a request for authorisation to manage a client’s Capital Gains Tax on UK property account.
 check-details.p.HMRC-PPT-ORG=You are about to start a request for authorisation to manage a client’s Plastic Packaging Tax.
-check-details.p.HMRC-CBC-ORG=You are about to start a request for authorisation to manage a client’s country-by-country reports.
+check-details.p.HMRC-CBC-ORG=check-details.p.HMRC-CBC-ORG
 check-details.table.heading=Client’s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
@@ -334,7 +327,6 @@ review-authorisations.table.HMRC-TERS-ORG=Maintain a trust or an estate
 review-authorisations.table.HMRC-TERSNT-ORG=Maintain a trust or an estate
 review-authorisations.table.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
 review-authorisations.table.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
-review-authorisations.table.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
 review-authorisations.table.remove=Remove
 review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=Do you need to add another authorisation for this client?
@@ -355,7 +347,6 @@ cancel-authorisation.personal.select-service.HMRC-MTD-VAT=Manage their VAT
 cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Maintain a trust or an estate
 cancel-authorisation.personal.select-service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
 cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
-cancel-authorisation.personal.select-service.HMRC-CBC-ORG=Manage their country-by-country reports
 cancel-authorisation.personal.select-service.hint=Select an option.
 
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
@@ -412,7 +403,6 @@ not-authorised.HMRC-TERS-ORG.p=This client has not authorised you to maintain a 
 not-authorised.HMRC-TERSNT-ORG.p=This client has not authorised you to maintain a trust or an estate.
 not-authorised.HMRC-CGT-PD.p=This client has not authorised you to manage their Capital Gains Tax on UK property account.
 not-authorised.HMRC-PPT-ORG.p=This client has not authorised you to manage their Plastic Packaging Tax.
-not-authorised.HMRC-CBC-NONUK-ORG.p=This client has not authorised you to manage their country-by-country reports
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
@@ -959,7 +949,6 @@ recent-invitations.invitation.service.HMRC-TERS-ORG=Maintain a trust or an estat
 recent-invitations.invitation.service.HMRC-TERSNT-ORG=Maintain a trust or an estate
 recent-invitations.invitation.service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
 recent-invitations.invitation.service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
-recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
 recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:
@@ -1105,7 +1094,6 @@ active-authorisation-exists.p1.HMRC-TERS-ORG=This client has already authorised 
 active-authorisation-exists.p1.HMRC-TERSNT-ORG=This client has already authorised you to maintain a trust or an estate.
 active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised you to manage their Capital Gains Tax on UK property account.
 active-authorisation-exists.p1.HMRC-PPT-ORG=This client has already authorised you to manage their Plastic Packaging Tax.
-active-authorisation-exists.p1.HMRC-CBC-NONUK-ORG=This client has already authorised you to manage their country-by-country reports.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 
