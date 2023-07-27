@@ -585,7 +585,7 @@ invitation-declined.multi.trust.p1=You have not given permission to {0} to maint
 invitation-declined.multi.trustNT.p1=You have not given permission to {0} to maintain a trust or an estate.
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
 invitation-declined.multi.ppt.p1=You have not given permission to {0} to manage your Plastic Packaging Tax.
-
+invitation-declined.multi.cbcNonUk.p1=You have not given permission to {0} to manage your country-by-country reports.
 invitation-decline.sub-header=You have not given permission to {0} to:
 
 # Confirm Decline Invitation
@@ -650,6 +650,21 @@ confirm-terms-multi.itsa.list.item9=cancel your Self Assessment registration
 confirm-terms-multi.itsa.list.item10=access your Self Assessment details, such as your name, address, National Insurance number and Unique Taxpayer Reference
 confirm-terms-multi.itsa.label=I consent to HMRC allowing {0} to manage my Making Tax Digital for Income Tax.
 
+
+confirm-terms-multi.cbcNonUk.heading=Manage my country-country reports
+confirm-terms-multi.cbcNonUk.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
+confirm-terms-multi.cbcNonUk.list.item1=send new country-by-country reports
+confirm-terms-multi.cbcNonUk.list.item2=send additional information, corrections or deletions for previous country-by-country reports
+confirm-terms-multi.cbcNonUk.list.item3=access a list of any country-by-country reports sent in the last 28 days.
+confirm-terms-multi.cbcNonUk.list.item4=contact HMRC about your current and previous reports
+confirm-terms-multi.cbcNonUk.list.item5=share information with HMRC about your current or previous country-by-country reports
+confirm-terms-multi.cbcNonUk.list.item6=receive information from HMRC about your current or previous country-by-country reports
+confirm-terms-multi.cbcNonUk.list.item7=access your CBC ID (country-by-country ID)
+confirm-terms-multi.cbcNonUk.list.item8=access and change your country-by-country contact details, such as your contact names, email addresses and telephone numbers
+confirm-terms-multi.cbcNonUk.list.item9=access details of any penalties charged
+confirm-terms-multi.cbcNonUk.list.item10=appeal late submission penalties
+confirm-terms-multi.cbcNonUk.list.item11=provide additional information when appealing late submission penalties
+confirm-terms-multi.cbcNonUk.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
 
 confirm-terms-multi.afi.heading=View my income record
 confirm-terms-multi.pir.p1=If you consent to HMRC allowing {0} to view your income record, this means {0} can:
@@ -739,6 +754,7 @@ confirm-terms-multi.ppt.personal.p1.l7=view your calculations and amounts owed a
 confirm-terms-multi.ppt.personal.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax details.
 
+
 confirm-terms-multi.ppt.business.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax, this means {0} can:
 confirm-terms-multi.ppt.business.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.business.p1.l2=submit your PPT returns
@@ -780,6 +796,10 @@ check-answers.consent.false = No
 check-answers.change-link=Change
 check-answers.continue.button=Confirm and send response
 
+check-answers.service.cbcNonUk=Country-by-country reports
+
+
+
 #Invitation Expired
 invitation-expired.heading=This page is no longer available
 invitation-expired.p1=The link you tried to access has expired.
@@ -812,6 +832,7 @@ client-complete.multi.p1.trustNT=maintaining a trust or an estate
 client-complete.multi.p1.cgt=managing your Capital Gains Tax on UK property account
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
+client-complete.cbcNonUk.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid
