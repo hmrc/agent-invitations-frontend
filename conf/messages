@@ -965,6 +965,8 @@ error.terminate.500.heading=Sorry, we’re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
 
+
+
 #Track invitation requests
 recent-invitations.header=Manage your recent authorisation requests
 recent-invitations.description=Check the status of your authorisation requests to clients in the last {0} days, or cancel requests and authorisations you no longer need.
