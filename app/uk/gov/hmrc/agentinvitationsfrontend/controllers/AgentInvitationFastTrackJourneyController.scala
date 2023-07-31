@@ -392,27 +392,6 @@ class AgentInvitationFastTrackJourneyController @Inject()(
     case _ => throw new Exception(s"Link not found for $state")
   }
 
-  private def gotoCheckDetailsWithRequest(fastTrackRequest: AgentFastTrackRequest, breadcrumbs: List[State])(implicit request: Request[_]): Result = {
-    val backLinkOpt: Option[String] =
-      breadcrumbs.headOption match {
-        case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
-        case _                                                     => None
-      }
-
-    Ok(
-      checkDetailsView(
-        checkDetailsForm,
-        CheckDetailsPageConfig(
-          fastTrackRequest,
-          routes.AgentInvitationFastTrackJourneyController.progressToClientType,
-          routes.AgentInvitationFastTrackJourneyController.progressToKnownFact,
-          routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient,
-          routes.AgentInvitationFastTrackJourneyController.submitCheckDetails,
-          backLinkOpt
-        )
-      ))
-  }
-
   /* Here we decide what to render after state transition */
   override def renderState(state: State, breadcrumbs: List[State], formWithErrors: Option[Form[_]])(implicit request: Request[_]): Result =
     state match {
@@ -420,7 +399,23 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case s: Prologue => Redirect(getCallFor(s))
 
       case CheckDetails(ftr, _) =>
-        gotoCheckDetailsWithRequest(ftr, breadcrumbs)
+        val backLinkOpt: Option[String] =
+          breadcrumbs.headOption match {
+            case Some(Prologue(_, refererUrl)) if refererUrl.isDefined => refererUrl
+            case _                                                     => None
+          }
+        Ok(
+          checkDetailsView(
+            formWithErrors.or(checkDetailsForm),
+            CheckDetailsPageConfig(
+              ftr,
+              routes.AgentInvitationFastTrackJourneyController.progressToClientType,
+              routes.AgentInvitationFastTrackJourneyController.progressToKnownFact,
+              routes.AgentInvitationFastTrackJourneyController.progressToIdentifyClient,
+              routes.AgentInvitationFastTrackJourneyController.submitCheckDetails,
+              backLinkOpt
+            )
+          ))
 
       case MissingDetail(ftr, _) =>
         Ok(
