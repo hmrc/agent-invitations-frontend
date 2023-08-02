@@ -651,7 +651,7 @@ confirm-terms-multi.itsa.list.item10=access your Self Assessment details, such a
 confirm-terms-multi.itsa.label=I consent to HMRC allowing {0} to manage my Making Tax Digital for Income Tax.
 
 
-confirm-terms-multi.cbcNonUk.heading=Manage my country-country reports
+confirm-terms-multi.cbcNonUk.heading=Manage my country-by-country reports
 confirm-terms-multi.cbcNonUk.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
 confirm-terms-multi.cbcNonUk.list.item1=send new country-by-country reports
 confirm-terms-multi.cbcNonUk.list.item2=send additional information, corrections or deletions for previous country-by-country reports
