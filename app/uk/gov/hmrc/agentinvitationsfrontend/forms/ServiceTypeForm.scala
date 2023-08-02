@@ -41,11 +41,8 @@ object ServiceTypeForm {
   def selectSingleServiceForm(service: Service, clientType: ClientType): Form[Option[Service]] =
     Form[Option[Service]](
       single(
-        "accepted" -> normalizedText
-          .verifying(s"select-single-service.${service.id}.$clientType.error", List("true", "false").contains(_))
-          .transform[Option[Service]]({
-            case "true"  => Some(service)
-            case "false" => None
-          }, _.fold("")(_.id))
+        "accepted" -> optional(normalizedText)
+          .verifying(s"select-single-service.${service.id}.$clientType.error", _.exists(List("true", "false").contains))
+          .transform[Option[Service]](svc => if (svc.contains("true")) Some(service) else None, _.fold(Option.empty[String])(svc => Some(svc.id)))
       ))
 }

@@ -1,23 +1,23 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Flash}
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
-import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State.AuthorisationCancelled
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
@@ -349,6 +349,22 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       journeyState.get should have[State](
         SelectClientType(emptyBasket),
         List())
+    }
+
+    "redirect to select service single when nothing is selected" in {
+
+      journeyState.set(SelectService(Business, Set(Service.Vat), Set.empty), List(SelectClientType(emptyBasket)))
+
+      val result = controller.submitSelectServiceSingle(Service.Vat.id, ClientType.Business.toString)(
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> ""), arn.value))
+
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showSelectService.url)
+
+
+      journeyState.get should have[State](
+        SelectService(Business, Set(Service.Vat), Set.empty),
+        List(SelectClientType(emptyBasket)))
     }
 
     "redirect to agent suspended if the agent is suspended for the selected service" in {
