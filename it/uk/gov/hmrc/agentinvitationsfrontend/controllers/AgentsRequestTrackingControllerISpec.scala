@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.{AcceptedByClient, statuses}
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Service, Vrn}
@@ -733,6 +733,15 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.select("label[for=confirmCancelAuthorisation]").text() shouldBe "Yes"
       html.select("label[for=confirmCancelAuthorisation-2]").text() shouldBe "No"
       html.select("button.govuk-button#continue").text() shouldBe "Continue"
+    }
+
+    "redirect to /track when no service is in the session" in {
+      val result = showConfirmCancelAuth(
+        authorisedAsValidAgent(request, arn.value)
+      )
+      status(result) shouldBe 303
+
+      redirectLocation(result) shouldBe Some("/invitations/track")
     }
   }
 
