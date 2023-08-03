@@ -313,10 +313,19 @@ class AgentsRequestTrackingController @Inject()(
 
   def showCancelAuthorisationConfirm: Action[AnyContent] = Action.async { implicit request =>
     withAuthorisedAsAgent { _ =>
-      val service = Service.forId(request.session.get("service").getOrElse(throw new RuntimeException("Service not in session")))
-      val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
-      Future successful Ok(
-        confirmCancelAuthView(confirmCancelAuthorisationForm, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+      request.session
+        .get("service")
+        .fold(Future.successful(Redirect(routes.AgentsRequestTrackingController.showTrackRequests(1)))) { service =>
+          {
+            val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
+            Future successful Ok(
+              confirmCancelAuthView(
+                confirmCancelAuthorisationForm,
+                Service.forId(service),
+                clientType,
+                routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+          }
+        }
     }
   }
 
