@@ -143,8 +143,11 @@
 }
 
 @cbcTerms = {
-    @p("Placeholder text. Please implement terms for CBC.")
-    @* TODO [CBC Onboarding] Implement! *@
+@p(
+    classes = Some("govuk-!-margin-bottom-4"),
+    key = msgs("confirm-terms-multi.cbcNonUk.p1", pageConfig.agencyName)
+)
+@ul(items = (1 to 11).map(i => s"confirm-terms-multi.cbcNonUk.list.item$i"))
 }
 
 
@@ -220,9 +223,7 @@
                     @h2(key = s"confirm-terms-multi.${serviceMessageKeys(consent.service)}.heading",
                         classes = Some("govuk-!-margin-bottom-4 govuk-!-margin-top-4"))
                 }
-
                 @suitableTerms(consent.service, displayDateForLang(Some(consent.expiryDate)), consent.isAltItsa)
-
                 @if(pageConfig.consentSeq.length == 1 && pageConfig.consentSeq.head.consent) {
                     @inputSingleCheckbox(
                         field = confirmTermsForm(s"confirmedTerms_${serviceMessageKeys(consent.service)}"),
