@@ -168,6 +168,11 @@ select-single-service.HMRC-PPT-ORG.personal.error=Select yes if you want to mana
 select-single-service.HMRC-PPT-ORG.business.error=Select yes if you want to manage their Plastic Packaging Tax
 select-single-service.HMRC-PPT-ORG.trust.error=Select yes if you want to manage their Plastic Packaging Tax
 
+select-single-service.HMRC-CBC-ORG.business.header=Do you want to manage their country-by-country reports?
+select-single-service.HMRC-CBC-ORG.trust.header=Do you want to manage their country-by-country reports?
+select-single-service.HMRC-CBC-ORG.business.error=Select yes if you want to manage their country-by-country reports
+select-single-service.HMRC-CBC-ORG.trust.error=Select yes if you want to manage their country-by-country reports
+
 # Agent suspended
 agent-suspended.heading.multi=We could not create one of your requests
 agent-suspended.heading.single=We could not create your authorisation request
@@ -650,7 +655,6 @@ confirm-terms-multi.itsa.list.item9=cancel your Self Assessment registration
 confirm-terms-multi.itsa.list.item10=access your Self Assessment details, such as your name, address, National Insurance number and Unique Taxpayer Reference
 confirm-terms-multi.itsa.label=I consent to HMRC allowing {0} to manage my Making Tax Digital for Income Tax.
 
-
 confirm-terms-multi.cbcNonUk.heading=Manage my country-by-country reports
 confirm-terms-multi.cbcNonUk.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
 confirm-terms-multi.cbcNonUk.list.item1=send new country-by-country reports
@@ -754,7 +758,6 @@ confirm-terms-multi.ppt.personal.p1.l7=view your calculations and amounts owed a
 confirm-terms-multi.ppt.personal.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.label=I consent to HMRC allowing {0} to manage my Plastic Packaging Tax details.
 
-
 confirm-terms-multi.ppt.business.p1=If you consent to HMRC allowing {0} to manage your Plastic Packaging Tax, this means {0} can:
 confirm-terms-multi.ppt.business.p1.l1=view your PPT returns
 confirm-terms-multi.ppt.business.p1.l2=submit your PPT returns
@@ -797,8 +800,6 @@ check-answers.change-link=Change
 check-answers.continue.button=Confirm and send response
 
 check-answers.service.cbcNonUk=Country-by-country reports
-
-
 
 #Invitation Expired
 invitation-expired.heading=This page is no longer available
@@ -964,8 +965,6 @@ clientCancelled.p1=You can remove their authorisation at any time.
 error.terminate.500.heading=Sorry, we’re experiencing technical difficulties
 error.terminate.500.title=Sorry, we are experiencing technical difficulties
 error.terminate.500.message=Your income record is still visible to tax agents. Please try again in a few minutes.
-
-
 
 #Track invitation requests
 recent-invitations.header=Manage your recent authorisation requests
