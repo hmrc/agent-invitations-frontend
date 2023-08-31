@@ -5,7 +5,7 @@ import play.api.mvc.Request
 import play.api.mvc.Results._
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Injecting}
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActionsImpl
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.AuthActions
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
 
-  val authActions = inject[AuthActionsImpl]
+  val authActions = inject[AuthActions]
 
   implicit def hc(implicit request: Request[_]): HeaderCarrier =  HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
@@ -70,6 +70,7 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
         givenAuthorisedFor(
           Json.obj("authorise" -> authorise, "retrieve" -> Json.arr("authorisedEnrolments")).toString(),
           retrieved.toString())
+        givenNotSuspended()
 
         implicit val request: Request[_] = FakeRequest().withSession(
           SessionKeys.authToken -> "Bearer XYZ")

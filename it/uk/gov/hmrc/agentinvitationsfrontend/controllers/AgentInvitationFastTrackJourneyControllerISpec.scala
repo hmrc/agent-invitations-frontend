@@ -2092,6 +2092,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "Trying to display any page" should {
+    "redirect to ASAF 'account limited' page if the agent is suspended" in {
+      val fakeRequest = authorisedAsValidAgent(FakeRequest("POST", ""), arn.value, suspended = true)
+      givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+      journeyState.set(Prologue(None, None), Nil)
+
+      val result = controller.agentFastTrack(fakeRequest)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.accountLimitedUrl)
+    }
+  }
+
+
   class ItsaHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
     givenCheckRelationshipItsaWithStatus(arn, nino, 404)

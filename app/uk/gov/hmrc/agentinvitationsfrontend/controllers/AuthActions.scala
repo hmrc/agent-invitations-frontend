@@ -20,6 +20,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{Request, Result}
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, AuthorisedClient, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps
 import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps._
@@ -35,11 +36,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AuthActionsImpl @Inject()(
+class AuthActions @Inject()(
   val externalUrls: ExternalUrls,
   val env: Environment,
   val config: Configuration,
   val authConnector: AuthConnector,
+  val acaConnector: AgentClientAuthorisationConnector,
   val appConfig: AppConfig,
   val featureFlags: FeatureFlags
 ) extends AuthorisedFunctions with AuthRedirects with Logging {
@@ -64,15 +66,21 @@ class AuthActionsImpl @Inject()(
         handleFailure(isAgent = true)
       }
 
+  // In addition to checking enrolment as agent, this also checks if the agent is suspended.
   def withAuthorisedAsAgent[A](
     body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
-          case Some(arn) => body(AuthorisedAgent(arn))
+          case Some(arn) =>
+            // suspension check
+            acaConnector.getSuspensionDetails(arn).map(_.suspensionStatus).flatMap {
+              case false => body(AuthorisedAgent(arn))
+              case true  => Future.successful(Redirect(appConfig.accountLimitedUrl))
+            }
           case None =>
             logger.warn("Arn not found for the logged in agent")
-            Future successful Forbidden
+            Future.successful(Forbidden)
         }
       }
       .recover {

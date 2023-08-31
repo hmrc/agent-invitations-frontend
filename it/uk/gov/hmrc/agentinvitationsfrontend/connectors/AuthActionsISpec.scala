@@ -6,7 +6,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, FeatureFlags}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, FeatureFlags}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -18,6 +18,7 @@ import scala.concurrent.Future
 class AuthActionsISpec extends BaseISpec {
 
   val authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
+  val acaConnector: AgentClientAuthorisationConnector = app.injector.instanceOf[AgentClientAuthorisationConnector]
   val config: Configuration = app.injector.instanceOf[Configuration]
   val env: Environment = app.injector.instanceOf[Environment]
   val externalUrls: ExternalUrls = app.injector.instanceOf[ExternalUrls]
@@ -28,7 +29,7 @@ class AuthActionsISpec extends BaseISpec {
   implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
   object TestController
-      extends AuthActionsImpl(externalUrls, env, config, authConnector, appConfig, featureFlags) {
+      extends AuthActions(externalUrls, env, config, authConnector, acaConnector, appConfig, featureFlags) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
         Future.successful(Ok(agent.arn.value))
@@ -47,6 +48,7 @@ class AuthActionsISpec extends BaseISpec {
            |  ]}
            |]}""".stripMargin
       )
+      givenNotSuspended()
 
       val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 200
@@ -58,6 +60,24 @@ class AuthActionsISpec extends BaseISpec {
       val result = Future.successful(TestController.testWithAuthorisedAsAgent)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("someSubscriptionExternalUrl")
+    }
+
+    "redirect to 'account limited' when agent is authenticated but suspended" in {
+      givenAuthorisedFor(
+      "{}",
+      s"""{
+         |"authorisedEnrolments": [
+         |  { "key":"HMRC-AS-AGENT", "identifiers": [
+         |    { "key":"AgentReferenceNumber", "value": "fooArn" }
+         |  ]}
+         |]}""".stripMargin
+      )
+      givenSuspended()
+
+      val result = TestController.testWithAuthorisedAsAgent
+      status(result) shouldBe 303
+      val redirectUrl = redirectLocation(Future.successful(result)).get
+      redirectUrl should include ("account-limited")
     }
 
     "throw Forbidden when expected agent's identifier missing" in {

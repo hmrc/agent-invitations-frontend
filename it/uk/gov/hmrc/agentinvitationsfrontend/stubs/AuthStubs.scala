@@ -1,9 +1,11 @@
 package uk.gov.hmrc.agentinvitationsfrontend.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
-import uk.gov.hmrc.agentmtdidentifiers.model.{TrustTaxIdentifier, Urn, Utr}
+import uk.gov.hmrc.agentmtdidentifiers.model.{SuspensionDetails, TrustTaxIdentifier, Urn, Utr}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 trait AuthStubs extends AfiRelationshipStub {
@@ -11,7 +13,7 @@ trait AuthStubs extends AfiRelationshipStub {
 
   case class Enrolment(serviceName: String, identifierName: String, identifierValue: String)
 
-  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String)(implicit hc: HeaderCarrier): FakeRequest[A] = {
+  def authorisedAsValidAgent[A](request: FakeRequest[A], arn: String, suspended: Boolean = false)(implicit hc: HeaderCarrier): FakeRequest[A] = {
     authenticatedAgent(request, Enrolment("HMRC-AS-AGENT", "AgentReferenceNumber", arn))
   }
 
@@ -378,7 +380,7 @@ trait AuthStubs extends AfiRelationshipStub {
     request.withSession(SessionKeys.authToken -> "Bearer XYZ")
   }
 
-  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment)(
+  def authenticatedAgent[A](request: FakeRequest[A], enrolment: Enrolment, suspended: Boolean = false)(
     implicit hc: HeaderCarrier): FakeRequest[A] = {
     givenAuthorisedFor(
       s"""
@@ -399,6 +401,8 @@ trait AuthStubs extends AfiRelationshipStub {
          |]}
           """.stripMargin
     )
+    // suspension check
+    if (suspended) givenSuspended() else givenNotSuspended()
     request.withSession(
       SessionKeys.authToken -> "Bearer XYZ",
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
@@ -425,6 +429,22 @@ trait AuthStubs extends AfiRelationshipStub {
       SessionKeys.authToken -> "Bearer XYZ",
       SessionKeys.sessionId -> hc.sessionId.map(_.value).getOrElse("session12345"))
   }
+
+  def givenSuspended() =
+    stubFor(
+      get(urlPathMatching("""\/agent\-client\-authorisation\/client\/suspension\-details\/.*"""))
+        .willReturn(aResponse()
+          .withStatus(OK)
+          .withHeader("Content-Type", "application/json")
+          .withBody(Json.toJson(SuspensionDetails(suspensionStatus = true, Some(Set("ALL")))).toString)
+        )
+    )
+
+  def givenNotSuspended() =
+    stubFor(
+      get(urlPathMatching("""\/agent\-client\-authorisation\/client\/suspension\-details\/.*"""))
+        .willReturn(aResponse().withStatus(NO_CONTENT))
+    )
 
   def givenUnauthorisedWith(mdtpDetail: String) =
     stubFor(

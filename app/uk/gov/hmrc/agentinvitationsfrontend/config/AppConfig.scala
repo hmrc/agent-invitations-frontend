@@ -22,7 +22,7 @@ import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
 class AppConfig @Inject()(servicesConfig: ServicesConfig) {
@@ -30,6 +30,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
   val signupClientUrl: String = "/sign-up-your-client-for-making-tax-digital-for-income-tax"
+  val accountLimitedUrl: String = asaFrontendExternalUrl + "/agent-services-account/account-limited"
 
   private def baseUrl(serviceName: String) = servicesConfig.baseUrl(serviceName)
 
@@ -54,7 +55,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val companyAuthFrontendSigninPath: String = getConfString("company-auth-frontend.sign-in.path")
   val contactFrontendExternalUrl: String = getConfString("contact-frontend.external-url")
   val btaExternalUrl: String = getConfString("business-tax-account.external-url")
-  val asaFrontendExternalUrl: String = getConfString("agent-services-account-frontend.external-url")
+  lazy val asaFrontendExternalUrl: String = getConfString("agent-services-account-frontend.external-url")
   val ggRegistrationFrontendExternalUrl: String = s"${getConfString("government-gateway-registration-frontend.external-url")}$ssoRedirectUrl"
   val basGatewayFrontendRegisterUrl: String = getConfString("bas-gateway-frontend.register.url")
 
@@ -76,6 +77,12 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val govUkExternalUrl: String = s"${getConfString("gov-uk.external-url")}"
   val govUkGuidanceExternalUrl: String = s"$govUkExternalUrl/guidance"
   val govUkGuidanceSignupUrl: String = s"$govUkGuidanceExternalUrl$signupClientUrl"
+
+  val suspensionCacheDuration: FiniteDuration = servicesConfig.getDuration("cache.suspensionDetails.duration") match {
+    case fd: FiniteDuration => fd
+    case _                  => throw new IllegalArgumentException(s"invalid suspension cache duration")
+  }
+  val suspensionCacheEnabled: Boolean = suspensionCacheDuration.toMillis != 0
 
   val languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
