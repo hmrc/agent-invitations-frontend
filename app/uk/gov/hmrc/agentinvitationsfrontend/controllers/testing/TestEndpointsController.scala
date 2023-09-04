@@ -23,7 +23,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActionsImpl, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, TrackResendForm, routes => agentRoutes}
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, TrackResendForm, routes => agentRoutes}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
@@ -38,7 +38,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TestEndpointsController @Inject()(
-  val authActions: AuthActionsImpl,
+  val authActions: AuthActions,
   pirRelationshipConnector: PirRelationshipConnector,
   val authConnector: AuthConnector,
   val env: Environment,

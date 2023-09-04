@@ -88,7 +88,8 @@ abstract class BaseISpec
         "features.enable-welsh-toggle"                                            -> true,
         "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
-        "mongodb.uri"                                                             -> mongoUri
+        "mongodb.uri"                                                             -> mongoUri,
+        "cache.suspensionDetails.duration"                                        -> "0 seconds" // disable cache or tests will interfere with each other
       )
       .configure(extraConfig)
       .overrides(new TestGuiceModule)

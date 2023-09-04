@@ -44,7 +44,7 @@ import scala.concurrent.ExecutionContext
 
 class AgentLedDeauthJourneyController @Inject()(
   override val journeyService: AgentLedDeauthJourneyService,
-  authActions: AuthActionsImpl,
+  authActions: AuthActions,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   countryNamesLoader: CountryNamesLoader,

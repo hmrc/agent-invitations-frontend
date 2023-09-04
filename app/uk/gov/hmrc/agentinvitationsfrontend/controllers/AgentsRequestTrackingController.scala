@@ -53,7 +53,7 @@ case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
 class AgentsRequestTrackingController @Inject()(
-  val authActions: AuthActionsImpl,
+  val authActions: AuthActions,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
   val invitationsService: InvitationsService,

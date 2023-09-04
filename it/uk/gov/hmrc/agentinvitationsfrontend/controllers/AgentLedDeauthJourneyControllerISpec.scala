@@ -1,16 +1,16 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import org.jsoup.Jsoup
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.libs.json.Json
-import play.api.test.Helpers.defaultAwaitTimeout
+import play.api.test.Helpers.{defaultAwaitTimeout, redirectLocation}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientType, Services}
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, Css}
-import uk.gov.hmrc.agentmtdidentifiers.model.Service
+import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -1231,6 +1231,18 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         "cancel-authorisation.response-failed.header",
         "cancel-authorisation.response-failed.description"
       )
+    }
+  }
+
+  "Trying to display any page" should {
+    "redirect to ASAF 'account limited' page if the agent is suspended" in {
+      val fakeRequest = authorisedAsValidAgent(FakeRequest("GET", ""), arn.value, suspended = true)
+      givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+      journeyState.set(SelectClientType, Nil)
+
+      val result = controller.showClientType(fakeRequest)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.accountLimitedUrl)
     }
   }
 

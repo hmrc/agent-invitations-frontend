@@ -17,9 +17,10 @@
 package uk.gov.hmrc.agentinvitationsfrontend.connectors
 
 import com.codahale.metrics.MetricRegistry
+import com.github.blemale.scaffeine.Scaffeine
 import com.kenshoo.play.metrics.Metrics
 import play.api.Logging
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, _}
+import play.api.http.Status._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
@@ -42,6 +43,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  private val suspensionCache: com.github.blemale.scaffeine.Cache[Arn, SuspensionDetails] =
+    Scaffeine()
+      .recordStats()
+      .expireAfterWrite(appConfig.suspensionCacheDuration)
+      .maximumSize(100000)
+      .build[Arn, SuspensionDetails]()
 
   val baseUrl: URL = new URL(appConfig.agentClientAuthorisationBaseUrl)
 
@@ -503,16 +511,22 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         })
     }
 
+  // This call is cached as we are doing this check on almost every page
   def getSuspensionDetails(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
-    monitor(s"ConsumedAPI-Get-AgencySuspensionDetails-GET") {
-      http
-        .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/client/suspension-details/${arn.value}")
-        .map(response =>
-          response.status match {
-            case OK         => Json.parse(response.body).as[SuspensionDetails]
-            case NO_CONTENT => SuspensionDetails(suspensionStatus = false, None)
-            case NOT_FOUND  => throw SuspensionDetailsNotFound("No record found for this agent")
-        })
+    suspensionCache.getIfPresent(arn).map(Future.successful).getOrElse {
+      monitor(s"ConsumedAPI-Get-AgencySuspensionDetails-GET") {
+        http
+          .GET[HttpResponse](s"$baseUrl/agent-client-authorisation/client/suspension-details/${arn.value}")
+          .map { response =>
+            val suspensionDetails = response.status match {
+              case OK         => Json.parse(response.body).as[SuspensionDetails]
+              case NO_CONTENT => SuspensionDetails(suspensionStatus = false, None)
+              case NOT_FOUND  => throw SuspensionDetailsNotFound("No record found for this agent")
+            }
+            if (appConfig.suspensionCacheEnabled) suspensionCache.put(arn, suspensionDetails)
+            suspensionDetails
+          }
+      }
     }
 
   def getTradingName(nino: Nino)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =

@@ -46,7 +46,7 @@ class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   acaConnector: AgentClientAuthorisationConnector,
-  val authActions: AuthActionsImpl,
+  val authActions: AuthActions,
   override val journeyService: AgentInvitationJourneyService,
   notSignedUpPageConfig: NotSignedUpPageConfig,
   countryNamesLoader: CountryNamesLoader,

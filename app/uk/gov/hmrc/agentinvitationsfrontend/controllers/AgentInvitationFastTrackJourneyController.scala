@@ -53,7 +53,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   acaConnector: AgentClientAuthorisationConnector,
-  authActions: AuthActionsImpl,
+  authActions: AuthActions,
   val redirectUrlActions: RedirectUrlActions,
   override val journeyService: AgentInvitationFastTrackJourneyService,
   notSignedUpPageConfig: NotSignedUpPageConfig,

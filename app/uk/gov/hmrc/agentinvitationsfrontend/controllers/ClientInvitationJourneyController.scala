@@ -47,7 +47,7 @@ class ClientInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   invitationsConnector: AgentClientAuthorisationConnector,
   identityVerificationConnector: IdentityVerificationConnector,
-  authActions: AuthActionsImpl,
+  authActions: AuthActions,
   override val journeyService: ClientInvitationJourneyService,
   notAuthorisedAsClientView: not_authorised_as_client,
   timedOutView: timed_out,

@@ -2605,4 +2605,16 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
       checkHtmlResultWithBodyMsgs(result.futureValue, "agent-suspended.heading.single", "agent-suspended.p1.HMRC-MTD-IT", "agent-suspended.p2.single")
     }
   }
+
+  "Trying to display any page" should {
+    "redirect to ASAF 'account limited' page if the agent is suspended" in {
+      journeyState.set(SelectClientType(Set.empty), Nil)
+      val fakeRequest = authorisedAsValidAgent(FakeRequest("GET", ""), arn.value, suspended = true)
+      givenGetSuspensionDetailsClientStub(arn, SuspensionDetails(suspensionStatus = true, Some(Set("ALL"))))
+
+      val result = controller.showClientType(fakeRequest)
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.accountLimitedUrl)
+    }
+  }
 }
