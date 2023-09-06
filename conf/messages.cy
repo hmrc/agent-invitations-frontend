@@ -590,6 +590,7 @@ invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ym
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.multi.ppt.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch Treth Deunydd Pacio Plastig.
+invitation-declined.multi.cbc.p1=You have not given permission to {0} to manage your country-by-country reports.
 
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
@@ -603,6 +604,7 @@ confirm-decline.trust.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac
 confirm-decline.trustNT.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.cgt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 confirm-decline.ppt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Deunydd Pacio Plastig.
+confirm-decline.cbc.sub-header={0} will not be able to manage your country-by-country reports.
 confirm-decline.sub-header=Ni fydd {0} yn gallu:
 confirm-decline.itsa.service-name=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 confirm-decline.afi.service-name=adrodd am eich diweddariadau TWE y cyflogwr drwy feddalwedd
@@ -655,20 +657,20 @@ confirm-terms-multi.itsa.list.item9=canslo’ch cofrestriad Hunanasesiad
 confirm-terms-multi.itsa.list.item10=cael mynediad at eich manylion Hunanasesiad, megis eich enw, cyfeiriad, rhif Yswiriant Gwladol a Chyfeirnod Unigryw y Trethdalwr
 confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy Nhreth Incwm.
 
-confirm-terms-multi.cbcNonUk.heading=Manage my country-by-country reports
-confirm-terms-multi.cbcNonUk.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
-confirm-terms-multi.cbcNonUk.list.item1=send new country-by-country reports
-confirm-terms-multi.cbcNonUk.list.item2=send additional information, corrections or deletions for previous country-by-country reports
-confirm-terms-multi.cbcNonUk.list.item3=access a list of any country-by-country reports sent in the last 28 days.
-confirm-terms-multi.cbcNonUk.list.item4=contact HMRC about your current and previous reports
-confirm-terms-multi.cbcNonUk.list.item5=share information with HMRC about your current or previous country-by-country reports
-confirm-terms-multi.cbcNonUk.list.item6=receive information from HMRC about your current or previous country-by-country reports
-confirm-terms-multi.cbcNonUk.list.item7=access your CBC ID (country-by-country ID)
-confirm-terms-multi.cbcNonUk.list.item8=access and change your country-by-country contact details, such as your contact names, email addresses and telephone numbers
-confirm-terms-multi.cbcNonUk.list.item9=access details of any penalties charged
-confirm-terms-multi.cbcNonUk.list.item10=appeal late submission penalties
-confirm-terms-multi.cbcNonUk.list.item11=provide additional information when appealing late submission penalties
-confirm-terms-multi.cbcNonUk.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
+confirm-terms-multi.cbc.heading=Manage my country-by-country reports
+confirm-terms-multi.cbc.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
+confirm-terms-multi.cbc.list.item1=send new country-by-country reports
+confirm-terms-multi.cbc.list.item2=send additional information, corrections or deletions for previous country-by-country reports
+confirm-terms-multi.cbc.list.item3=access a list of any country-by-country reports sent in the last 28 days.
+confirm-terms-multi.cbc.list.item4=contact HMRC about your current and previous reports
+confirm-terms-multi.cbc.list.item5=share information with HMRC about your current or previous country-by-country reports
+confirm-terms-multi.cbc.list.item6=receive information from HMRC about your current or previous country-by-country reports
+confirm-terms-multi.cbc.list.item7=access your CBC ID (country-by-country ID)
+confirm-terms-multi.cbc.list.item8=access and change your country-by-country contact details, such as your contact names, email addresses and telephone numbers
+confirm-terms-multi.cbc.list.item9=access details of any penalties charged
+confirm-terms-multi.cbc.list.item10=appeal late submission penalties
+confirm-terms-multi.cbc.list.item11=provide additional information when appealing late submission penalties
+confirm-terms-multi.cbc.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
 
 confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm
 confirm-terms-multi.pir.p1=Os byddwch yn rhoi’ch caniatâd i CThEF alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y bydd {0} yn gallu gwneud y canlynol:
@@ -794,12 +796,11 @@ check-answers.service.trust=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.trustNT=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.cgt=Rheoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 check-answers.service.ppt=Rheoli’ch Treth Deunydd Pacio Plastig
+check-answers.service.cbc=Country-by-country reports
 check-answers.consent.true =Iawn
 check-answers.consent.false =Na
 check-answers.change-link=Newid
 check-answers.continue.button=Cadarnhau ac anfon ateb
-
-check-answers.service.cbcNonUk=Country-by-country reports
 
 #Invitation Expired
 invitation-expired.heading=Nid yw’r dudalen hon ar gael mwyach
@@ -817,6 +818,7 @@ client-complete.trust.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awd
 client-complete.trustNT.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran cynnal ymddiriedolaeth neu ystâd
 client-complete.cgt.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 client-complete.ppt.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch Treth Deunydd Pacio Plastig.
+client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’n gallu delio â CThEM ar eich rhan</a> er mwyn:
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
@@ -833,7 +835,6 @@ client-complete.multi.p1.trustNT=cynnal ymddiriedolaeth neu ystâd
 client-complete.multi.p1.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
-client-complete.cbcNonUk.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 
 # Generic Issue Title
 client-problem.header=Nid yw’ch cais am awdurdodiad yn ddilys mwyach

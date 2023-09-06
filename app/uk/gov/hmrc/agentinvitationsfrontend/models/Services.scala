@@ -88,7 +88,7 @@ object Services {
     Service.CapitalGains         -> "cgt",
     Service.Ppt                  -> "ppt",
     Service.Cbc                  -> "cbc",
-    Service.CbcNonUk             -> "cbcNonUk"
+    Service.CbcNonUk             -> "cbc"
   )
 
   def determineService(invitationId: InvitationId): Service = {
