@@ -480,14 +480,12 @@ class ClientInvitationJourneyController @Inject()(
         Ok(
           confirmDeclineView(
             formWithErrors.or(confirmDeclineForm),
-            ConfirmDeclinePageConfig(
-              agentName,
-              ClientType.fromEnum(clientType),
-              uid,
-              consents.map(_.service).distinct,
-              submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
-              backLink = backLinkFor(breadcrumbs)
-            )
+            agentName,
+            ClientType.fromEnum(clientType),
+            uid,
+            consents.map(_.service).distinct,
+            submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
+            backLink = backLinkFor(breadcrumbs)
           ))
 
       case InvitationsAccepted(agentName, consents, clientType) =>

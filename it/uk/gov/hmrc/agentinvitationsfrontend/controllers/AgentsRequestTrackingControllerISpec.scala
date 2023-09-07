@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 import play.api.test.Helpers
 import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
-import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.{AcceptedByClient, statuses}
+import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus.AcceptedByClient
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterTrackRequests
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, Css}
 import uk.gov.hmrc.agentmtdidentifiers.model.{MtdItId, Service, Vrn}
