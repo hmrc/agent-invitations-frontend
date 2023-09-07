@@ -26,10 +26,10 @@ case class ConfirmedTerms(
   cgtConsent: Boolean,
   trustNTConsent: Boolean,
   pptConsent: Boolean,
-  cbcConsent: Boolean,
-  cbcNonUkConsent: Boolean) {
+  cbcConsent: Boolean // a client will never have both CBC variants
+) {
 
-  def get(service: Service) = service match {
+  def get(service: Service): Boolean = service match {
     case Service.MtdIt                => this.itsaConsent
     case Service.PersonalIncomeRecord => this.afiConsent
     case Service.Vat                  => this.vatConsent
@@ -38,12 +38,12 @@ case class ConfirmedTerms(
     case Service.CapitalGains         => this.cgtConsent
     case Service.Ppt                  => this.pptConsent
     case Service.Cbc                  => this.cbcConsent
-    case Service.CbcNonUk             => this.cbcNonUkConsent
+    case Service.CbcNonUk             => this.cbcConsent
   }
 }
 
 object ConfirmedTerms {
-  def forServices(services: Service*) = ConfirmedTerms(
+  def forServices(services: Service*): ConfirmedTerms = ConfirmedTerms(
     services.contains(Service.MtdIt),
     services.contains(Service.PersonalIncomeRecord),
     services.contains(Service.Vat),
@@ -51,7 +51,6 @@ object ConfirmedTerms {
     services.contains(Service.CapitalGains),
     services.contains(Service.TrustNT),
     services.contains(Service.Ppt),
-    services.contains(Service.Cbc),
-    services.contains(Service.CbcNonUk)
+    services.contains(Service.Cbc) || services.contains(Service.CbcNonUk),
   )
 }

@@ -530,15 +530,14 @@ object ClientInvitationJourneyController {
   val confirmTermsMultiForm: Form[ConfirmedTerms] =
     Form[ConfirmedTerms](
       mapping(
-        "confirmedTerms.itsa"     -> boolean,
-        "confirmedTerms.afi"      -> boolean,
-        "confirmedTerms.vat"      -> boolean,
-        "confirmedTerms.trust"    -> boolean,
-        "confirmedTerms.cgt"      -> boolean,
-        "confirmedTerms.trustNT"  -> boolean,
-        "confirmedTerms.ppt"      -> boolean,
-        "confirmedTerms.cbc"      -> boolean,
-        "confirmedTerms.cbcNonUk" -> boolean
+        "confirmedTerms.itsa"    -> boolean,
+        "confirmedTerms.afi"     -> boolean,
+        "confirmedTerms.vat"     -> boolean,
+        "confirmedTerms.trust"   -> boolean,
+        "confirmedTerms.cgt"     -> boolean,
+        "confirmedTerms.trustNT" -> boolean,
+        "confirmedTerms.ppt"     -> boolean,
+        "confirmedTerms.cbc"     -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =
@@ -549,7 +548,7 @@ object ClientInvitationJourneyController {
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
+  val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 
