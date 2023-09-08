@@ -16,16 +16,20 @@
 
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.InvitationDeclinedPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Services.serviceMessageKeys
 @import uk.gov.hmrc.agentmtdidentifiers.model.Service
+@import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 
 @this(mainTemplate: MainTemplate, p:p, a:a, h2:h2, ul: ul, govukPanel: GovukPanel)
 
-@(config: InvitationDeclinedPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+agencyName: String,
+services: Seq[Service],
+clientType: ClientType
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     bannerTitle = "service.name.clients",
@@ -37,13 +41,13 @@
         title = Text(msgs("invitation-declined.header"))
     ))
 
-    @if(config.services.length == 1) {
-        @p(msgs(s"invitation-declined.multi.${serviceMessageKeys(config.services.head)}.p1", config.agencyName))
+    @if(services.length == 1) {
+        @p(msgs(s"invitation-declined.multi.${serviceMessageKeys(services.head)}.p1", agencyName))
     } else {
-        @p(msgs(s"invitation-decline.sub-header", config.agencyName))
+        @p(msgs(s"invitation-decline.sub-header", agencyName))
         @ul(
-            items = config.services.map(service => {
-                val k = if(service == Service.CapitalGains) s"${serviceMessageKeys(service)}.${config.clientType}" else serviceMessageKeys(service)
+            items = services.map(service => {
+                val k = if(service == Service.CapitalGains) s"${serviceMessageKeys(service)}.${clientType}" else serviceMessageKeys(service)
                 s"confirm-decline.$k.service-name"
             })
         )

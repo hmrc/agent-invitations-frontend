@@ -19,7 +19,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.MainTemplate
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CreateNewUserIdConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.govukfrontend.views.html.components.FormWithCSRF
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
@@ -34,7 +33,7 @@
 )
 
 
-@(createNewUserIdConfig: CreateNewUserIdConfig, backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(ggUrl: String, backLinkUrl: Call)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     title = msgs("generic.title", msgs(s"new-gg-id.header")),
@@ -47,6 +46,6 @@
     @p("new-gg-id.p1")
     @ul(items = Seq("new-gg-id.li1", "new-gg-id.li2"))
     @p("new-gg-id.p4")
-    @linkStyledAsButton(href = createNewUserIdConfig.ggUrl)
+    @linkStyledAsButton(href = ggUrl)
 
 }

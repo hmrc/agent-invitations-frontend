@@ -378,7 +378,7 @@ class ClientInvitationJourneyController @Inject()(
       case _: CreateNewUserId =>
         Ok(
           createNewUserId(
-            CreateNewUserIdConfig(constructBasGatewayCreateNewUserIdUrl()),
+            constructBasGatewayCreateNewUserIdUrl(),
             backLinkFor(breadcrumbs)
           )
         )
@@ -489,17 +489,21 @@ class ClientInvitationJourneyController @Inject()(
           ))
 
       case InvitationsAccepted(agentName, consents, clientType) =>
-        Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
+        Ok(completeView(agentName, consents, clientType))
 
       case InvitationsDeclined(agentName, consents, clientType) =>
-        Ok(invitationDeclinedView(InvitationDeclinedPageConfig(agentName, consents.map(_.service).distinct, clientType)))
+        Ok(invitationDeclinedView(agentName, consents.map(_.service).distinct, clientType))
 
       case AllResponsesFailed => Ok(allResponsesFailedView())
 
       case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
         Ok(
           someResponsesFailedView(
-            SomeResponsesFailedPageConfig(failedConsents, agentName, routes.ClientInvitationJourneyController.submitSomeResponsesFailed, clientType)))
+            failedConsents,
+            agentName,
+            routes.ClientInvitationJourneyController.submitSomeResponsesFailed,
+            clientType
+          ))
 
       case TrustNotClaimed =>
         val backLink =
