@@ -17,8 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.DeletePageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.models.{Confirmation, AuthorisationRequest}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
@@ -34,25 +33,30 @@
     submitButton: SubmitButton
 )
 
-@(config: DeletePageConfig, deleteForm: Form[Confirmation])(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+clientDetail: AuthorisationRequest,
+submitDelete: Call,
+backLinkUrl: String,
+deleteForm: Form[Confirmation]
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
 title = msgs("generic.title", msgs(s"delete.heading", msgs("delete.client")), msgs("service.name.agents.auth")),
 isAgent = true,
-backLinkHref = Some(config.backLinkUrl)
+backLinkHref = Some(backLinkUrl)
 ) {
 
     @if(deleteForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(deleteForm))
     }
 
-    @formWithCSRF(config.submitDelete) {
+    @formWithCSRF(submitDelete) {
 
         @inputYesNoRadios(
             field = deleteForm("accepted"),
-            legend = msgs("delete.heading", config.clientDetail.clientName),
+            legend = msgs("delete.heading", clientDetail.clientName),
             headingIsLegend = true,
-            hint = Some(msgs(s"delete.subheading.${config.clientDetail.invitation.service.id}"))
+            hint = Some(msgs(s"delete.subheading.${clientDetail.invitation.service.id}"))
         )
 
         @submitButton()

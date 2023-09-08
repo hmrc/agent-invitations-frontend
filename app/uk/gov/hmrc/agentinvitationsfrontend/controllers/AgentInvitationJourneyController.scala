@@ -504,11 +504,9 @@ class AgentInvitationJourneyController @Inject()(
       case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
         Ok(
           deleteView(
-            DeletePageConfig(
-              authorisationRequest,
-              routes.AgentInvitationJourneyController.submitDeleteAuthorisation,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations.url
-            ),
+            authorisationRequest,
+            routes.AgentInvitationJourneyController.submitDeleteAuthorisation,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations.url,
             formWithErrors.or(DeleteAuthorisationForm)
           ))
 
@@ -561,7 +559,7 @@ class AgentInvitationJourneyController @Inject()(
         )
 
       case CannotCreateRequest(basket) =>
-        Ok(cannotCreateRequestView(CannotCreateRequestConfig(basket.nonEmpty, fromFastTrack = false, backLinkFor(breadcrumbs).url)))
+        Ok(cannotCreateRequestView(hasRequests = basket.nonEmpty, fromFastTrack = false, backLinkFor(breadcrumbs).url))
 
       case SomeAuthorisationsFailed(_, _, _, basket) =>
         Ok(invitationCreationFailedView(InvitationCreationFailedPageConfig(basket, isAll = false)))
@@ -583,15 +581,14 @@ class AgentInvitationJourneyController @Inject()(
       case PendingInvitationExists(_, clientName, agentLink, basket) =>
         Ok(
           pendingAuthExistsView(
-            PendingAuthorisationExistsPageConfig(
-              clientName,
-              agentLink,
-              basket.nonEmpty,
-              backLinkFor(breadcrumbs).url,
-              fromFastTrack = false,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations,
-              routes.AgentInvitationJourneyController.showClientType
-            )))
+            clientName,
+            agentLink,
+            authRequestsExist = basket.nonEmpty,
+            backLinkFor(breadcrumbs).url,
+            fromFastTrack = false,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationJourneyController.showClientType
+          ))
 
       case PartialAuthorisationExists(basket) =>
         Ok(
@@ -604,15 +601,16 @@ class AgentInvitationJourneyController @Inject()(
 
       case ClientNotSignedUp(service, basket) =>
         val pageConfig = notSignedUpPageConfig.render(service)
-        Ok(notSignedupView(service, basket.nonEmpty, false, pageConfig))
+        Ok(notSignedupView(service, basket.nonEmpty, isDeAuthJourney = false, pageConfig))
 
       case ClientNotRegistered(basket) =>
         Ok(
           clientNotRegisteredView(
             basket.nonEmpty,
-            false,
+            fromFastTrack = false,
             routes.AgentInvitationJourneyController.showReviewAuthorisations,
-            routes.AgentInvitationJourneyController.showClientType))
+            routes.AgentInvitationJourneyController.showClientType
+          ))
 
       case AllAuthorisationsRemoved =>
         Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType))
