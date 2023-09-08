@@ -17,20 +17,23 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.CannotCreateRequestConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.LinkStyledAsButton
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 
 @this(mainTemplate: MainTemplate, linkStyledAsButton: LinkStyledAsButton, p: p, h1: h1)
 
-@(config: CannotCreateRequestConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+hasRequests: Boolean,
+fromFastTrack: Boolean,
+backLink: String
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     title = msgs("generic.title", msgs(s"cannot-create-request.header"), msgs("service.name.agents.auth")),
     isAgent = true,
-    backLinkHref = if(!config.fromFastTrack) {
-        Some(config.backLink)
+    backLinkHref = if(!fromFastTrack) {
+        Some(backLink)
     } else {
         None
     }) {
@@ -44,7 +47,7 @@
     @p(id=Some("cannotCreateRequestP2"), key="cannot-create-request.p2")
     @p(id=Some("cannotCreateRequestP3"), key="cannot-create-request.p3")
 
-    @if(config.hasRequests && (config.fromFastTrack == false)) {
+    @if(hasRequests && (fromFastTrack == false)) {
         <p class="govuk-!-margin-top-6">
         @linkStyledAsButton(
             id = "showReviewAuthLink",
@@ -53,7 +56,7 @@
         )
         </p>
     } else {
-        @if(config.fromFastTrack == false) {
+        @if(fromFastTrack == false) {
             <p class="govuk-!-margin-top-6">
             @linkStyledAsButton(
                 id = "showClientType",

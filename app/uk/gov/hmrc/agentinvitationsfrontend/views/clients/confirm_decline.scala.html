@@ -17,7 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.ConfirmDeclinePageConfig
+@import uk.gov.hmrc.agentmtdidentifiers.model.Service
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputYesNoRadios, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
@@ -38,24 +38,32 @@
     p: p, ul: ul
 )
 
-@(confirmDeclineForm : Form[Confirmation], config: ConfirmDeclinePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+    confirmDeclineForm : Form[Confirmation],
+    agencyName: String,
+    clientType: String,
+    uid: String,
+    services: Seq[Service],
+    submitUrl: Call,
+    backLink: Call
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @mainTemplate(
     bannerTitle = "service.name.clients",
     title = errorPrefix(confirmDeclineForm) + msgs("generic.title", msgs("confirm-decline.heading"), msgs("service.name.clients")),
-    isAgent = false, backLinkHref = Some(config.backLink.url)) {
+    isAgent = false, backLinkHref = Some(backLink.url)) {
 
     @if(confirmDeclineForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(confirmDeclineForm))
     }
 
-    @formWithCSRF(action = config.submitUrl) {
+    @formWithCSRF(action = submitUrl) {
 
-        @if(config.services.length == 1){
+        @if(services.length == 1){
             @inputYesNoRadio(
                 field = confirmDeclineForm("accepted"),
                 legend = msgs("confirm-decline.heading"),
-                hint = Some(msgs(s"confirm-decline.${serviceMessageKeys(config.services.head)}.sub-header", config.agencyName)),
+                hint = Some(msgs(s"confirm-decline.${serviceMessageKeys(services.head)}.sub-header", agencyName)),
                 headingIsLegend = true
             )
         } else {
@@ -63,8 +71,8 @@
                 classes = "govuk-radios--inline",
                 hint = Some(
                     Hint(content = HtmlContent(
-                        p(msgs(s"confirm-decline.sub-header", config.agencyName)) + "" +
-                        ul(items = config.services.map(service => s"confirm-decline.${serviceMessageKeys(service)}.service-name"))
+                        p(msgs(s"confirm-decline.sub-header", agencyName)) + "" +
+                        ul(items = services.map(service => s"confirm-decline.${serviceMessageKeys(service)}.service-name"))
                     ))
                 ),
                 fieldset = Some(Fieldset(

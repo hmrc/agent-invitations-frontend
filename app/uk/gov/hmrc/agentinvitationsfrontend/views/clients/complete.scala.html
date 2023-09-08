@@ -17,7 +17,7 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.views.clients.CompletePageConfig
+@import uk.gov.hmrc.agentinvitationsfrontend.models.{ClientConsent, ClientType}
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text}
 @import views.html.helper.CSPNonce
@@ -31,11 +31,15 @@
     h2:h2,
     a:a
 )
-@(config: CompletePageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(
+agencyName: String,
+consents: Seq[ClientConsent],
+clientType: ClientType
+)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
 
 @gtmScript = {
     <script @{CSPNonce.attr}>
-            @for(consent <- config.consents) {
+            @for(consent <- consents) {
             @if(consent.consent) {
             window.dataLayer.push({
                 'event': 'custom_agents_request',
@@ -66,28 +70,28 @@ scriptElem = Some(gtmScript)
 
     @govukPanel(Panel(
         title = Text(msgs("client-complete.multi.header")),
-        content = Text(msgs("client-complete.multi.header.p", config.agencyName))
+        content = Text(msgs("client-complete.multi.header.p", agencyName))
     ))
 
     @h2("client-complete.p.title")
-    @if(config.consents.filter(_.consent == true).length == 1) {
-        @p(msgs(s"client-complete.${config.consents.filter(_.consent == true).map(c => serviceMessageKeys(c.service)).head}.p1",
-            config.agencyName))
+    @if(consents.filter(_.consent == true).length == 1) {
+        @p(msgs(s"client-complete.${consents.filter(_.consent == true).map(c => serviceMessageKeys(c.service)).head}.p1",
+            agencyName))
     } else {
-        @p(msgs(s"client-complete.multi.p1.head", config.agencyName))
-        @ul(items = config.consents.filter(_.consent == true).map(c => "client-complete.multi.p1." +  serviceMessageKeys(c.service)))
+        @p(msgs(s"client-complete.multi.p1.head", agencyName))
+        @ul(items = consents.filter(_.consent == true).map(c => "client-complete.multi.p1." +  serviceMessageKeys(c.service)))
     }
 
     @h2("client-complete.sub-header")
     @p(html = Some(Html(msgs("client-complete.whatHappensNext.p1", externalUrls.agentClientManagementUrl))))
     @ul(items = Seq("client-complete.whatHappensNext.l1", "client-complete.whatHappensNext.l2"))
 
-    @if(config.consents.count(_.consent == false) == 1) {
-        @p(msgs("client-complete.multi.fail", config.agencyName, s"${config.consents.count(_.consent == false)} service"))
+    @if(consents.count(_.consent == false) == 1) {
+        @p(msgs("client-complete.multi.fail", agencyName, s"${consents.count(_.consent == false)} service"))
     }
 
-    @if(config.consents.count(_.consent == false) > 1) {
-        @p(msgs("client-complete.multi.fail", config.agencyName, s"${config.consents.count(_.consent == false)} service"))
+    @if(consents.count(_.consent == false) > 1) {
+        @p(msgs("client-complete.multi.fail", agencyName, s"${consents.count(_.consent == false)} service"))
     }
 
     @p( classes= Some("govuk-!-margin-bottom-9"),

@@ -378,7 +378,7 @@ class ClientInvitationJourneyController @Inject()(
       case _: CreateNewUserId =>
         Ok(
           createNewUserId(
-            CreateNewUserIdConfig(constructBasGatewayCreateNewUserIdUrl()),
+            constructBasGatewayCreateNewUserIdUrl(),
             backLinkFor(breadcrumbs)
           )
         )
@@ -480,28 +480,30 @@ class ClientInvitationJourneyController @Inject()(
         Ok(
           confirmDeclineView(
             formWithErrors.or(confirmDeclineForm),
-            ConfirmDeclinePageConfig(
-              agentName,
-              ClientType.fromEnum(clientType),
-              uid,
-              consents.map(_.service).distinct,
-              submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
-              backLink = backLinkFor(breadcrumbs)
-            )
+            agentName,
+            ClientType.fromEnum(clientType),
+            uid,
+            consents.map(_.service).distinct,
+            submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
+            backLink = backLinkFor(breadcrumbs)
           ))
 
       case InvitationsAccepted(agentName, consents, clientType) =>
-        Ok(completeView(CompletePageConfig(agentName, consents, clientType)))
+        Ok(completeView(agentName, consents, clientType))
 
       case InvitationsDeclined(agentName, consents, clientType) =>
-        Ok(invitationDeclinedView(InvitationDeclinedPageConfig(agentName, consents.map(_.service).distinct, clientType)))
+        Ok(invitationDeclinedView(agentName, consents.map(_.service).distinct, clientType))
 
       case AllResponsesFailed => Ok(allResponsesFailedView())
 
       case SomeResponsesFailed(agentName, failedConsents, _, clientType) =>
         Ok(
           someResponsesFailedView(
-            SomeResponsesFailedPageConfig(failedConsents, agentName, routes.ClientInvitationJourneyController.submitSomeResponsesFailed, clientType)))
+            failedConsents,
+            agentName,
+            routes.ClientInvitationJourneyController.submitSomeResponsesFailed,
+            clientType
+          ))
 
       case TrustNotClaimed =>
         val backLink =
@@ -530,15 +532,14 @@ object ClientInvitationJourneyController {
   val confirmTermsMultiForm: Form[ConfirmedTerms] =
     Form[ConfirmedTerms](
       mapping(
-        "confirmedTerms.itsa"     -> boolean,
-        "confirmedTerms.afi"      -> boolean,
-        "confirmedTerms.vat"      -> boolean,
-        "confirmedTerms.trust"    -> boolean,
-        "confirmedTerms.cgt"      -> boolean,
-        "confirmedTerms.trustNT"  -> boolean,
-        "confirmedTerms.ppt"      -> boolean,
-        "confirmedTerms.cbc"      -> boolean,
-        "confirmedTerms.cbcNonUk" -> boolean
+        "confirmedTerms.itsa"    -> boolean,
+        "confirmedTerms.afi"     -> boolean,
+        "confirmedTerms.vat"     -> boolean,
+        "confirmedTerms.trust"   -> boolean,
+        "confirmedTerms.cgt"     -> boolean,
+        "confirmedTerms.trustNT" -> boolean,
+        "confirmedTerms.ppt"     -> boolean,
+        "confirmedTerms.cbc"     -> boolean
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =
@@ -549,7 +550,7 @@ object ClientInvitationJourneyController {
           .verifying(confirmationChoice(errorMessage))
       )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
 
-  val confirmDeclineForm = confirmationForm("error.confirmDecline.invalid")
+  val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 
   val confirmHasGGIdForm: Form[Confirmation] = confirmationForm("error.confirm-gg-id.required")
 

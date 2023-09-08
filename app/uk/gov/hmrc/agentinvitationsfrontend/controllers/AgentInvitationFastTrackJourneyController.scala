@@ -421,11 +421,9 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(
           knownFactsView(
             formWithErrors.or(getKnownFactFormForService(ftr.service)),
-            KnownFactPageConfig(
-              ftr.service,
-              getSubmitKFFor(ftr.service),
-              backLinkFor(breadcrumbs).url
-            )
+            ftr.service,
+            getSubmitKFFor(ftr.service),
+            backLinkFor(breadcrumbs).url
           ))
 
       case SelectClientType(ftr, _, _) if ftr.service == Service.Vat =>
@@ -656,15 +654,14 @@ class AgentInvitationFastTrackJourneyController @Inject()(
       case PendingInvitationExists(_, agentLink, clientName, _) =>
         Ok(
           pendingAuthExistsView(
-            PendingAuthorisationExistsPageConfig(
-              clientName,
-              agentLink,
-              authRequestsExist = false,
-              backLinkFor(breadcrumbs).url,
-              fromFastTrack = true,
-              routes.AgentInvitationJourneyController.showReviewAuthorisations,
-              routes.AgentInvitationFastTrackJourneyController.showClientType
-            )))
+            clientName,
+            agentLink,
+            authRequestsExist = false,
+            backLinkFor(breadcrumbs).url,
+            fromFastTrack = true,
+            routes.AgentInvitationJourneyController.showReviewAuthorisations,
+            routes.AgentInvitationFastTrackJourneyController.showClientType
+          ))
 
       case PartialAuthorisationExists(_, _) =>
         Ok(
@@ -710,7 +707,7 @@ class AgentInvitationFastTrackJourneyController @Inject()(
         Ok(clientInsolventView(hasRequests = false, isFastTrack = true))
 
       case CannotCreateFastTrackRequest =>
-        Ok(cannotCreateRequestView(CannotCreateRequestConfig(hasRequests = false, fromFastTrack = true, backLink = s"")))
+        Ok(cannotCreateRequestView(hasRequests = false, fromFastTrack = true, backLink = s""))
 
       case _ => throw new Exception(s"Cannot render a page for unexpected state: $state, add your state as a match case in #renderState")
     }

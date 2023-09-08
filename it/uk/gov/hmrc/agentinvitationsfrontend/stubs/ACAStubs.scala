@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import play.api.libs.json.Json
-import play.api.mvc.AnyContentAsJson
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{CbcClient, ClientType, PptClient}
