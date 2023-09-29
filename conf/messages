@@ -28,8 +28,8 @@ identify-client.irv.hint=For example, QQ 12 34 56 C
 
 identify-client.cbc.id=Country-by-country ID
 identify-client.cbc.hint=For example, XACBC0000999999.
-identify-cbc-client.email.label=Country-by-country contact email
-identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
+identify-cbc-client.email.label=Country-by-country contact email address
+identify-cbc-client.email.hint=This is the email address we currently hold for your client. If they have 2 contacts, enter the email address for the first contact.
 error.cbcid.required=Enter your client’s country-by-country ID
 error.email.required=Enter your client’s email address
 error.cbcid.invalid-format=Your client’s country-by-country ID must start with an ‘X’ followed by a letter, then ‘CBC’ and then 10 numbers
@@ -838,6 +838,7 @@ client-complete.multi.p1.trust=maintaining a trust or an estate
 client-complete.multi.p1.trustNT=maintaining a trust or an estate
 client-complete.multi.p1.cgt=managing your Capital Gains Tax on UK property account
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
+client-complete.multi.p1.cbc=managing your country-by-country reports
 client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
 client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 
@@ -925,6 +926,7 @@ some-responses-failed.li.trust=maintain a trust
 some-responses-failed.li.trustNT=maintain a trust
 some-responses-failed.li.cgt=manage your Capital Gains Tax on UK property account
 some-responses-failed.li.ppt=manage your Plastic Packaging Tax
+some-responses-failed.li.cbc=manage your country-by-country reports.
 some-responses-failed.itsa=We could not save your response for managing your Making Tax Digital for Income Tax.
 some-responses-failed.afi=We could not save your response for viewing your Income record.
 some-responses-failed.vat=We could not save your response for managing your VAT
@@ -932,6 +934,7 @@ some-responses-failed.trust=We could not save your response for maintain a trust
 some-responses-failed.trustNT=We could not save your response for maintain a trust or an estate
 some-responses-failed.cgt=We could not save your response for managing your Capital Gains Tax on UK property account.
 some-responses-failed.ppt=We could not save your response for managing your Plastic Packaging Tax
+some-responses-failed.cbc=We could not save your response for managing your country-by-country reports.
 some-responses-failed.try-again=You can continue without these services, or try again later.
 some-responses-failed.advice=If you have any questions, use the ‘Get help with this page’ link.
 
@@ -1060,6 +1063,8 @@ confirm-cancel.subheader.HMRC-TERS-ORG=If you cancel this request, you will not 
 confirm-cancel.subheader.HMRC-TERSNT-ORG=If you cancel this request, you will not be able to maintain a trust or an estate.
 confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be able to manage their Capital Gains Tax on UK property account.
 confirm-cancel.subheader.HMRC-PPT-ORG=If you cancel this request, you will not be able to manage their Plastic Packaging Tax.
+confirm-cancel.subheader.HMRC-CBC-ORG=If you cancel this request, you will not be able to manage their country-by-country reports.
+confirm-cancel.subheader.HMRC-CBC-NONUK-ORG=If you cancel this request, you will not be able to manage their country-by-country reports.
 
 error.confirmCancel.invalid=Select yes if you want to cancel this authorisation request
 
@@ -1072,6 +1077,8 @@ request-cancelled.p1.HMRC-TERS-ORG=You have cancelled your authorisation request
 request-cancelled.p1.HMRC-TERSNT-ORG=You have cancelled your authorisation request to maintain a trust or an estate.
 request-cancelled.p1.HMRC-CGT-PD=You have cancelled your authorisation request to manage their Capital Gains Tax on UK property account.
 request-cancelled.p1.HMRC-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
+request-cancelled.p1.HMRC-CBC-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
+request-cancelled.p1.HMRC-CBC-NONUK-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
 request-cancelled.panel= {0} can no longer respond to this request.
 request-cancelled.track.link=Manage your recent authorisation requests
 
@@ -1086,6 +1093,8 @@ confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=You will no longer be able to m
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to manage their Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=Are you sure you want to cancel this client’s authorisation?
@@ -1096,6 +1105,8 @@ confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=You will no longer be abl
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=You will no longer be able to maintain a trust or an estate. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=You will no longer be able to manage their Capital Gains Tax on UK property account. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.track.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
 #Authorisation cancelled page
@@ -1108,6 +1119,8 @@ authorisation-cancelled.p1.HMRC-TERS-ORG=You are no longer authorised by {0} to 
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=You are no longer authorised by {0} to maintain their trust or estate.
 authorisation-cancelled.p1.HMRC-CGT-PD=You are no longer authorised by {0} to manage their Capital Gains Tax on UK property account.
 authorisation-cancelled.p1.HMRC-PPT-ORG=You are no longer authorised by {0} to manage their Plastic Packaging Tax.
+authorisation-cancelled.p1.HMRC-CBC-ORG=You are no longer authorised by {0} to manage their country-by-country reports.
+authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You are no longer authorised by {0} to manage their country-by-country reports.
 authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
 authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
 authorisation-cancelled.check-sa.l1=sign out of this agent services account
