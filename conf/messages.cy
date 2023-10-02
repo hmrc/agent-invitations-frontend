@@ -26,14 +26,14 @@ identify-client.utr.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth
 identify-client.cbc.p1=identify-client.cbc.p1
 identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
 
-identify-client.cbc.id=Country-by-country ID
-identify-client.cbc.hint=identify-client.cbc.hint
-identify-cbc-client.email.label=Country-by-country contact email
+identify-client.cbc.id=Dynodydd (ID) gwlad-wrth-wlad
+identify-client.cbc.hint=Er enghraifft, XACBC0000999999.
+identify-cbc-client.email.label=E-bost cyswllt gwlad-wrth-wlad
 identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
-error.cbcid.required=Enter your client’s country-by-country ID
-error.email.required=Enter your client’s email address
-error.cbcid.invalid-format=Your client’s country-by-country ID must start with an ‘X’ followed by a letter, then ‘CBC’ and then 10 numbers
-enter-email-address.invalid-format=Enter your client’s email address in the correct format, like name@example.com
+error.cbcid.required=Nodwch Dynodydd (ID) gwlad-wrth-wlad eich cleient
+error.email.required=Nodwch gyfeiriad e-bost eich cleient
+error.cbcid.invalid-format=Mae’n rhaid i Dynodydd (ID) gwlad-wrth-wlad eich cleient ddechrau gydag ’X' ac yna llythyr, yna ’CBC' ac yna 10 rhif
+enter-email-address.invalid-format=Nodwch gyfeiriad e-bost eich cleient yn y fformat cywir, megis enw@enghraifft.com
 
 # Nino
 identify-client.nino.label=Rhif Yswiriant Gwladol
@@ -114,7 +114,7 @@ select-service.HMRC-MTD-VAT.business=Rheoli ei TAW
 select-service.HMRC-TERS-ORG.business=Cynnal ei ymddiriedolaeth neu ystâd
 select-service.HMRC-TERS-ORG.trust=Cynnal ei ymddiriedolaeth neu ystâd
 select-service.HMRC-CBC-ORG.trust=Maintain their trust’s country-by-country reports
-select-service.HMRC-CBC-ORG.business=Manage their country-by-country reports
+select-service.HMRC-CBC-ORG.business=Rheoli ei adroddiadau gwlad-wrth-wlad
 select-service.HMRC-CGT-PD.personal=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 select-service.HMRC-CGT-PD.business=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
 select-service.HMRC-CGT-PD.trust=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU ar gyfer ymddiriedolaeth
@@ -168,10 +168,10 @@ select-single-service.HMRC-PPT-ORG.personal.error=Select yes if you want to mana
 select-single-service.HMRC-PPT-ORG.business.error=Select yes if you want to manage their Plastic Packaging Tax
 select-single-service.HMRC-PPT-ORG.trust.error=Select yes if you want to manage their Plastic Packaging Tax
 
-select-single-service.HMRC-CBC-ORG.business.header=Do you want to manage their country-by-country reports?
-select-single-service.HMRC-CBC-ORG.trust.header=Do you want to manage their country-by-country reports?
-select-single-service.HMRC-CBC-ORG.business.error=Select yes if you want to manage their country-by-country reports
-select-single-service.HMRC-CBC-ORG.trust.error=Select yes if you want to manage their country-by-country reports
+select-single-service.HMRC-CBC-ORG.business.header=A ydych am reoli eu hadroddiadau gwlad-wrth-wlad?
+select-single-service.HMRC-CBC-ORG.trust.header=A ydych am reoli eu hadroddiadau gwlad-wrth-wlad?
+select-single-service.HMRC-CBC-ORG.business.error=Dewiswch ‘Iawn’ os ydych am reoli eu hadroddiadau gwlad-wrth-wlad
+select-single-service.HMRC-CBC-ORG.trust.error=Dewiswch ‘Iawn’ os ydych am reoli eu hadroddiadau gwlad-wrth-wlad
 
 # Agent suspended
 agent-suspended.heading.multi=Nid oeddem yn gallu creu un o’ch ceisiadau
@@ -294,7 +294,7 @@ check-details.p.HMRC-TERS-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwy
 check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyflwyno Ffurflenni Treth cleient drwy feddalwedd.
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 check-details.p.HMRC-PPT-ORG=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Deunydd Pacio Plastig cleient.
-check-details.p.HMRC-CBC-ORG=check-details.p.HMRC-CBC-ORG
+check-details.p.HMRC-CBC-ORG=You are about to start a request for authorisation to manage a client’s country-by-country reports.
 check-details.table.heading=Manylion y cleient
 check-details.client-type=Math o gleient
 check-details.client-type.personal=Unigolyn neu unig fasnachwr
@@ -339,8 +339,8 @@ review-authorisations.table.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 review-authorisations.table.HMRC-CGT-PD=Rheoli ei Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 review-authorisations.table.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
-review-authorisations.table.HMRC-CBC-ORG=Manage their country-by-country reports
-review-authorisations.table.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
+review-authorisations.table.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
+review-authorisations.table.HMRC-CBC-NONUK-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
@@ -361,7 +361,7 @@ cancel-authorisation.personal.select-service.HMRC-MTD-VAT=Rheoli ei TAW
 cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu ystâd
 cancel-authorisation.personal.select-service.HMRC-CGT-PD=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
 cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
-cancel-authorisation.personal.select-service.HMRC-CBC-ORG=Manage their country-by-country reports
+cancel-authorisation.personal.select-service.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 cancel-authorisation.personal.select-service.hint=Dewiswch opsiwn.
 
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
@@ -379,8 +379,8 @@ cancel-authorisation.confirm-cancel.p1.HMRC-TERS-ORG=Os byddwch yn canslo’ch a
 cancel-authorisation.confirm-cancel.p1.HMRC-TERSNT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-PPT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Deunydd Pacio Plastig ar ran {0}.
-cancel-authorisation.confirm-cancel.p1.HMRC-CBC-ORG=If you cancel your authorisation, you will not be able to manage country-by-country reports for {0}.
-cancel-authorisation.confirm-cancel.p1.HMRC-CBC-NONUK-ORG=If you cancel your authorisation, you will not be able to manage The Trust of {0} country-by-country reports.
+cancel-authorisation.confirm-cancel.p1.HMRC-CBC-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-CBC-NONUK-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad ar gyfer {0}.
 cancel-authorisation.confirm-cancel.yes=Iawn
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
 cancel-authorisation.confirm-cancel.itsa-panel=Nid yw canslo’ch awdurdodiad i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cleient yn golygu bod awdurdodiad ar gyfer Hunanasesiad wedi’i ganslo hefyd.
@@ -391,8 +391,8 @@ cancel-authorisation.cancelled.return-to-account-services.button=Dychwelyd i gyf
 cancel-authorisation.cancelled.p1.HMRC-MTD-IT=Nid oes gan {0} yr awdurdod mwyach i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm {1}.
 cancel-authorisation.cancelled.p1.PERSONAL-INCOME-RECORD=Nid yw {0} wedi’i awdurdodi mwyach i weld ei gofnod incwm.
 cancel-authorisation.cancelled.p1.HMRC-MTD-VAT=Nid yw {0} wedi’i awdurdodi mwyach i reoli TAW {1}.
-cancel-authorisation.cancelled.p1.HMRC-CBC-NONUK-ORG=You are no longer authorised by {1} to manage their country-by-country reports.
-cancel-authorisation.cancelled.p1.HMRC-CBC-ORG=You are no longer authorised by {1} to manage their country-by-country reports.
+cancel-authorisation.cancelled.p1.HMRC-CBC-NONUK-ORG=Nid ydych wedi’ch awdurdodi gan {1} i reoli ei adroddiadau gwlad-wrth-wlad mwyach.
+cancel-authorisation.cancelled.p1.HMRC-CBC-ORG=Nid ydych wedi’ch awdurdodi gan {1} i reoli ei adroddiadau gwlad-wrth-wlad mwyach.
 cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
@@ -422,8 +422,8 @@ not-authorised.HMRC-TERS-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynn
 not-authorised.HMRC-TERSNT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i gynnal ymddiriedolaeth nac ystâd.
 not-authorised.HMRC-CGT-PD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 not-authorised.HMRC-PPT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Deunydd Pacio Plastig.
-not-authorised.HMRC-CBC-ORG.p=This client has not authorised you to manage their country-by-country reports
-not-authorised.HMRC-CBC-NONUK-ORG.p=This client has not authorised you to manage their country-by-country reports
+not-authorised.HMRC-CBC-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei adroddiadau gwlad-wrth-wlad.
+not-authorised.HMRC-CBC-NONUK-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei adroddiadau gwlad-wrth-wlad.
 
 #Delete
 delete.heading=A ydych yn siÅµr eich bod am ddileu’ch cais am awdurdodiad ar gyfer {0}?
@@ -594,8 +594,7 @@ invitation-declined.multi.trust.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ym
 invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal ymddiriedolaeth nac ystâd.
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.multi.ppt.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch Treth Deunydd Pacio Plastig.
-invitation-declined.multi.cbc.p1=You have not given permission to {0} to manage your country-by-country reports.
-
+invitation-declined.multi.cbc.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch adroddiadau gwlad-wrth-wlad.
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
 # Confirm Decline Invitation
@@ -608,7 +607,7 @@ confirm-decline.trust.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac
 confirm-decline.trustNT.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-decline.cgt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 confirm-decline.ppt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Deunydd Pacio Plastig.
-confirm-decline.cbc.sub-header={0} will not be able to manage your country-by-country reports.
+confirm-decline.cbc.sub-header=Ni fydd {0} yn gallu rheoli’ch adroddiadau gwlad-wrth-wlad
 confirm-decline.sub-header=Ni fydd {0} yn gallu:
 confirm-decline.itsa.service-name=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 confirm-decline.afi.service-name=adrodd am eich diweddariadau TWE y cyflogwr drwy feddalwedd
@@ -661,20 +660,20 @@ confirm-terms-multi.itsa.list.item9=canslo’ch cofrestriad Hunanasesiad
 confirm-terms-multi.itsa.list.item10=cael mynediad at eich manylion Hunanasesiad, megis eich enw, cyfeiriad, rhif Yswiriant Gwladol a Chyfeirnod Unigryw y Trethdalwr
 confirm-terms-multi.itsa.label=Rwy’n rhoi caniatâd i CThEM alluogi {0} i reoli fy Nhreth Incwm.
 
-confirm-terms-multi.cbc.heading=Manage my country-by-country reports
-confirm-terms-multi.cbc.p1=If you consent to HMRC allowing {0} to manage your country-by-country reports, this means {0} can:
-confirm-terms-multi.cbc.list.item1=send new country-by-country reports
-confirm-terms-multi.cbc.list.item2=send additional information, corrections or deletions for previous country-by-country reports
-confirm-terms-multi.cbc.list.item3=access a list of any country-by-country reports sent in the last 28 days.
+confirm-terms-multi.cbc.heading=Rheoli fy adroddiadau gwlad-wrth-wlad
+confirm-terms-multi.cbc.p1=Os byddwch yn rhoi’ch caniatâd i CThEF alluogi {0} i reoli’ch adroddiadau gwlad-wrth-wlad, bydd hyn yn golygu y gall {0} wneud y canlynol:
+confirm-terms-multi.cbc.list.item1=anfon adroddiadau gwlad-wrth-wlad newydd
+confirm-terms-multi.cbc.list.item2=anfon gwybodaeth, cywiriadau neu achosion o ddileu ychwanegol ar gyfer adroddiadau gwlad-wrth-wlad blaenorol
+confirm-terms-multi.cbc.list.item3=cael at restr o unrhyw adroddiadau gwlad-wrth-wlad a anfonwyd yn ystod y 28 diwrnod diwethaf
 confirm-terms-multi.cbc.list.item4=contact HMRC about your current and previous reports
-confirm-terms-multi.cbc.list.item5=share information with HMRC about your current or previous country-by-country reports
-confirm-terms-multi.cbc.list.item6=receive information from HMRC about your current or previous country-by-country reports
-confirm-terms-multi.cbc.list.item7=access your CBC ID (country-by-country ID)
-confirm-terms-multi.cbc.list.item8=access and change your country-by-country contact details, such as your contact names, email addresses and telephone numbers
-confirm-terms-multi.cbc.list.item9=access details of any penalties charged
-confirm-terms-multi.cbc.list.item10=appeal late submission penalties
-confirm-terms-multi.cbc.list.item11=provide additional information when appealing late submission penalties
-confirm-terms-multi.cbc.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
+confirm-terms-multi.cbc.list.item5=rhannu gwybodaeth gyda CThEF am eich adroddiadau gwlad-wrth-wlad presennol neu flaenorol
+confirm-terms-multi.cbc.list.item6=cael gwybodaeth gan CThEF am eich adroddiadau gwlad-wrth-wlad presennol neu flaenorol
+confirm-terms-multi.cbc.list.item7=cael at eich Dynodydd (ID) CBC (Dynodydd (ID))
+confirm-terms-multi.cbc.list.item8=cael at a newid eich manylion cyswllt gwlad-wrth-wlad, fel eich enwau cyswllt, cyfeiriadau e-bost a rhifau ffôn
+confirm-terms-multi.cbc.list.item9=cael at fanylion unrhyw gosbau a godir
+confirm-terms-multi.cbc.list.item10=apelio cosb am gyflwyno’n hwyr
+confirm-terms-multi.cbc.list.item11=rhoi gwybodaeth ychwanegol wrth apelio cosbau am gyflwyno’n hwyr
+confirm-terms-multi.cbc.label=Rwy’n rhoi caniatâd i CThEF alluogi {0} i reoli fy adroddiadau gwlad-wrth-wlad
 
 confirm-terms-multi.afi.heading=Bwrw golwg dros fy nghofnod incwm
 confirm-terms-multi.pir.p1=Os byddwch yn rhoi’ch caniatâd i CThEF alluogi {0} i fwrw golwg dros eich cofnod incwm, mae hyn yn golygu y bydd {0} yn gallu gwneud y canlynol:
@@ -785,7 +784,6 @@ confirm-terms-multi.ppt.trust.p1.l6=finalise your overall tax position
 confirm-terms-multi.ppt.trust.p1.l7=view your calculations and amounts owed and paid
 confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
-
 confirm-terms.itsa.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
 confirm-terms.vat.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch TAW.
@@ -800,7 +798,7 @@ check-answers.service.trust=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.trustNT=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.cgt=Rheoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 check-answers.service.ppt=Rheoli’ch Treth Deunydd Pacio Plastig
-check-answers.service.cbc=Country-by-country reports
+check-answers.service.cbc=Adroddiadau gwlad wrth wlad
 check-answers.consent.true =Iawn
 check-answers.consent.false =Na
 check-answers.change-link=Newid
@@ -822,7 +820,7 @@ client-complete.trust.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awd
 client-complete.trustNT.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran cynnal ymddiriedolaeth neu ystâd
 client-complete.cgt.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 client-complete.ppt.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch Treth Deunydd Pacio Plastig.
-client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
+client-complete.cbc.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch adroddiadau gwlad-wrth-wlad.
 client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’n gallu delio â CThEM ar eich rhan</a> er mwyn:
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
@@ -839,6 +837,9 @@ client-complete.multi.p1.trustNT=cynnal ymddiriedolaeth neu ystâd
 client-complete.multi.p1.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
+client-complete.multi.p1.cbc=managing your country-by-country reports
+client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
+client-complete.cbc.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch adroddiadau gwlad-wrth-wlad
 
 # Generic Issue Title
 client-problem.header=Nid yw’ch cais am awdurdodiad yn ddilys mwyach
@@ -924,6 +925,7 @@ some-responses-failed.li.trust=cynnal ymddiriedolaeth
 some-responses-failed.li.trustNT=cynnal ymddiriedolaeth
 some-responses-failed.li.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 some-responses-failed.li.ppt=rheoli’ch Treth Deunydd Pacio Plastig
+some-responses-failed.li.cbc=manage your country-by-country reports.
 some-responses-failed.itsa=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Incwm.
 some-responses-failed.afi=Nid oeddem yn gallu cadw’ch ymateb o ran bwrw golwg dros eich cofnod incwm.
 some-responses-failed.vat=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch TAW
@@ -931,6 +933,7 @@ some-responses-failed.trust=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ym
 some-responses-failed.trustNT=Nid oeddem yn gallu cadw’ch ymateb o ran cynnal ymddiriedolaeth neu ystâd
 some-responses-failed.cgt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 some-responses-failed.ppt=Nid oeddem yn gallu cadw’ch ymateb o ran rheoli’ch Treth Deunydd Pacio Plastig
+some-responses-failed.cbc=We could not save your response for managing your country-by-country reports.
 some-responses-failed.try-again=Gallwch fynd yn eich blaen heb y gwasanaethau hyn, neu roi cynnig arall arni yn nes ymlaen.
 some-responses-failed.advice=cynnal ymddiriedolaeth
 
@@ -988,8 +991,8 @@ recent-invitations.invitation.service.HMRC-TERS-ORG=Cynnal ymddiriedolaeth neu y
 recent-invitations.invitation.service.HMRC-TERSNT-ORG=Cynnal ymddiriedolaeth neu ystâd
 recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 recent-invitations.invitation.service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
-recent-invitations.invitation.service.HMRC-CBC-ORG=Manage their country-by-country reports
-recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
+recent-invitations.invitation.service.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
+recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
 recent-invitations.invitation.identifier.vrn=Rhif cofrestru TAW:
 recent-invitations.invitation.identifier.MTDITID=Dynodydd Troi Treth yn Ddigidol ar gyfer Treth Incwm
@@ -1059,6 +1062,8 @@ confirm-cancel.subheader.HMRC-TERS-ORG=Os byddwch yn canslo’r cais hwn, ni fyd
 confirm-cancel.subheader.HMRC-TERSNT-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd.
 confirm-cancel.subheader.HMRC-CGT-PD=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 confirm-cancel.subheader.HMRC-PPT-ORG=Os byddwch yn canslo’r cais hwn, ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig.
+confirm-cancel.subheader.HMRC-CBC-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad ar gyfer {0}.
+confirm-cancel.subheader.HMRC-CBC-NONUK-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad ar gyfer {0}.
 
 error.confirmCancel.invalid=Mae angen llenwi’r maes hwn
 
@@ -1071,6 +1076,8 @@ request-cancelled.p1.HMRC-TERS-ORG=Rydych wedi canslo’ch cais am awdurdodiad i
 request-cancelled.p1.HMRC-TERSNT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i gynnal ymddiriedolaeth neu ystâd.
 request-cancelled.p1.HMRC-CGT-PD=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 request-cancelled.p1.HMRC-PPT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Deunydd Pacio Plastig.
+request-cancelled.p1.HMRC-CBC-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
+request-cancelled.p1.HMRC-CBC-NONUK-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
 request-cancelled.panel=Ni all {0} ymateb i’r cais hwn mwyach.
 request-cancelled.track.link=Rheoli eich ceisiadau diweddar am awdurdodiad
 
@@ -1085,6 +1092,8 @@ confirm-authorisation-cancelled.p1.HMRC-TERS-ORG=Ni fyddwch yn gallu cynnal ymdd
 confirm-authorisation-cancelled.p1.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif Treth Enillion Cyfalaf y cleient hwn ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siÅµr eich bod am ganslo awdurdodiad y cleient hwn?
@@ -1095,6 +1104,8 @@ confirm-authorisation-cancelled.p1.track.HMRC-TERS-ORG=Ni fyddwch yn gallu cynna
 confirm-authorisation-cancelled.p1.track.HMRC-TERSNT-ORG=Ni fyddwch yn gallu cynnal ymddiriedolaeth nac ystâd mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli ei gyfrif Treth Enillion Cyfalaf ar eiddo yn y DU mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
+confirm-authorisation-cancelled.p1.track.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.track.itsa-panel=Ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm dros y person hwn mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 
 #Authorisation cancelled page
@@ -1107,6 +1118,8 @@ authorisation-cancelled.p1.HMRC-TERS-ORG=Nid ydych wedi’ch awdurdodi mwyach ga
 authorisation-cancelled.p1.HMRC-TERSNT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei ymddiriedolaeth na’i ystâd.
 authorisation-cancelled.p1.HMRC-CGT-PD=Nid ydych wedi’ch awdurdodi mwyach gan {0} i gynnal ei Dreth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 authorisation-cancelled.p1.HMRC-PPT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i reoli ei Dreth Deunydd Pacio Plastig.
+authorisation-cancelled.p1.HMRC-CBC-ORG=Nid ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach
+authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=Nid ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach
 authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfer Hunanasesiad
 authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn

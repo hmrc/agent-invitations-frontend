@@ -785,9 +785,7 @@ confirm-terms-multi.ppt.trust.p1.l6=finalise your overall tax position
 confirm-terms-multi.ppt.trust.p1.l7=view your calculations and amounts owed and paid
 confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
-
 confirm-terms.itsa.p1=This tax agent needs access to this information to manage your Making Tax Digital for Income Tax.
-
 confirm-terms.vat.p1=This tax agent needs access to this information to manage your VAT.
 
 #Check answers
@@ -823,6 +821,7 @@ client-complete.trust.p1={0} is now confirmed as your authorised tax agent for m
 client-complete.trustNT.p1={0} is now confirmed as your authorised tax agent for maintaining a trust or an estate
 client-complete.cgt.p1={0} is now confirmed as your authorised tax agent for managing your Capital Gains Tax on UK property account
 client-complete.ppt.p1={0} is now confirmed as your authorised tax agent for managing your Plastic Packaging Tax.
+client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
