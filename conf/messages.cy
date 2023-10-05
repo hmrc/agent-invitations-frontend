@@ -28,8 +28,8 @@ identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
 
 identify-client.cbc.id=Dynodydd (ID) gwlad-wrth-wlad
 identify-client.cbc.hint=Er enghraifft, XACBC0000999999.
-identify-cbc-client.email.label=E-bost cyswllt gwlad-wrth-wlad
-identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
+identify-cbc-client.email.label=Cyfeiriad e-bost cyswllt gwlad-wrth-wlad
+identify-cbc-client.email.hint=Dyma’r cyfeiriad e-bost sydd gennym ar gyfer eich cleient ar hyn o bryd. Os oes ganddo 2 gyswllt, nodwch y cyfeiriad e-bost ar gyfer y cyswllt cyntaf.
 error.cbcid.required=Nodwch Dynodydd (ID) gwlad-wrth-wlad eich cleient
 error.email.required=Nodwch gyfeiriad e-bost eich cleient
 error.cbcid.invalid-format=Mae’n rhaid i Dynodydd (ID) gwlad-wrth-wlad eich cleient ddechrau gydag ’X' ac yna llythyr, yna ’CBC' ac yna 10 rhif
