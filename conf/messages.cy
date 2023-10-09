@@ -28,8 +28,8 @@ identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
 
 identify-client.cbc.id=Dynodydd (ID) gwlad-wrth-wlad
 identify-client.cbc.hint=Er enghraifft, XACBC0000999999.
-identify-cbc-client.email.label=E-bost cyswllt gwlad-wrth-wlad
-identify-cbc-client.email.hint=This is the first email the client gave for country-by-country reporting.
+identify-cbc-client.email.label=Cyfeiriad e-bost cyswllt gwlad-wrth-wlad
+identify-cbc-client.email.hint=Dyma’r cyfeiriad e-bost sydd gennym ar gyfer eich cleient ar hyn o bryd. Os oes ganddo 2 gyswllt, nodwch y cyfeiriad e-bost ar gyfer y cyswllt cyntaf.
 error.cbcid.required=Nodwch Dynodydd (ID) gwlad-wrth-wlad eich cleient
 error.email.required=Nodwch gyfeiriad e-bost eich cleient
 error.cbcid.invalid-format=Mae’n rhaid i Dynodydd (ID) gwlad-wrth-wlad eich cleient ddechrau gydag ’X' ac yna llythyr, yna ’CBC' ac yna 10 rhif
@@ -434,6 +434,8 @@ delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er m
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 delete.subheading.HMRC-PPT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli Treth Deunydd Pacio Plastig.
+delete.subheading.HMRC-CBC-ORG=You will not send them an authorisation request to manage country-by-country reports.
+delete.subheading.HMRC-CBC-NONUK-ORG=You will not send them an authorisation request to manage country-by-country reports.
 delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 

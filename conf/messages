@@ -434,6 +434,8 @@ delete.subheading.HMRC-TERS-ORG=You will not send them an authorisation request 
 delete.subheading.HMRC-TERSNT-ORG=You will not send them an authorisation request to maintain a trust or an estate.
 delete.subheading.HMRC-CGT-PD=You will not send them an authorisation request to manage Capital Gains Tax on UK property account.
 delete.subheading.HMRC-PPT-ORG=You will not send them an authorisation request to manage Plastic Packaging Tax.
+delete.subheading.HMRC-CBC-ORG=You will not send them an authorisation request to manage country-by-country reports.
+delete.subheading.HMRC-CBC-NONUK-ORG=You will not send them an authorisation request to manage country-by-country reports.
 delete.client=Your client
 error.delete.radio=Select yes if you want to remove the authorisation request for this client
 
