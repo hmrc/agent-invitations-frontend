@@ -434,6 +434,8 @@ delete.subheading.HMRC-TERS-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er m
 delete.subheading.HMRC-TERSNT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn cynnal ymddiriedolaeth neu ystâd.
 delete.subheading.HMRC-CGT-PD=Ni fyddwch yn anfon cais am awdurdodiad ato er mwyn rheoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 delete.subheading.HMRC-PPT-ORG=Ni fyddwch yn anfon cais am awdurdodiad ato i reoli Treth Deunydd Pacio Plastig.
+delete.subheading.HMRC-CBC-ORG=You will not send them an authorisation request to manage country-by-country reports.
+delete.subheading.HMRC-CBC-NONUK-ORG=You will not send them an authorisation request to manage country-by-country reports.
 delete.client=Eich cleient
 error.delete.radio=Dewiswch ‘Iawn’ os hoffech ddileu’r cais am awdurdodiad ar gyfer y cleient hwn
 
