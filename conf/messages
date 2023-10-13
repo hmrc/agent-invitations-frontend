@@ -27,6 +27,7 @@ identify-client.cbc.p1=This will help us match their details against information
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
 identify-client.cbc.id=Country-by-country ID
+identify-client.cbc.id.found=We found a record matching country-by-country ID: {0}
 identify-client.cbc.hint=For example, XACBC0000999999.
 identify-cbc-client.email.label=Country-by-country contact email address
 identify-cbc-client.email.hint=This is the email address we currently hold for your client. If they have 2 contacts, enter the email address for the first contact.
@@ -638,6 +639,7 @@ confirm-terms.subheading3=Our privacy policy
 confirm-terms.subheading3.p1=For details about how we store and process your information, see our <a href="{0}" target="_blank" rel="noopener noreferrer">privacy notice (opens in a new tab)</a>. If you appoint someone overseas to act for you, we will need to share your data outside of the UK.
 confirm-terms.subheading1.p2=If you choose to give your consent, this means employees of this tax agent will be able to access your data. Your consent will last until you remove this tax agent’s authorisation to act on your behalf.
 confirm-terms.subheading4=Do you consent to HMRC sharing your personal information with {0} for the purposes above?
+confirm-terms.subheading5=Do you consent to HMRC allowing {0} to manage your country-by-country reports. If you consent this means that {0} can:
 confirm-terms.radio1=Yes
 confirm-terms.radio2=No
 
@@ -824,6 +826,7 @@ client-complete.trustNT.p1={0} is now confirmed as your authorised tax agent for
 client-complete.cgt.p1={0} is now confirmed as your authorised tax agent for managing your Capital Gains Tax on UK property account
 client-complete.ppt.p1={0} is now confirmed as your authorised tax agent for managing your Plastic Packaging Tax.
 client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
+client-complete.cbc.p2={0} is confirmed as {1}'s agent for managing their country-by-country reports.
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
@@ -841,7 +844,6 @@ client-complete.multi.p1.cgt=managing your Capital Gains Tax on UK property acco
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.p1.cbc=managing your country-by-country reports
 client-complete.multi.fail=You did not appoint {0} for {1}. If you declined this by mistake, contact the person who sent you the request.
-client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 
 # Generic Issue Title
 client-problem.header=Your authorisation request is no longer valid
@@ -882,6 +884,8 @@ action-needed.details.p2=Find out how to {0}
 action-needed.details.link=<a target="_blank" rel="noopener noreferrer" href="{0}">sign up to {1} (opens in a new tab)</a>.
 action-needed.details.ters.p1=You will need to claim a trust or an estate before you can continue.
 action-needed.details.ters.p2=Contact the tax agent who sent you this request if you still want them to maintain a trust or an estate.
+action-needed.client.authorise.agent=If the client also needs to authorise an agent for another service, you can transfer the client to the appropriate team.
+action-needed.client.manage.agent=If the client wants to manage authorisations for another service, you can transfer the client to the appropriate team.
 
 # Not Found Invitation
 not-found-invitation.header=Page not found
@@ -995,6 +999,9 @@ recent-invitations.invitation.service.HMRC-CGT-PD=Manage their Capital Gains Tax
 recent-invitations.invitation.service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 recent-invitations.invitation.service.HMRC-CBC-ORG=Manage their country-by-country reports
 recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
+recent-invitations.invitation.service.HMRC-CBC=Manage country-by-country reports
+recent-invitations.invitation.service.details.HMRC-CBC=Details for country-by-country reports
+recent-invitations.invitation.service.clients.HMRC-CBC=Manage the client's country-by-country reports
 recent-invitations.invitation.identifier.nino=National Insurance number:
 recent-invitations.invitation.identifier.vrn=VAT registration number:
 recent-invitations.invitation.identifier.MTDITID=MTD-IT identifier:
@@ -1048,6 +1055,7 @@ recent-invitations.filter-status.AcceptedByClient=Accepted by client
 recent-invitations.filter-status.Expired=Request expired as client did not respond in time
 recent-invitations.filter-status.ClientCancelledAuthorisation=Accepted by client. They later cancelled their authorisation
 recent-invitations.filter-status.HMRCCancelledAuthorisation=Accepted by client. HMRC later cancelled your authorisation
+recent-invitations.filter-status.Declined.HMRC-CBC={0} request to manage the client's country-by-country reports was declined.
 
 #ResendLink page
 resend-link.header=Resend this link to your client
