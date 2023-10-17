@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
 import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.addParamsToUrl
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template_5xx, timed_out}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
@@ -77,7 +77,8 @@ class ClientInvitationJourneyController @Inject()(
   alreadyRespondedView: already_responded,
   cannotFindRequestView: cannot_find_request,
   ggUserIdNeededView: gg_user_id_needed,
-  authorisationRequestErrorTemplateView: authorisation_request_error_template)(
+  authorisationRequestErrorTemplateView: authorisation_request_error_template,
+  error_template: error_template_5xx)(
   implicit configuration: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
@@ -119,7 +120,7 @@ class ClientInvitationJourneyController @Inject()(
     withMaybeLoggedInClient
   }
 
-  val forbiddenResultNoJourneyId = Results.Forbidden("NO_JOURNEY_ID")
+  val forbiddenResultNoJourneyId = Results.Forbidden("NO_JOURNEY_ID") // pass in error temp
 
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
@@ -133,9 +134,12 @@ class ClientInvitationJourneyController @Inject()(
       (journeyId, attempt) match {
         case (None, None) =>
           // redirect to itself with new journeyId generated and add attempt=1
-          Future.successful(
-            appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, Some(1))))(request))
-        case (None, Some(_)) => Future successful forbiddenResultNoJourneyId // infinite redirect defender
+          Future successful Results.Forbidden(error_template())
+        case (None, Some(x)) if x < 3 =>
+          // redirect to itself with new journeyId generated and add attempt=1, 2 & 3
+          Future successful Results.Forbidden(error_template())
+        case (None, Some(_)) => Future successful Results.Forbidden(error_template())
+        // infinite redirect defender
         case _ =>
           helpers.apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
