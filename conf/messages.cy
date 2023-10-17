@@ -27,6 +27,7 @@ identify-client.cbc.p1=identify-client.cbc.p1
 identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
 
 identify-client.cbc.id=Dynodydd (ID) gwlad-wrth-wlad
+identify-client.cbc.id.found=Gwnaethom ddod o hyd i gofnod sy’n cyfateb i’r ID gwlad-wrth-wlad: {0}
 identify-client.cbc.hint=Er enghraifft, XACBC0000999999.
 identify-cbc-client.email.label=Cyfeiriad e-bost cyswllt gwlad-wrth-wlad
 identify-cbc-client.email.hint=Dyma’r cyfeiriad e-bost sydd gennym ar gyfer eich cleient ar hyn o bryd. Os oes ganddo 2 gyswllt, nodwch y cyfeiriad e-bost ar gyfer y cyswllt cyntaf.
@@ -638,6 +639,7 @@ confirm-terms.subheading3=Ein polisi preifatrwydd
 confirm-terms.subheading3.p1=Am fanylion ynghylch sut yr ydym yn cadw a phrosesu’ch gwybodaeth, darllenwch ein <a href="{0}" target="_blank" rel="noopener noreferrer">hysbysiad preifatrwydd (yn agor ffenestr neu dab newydd)</a>. Os byddwch yn penodi rhywun tramor i weithredu ar eich rhan, bydd yn rhaid i ni rannu’ch data y tu allan i’r DU.
 confirm-terms.subheading1.p2=Os byddwch yn dewis rhoi’ch caniatâd, mae hyn yn golygu y bydd modd i gyflogeion yr asiant treth hwn gael mynediad at eich data. Bydd eich caniatâd yn para hyd nes eich bod yn dileu awdurdodiad yr asiant treth hwn i weithredu ar eich rhan.
 confirm-terms.subheading4=A ydych yn rhoi’ch caniatâd i CThEM rannu’ch gwybodaeth bersonol gyda {0} at y dibenion uchod?
+confirm-terms.subheading5=A ydych yn rhoi caniatâd i CThEF alluogi {0} i reoli eich adroddiadau gwlad-wrth-wlad? Os ydych yn rhoi caniatâd, mae hyn yn golygu y gall {0} wneud y canlynol:
 confirm-terms.radio1=Iawn
 confirm-terms.radio2=Na
 
@@ -823,6 +825,7 @@ client-complete.trustNT.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth a
 client-complete.cgt.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdurdodedig i chi, o ran rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU
 client-complete.ppt.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch Treth Deunydd Pacio Plastig.
 client-complete.cbc.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch adroddiadau gwlad-wrth-wlad.
+client-complete.cbc.p2=Mae {0} wedi’i gadarnhau fel asiant {1} a bydd yn rheoli ei adroddiadau gwlad-wrth-wlad.
 client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’n gallu delio â CThEM ar eich rhan</a> er mwyn:
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny
@@ -840,8 +843,6 @@ client-complete.multi.p1.cgt=rheoli’ch Treth Enillion Cyfalaf ar warediadau ei
 client-complete.multi.p1.ppt=managing your Plastic Packaging Tax
 client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
 client-complete.multi.p1.cbc=managing your country-by-country reports
-client-complete.multi.fail=Ni wnaethoch benodi {0} ar gyfer {1}. Os gwnaethoch wrthod hyn drwy ddamwain, cysylltwch â’r person a anfonodd y cais atoch.
-client-complete.cbc.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch adroddiadau gwlad-wrth-wlad
 
 # Generic Issue Title
 client-problem.header=Nid yw’ch cais am awdurdodiad yn ddilys mwyach
@@ -882,6 +883,8 @@ action-needed.details.p2=Canfyddwch sut i {0}
 action-needed.details.link=<a target="_blank" rel="noreferrer noopener" href="{0}">gofrestru ar gyfer {1} (yn agor ffenestr neu dab newydd)</a>.
 action-needed.details.ters.p1=Bydd angen i chi hawlio ymddiriedolaeth neu ystâd cyn i chi allu mynd yn eich blaen.
 action-needed.details.ters.p2=Cysylltwch â’r asiant treth a anfonodd y cais hwn atoch os hoffech iddo gynnal ymddiriedolaeth neu ystâd o hyd.
+action-needed.client.authorise.agent=Os oes hefyd angen i’r cleient awdurdodi asiant ar gyfer gwasanaeth arall, gallwch drosglwyddo’r cleient i’r tîm priodol.
+action-needed.client.manage.agent=Os yw’r cleient am reoli awdurdodiadau ar gyfer gwasanaeth arall, gallwch drosglwyddo’r cleient i’r tîm priodol.
 
 # Not Found Invitation
 not-found-invitation.header=Heb ddod o hyd i’r dudalen
@@ -995,6 +998,9 @@ recent-invitations.invitation.service.HMRC-CGT-PD=Rheoli ei gyfrif Treth Enillio
 recent-invitations.invitation.service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
 recent-invitations.invitation.service.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
+recent-invitations.invitation.service.HMRC-CBC=Rheoli adroddiadau gwlad-wrth-wlad
+recent-invitations.invitation.service.details.HMRC-CBC=Manylion am adroddiadau gwlad-wrth-wlad
+recent-invitations.invitation.service.clients.HMRC-CBC=Rheoli adroddiadau gwlad-wrth-wlad y cleient
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
 recent-invitations.invitation.identifier.vrn=Rhif cofrestru TAW:
 recent-invitations.invitation.identifier.MTDITID=Dynodydd Troi Treth yn Ddigidol ar gyfer Treth Incwm
@@ -1048,6 +1054,7 @@ recent-invitations.filter-status.AcceptedByClient=Derbyniwyd gan y cleient
 recent-invitations.filter-status.Expired=Daeth y cais i ben gan i’r cleient fethu ag ymateb mewn pryd
 recent-invitations.filter-status.ClientCancelledAuthorisation=Derbyniwyd gan y cleient. Gwnaeth y cleient ganslo’i awdurdodiad yn nes ymlaen
 recent-invitations.filter-status.HMRCCancelledAuthorisation=Derbyniwyd gan y cleient. Gwnaeth CThEM ganslo’ch awdurdodiad yn nes ymlaen
+recent-invitations.filter-status.Declined.HMRC-CBC=Cafodd cais {0} i reoli adroddiadau gwlad-wrth-wlad y cleient ei wrthod.
 
 #ResendLink page
 resend-link.header=Ailanfon y cysylltiad hwn at eich cleient
