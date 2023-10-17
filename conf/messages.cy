@@ -884,7 +884,7 @@ action-needed.details.link=<a target="_blank" rel="noreferrer noopener" href="{0
 action-needed.details.ters.p1=Bydd angen i chi hawlio ymddiriedolaeth neu ystâd cyn i chi allu mynd yn eich blaen.
 action-needed.details.ters.p2=Cysylltwch â’r asiant treth a anfonodd y cais hwn atoch os hoffech iddo gynnal ymddiriedolaeth neu ystâd o hyd.
 action-needed.client.authorise.agent=Os oes hefyd angen i’r cleient awdurdodi asiant ar gyfer gwasanaeth arall, gallwch drosglwyddo’r cleient i’r tîm priodol.
-action-needed.client.authorise.agent=Os yw’r cleient am reoli awdurdodiadau ar gyfer gwasanaeth arall, gallwch drosglwyddo’r cleient i’r tîm priodol.
+action-needed.client.manage.agent=Os yw’r cleient am reoli awdurdodiadau ar gyfer gwasanaeth arall, gallwch drosglwyddo’r cleient i’r tîm priodol.
 
 # Not Found Invitation
 not-found-invitation.header=Heb ddod o hyd i’r dudalen
