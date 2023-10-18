@@ -19,7 +19,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.data.Form
 import play.api.data.Forms.{mapping, _}
-import play.api.i18n.{I18nSupport, Messages}
+import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.Configuration
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
@@ -132,12 +132,11 @@ class ClientInvitationJourneyController @Inject()(
   def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
     Action.async { implicit request =>
       (journeyId, attempt) match {
-        case (None, None) =>
+        case (None, x) if x.forall(y => y < 3) =>
           // redirect to itself with new journeyId generated and add attempt=1
-          Future successful Results.Forbidden(error_template())
-        case (None, Some(x)) if x < 3 =>
-          // redirect to itself with new journeyId generated and add attempt=1, 2 & 3
-          Future successful Results.Forbidden(error_template())
+          Future.successful(
+            appendJourneyId(Results.Redirect(
+              routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, attempt.map(x => x + 1).orElse(Some(1)))))(request))
         case (None, Some(_)) => Future successful Results.Forbidden(error_template())
         // infinite redirect defender
         case _ =>
