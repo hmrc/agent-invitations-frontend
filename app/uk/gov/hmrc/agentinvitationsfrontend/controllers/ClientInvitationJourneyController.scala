@@ -33,7 +33,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.CallOps.addParamsToUrl
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{confirmationChoice, normalizedText}
 import uk.gov.hmrc.agentinvitationsfrontend.views.clients._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.clients._
-import uk.gov.hmrc.agentinvitationsfrontend.views.html.timed_out
+import uk.gov.hmrc.agentinvitationsfrontend.views.html.{error_template_5xx, timed_out}
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.http.HeaderCarrier
@@ -77,7 +77,8 @@ class ClientInvitationJourneyController @Inject()(
   alreadyRespondedView: already_responded,
   cannotFindRequestView: cannot_find_request,
   ggUserIdNeededView: gg_user_id_needed,
-  authorisationRequestErrorTemplateView: authorisation_request_error_template)(
+  authorisationRequestErrorTemplateView: authorisation_request_error_template,
+  error_template_5xx: error_template_5xx)(
   implicit configuration: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
@@ -119,8 +120,6 @@ class ClientInvitationJourneyController @Inject()(
     withMaybeLoggedInClient
   }
 
-  val forbiddenResultNoJourneyId = Results.Forbidden("NO_JOURNEY_ID")
-
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def showMissingJourneyHistory =
@@ -131,11 +130,14 @@ class ClientInvitationJourneyController @Inject()(
   def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
     Action.async { implicit request =>
       (journeyId, attempt) match {
-        case (None, None) =>
-          // redirect to itself with new journeyId generated and add attempt=1
+        case (None, att) if att.forall(_ < 3) =>
+          // redirect to itself with new journeyId generated and add attempt=1.
+          // Maximum of 2 attempts which allows for 1 timeout before an error page response
           Future.successful(
-            appendJourneyId(Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, Some(1))))(request))
-        case (None, Some(_)) => Future successful forbiddenResultNoJourneyId // infinite redirect defender
+            appendJourneyId(Results.Redirect(
+              routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, attempt.map(_ + 1).orElse(Some(1)))))(request))
+        case (None, Some(_)) => Future successful Results.Forbidden(error_template_5xx())
+        // infinite redirect defender
         case _ =>
           helpers.apply(
             Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
