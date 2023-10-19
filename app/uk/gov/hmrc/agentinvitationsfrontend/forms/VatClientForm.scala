@@ -21,12 +21,13 @@ import play.api.data._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 
 object VatClientForm {
 
   def form: Form[VatClient] = Form(
     mapping(
-      "clientIdentifier" -> normalizedText.verifying(validVrn),
+      "clientIdentifier" -> normalizedText.verifying(validVrn).transform[Vrn](Vrn(_), _.value),
       "registrationDate" -> DateFieldHelper.dateFieldsMapping("vat-registration")
     )(VatClient.apply)(VatClient.unapply)
   )

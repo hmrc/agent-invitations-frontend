@@ -38,6 +38,7 @@ object TaxIdFormat {
       case x: CgtRef => JsString(s"CgtRef|${x.value}")
       case x: PptRef => JsString(s"PptRef|${x.value}")
       case x: CbcId  => JsString(s"CbcId|${x.value}")
+      case x: PlrId  => JsString(s"PlrId|${x.value}")
       case x         => throw new IllegalArgumentException(s"Unsupported tax identifier: $x")
     }
 
@@ -52,6 +53,7 @@ object TaxIdFormat {
           case "CgtRef" => JsSuccess(CgtRef(id))
           case "PptRef" => JsSuccess(PptRef(id))
           case "CbcId"  => JsSuccess(CbcId(id))
+          case "PlrId"  => JsSuccess(PlrId(id))
           case x        => JsError(s"Invalid tax identifier type: $x")
         }
       case _ => JsError("Invalid tax identifier JSON")

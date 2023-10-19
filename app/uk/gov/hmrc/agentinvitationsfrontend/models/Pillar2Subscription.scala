@@ -18,8 +18,10 @@ package uk.gov.hmrc.agentinvitationsfrontend.models
 
 import play.api.libs.json.{Format, Json}
 
-case class ItsaClient(clientIdentifier: String, postcode: String)
+import java.time.LocalDate
 
-object ItsaClient {
-  implicit val format: Format[ItsaClient] = Json.format[ItsaClient]
+case class Pillar2Subscription(organisationName: String, registrationDate: LocalDate)
+
+object Pillar2Subscription {
+  implicit val format: Format[Pillar2Subscription] = Json.format[Pillar2Subscription]
 }

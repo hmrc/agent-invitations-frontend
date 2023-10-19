@@ -108,6 +108,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val featuresPlasticPackagingTax: Boolean = servicesConfig.getBoolean("features.show-plastic-packaging-tax")
   val featuresAltItsa: Boolean = servicesConfig.getBoolean("features.enable-alt-itsa")
   val featuresCbc: Boolean = servicesConfig.getBoolean("features.show-cbc")
+  val featuresPillar2: Boolean = servicesConfig.getBoolean("features.show-pillar2")
   val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
 
 }

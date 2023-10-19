@@ -26,8 +26,8 @@ import play.api.libs.json.{JsObject, JsPath, Json, Reads}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding.encodePathSegment
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, SimpleObjectReads, TaxIdentifier}
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -266,7 +266,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       case (Service.CapitalGains, CgtRef(_))          => "CGTPDRef"
       case (Service.Ppt, PptRef(_))                   => "EtmpRegistrationNumber"
       case (Service.Cbc | Service.CbcNonUk, CbcId(_)) => "cbcId"
-    }
+      case (Service.Pillar2, PlrId(_))                => "PLRID"
+    } // Todo above, reduce number of cases to the 'special' ones only
     val isAltItsa = (service, taxId) match {
       case (Service.MtdIt, Nino(_)) => true
       case _                        => false
@@ -308,30 +309,31 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def checkPostcodeForClient(nino: Nino, postcode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
+  def checkPostcodeForClient(nino: Nino, postcode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[KnownFactResult] =
     monitor(s"ConsumedAPI-CheckPostcode-GET") {
       http.GET[HttpResponse](checkPostcodeUrl(nino, postcode).toString).map { r =>
         r.status match {
-          case NO_CONTENT                                            => Some(true)
-          case _ if r.body.contains("POSTCODE_DOES_NOT_MATCH")       => Some(false)
-          case _ if r.body.contains("CLIENT_REGISTRATION_NOT_FOUND") => None
+          case NO_CONTENT                                            => Pass
+          case _ if r.body.contains("POSTCODE_DOES_NOT_MATCH")       => Fail(NotMatched)
+          case _ if r.body.contains("CLIENT_REGISTRATION_NOT_FOUND") => Fail(NotFound)
           case s if s / 100 == 5 =>
-            throw new RuntimeException(s"unexpected error during postcode match check, error: ${r.body}")
+            logger.error(s"unexpected error during postcode match check, error: ${r.body}")
+            Fail(HttpStatus(s))
         }
       }
     }
 
   def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
     implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[VatKnownFactCheckResult] =
+    ec: ExecutionContext): Future[KnownFactResult] =
     monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
       http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map { r =>
         r.status match {
-          case NO_CONTENT                                                           => VatKnownFactCheckOk
-          case NOT_FOUND                                                            => VatDetailsNotFound
-          case FORBIDDEN if r.body.contains("VAT_REGISTRATION_DATE_DOES_NOT_MATCH") => VatKnownFactNotMatched
-          case FORBIDDEN if r.body.contains("VAT_RECORD_CLIENT_INSOLVENT_TRUE")     => VatRecordClientInsolvent
-          case LOCKED                                                               => VatRecordMigrationInProgress
+          case NO_CONTENT                                                           => Pass
+          case NOT_FOUND                                                            => Fail(NotFound)
+          case FORBIDDEN if r.body.contains("VAT_REGISTRATION_DATE_DOES_NOT_MATCH") => Fail(NotMatched)
+          case FORBIDDEN if r.body.contains("VAT_RECORD_CLIENT_INSOLVENT_TRUE")     => Fail(VatClientInsolvent)
+          case LOCKED                                                               => Fail(VatMigrationInProgress)
           case s if s / 100 == 5 =>
             throw new RuntimeException(s"unexpected error during vat registration date match check, error: ${r.body}")
         }
@@ -340,13 +342,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   def checkCitizenRecord(nino: Nino, dob: LocalDate)(
     implicit headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext): Future[Option[Boolean]] =
+    executionContext: ExecutionContext): Future[KnownFactResult] =
     monitor(s"ConsumedAPI-CheckCitizenRecord-GET") {
       http.GET[HttpResponse](checkCitizenRecordUrl(nino, dob).toString).map { r =>
         r.status match {
-          case NO_CONTENT => Some(true)
-          case FORBIDDEN  => Some(false)
-          case NOT_FOUND  => None
+          case NO_CONTENT => Pass
+          case FORBIDDEN  => Fail(NotMatched)
+          case NOT_FOUND  => Fail(NotFound)
         }
       }
 
@@ -438,40 +440,78 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     }
   }
 
-  def checkKnownFactPPT(pptClient: PptClient)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+  def checkKnownFactPPT(pptClient: PptClient)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[KnownFactResult] = {
     val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/ppt/${pptClient.pptRef.value}/${pptClient.registrationDate}").toString
     monitor(s"ConsumedAPI-Get-PPT-KnownFacts-GET") {
       http
         .GET[HttpResponse](url)
         .map { response =>
           response.status match {
-            case OK | NO_CONTENT => true
+            case OK | NO_CONTENT => Pass
             case NOT_FOUND | FORBIDDEN =>
               logger.warn(s"PPT known fact check failed for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
-              false
-            case BAD_REQUEST =>
+              Fail(NotMatched)
+            case status =>
               logger.warn(
-                s"BadRequest response for PPT known fact check for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
-              false
+                s"$status response for PPT known fact check for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
+              Fail(HttpStatus(status))
           }
         }
     }
   }
 
-  def checkCbcEmailKnownFact(cbcId: CbcId, email: String)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
+  def checkCbcEmailKnownFact(cbcId: CbcId, email: String)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[KnownFactResult] = {
     val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/cbc/${cbcId.value}").toString
     monitor(s"ConsumedAPI-Get-CBC-KnownFacts-POST") {
       http
         .POST[JsObject, HttpResponse](url, Json.obj("email" -> email))
         .map { response =>
           response.status match {
-            case OK | NO_CONTENT => true
+            case OK | NO_CONTENT => Pass
             case NOT_FOUND | FORBIDDEN =>
               logger.warn(s"CBC known fact check failed for cbcId: ${cbcId.value}")
-              false
+              Fail(NotMatched)
             case status =>
               logger.warn(s"Unexpected response status $status for CBC known fact check for cbcId: ${cbcId.value}")
-              false
+              Fail(HttpStatus(status))
+          }
+        }
+    }
+  }
+
+  def checkPillar2KnownFact(plrId: PlrId, registrationDate: LocalDate)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[KnownFactResult] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/known-facts/pillar2/${plrId.value}").toString
+    monitor(s"ConsumedAPI-Get-Pillar2-KnownFacts-POST") {
+      http
+        .POST[JsObject, HttpResponse](url, Json.obj("registrationDate" -> registrationDate.toString))
+        .map { response =>
+          response.status match {
+            case OK | NO_CONTENT => Pass
+            case NOT_FOUND | FORBIDDEN =>
+              logger.warn(s"Pillar2 known fact check failed for plrId: ${plrId.value}")
+              Fail(NotMatched)
+            case status =>
+              logger.warn(s"Unexpected response status $status for Pillar2 known fact check for cbcId: ${plrId.value}")
+              Fail(HttpStatus(status))
+          }
+        }
+    }
+  }
+
+  def getPillar2Subscription(plrId: PlrId)(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Option[Pillar2Subscription]] = {
+    val url = new URL(baseUrl, s"/agent-client-authorisation/pillar2/subscriptions/${plrId.value}").toString
+    monitor(s"ConsumedAPI-Pillar2Subscription-GET") {
+      http
+        .GET[HttpResponse](url)
+        .map { response =>
+          response.status match {
+            case OK => response.json.asOpt[Pillar2Subscription]
+            case NOT_FOUND =>
+              logger.warn(s"PPT Subscription not found for plrId: ${plrId.value}")
+              None
+            case x =>
+              logger.warn(s"$x response when getting PptSubscription for plrId: ${plrId.value}")
+              None
           }
         }
     }

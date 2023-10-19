@@ -17,12 +17,12 @@
 @import play.api.Configuration
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
-@import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputText, SubmitButton}
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukErrorSummary, ErrorSummary, FormWithCSRF, Text}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 
 @this(
     mainTemplate: MainTemplate,
@@ -34,7 +34,7 @@
 )
 
 @(
-    cgtClientForm : Form[CgtClient],
+    cgtClientForm : Form[CgtRef],
     submitFormCall: Call,
     backLinkUrl: String,
     isDeAuthJourney: Boolean = false

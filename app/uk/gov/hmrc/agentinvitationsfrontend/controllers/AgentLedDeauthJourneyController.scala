@@ -28,8 +28,8 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyService
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, RelationshipsService}
-import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.{ConfirmCancelPageConfig, SelectServicePageConfigCancel}
+import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, KnownFactService, RelationshipsService}
+import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.SelectServicePageConfigCancel
 import uk.gov.hmrc.agentinvitationsfrontend.views.agents.{ClientTypePageConfig, NotSignedUpPageConfig}
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.cancelAuthorisation.{authorisation_cancelled, business_select_single_service, client_type, confirm_cancel, confirm_client, no_client_found, response_failed, select_service}
@@ -47,6 +47,7 @@ class AgentLedDeauthJourneyController @Inject()(
   authActions: AuthActions,
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
+  knownFactService: KnownFactService,
   countryNamesLoader: CountryNamesLoader,
   notSignedUpPageConfig: NotSignedUpPageConfig,
   clientTypeView: client_type,
@@ -58,6 +59,7 @@ class AgentLedDeauthJourneyController @Inject()(
   identifyClientCgtView: identify_client_cgt,
   identifyClientPptView: identify_client_ppt,
   identifyClientCbcView: identify_client_cbc,
+  identifyClientPillar2View: identify_client_pillar2,
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
@@ -92,20 +94,16 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def transitions()(implicit ec: ExecutionContext, request: RequestHeader): Transitions = Transitions(
     featureFlags = featureFlags,
-    checkPostcodeMatches = invitationsService.checkPostcodeMatches,
     hasActiveRelationshipFor = relationshipsService.hasActiveRelationshipFor,
     hasPartialAuthorisationFor = invitationsService.hasPartialAuthorisationFor,
     getClientName = invitationsService.getClientNameByService,
-    checkDOBMatches = invitationsService.checkCitizenRecordMatches,
-    checkVatRegDateMatches = invitationsService.checkVatRegistrationDateMatches,
     deleteRelationship = relationshipsService.deleteRelationshipForService,
     setRelationshipEnded = invitationsService.setRelationshipEnded,
     getAgencyName = invitationsService.getAgencyName,
     getCgtSubscription = invitationsService.acaConnector.getCgtSubscription,
     getPptSubscription = invitationsService.acaConnector.getPptSubscription,
     getCbcSubscription = invitationsService.acaConnector.getCbcSubscription,
-    checkCbcKnownFact = invitationsService.acaConnector.checkCbcEmailKnownFact,
-    getTrustName = taxId => invitationsService.acaConnector.getTrustName(taxId.value)
+    checkKnownFact = knownFactService.checkKnownFact
   )
 
   val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType))
@@ -169,6 +167,11 @@ class AgentLedDeauthJourneyController @Inject()(
     .whenAuthorisedWithRetrievals(AsAgent)
     .bindForm(CbcClientForm.form)
     .applyWithRequest(implicit request => transitions.submitIdentifyClientCbc)
+
+  val submitIdentifyPillar2Client: Action[AnyContent] = actions
+    .whenAuthorisedWithRetrievals(AsAgent)
+    .bindForm(Pillar2ClientForm.form)
+    .applyWithRequest(implicit request => transitions.submitIdentifyClientPillar2)
 
   def showPostcodeCgt: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmPostcodeCgt].orRollback
 
@@ -358,6 +361,15 @@ class AgentLedDeauthJourneyController @Inject()(
           isDeAuthJourney = true
         ))
 
+    case IdentifyClient(_, Service.Pillar2) =>
+      Ok(
+        identifyClientPillar2View(
+          formWithErrors.or(Pillar2ClientForm.form),
+          routes.AgentLedDeauthJourneyController.submitIdentifyPillar2Client,
+          backLinkFor(breadcrumbs).url,
+          isDeAuthJourney = true
+        ))
+
     case ConfirmClient(_, _, clientName, _) =>
       Ok(
         confirmClientView(
@@ -384,11 +396,10 @@ class AgentLedDeauthJourneyController @Inject()(
       Ok(
         confirmCancelView(
           formWithErrors.or(confirmCancelForm),
-          ConfirmCancelPageConfig(
-            service,
-            clientName.getOrElse(""),
-            routes.AgentLedDeauthJourneyController.submitConfirmCancel,
-            backLinkFor(breadcrumbs).url)
+          service,
+          clientName.getOrElse(""),
+          routes.AgentLedDeauthJourneyController.submitConfirmCancel,
+          backLinkFor(breadcrumbs).url
         ))
 
     case AuthorisationCancelled(service, clientName, agencyName) =>

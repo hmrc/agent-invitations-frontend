@@ -21,6 +21,7 @@ import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.agentinvitationsfrontend.forms.ItsaClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ItsaClient
 import support.UnitSpec
+import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
 
@@ -55,7 +56,7 @@ class AgentInvitationIdentifyClientFormItsaSpec extends UnitSpec {
       }
 
       "unbinding the form" in {
-        val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(ItsaClient("AE123456C", "AA1 1AA"))
+        val unboundForm = agentInvitationIdentifyClientForm.mapping.unbind(ItsaClient(Nino("AE123456C"), "AA1 1AA"))
         unboundForm("postcode") shouldBe "AA1 1AA"
         unboundForm("clientIdentifier") shouldBe "AE123456C"
       }

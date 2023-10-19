@@ -19,7 +19,6 @@
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
-@import uk.gov.hmrc.agentinvitationsfrontend.views.track.RequestCancelledPageConfig
 @import uk.gov.hmrc.govukfrontend.views.html.components.{GovukPanel, Panel, Text, HtmlContent}
 @import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
@@ -31,7 +30,14 @@
     p:p
 )
 
-@(pageConfig: RequestCancelledPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(service: String, clientName: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
+@clientNameMaybeHidden = @{
+  service match {
+    case "PERSONAL-INCOME-RECORD" => "Your client"
+    case _ => clientName
+  }
+}
 
 @mainTemplate(title = msgs("generic.title", msgs("request-cancelled.header"), msgs("service.name.agents.auth")),  isAgent = true) {
 
@@ -39,10 +45,10 @@
         title = Text(msgs("request-cancelled.header")),
     ))
 
-    @p(s"request-cancelled.p1.${pageConfig.service}", id = Some("request-cancelled-text"))
+    @p(s"request-cancelled.p1.${service}", id = Some("request-cancelled-text"))
 
     <div class="govuk-inset-text govuk-!-margin-top-6 govuk-!-margin-bottom-6">
-        @p(msgs("request-cancelled.panel", pageConfig.hideClientName), id = Some("request-cancelled-for-client"))
+        @p(msgs("request-cancelled.panel", clientNameMaybeHidden), id = Some("request-cancelled-for-client"))
     </div>
 
     <div class="govuk-!-margin-bottom-6">

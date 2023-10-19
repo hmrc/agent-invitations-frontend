@@ -18,7 +18,6 @@
 @import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 @import uk.gov.hmrc.agentinvitationsfrontend.models.Confirmation
-@import uk.gov.hmrc.agentinvitationsfrontend.views.agents.cancelAuthorisation.ConfirmCancelPageConfig
 @import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html._
 @import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputRadios, SubmitButton}
@@ -38,22 +37,24 @@
     h1: h1
 )
 
-@(choiceForm: Form[Confirmation], config: ConfirmCancelPageConfig)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+@(choiceForm: Form[Confirmation], service: Service, clientName: String, submitCall: Call, backLink: String)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
+@processedClientName = @{clientName.stripSuffix(".")}
 
 @mainTemplate(
     bannerTitle = msgs("service.name.agents.de-auth"),
     title = errorPrefix(choiceForm) + msgs("generic.title", msgs("cancel-authorisation.confirm-cancel.header"), msgs("service.name.agents.de-auth")),
     isAgent = true,
-    backLinkHref = Some(config.backLink)
+    backLinkHref = Some(backLink)
 ) {
 
     @if(choiceForm.hasErrors) {
         @govukErrorSummary(ErrorSummary().withFormErrorsAsText(choiceForm))
     }
 
-    @formWithCSRF(action = config.submitCall) {
+    @formWithCSRF(action = submitCall) {
 
-        @if(config.service == Service.MtdIt) {
+        @if(service == Service.MtdIt) {
             @h1("cancel-authorisation.confirm-cancel.header")
 
             @govukInsetText(InsetText(
@@ -65,7 +66,7 @@
                 legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 legendClass = Some("govuk-visually-hidden"),
                 headingIsLegend = false,
-                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service.id}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${service.id}", processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(
@@ -85,7 +86,7 @@
                 field = choiceForm("accepted"),
                 legend = msgs("cancel-authorisation.confirm-cancel.header"),
                 headingIsLegend = true,
-                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${config.service.id}", config.processedClientName)),
+                hint = Some(msgs(s"cancel-authorisation.confirm-cancel.p1.${service.id}", processedClientName)),
                 inline = true,
                 inputs = Seq(
                     RadioItem(

@@ -18,14 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.views.clients
 import play.api.mvc.Call
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsent
 
-case class CheckAnswersPageConfig(
-  consents: Seq[ClientConsent],
-  agencyName: String,
-  clientType: String,
-  uid: String,
-  submitCall: Call,
-  changeCall: String => Call,
-  backLink: Call) {
+case class CheckAnswersPageConfig(consents: Seq[ClientConsent], agencyName: String, submitCall: Call, changeCall: String => Call, backLink: Call) {
 
   val processedAgencyName: String = agencyName.stripSuffix(".")
 }

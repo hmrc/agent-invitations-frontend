@@ -26,17 +26,14 @@ class AgentInvitationFastTrackJourneyControllerISpec
     .overrides(new TestAgentInvitationFastTrackJourneyModule)
     .build()
 
-  lazy val journeyState = app.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
+  private lazy val journeyState = app.injector.instanceOf[TestAgentInvitationFastTrackJourneyService]
 
-  lazy val controller: AgentInvitationFastTrackJourneyController =
+  private lazy val controller: AgentInvitationFastTrackJourneyController =
     app.injector.instanceOf[AgentInvitationFastTrackJourneyController]
 
   import journeyState.model._
 
-  val availableServices = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat)
-  val emptyBasket = Set.empty[AuthorisationRequest]
-
-  implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
+  private implicit val timeoutDuration: Duration = Helpers.defaultAwaitTimeout.duration
 
   before {
     journeyState.clear
@@ -686,6 +683,21 @@ class AgentInvitationFastTrackJourneyControllerISpec
        )
     }
 
+    "show the check-details page for business Pillar2 service" in {
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Pillar2, plrId, Some("2023-01-01"))
+      journeyState
+        .set(CheckDetails(fastTrackRequest = ftr, None), List())
+
+      val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "check-details.heading",
+        "check-details.pillar2",
+      )
+    }
+
     "show the check-details page for ITSA client with no postcode" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
@@ -1058,6 +1070,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.cbc.p1","identify-client.cbc.hint", "identify-cbc-client.email.label", "identify-cbc-client.email.hint")
     }
 
+    "show the client-details page for Pillar2" in   {
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Pillar2, plrId, None)
+      journeyState.set(
+        IdentifyClient(ftr, None),
+        List()
+      )
+
+      val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.pillar2.p1","identify-client.pillar2.hint")
+    }
+
     "show the client-details page when there is no client type for VAT" in {
       val ftr = AgentFastTrackRequest(None, Service.Vat, vrn, Some("2009-09-09"))
       journeyState.set(
@@ -1296,26 +1321,26 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to invitation-sent" in {
       givenPptCheckKnownFactReturns(PptClient(pptRef,pptDefaultRegDate.toString), 200)
       givenGetPptCustomerName(pptRef, "a ppt customer")
-        val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, Some(pptDefaultRegDate.toString))
-        journeyState.set(
-          IdentifyClient(ftr, None),
-          List(
-            CheckDetails(ftr, None),
-            Prologue(None, None)
-          )
+      val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, Some(pptDefaultRegDate.toString))
+      journeyState.set(
+        IdentifyClient(ftr, None),
+        List(
+          CheckDetails(ftr, None),
+          Prologue(None, None)
         )
-        val result = controller.submitIdentifyPptClient(
-          authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "pptRef" -> "XAPPT0000012345",
-              "registrationDate.year" -> "2021",
-              "registrationDate.month" -> "01",
-              "registrationDate.day" -> "01"),
-            arn.value))
+      )
+      val result = controller.submitIdentifyPptClient(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "pptRef" -> "XAPPT0000012345",
+            "registrationDate.year" -> "2021",
+            "registrationDate.month" -> "01",
+            "registrationDate.day" -> "01"),
+          arn.value))
 
-        status(result) shouldBe 303
-        Helpers.redirectLocation(result) shouldBe Some(
-          routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt.url)
+      status(result) shouldBe 303
+      Helpers.redirectLocation(result) shouldBe Some(
+        routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt.url)
     }
   }
 
@@ -1352,6 +1377,39 @@ class AgentInvitationFastTrackJourneyControllerISpec
     }
   }
 
+  "POST /agents/client-details-pillar2" should {
+    val request = FakeRequest("POST", "/agents/fast-track/identify-pillar2-client")
+    "redirect to invitation-sent" in {
+      givenGetAllPendingInvitationsReturnsEmpty(arn, plrId.value, Service.Pillar2)
+      givenGetAgencyEmailAgentStub
+      givenAgentReferenceRecordExistsForArn(arn, "FOO")
+      givenAgentReference(arn,"uid", ClientType.Business)
+      givenPillar2CheckKnownFactReturns(Pillar2Client(plrId, pillar2DefaultRegDate.toString), 204)
+      givenGetPillar2Subscription(plrId, Pillar2Subscription("Pillar2 Client", pillar2DefaultRegDate))
+      givenInvitationCreationSucceeds(arn, Some(Business), plrId.value, invitationIdPillar2, plrId.value, "PLRID", Service.Pillar2, "PLR")
+      val ftr = AgentFastTrackRequest(Some(Business), Service.Pillar2, plrId, Some(pillar2DefaultRegDate.toString))
+      journeyState.set(
+        IdentifyClient(ftr, None),
+        List(
+          CheckDetails(ftr, None),
+          Prologue(None, None)
+        )
+      )
+      val result = controller.submitIdentifyPillar2Client(
+        authorisedAsValidAgent(
+          request.withFormUrlEncodedBody(
+            "plrId" -> plrId.value,
+            "registrationDate.year" -> pillar2DefaultRegDate.getYear.toString,
+            "registrationDate.month" -> pillar2DefaultRegDate.getMonthValue.toString,
+            "registrationDate.day" -> pillar2DefaultRegDate.getDayOfMonth.toString),
+          arn.value))
+
+      status(result) shouldBe 303
+
+      Helpers.redirectLocation(result) shouldBe Some(
+      routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
+    }
+  }
 
   "POST /agents/client-details-cgt" should {
     val request = FakeRequest("POST", "/agents/client-details-cgt")

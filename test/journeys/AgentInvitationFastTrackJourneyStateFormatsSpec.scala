@@ -23,7 +23,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJou
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import support.UnitSpec
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, Service, Utr}
 import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {

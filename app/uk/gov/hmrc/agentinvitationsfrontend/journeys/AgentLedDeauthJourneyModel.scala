@@ -18,13 +18,12 @@ package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
+import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.play.fsm.JourneyModel
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -64,40 +63,32 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
   }
 
   object TransitionEffects {
-    type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
     type HasActiveRelationship = (Arn, String, Service) => Future[Boolean]
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, Service) => Future[Option[String]]
-    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
-    type VatRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type DeleteRelationship = (Service, Arn, String) => Future[Option[Boolean]]
     type SetRelationshipEnded = (Arn, String, Service) => Future[Option[Boolean]]
     type GetAgencyName = Arn => Future[String]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
     type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetCbcSubscription = CbcId => Future[Option[SimpleCbcSubscription]]
-    type CheckCbcKnownFact = (CbcId, String /* email */ ) => Future[Boolean]
-    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
+    type CheckKnownFact = ClientIdSet => Future[KnownFactResult]
   }
 
   import TransitionEffects._
 
   case class Transitions(
     featureFlags: FeatureFlags,
-    checkPostcodeMatches: CheckPostcodeMatches,
     hasActiveRelationshipFor: HasActiveRelationship,
     hasPartialAuthorisationFor: HasPartialAuthorisation,
     getClientName: GetClientName,
-    checkDOBMatches: CheckDOBMatches,
-    checkVatRegDateMatches: VatRegDateMatches,
     deleteRelationship: DeleteRelationship,
     setRelationshipEnded: SetRelationshipEnded,
     getAgencyName: GetAgencyName,
     getCgtSubscription: GetCgtSubscription,
     getPptSubscription: GetPptSubscription,
     getCbcSubscription: GetCbcSubscription,
-    checkCbcKnownFact: CheckCbcKnownFact,
-    getTrustName: GetTrustName
+    checkKnownFact: CheckKnownFact
   ) {
 
     import State._
@@ -127,22 +118,21 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def submitIdentifyClientItsa(agent: AuthorisedAgent)(itsaClient: ItsaClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def goToState(kfcResult: Option[Boolean]): Future[State] =
+      def goToState(kfcResult: KnownFactResult): Future[State] =
         for {
           finalState <- kfcResult match {
-                         case Some(true) =>
-                           getClientName(itsaClient.clientIdentifier, Service.MtdIt).flatMap(name =>
-                             goto(ConfirmClient(ClientType.Personal, Service.MtdIt, name, Nino(itsaClient.clientIdentifier))))
-                         case Some(false) => goto(KnownFactNotMatched)
-                         case None        => goto(NotSignedUp(Service.MtdIt))
+                         case Pass =>
+                           getClientName(itsaClient.nino.value, Service.MtdIt).flatMap(name =>
+                             goto(ConfirmClient(ClientType.Personal, Service.MtdIt, name, itsaClient.nino)))
+                         case Fail(NotFound)       => goto(NotSignedUp(Service.MtdIt))
+                         case Fail(NotMatched) | _ => goto(KnownFactNotMatched)
                        }
         } yield finalState
 
       Transition {
         case IdentifyClient(ClientType.Personal, Service.MtdIt) =>
           for {
-            postcodeMatches <- if (itsaClient.postcode.nonEmpty)
-                                checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
+            postcodeMatches <- if (itsaClient.postcode.nonEmpty) checkKnownFact(itsaClient)
                               else throw new Exception("Postcode expected but none found")
             finalState <- goToState(postcodeMatches)
           } yield finalState
@@ -151,26 +141,25 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def submitIdentifyClientIrv(agent: AuthorisedAgent)(irvClient: IrvClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def goToState(dobMatchResult: Option[Boolean]): Future[State] =
+      def goToState(knownFactResult: KnownFactResult): Future[State] =
         for {
-          finalState <- dobMatchResult match {
-                         case Some(true) =>
-                           getClientName(irvClient.clientIdentifier, Service.PersonalIncomeRecord).flatMap(
+          finalState <- knownFactResult match {
+                         case Pass =>
+                           getClientName(irvClient.nino.value, Service.PersonalIncomeRecord).flatMap(
                              name =>
                                clientConfirmed(agent)(Confirmation(true))
-                                 .apply(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, name, Nino(irvClient.clientIdentifier))))
-                         case Some(false) => goto(KnownFactNotMatched)
-                         case None        => goto(NotSignedUp(Service.PersonalIncomeRecord))
+                                 .apply(ConfirmClient(ClientType.Personal, Service.PersonalIncomeRecord, name, irvClient.nino)))
+                         case Fail(NotFound)       => goto(NotSignedUp(Service.PersonalIncomeRecord))
+                         case Fail(NotMatched) | _ => goto(KnownFactNotMatched)
                        }
         } yield finalState
 
       Transition {
         case IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord) =>
           for {
-            dobMatches <- if (irvClient.dob.nonEmpty)
-                           checkDOBMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
-                         else throw new Exception("Date of birth expected but none found")
-            finalState <- goToState(dobMatches)
+            kfcResult <- if (irvClient.dob.nonEmpty) checkKnownFact(irvClient)
+                        else throw new Exception("Date of birth expected but none found")
+            finalState <- goToState(kfcResult)
           } yield finalState
       }
     }
@@ -178,29 +167,25 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     def submitIdentifyClientTrust(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
-          getTrustName(trustClient.taxId).flatMap { trustResponse =>
-            trustResponse.response match {
-              case Right(TrustName(name)) =>
-                trustClient.taxId match {
-                  case Utr(_) => goto(ConfirmClient(ClientType.Trust, Service.Trust, Some(name), Utr(trustClient.taxId.value)))
-                  case Urn(_) => goto(ConfirmClient(ClientType.Trust, Service.TrustNT, Some(name), Urn(trustClient.taxId.value)))
-                }
-              case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
-                goto(TrustNotFound)
-            }
+          getClientName(trustClient.taxId.value, Service.Trust).flatMap {
+            case Some(name) =>
+              trustClient.taxId match {
+                case Utr(_) => goto(ConfirmClient(ClientType.Trust, Service.Trust, Some(name), Utr(trustClient.taxId.value)))
+                case Urn(_) => goto(ConfirmClient(ClientType.Trust, Service.TrustNT, Some(name), Urn(trustClient.taxId.value)))
+              }
+            case None => goto(TrustNotFound)
           }
       }
 
-    def submitIdentifyClientCgt(agent: AuthorisedAgent)(cgtClient: CgtClient): AgentLedDeauthJourneyModel.Transition = Transition {
+    def submitIdentifyClientCgt(agent: AuthorisedAgent)(cgtRef: CgtRef): AgentLedDeauthJourneyModel.Transition = Transition {
       case IdentifyClient(clientType, Service.CapitalGains) =>
-        getCgtSubscription(cgtClient.cgtRef).map {
+        getCgtSubscription(cgtRef).map {
           case Some(subscription) if subscription.isUKBasedClient =>
-            ConfirmPostcodeCgt(clientType, cgtClient.cgtRef, subscription.postCode, subscription.name)
+            ConfirmPostcodeCgt(clientType, cgtRef, subscription.postCode, subscription.name)
           case Some(subscription) if !subscription.isUKBasedClient =>
-            ConfirmCountryCodeCgt(clientType, cgtClient.cgtRef, subscription.countryCode, subscription.name)
+            ConfirmCountryCodeCgt(clientType, cgtRef, subscription.countryCode, subscription.name)
           case None =>
-            CgtRefNotFound(cgtClient.cgtRef)
+            CgtRefNotFound(cgtRef)
         }
     }
 
@@ -219,8 +204,8 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       Transition {
         case state @ IdentifyClient(clientType, Service.Cbc | Service.CbcNonUk) =>
           for {
-            knownFactOk <- checkCbcKnownFact(cbcClient.cbcId, cbcClient.email)
-            nextState <- if (knownFactOk) {
+            knownFactResult <- checkKnownFact(cbcClient)
+            nextState <- if (knownFactResult.isOk) {
                           for {
                             maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
                             subscription = maybeSubscription.getOrElse(
@@ -228,6 +213,20 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
                             adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
                             clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
                           } yield ConfirmClient(clientType, adjustedService, Some(clientName), cbcClient.cbcId)
+                        } else Future.successful(KnownFactNotMatched)
+          } yield nextState
+      }
+
+    def submitIdentifyClientPillar2(agent: AuthorisedAgent)(pillar2Client: Pillar2Client): AgentLedDeauthJourneyModel.Transition =
+      Transition {
+        case IdentifyClient(clientType, Service.Pillar2) =>
+          for {
+            knownFactResult <- checkKnownFact(pillar2Client)
+            nextState <- if (knownFactResult.isOk) {
+                          for {
+                            mClientName <- getClientName(pillar2Client.plrId.value, Service.Pillar2)
+                            clientName = mClientName.getOrElse(pillar2Client.plrId.value)
+                          } yield ConfirmClient(clientType, Service.Pillar2, Some(clientName), pillar2Client.plrId)
                         } else Future.successful(KnownFactNotMatched)
           } yield nextState
       }
@@ -254,19 +253,19 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
     def submitIdentifyClientVat(agent: AuthorisedAgent)(vatClient: VatClient): AgentLedDeauthJourneyModel.Transition = {
 
-      def vatRegDateMatchResult: Future[VatKnownFactCheckResult] =
-        if (vatClient.registrationDate.nonEmpty)
-          checkVatRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
+      def vatRegDateMatchResult: Future[KnownFactResult] =
+        if (vatClient.registrationDate.nonEmpty) checkKnownFact(vatClient)
         else throw new Exception("Vat registration date expected but none found")
 
-      def goToState(vatRegDateMatchResult: VatKnownFactCheckResult, finalState: Option[String] => State): Future[State] =
+      def goToState(vatRegDateMatchResult: KnownFactResult, finalState: Option[String] => State): Future[State] =
         for {
           finalState <- vatRegDateMatchResult match {
-                         case VatKnownFactCheckOk | VatRecordClientInsolvent =>
-                           getClientName(vatClient.clientIdentifier, Service.Vat).flatMap(name => goto(finalState(name)))
-                         case VatKnownFactNotMatched       => goto(KnownFactNotMatched)
-                         case VatRecordMigrationInProgress => goto(NotSignedUp(Service.Vat)) //for now until we have content
-                         case VatDetailsNotFound           => goto(NotSignedUp(Service.Vat))
+                         case Pass | Fail(VatClientInsolvent) =>
+                           getClientName(vatClient.vrn.value, Service.Vat).flatMap(name => goto(finalState(name)))
+                         case Fail(VatMigrationInProgress) =>
+                           goto(NotSignedUp(Service.Vat)) //for now until we have content
+                         case Fail(NotFound)       => goto(NotSignedUp(Service.Vat))
+                         case Fail(NotMatched) | _ => goto(KnownFactNotMatched)
                        }
         } yield finalState
 
@@ -279,13 +278,13 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
       Transition {
         case IdentifyClient(ClientType.Personal, Service.Vat) =>
           def nameToState(name: Option[String]) =
-            ConfirmClient(ClientType.Personal, Service.Vat, name, Vrn(vatClient.clientIdentifier))
+            ConfirmClient(ClientType.Personal, Service.Vat, name, vatClient.vrn)
 
           checkVatRegDateAndGoToState(nameToState)
 
         case IdentifyClient(ClientType.Business, Service.Vat) =>
           def nameToState(name: Option[String]) =
-            ConfirmClient(ClientType.Business, Service.Vat, name, Vrn(vatClient.clientIdentifier))
+            ConfirmClient(ClientType.Business, Service.Vat, name, vatClient.vrn)
 
           checkVatRegDateAndGoToState(nameToState)
       }

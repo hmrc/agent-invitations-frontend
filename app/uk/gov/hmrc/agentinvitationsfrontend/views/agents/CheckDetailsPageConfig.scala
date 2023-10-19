@@ -17,7 +17,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.agents
 
 import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
 import uk.gov.hmrc.agentinvitationsfrontend.models.AgentFastTrackRequest
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 

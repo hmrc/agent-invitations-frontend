@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.forms
 
-import play.api.data.Forms._
-import play.api.data._
-import uk.gov.hmrc.agentinvitationsfrontend.models.ItsaClient
-import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
-import uk.gov.hmrc.domain.Nino
+import play.api.data.Form
+import play.api.data.Forms.mapping
+import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
+import uk.gov.hmrc.agentinvitationsfrontend.models.Pillar2Client
+import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validPlrId}
+import uk.gov.hmrc.agentmtdidentifiers.model.PlrId
 
-object ItsaClientForm {
+object Pillar2ClientForm {
 
-  def form: Form[ItsaClient] = Form(
+  val form: Form[Pillar2Client] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino).transform[Nino](Nino(_), _.value),
-      "postcode"         -> postcodeMapping
-    )(ItsaClient.apply)(ItsaClient.unapply)
+      "plrId"            -> normalizedText.verifying(validPlrId).transform[PlrId](PlrId(_), _.value),
+      "registrationDate" -> DateFieldHelper.dateFieldsMapping("pillar2-registration")
+    )(Pillar2Client.apply)(Pillar2Client.unapply)
   )
 }

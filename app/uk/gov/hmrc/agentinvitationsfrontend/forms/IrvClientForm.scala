@@ -21,12 +21,13 @@ import play.api.data._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
+import uk.gov.hmrc.domain.Nino
 
 object IrvClientForm {
 
   def form: Form[IrvClient] = Form(
     mapping(
-      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino),
+      "clientIdentifier" -> uppercaseNormalizedText.verifying(validNino).transform[Nino](Nino(_), _.value),
       "dob"              -> DateFieldHelper.dateFieldsMapping("irv-date-of-birth")
     )(IrvClient.apply)(IrvClient.unapply)
   )

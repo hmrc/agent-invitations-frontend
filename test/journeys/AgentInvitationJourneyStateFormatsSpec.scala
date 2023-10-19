@@ -20,9 +20,8 @@ import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyStateFormats
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
-
 import uk.gov.hmrc.agentinvitationsfrontend.models._
-import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PptRef, Service, Urn, Utr, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CgtRef, PlrId, PptRef, Service, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
@@ -43,7 +42,8 @@ class AgentInvitationJourneyStateFormatsSpec extends UnitSpec {
                                (Service.Trust, Utr("4937455253")),
                                (Service.TrustNT, Urn("4937455253")),
                                (Service.CapitalGains, CgtRef("123456")),
-                               (Service.Ppt, PptRef("XAPPT0000012345"))
+                               (Service.Ppt, PptRef("XAPPT0000012345")),
+                               (Service.Pillar2, PlrId("XAPLR2222222222"))
                              )
         } yield {
           val state: State =

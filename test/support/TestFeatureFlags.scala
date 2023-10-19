@@ -28,6 +28,7 @@ case class TestFeatureFlags(enabled: Set[Service] = Service.supportedServices.to
     case Service.CapitalGains            => Set(Service.CapitalGains)
     case Service.Ppt                     => Set(Service.Ppt)
     case Service.Cbc | Service.CbcNonUk  => Set(Service.Cbc, Service.CbcNonUk)
+    case Service.Pillar2                 => Set(Service.Pillar2)
   }
   def enable(services: Service*): TestFeatureFlags =
     this.copy(enabled = services.foldLeft(this.enabled) { case (a, e) => a.union(affectedServiceKeys(e)) })

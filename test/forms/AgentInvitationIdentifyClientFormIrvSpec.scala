@@ -20,6 +20,7 @@ import play.api.data.FormError
 import uk.gov.hmrc.agentinvitationsfrontend.forms.IrvClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.IrvClient
 import support.UnitSpec
+import uk.gov.hmrc.domain.Nino
 
 class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
@@ -80,7 +81,7 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
 
       "return no errors when unbinding the form" in {
         val unboundForm =
-          agentInvitationIdentifyClientForm.mapping.unbind(IrvClient("AE123456C", "1980-01-01"))
+          agentInvitationIdentifyClientForm.mapping.unbind(IrvClient(Nino("AE123456C"), "1980-01-01"))
         unboundForm("clientIdentifier") shouldBe "AE123456C"
       }
     }

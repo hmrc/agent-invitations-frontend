@@ -18,7 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.services
 
 import play.api.Logging
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, Citizen, CitizenDetailsConnector}
-import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, PptRef, Service, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, PlrId, PptRef, Service, Vrn}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -44,6 +44,7 @@ trait GetClientName extends Logging {
       case Service.Ppt                  => getPptClientName(PptRef(clientId))
       case Service.Cbc                  => getCbcClientName(CbcId(clientId))
       case Service.CbcNonUk             => getCbcClientName(CbcId(clientId))
+      case Service.Pillar2              => getPillar2ClientName(PlrId(clientId))
     }
 
   def getItsaTradingName(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
@@ -92,5 +93,8 @@ trait GetClientName extends Logging {
     }
 
   def getCbcClientName(cbcId: CbcId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
-    acaConnector.getCbcSubscription(cbcId: CbcId).map(_.flatMap(_.anyAvailableName))
+    acaConnector.getCbcSubscription(cbcId).map(_.flatMap(_.anyAvailableName))
+
+  def getPillar2ClientName(plrId: PlrId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[String]] =
+    acaConnector.getPillar2Subscription(plrId).map(_.map(_.organisationName))
 }
