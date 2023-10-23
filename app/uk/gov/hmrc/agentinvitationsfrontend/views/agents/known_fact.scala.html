@@ -58,11 +58,14 @@ backLinkUrl: String
     }
 
     @formWithCSRF(action = submitKFCall) {
-        @h1(s"known-fact.${service.id}.heading")
+        @*For CBC P1 is not required therefore the label within the case becomes the heading*@
+        @if(!service.id.contains("HMRC-CBC")){
+            @h1(s"known-fact.${service.id}.heading")
+            @p("known-fact.p1")
+        }
         @{
             service match {
                 case Service.MtdIt =>
-                    p("known-fact.p1")
                     inputText(
                         field = knownFactForm("knownFact"),
                         label = msgs(s"known-fact.${service.id}.heading"),
@@ -74,7 +77,8 @@ backLinkUrl: String
                     inputText(
                         field = knownFactForm("knownFact"),
                         label = msgs(s"known-fact.${service.id}.heading"),
-                        labelClass = Some("govuk-visually-hidden"),
+                        labelAsHeading = true,
+                        labelClass = Some("govuk-label--l"),
                         hint = Some(msgs(s"known-fact.${service.id}.helper")),
                         inputClass = Some("govuk-input--width-10")
                     )
