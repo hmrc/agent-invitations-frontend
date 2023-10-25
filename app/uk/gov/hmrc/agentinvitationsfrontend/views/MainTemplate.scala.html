@@ -107,6 +107,6 @@
     serviceName = Some(msgs(bannerTitle)),
     pageTitle = Some(title),
     isWelshTranslationAvailable = true,
-    backLink = if(backLinkHref.isDefined) Some(BackLink(href = backLinkHref.get)) else None
+    backLink = if(backLinkHref.isDefined) Some(BackLink.withDefaultText(href = backLinkHref.get)) else None
 ))(mainContentWithHelpLink)
 
