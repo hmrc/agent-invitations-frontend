@@ -507,10 +507,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
           response.status match {
             case OK => response.json.asOpt[Pillar2Subscription]
             case NOT_FOUND =>
-              logger.warn(s"PPT Subscription not found for plrId: ${plrId.value}")
+              logger.warn(s"Pillar2 Subscription not found for plrId: ${plrId.value}")
               None
             case x =>
-              logger.warn(s"$x response when getting PptSubscription for plrId: ${plrId.value}")
+              logger.warn(s"$x response when getting Pillar2 subscription for plrId: ${plrId.value}")
               None
           }
         }
