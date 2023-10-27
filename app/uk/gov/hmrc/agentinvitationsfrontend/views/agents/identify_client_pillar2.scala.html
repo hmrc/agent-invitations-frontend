@@ -1,0 +1,91 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.Configuration
+@import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
+@import uk.gov.hmrc.agentinvitationsfrontend.util.ViewUtils._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html._
+@import uk.gov.hmrc.agentinvitationsfrontend.views.html.components.{InputDate, InputText, SubmitButton}
+@import uk.gov.hmrc.govukfrontend.views.html.components.{ErrorSummary, Fieldset, FormWithCSRF, GovukErrorSummary, GovukFieldset, Legend, Text}
+@import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.agentinvitationsfrontend.models.Pillar2Client
+
+
+@this(
+    mainTemplate: MainTemplate,
+    errorPrefix: error_prefix,
+    govukErrorSummary: GovukErrorSummary,
+    govukFieldset: GovukFieldset,
+    formWithCSRF: FormWithCSRF,
+    inputText: InputText,
+    inputDate: InputDate,
+    submitButton: SubmitButton,
+    p: p,
+)
+
+@(pillar2ClientForm: Form[Pillar2Client], submitFormCall: Call, backLinkUrl: String, isDeAuthJourney: Boolean = false)(implicit request: Request[_], msgs: Messages, configuration: Configuration, externalUrls: ExternalUrls, contactFrontendConfig: ContactFrontendConfig)
+
+@banner = @{
+    if(isDeAuthJourney) "service.name.agents.de-auth" else "service.name.agents.auth"
+}
+
+@agentInvitationsDateForm = @{
+    pillar2ClientForm.copy(errors = pillar2ClientForm.errors.filterNot(error => error.message.contains("error.pillar2.required")))
+}
+
+@fieldsetHtml = {
+    @p(id = Some("identify-client-hint"), key = "identify-client.vat.p1")
+    @inputText(
+        field = pillar2ClientForm("plrId"),
+        label = msgs("identify-client.pillar2.label"),
+        labelClass = Some("govuk-label--s"),
+        hint = Some(msgs("identify-client.pillar2.hint")),
+        inputClass = Some("govuk-input--width-10")
+    )
+
+    @inputDate(
+        field = agentInvitationsDateForm("registrationDate"),
+        legend = msgs("identify-client.pillar2-registration-date.label"),
+        hint = Some(msgs("identify-client.pillar2-registration-date.hint"))
+    )
+}
+
+@mainTemplate(
+    bannerTitle = msgs(banner),
+    title = errorPrefix(pillar2ClientForm) + msgs("generic.title", msgs("identify-client.header"), msgs(banner)),
+    isAgent = true, backLinkHref = Some(backLinkUrl)) {
+
+    @if(pillar2ClientForm.hasErrors) {
+        @govukErrorSummary(ErrorSummary().withFormErrorsAsText(pillar2ClientForm, mapping = dateErrorMapping("registrationDate", agentInvitationsDateForm)))
+    }
+
+    @formWithCSRF(action = submitFormCall) {
+
+        @govukFieldset(Fieldset(
+            legend = Some(Legend(
+                content = Text(msgs("identify-client.header")),
+                classes = "govuk-fieldset__legend--xl",
+                isPageHeading = true
+            )),
+            describedBy = Some("identify-client-hint"),
+            html = fieldsetHtml
+        ))
+
+        @submitButton()
+
+    }
+}

@@ -27,6 +27,7 @@ object TestIdentifiers {
   val cgtRef = CgtRef("XMCGTP123456789")
   val pptRef = PptRef("XAPPT0000012345")
   val cbcId = CbcId("XACBC0000011111")
+  val plrId = PlrId("XAPLR2222222222")
 
   def anIdentifierFor(service: Service): TaxIdentifier = service match {
     case Service.MtdIt                  => nino
@@ -37,5 +38,6 @@ object TestIdentifiers {
     case Service.CapitalGains           => cgtRef
     case Service.Ppt                    => pptRef
     case Service.Cbc | Service.CbcNonUk => cbcId
+    case Service.Pillar2                => plrId
   }
 }

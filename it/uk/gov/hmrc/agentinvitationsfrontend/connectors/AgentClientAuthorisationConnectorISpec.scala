@@ -5,10 +5,10 @@ import java.time.{LocalDate, LocalDateTime}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal}
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentinvitationsfrontend.support.{BaseISpec, TestDataCommonSupport}
-import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, Vrn}
+import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, CbcIdType, CgtRefType, InvitationId, PlrIdType, PptRefType, Service, Vrn}
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 import uk.gov.hmrc.http._
 
@@ -311,10 +311,11 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       ("VAT",          Service.Vat,                  validVrn, invitationIdVAT,      identifierVAT),
       ("Trust",        Service.Trust,                validUtr, invitationIdTrust,    identifierTrust),
       ("Trust (NT)",   Service.TrustNT,              validUrn, invitationIdTrustNT,  "URN"),
-      ("CGT",          Service.CapitalGains,         cgtRef,   invitationIdCgt,      "CGTPDRef"),
-      ("PPT",          Service.Ppt,                  pptRef,   invitationIdPpt,      "EtmpRegistrationNumber"),
-      ("CBC",          Service.Cbc,                  cbcId,    invitationIdCbc,      "cbcId"),
-      ("CBC (non-UK)", Service.CbcNonUk,             cbcId,    invitationIdCbcNonUk, "cbcId")
+      ("CGT",          Service.CapitalGains,         cgtRef,   invitationIdCgt,      CgtRefType.id),
+      ("PPT",          Service.Ppt,                  pptRef,   invitationIdPpt,      PptRefType.id),
+      ("CBC",          Service.Cbc,                  cbcId,    invitationIdCbc,      CbcIdType.id),
+      ("CBC (non-UK)", Service.CbcNonUk,             cbcId,    invitationIdCbcNonUk, CbcIdType.id),
+      ("Pillar2",      Service.Pillar2,              plrId,    invitationIdPillar2,  PlrIdType.id)
     ).foreach { case (serviceName, service, taxId, invitationId, taxIdTag) =>
       s"accepting an invitation for $serviceName" should {
         "return true if invitation was accepted" in {
@@ -368,7 +369,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "return Some(true) if DES/ETMP has a matching postcode" in {
       givenMatchingClientIdAndPostcode(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Some(true)
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Pass
 
       verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
@@ -376,7 +377,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "return Some(false) if DES/ETMP has customer ITSA information but has no matching postcode" in {
       givenNonMatchingClientIdAndPostcode(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Some(false)
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Fail(NotMatched)
 
       verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
@@ -384,7 +385,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "return None if DES/ETMP has no customer ITSA information" in {
       givenNotEnrolledClientITSA(nino, validPostcode)
 
-      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe None
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Fail(NotFound)
 
       verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
@@ -392,9 +393,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "throws 5xx is DES/ETMP is unavailable" in {
       givenServiceUnavailableITSA(nino, validPostcode)
 
-      assertThrows[RuntimeException] {
-        await(connector.checkPostcodeForClient(nino, validPostcode))
-      }
+      await(connector.checkPostcodeForClient(nino, validPostcode)) shouldBe Fail(HttpStatus(502))
 
       verifyCheckItsaRegisteredClientStubAttempt(nino, validPostcode)
     }
@@ -405,7 +404,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 204)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatKnownFactCheckOk
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Pass
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
@@ -414,7 +413,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 403, true)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatRecordClientInsolvent
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Fail(VatClientInsolvent)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
@@ -423,7 +422,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 403)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatKnownFactNotMatched
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Fail(NotMatched)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
@@ -432,7 +431,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 423)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatRecordMigrationInProgress
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Fail(VatMigrationInProgress)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }
@@ -441,7 +440,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
       val suppliedDate = LocalDate.parse("2001-02-03")
       givenVatRegisteredClientReturns(validVrn, suppliedDate, 404)
 
-      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe VatDetailsNotFound
+      await(connector.checkVatRegisteredClient(validVrn, suppliedDate)) shouldBe Fail(NotFound)
 
       verifyCheckVatRegisteredClientStubAttempt(validVrn, suppliedDate)
     }

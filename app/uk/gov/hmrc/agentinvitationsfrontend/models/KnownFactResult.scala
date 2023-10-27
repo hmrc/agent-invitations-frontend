@@ -16,10 +16,18 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.models
 
-import play.api.libs.json.{Format, Json}
+sealed trait KnownFactResult {
+  def isOk: Boolean = this == KnownFactResult.Pass
+}
 
-case class VatClient(clientIdentifier: String, registrationDate: String)
+object KnownFactResult {
+  case object Pass extends KnownFactResult
+  case class Fail(problem: KnownFactFailure) extends KnownFactResult
 
-object VatClient {
-  implicit val format: Format[VatClient] = Json.format[VatClient]
+  sealed trait KnownFactFailure
+  case object NotFound extends KnownFactFailure
+  case object NotMatched extends KnownFactFailure
+  case class HttpStatus(status: Int) extends KnownFactFailure
+  case object VatClientInsolvent extends KnownFactFailure
+  case object VatMigrationInProgress extends KnownFactFailure
 }

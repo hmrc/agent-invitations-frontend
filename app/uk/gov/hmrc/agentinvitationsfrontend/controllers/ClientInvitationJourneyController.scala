@@ -471,8 +471,6 @@ class ClientInvitationJourneyController @Inject()(
             CheckAnswersPageConfig(
               consents,
               agentName,
-              ClientType.fromEnum(clientType),
-              uid,
               submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers,
               changeCall = (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
               backLink = backLinkFor(breadcrumbs)
@@ -541,7 +539,8 @@ object ClientInvitationJourneyController {
         "confirmedTerms.cgt"     -> boolean,
         "confirmedTerms.trustNT" -> boolean,
         "confirmedTerms.ppt"     -> boolean,
-        "confirmedTerms.cbc"     -> boolean
+        "confirmedTerms.cbc"     -> boolean,
+        "confirmedTerms.pillar2" -> boolean,
       )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =

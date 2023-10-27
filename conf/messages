@@ -24,6 +24,7 @@ identify-client.itsa.p1=This will help us match their details against informatio
 identify-client.vat.p1=This will help us match their details against information we hold.
 identify-client.utr.p1=This will help us match their details against information we hold.
 identify-client.cbc.p1=This will help us match their details against information we hold.
+identify-client.pillar2.p1=This will help us match their details against information we hold.
 identify-client.irv.hint=For example, QQ 12 34 56 C
 
 identify-client.cbc.id=Country-by-country ID
@@ -52,6 +53,12 @@ error.postcode.required=Enter your client’s postcode
 # Vrn
 identify-client.vrn.label=VAT registration number
 identify-client.vrn.hint=This is 9 numbers, for example, 123456789.
+
+# Pillar2 id
+identify-client.pillar2.label=Pillar 2 reference
+identify-client.pillar2.hint=For example, XAPLR0000999999.
+identify-client.pillar2-registration-date.label=identify-client.pillar2-registration-date.label
+identify-client.pillar2-registration-date.hint=identify-client.pillar2-registration-date.hint
 
 #UTR
 identify-client.utr.label=Unique Taxpayer Reference (UTR)
@@ -321,6 +328,7 @@ check-details.urn=Unique Reference Number
 check-details.cgt=Capital Gains Tax account reference
 check-details.ppt=Plastic Packaging Tax reference
 check-details.cbc=Country-by-country ID
+check-details.pillar2=check-details.pillar2
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
 confirm-details.sub-header=Are these details correct?

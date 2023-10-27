@@ -7,7 +7,7 @@ import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import play.api.libs.json.Json
 import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.UriPathEncoding._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{CbcClient, ClientType, PptClient}
+import uk.gov.hmrc.agentinvitationsfrontend.models.{CbcClient, ClientType, Pillar2Client, Pillar2Subscription, PptClient}
 import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
@@ -1486,6 +1486,17 @@ trait ACAStubs {
         )
     )
 
+  def givenPillar2CheckKnownFactReturns(pillar2Client: Pillar2Client, status: Int) =
+    stubFor(
+      post(urlEqualTo(s"/agent-client-authorisation/known-facts/pillar2/${pillar2Client.plrId.value}"))
+        .withRequestBody(
+          equalToJson(s"""{"registrationDate":"${pillar2Client.registrationDate}"}"""))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+        )
+    )
+
   def givenGetPptCustomerName(pptRef: PptRef, name: String) =
     stubFor(
       get(urlEqualTo(s"/agent-client-authorisation/client/ppt-customer-name/pptref/${pptRef.value}"))
@@ -1511,4 +1522,13 @@ trait ACAStubs {
         )
     )
 
+  def givenGetPillar2Subscription(plrId: PlrId, pillar2Subscription: Pillar2Subscription) =
+    stubFor(
+      get(urlEqualTo(s"/agent-client-authorisation/pillar2/subscriptions/${plrId.value}"))
+        .willReturn(
+          aResponse()
+            .withBody(Json.toJson(pillar2Subscription).toString)
+            .withStatus(200)
+        )
+    )
 }

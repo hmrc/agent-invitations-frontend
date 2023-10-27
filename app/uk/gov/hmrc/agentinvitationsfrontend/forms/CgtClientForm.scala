@@ -18,16 +18,15 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Form
 import play.api.data.Forms.mapping
-import uk.gov.hmrc.agentinvitationsfrontend.models.CgtClient
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{normalizedText, validCgtRef}
 import uk.gov.hmrc.agentmtdidentifiers.model.CgtRef
 
 object CgtClientForm {
 
-  def form(): Form[CgtClient] = Form(
+  def form(): Form[CgtRef] = Form(
     mapping(
       "cgtRef" -> normalizedText.verifying(validCgtRef())
-    )(x => CgtClient.apply(CgtRef(x)))(x => Some(x.cgtRef.value))
+    )(CgtRef(_))(x => Some(x.value))
   )
 
 }

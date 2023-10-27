@@ -43,6 +43,7 @@ case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFla
     case Service.CapitalGains            => appConfig.featuresCgt
     case Service.Ppt                     => appConfig.featuresPlasticPackagingTax
     case Service.Cbc | Service.CbcNonUk  => appConfig.featuresCbc
+    case Service.Pillar2                 => appConfig.featuresPillar2
   }
 
 }

@@ -25,7 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType._
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.Nino
@@ -51,27 +51,29 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   val authorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
   private val mockAppConfig = mock(classOf[AppConfig])
 
+  private val nino = Nino("AB123456A")
+  private val vrn = Vrn("123456")
+  private val pptRef = PptRef("XAPPT000012345")
+  private val pptRegDate = LocalDate.parse("2021-01-01")
+  private val pptRegDateStr = pptRegDate.toString
+  private val utr = Utr("1977030537")
+  private val urn = Urn("XXTRUST10010010")
+  private val someClientName = "Piglet"
+
   def makeBasket(services: Set[Service]) = services.map {
     case Service.CapitalGains =>
-      AuthorisationRequest("client", Invitation(Some(ClientType.Business), Service.CapitalGains, CgtRef("X")), AuthorisationRequest.NEW, "item-cgt")
+      AuthorisationRequest(
+        someClientName,
+        Invitation(Some(ClientType.Business), Service.CapitalGains, CgtRef("X")),
+        AuthorisationRequest.NEW,
+        "item-cgt")
     case Service.Vat =>
-      AuthorisationRequest("client", Invitation(Some(ClientType.Personal), Service.Vat, Vrn(vrn)), AuthorisationRequest.NEW, "item-vat")
+      AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.Vat, vrn), AuthorisationRequest.NEW, "item-vat")
     case Service.MtdIt =>
-      AuthorisationRequest("client", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(nino)), AuthorisationRequest.NEW, "item-itsa")
+      AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "item-itsa")
     case Service.Ppt =>
-      AuthorisationRequest("client", Invitation(Some(ClientType.Personal), Service.Ppt, PptRef(pptRef)), AuthorisationRequest.NEW, "item-ppt")
+      AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.Ppt, pptRef), AuthorisationRequest.NEW, "item-ppt")
   }
-
-  val nino = "AB123456A"
-  val postCode = Some("BN114AW")
-  val vrn = "123456"
-  val vatRegDate = Some("2010-10-10")
-  val dob = Some("1990-10-10")
-  val pptRef = "XAPPT000012345"
-  val pptRegDate = LocalDate.parse("2021-01-01")
-  val pptRegDateStr = pptRegDate.toString
-  val utr = Utr("1977030537")
-  val urn = Urn("XXTRUST10010010")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -81,7 +83,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   def cgtSubscription(countryCode: String = "GB") =
     CgtSubscription("CGT", SubscriptionDetails(tpd, cgtAddressDetails(countryCode)))
 
-  def getClientName: GetClientName = (_: String, _: Service) => Future(Some("Piglet"))
+  def getClientName: GetClientName = (_: String, _: Service) => Future(Some(someClientName))
+  def getClientNameNotFound: GetClientName = (_: String, _: Service) => Future(None)
 
   def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
 
@@ -103,9 +106,6 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription =
     CgtRef => Future(Some(cgtSubscription(countryCode)))
 
-  def getPptSubscription(registrationDate: LocalDate = pptRegDate): GetPptSubscription =
-    PptRef => Future(Some(PptSubscription("PPT Client", registrationDate, None)))
-
   def notSuspended() = Future.successful(SuspensionDetails(suspensionStatus = false, None))
 
   def hasNoPendingInvitation(arn: Arn, clientId: String, service: Service): Future[Boolean] =
@@ -123,11 +123,10 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
   def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
     Future successful (false)
 
-  def pptKnownFactCheckPasses: CheckPptKnownFact = (_, _) => Future.successful(true)
-  def pptKnownFactCheckFails: CheckPptKnownFact = (_, _) => Future.successful(false)
-
-  def cbcKnownFactCheckPasses(cbcId: CbcId, email: String) = Future(true)
-  def cbcKnownFactCheckFails(cbcId: CbcId, email: String) = Future(false)
+  def knownFactCheckReturns(result: KnownFactResult): CheckKnownFact = _ => Future.successful(result)
+  def knownFactCheckPasses = knownFactCheckReturns(Pass)
+  def knownFactCheckDoesntMatch = knownFactCheckReturns(Fail(NotMatched))
+  def knownFactCheckClientNotFound = knownFactCheckReturns(Fail(NotFound))
 
   // This is the default behaviour. Modify as needed in individual tests
   val transitions = Transitions(
@@ -139,20 +138,14 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     hasPartialAuthorisationFor = hasNoPartialAuthorisation,
     legacySaRelationshipStatusFor = legacySaRelationshipStatusNotFound,
     hasAltItsaInvitations = hasNoPartialAuthorisation,
-    checkDobMatches = (_, _) => Future.successful(None),
-    checkPostcodeMatches = (_, _) => Future.successful(None),
-    checkRegDateMatches = (_, _) => Future.successful(VatDetailsNotFound),
     getClientName = getClientName,
     getAgentLink = getAgentLink,
     getAgencyEmail = getAgencyEmail,
     createMultipleInvitations = createMultipleInvitationsEmpty,
     createInvitationSent = createInvitationSentMock,
     getCgtSubscription = _ => Future(None),
-    getTrustName = _ => Future(TrustResponse(Right(TrustName("a trust")))),
-    getPptCustomerName = _ => Future.successful(Some("PPT Client")),
-    checkPptKnownFact = pptKnownFactCheckFails,
     getCbcSubscription = _ => Future(None),
-    checkCbcKnownFact = cbcKnownFactCheckFails
+    checkKnownFact = knownFactCheckClientNotFound
   )
 
   "AgentInvitationJourneyService" when {
@@ -418,15 +411,15 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       when(mockAppConfig.featuresAltItsa).thenReturn(true)
 
       // format: off
-      def itsaClientIdentified(postcodeCheckResult: Option[Boolean]): Transition =
-        transitions.copy(checkPostcodeMatches = (_, _) => Future.successful(postcodeCheckResult)).identifiedItsaClient(
+      def itsaClientIdentified(checkKnownFact: CheckKnownFact): Transition =
+        transitions.copy(checkKnownFact = checkKnownFact).identifiedItsaClient(
           authorisedAgent)(
-          ItsaClient("AB123456A", "BN114AW"))
+          ItsaClient(nino, "BN114AW"))
 
-      def vatClientIdentified(regDateCheckResult: VatKnownFactCheckResult): Transition =
-        transitions.copy(checkRegDateMatches = (_, _) => Future.successful(regDateCheckResult)).identifiedVatClient(
+      def vatClientIdentified(checkKnownFact: CheckKnownFact): Transition =
+        transitions.copy(checkKnownFact = checkKnownFact).identifiedVatClient(
           authorisedAgent)(
-          VatClient("123456", "2010-10-10"))
+          VatClient(vrn, "2010-10-10"))
 
       // format: on
 
@@ -440,15 +433,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientItsa" in {
 
         given(IdentifyClient(Personal, Service.MtdIt, emptyBasket)) when
-          itsaClientIdentified(Some(true)) should
+          itsaClientIdentified(knownFactCheckPasses) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest(
-                    "Piglet",
-                    Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456A")),
-                    AuthorisationRequest.NEW,
-                    _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.MtdIt, `nino`), AuthorisationRequest.NEW, _),
                   `emptyBasket`,
                   _),
                 _) =>
@@ -458,38 +447,37 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to KnownFactsNotMatched when the nino and postcode do not match" in {
 
         given(IdentifyClient(Personal, Service.MtdIt, emptyBasket)) when
-          itsaClientIdentified(Some(false)) should
+          itsaClientIdentified(checkKnownFact = knownFactCheckDoesntMatch) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
       "transition to ClientNotRegistered when service is HMRC-MTD-IT and the client has no SAUTR on CiD record" in {
 
         given(IdentifyClient(Personal, Service.MtdIt, emptyBasket)) when
-          itsaClientIdentified(None) should
+          itsaClientIdentified(checkKnownFact = knownFactCheckClientNotFound) should
           thenGo(ClientNotRegistered(emptyBasket))
       }
 
       "transition to ConfirmPostcodeCgt for personal cgt clients" in {
 
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
-          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, `emptyBasket`, _, _), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Personal, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to ConfirmPostcodeCgt for trust cgt clients" in {
-
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
-          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, `emptyBasket`, _, _), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to CgtRefNotFound" in {
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
-          transitions.identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
             case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
@@ -498,12 +486,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPpt for personal PPT clients" in {
         given(IdentifyClient(Personal, Service.Ppt, emptyBasket)) when
           transitions
-            .copy(checkPptKnownFact = pptKnownFactCheckPasses)
-            .identifyPptClient(authorisedAgent)(PptClient(PptRef(pptRef), pptRegDateStr)) should
+            .copy(checkKnownFact = knownFactCheckPasses)
+            .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest("PPT Client", Invitation(Some(ClientType.Personal), Service.Ppt, PptRef(pptRef)), _, _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Ppt, `pptRef`), _, _),
                   `emptyBasket`,
                   _),
                 _) =>
@@ -512,30 +500,28 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPpt for business PPT clients" in {
         given(IdentifyClient(Business, Service.Ppt, emptyBasket)) when
           transitions
-            .copy(checkPptKnownFact = pptKnownFactCheckPasses)
-            .identifyPptClient(authorisedAgent)(PptClient(PptRef(pptRef), pptRegDateStr)) should
+            .copy(checkKnownFact = knownFactCheckPasses)
+            .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (
-                ConfirmClient(AuthorisationRequest("PPT Client", Invitation(Some(Business), Service.Ppt, PptRef(pptRef)), _, _), `emptyBasket`, _),
+                ConfirmClient(AuthorisationRequest(`someClientName`, Invitation(Some(Business), Service.Ppt, `pptRef`), _, _), `emptyBasket`, _),
                 _) =>
           }
       }
       "transition to ConfirmClientPpt for trust PPT clients" in {
         given(IdentifyClient(Trust, Service.Ppt, emptyBasket)) when
           transitions
-            .copy(checkPptKnownFact = pptKnownFactCheckPasses)
-            .identifyPptClient(authorisedAgent)(PptClient(PptRef(pptRef), pptRegDateStr)) should
+            .copy(checkKnownFact = knownFactCheckPasses)
+            .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
-            case (
-                ConfirmClient(AuthorisationRequest("PPT Client", Invitation(Some(Trust), Service.Ppt, PptRef(pptRef)), _, _), `emptyBasket`, _),
-                _) =>
+            case (ConfirmClient(AuthorisationRequest(`someClientName`, Invitation(Some(Trust), Service.Ppt, `pptRef`), _, _), `emptyBasket`, _), _) =>
           }
       }
       "transition to PptRefNotFound when known fact check fails" in {
         given(IdentifyClient(Personal, Service.Ppt, emptyBasket)) when
           transitions
-            .copy(checkPptKnownFact = pptKnownFactCheckFails)
-            .identifyPptClient(authorisedAgent)(PptClient(PptRef(pptRef), pptRegDateStr)) should
+            .copy(checkKnownFact = knownFactCheckDoesntMatch)
+            .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (PptRefNotFound(PptRef(pptRef), _), _) =>
           }
@@ -544,8 +530,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to PptRefNotFound when PPT client cannot be looked up" in {
         given(IdentifyClient(Personal, Service.Ppt, emptyBasket)) when
           transitions
-            .copy(checkPptKnownFact = pptKnownFactCheckPasses, getPptCustomerName = _ => Future.successful(None))
-            .identifyPptClient(authorisedAgent)(PptClient(PptRef(pptRef), pptRegDateStr)) should
+            .copy(checkKnownFact = knownFactCheckPasses, getClientName = getClientNameNotFound)
+            .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (PptRefNotFound(PptRef(pptRef), _), _) =>
           }
@@ -554,11 +540,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPersonalVat" in {
 
         given(IdentifyClient(Personal, Service.Vat, emptyBasket)) when
-          vatClientIdentified(VatKnownFactCheckOk) should
+          vatClientIdentified(knownFactCheckPasses) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest("Piglet", Invitation(Some(ClientType.Personal), Service.Vat, Vrn("123456")), AuthorisationRequest.NEW, _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
                   `emptyBasket`,
                   Some(false)),
                 _) =>
@@ -568,11 +554,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmClientPersonalVat when client insolvent" in {
 
         given(IdentifyClient(Personal, Service.Vat, emptyBasket)) when
-          vatClientIdentified(VatRecordClientInsolvent) should
+          vatClientIdentified(knownFactCheckReturns(Fail(VatClientInsolvent))) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest("Piglet", Invitation(Some(ClientType.Personal), Service.Vat, Vrn("123456")), AuthorisationRequest.NEW, _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
                   `emptyBasket`,
                   Some(true)),
                 _) =>
@@ -582,43 +568,37 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to KnownFactNotMatched when the vrn and regDate don't match" in {
 
         given(IdentifyClient(Personal, Service.Vat, emptyBasket)) when
-          vatClientIdentified(VatKnownFactNotMatched) should
+          vatClientIdentified(checkKnownFact = knownFactCheckDoesntMatch) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
       "transition to CannotCreateRequest when a migration is in process" in {
 
         given(IdentifyClient(Personal, Service.Vat, emptyBasket)) when
-          vatClientIdentified(VatRecordMigrationInProgress) should
+          vatClientIdentified(knownFactCheckReturns(Fail(VatMigrationInProgress))) should
           thenGo(CannotCreateRequest(emptyBasket))
       }
 
       "transition to ClientNotSignedUp when the client is not signed up for the service" in {
 
         given(IdentifyClient(Personal, Service.Vat, emptyBasket)) when
-          vatClientIdentified(VatDetailsNotFound) should
+          vatClientIdentified(checkKnownFact = knownFactCheckClientNotFound) should
           thenGo(ClientNotSignedUp(Service.Vat, emptyBasket))
       }
 
       "transition to KnownFactNotMatched when the nino and dob don't match" in {
-
-        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(Some(false))
-
         given(IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket)) when
           transitions
-            .copy(checkDobMatches = checkDobMatches)
-            .identifiedIrvClient(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
+            .copy(checkKnownFact = knownFactCheckDoesntMatch)
+            .identifiedIrvClient(authorisedAgent)(IrvClient(nino, "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
       "transition to KnownFactNotMatched when client not found" in {
-
-        def checkDobMatches(nino: Nino, dob: LocalDate) = Future(None)
-
         given(IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket)) when
           transitions
-            .copy(checkDobMatches = checkDobMatches)
-            .identifiedIrvClient(authorisedAgent)(IrvClient("AB123456A", "1990-10-10")) should
+            .copy(checkKnownFact = knownFactCheckClientNotFound)
+            .identifiedIrvClient(authorisedAgent)(IrvClient(nino, "1990-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
     }
@@ -647,23 +627,23 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a personal" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
-          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), personal, emptyBasket, _, _), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a trust" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
-          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), business, emptyBasket, _, _), _) =>
+            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to CgtRefNotFound" in {
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
-          transitions.identifyCgtClient(authorisedAgent)(CgtClient(CgtRef("myCgtRef"))) should
+          transitions.identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
           matchPattern {
             case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
@@ -735,12 +715,12 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyClient(Business, Service.Vat, emptyBasket)) when
           transitions
-            .copy(checkRegDateMatches = (_, _) => Future(VatKnownFactCheckOk))
-            .identifiedVatClient(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+            .copy(checkKnownFact = knownFactCheckPasses)
+            .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest("Piglet", Invitation(Some(ClientType.Business), Service.Vat, Vrn("123456")), AuthorisationRequest.NEW, _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
                   _,
                   Some(false)),
                 _) =>
@@ -751,8 +731,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyClient(Business, Service.Vat, emptyBasket)) when
           transitions
-            .copy(checkRegDateMatches = (_, _) => Future(VatKnownFactNotMatched))
-            .identifiedVatClient(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+            .copy(checkKnownFact = knownFactCheckDoesntMatch)
+            .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           thenGo(KnownFactNotMatched(emptyBasket))
       }
 
@@ -760,23 +740,20 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyClient(Business, Service.Vat, emptyBasket)) when
           transitions
-            .copy(checkRegDateMatches = (_, _) => Future(VatRecordMigrationInProgress))
-            .identifiedVatClient(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+            .copy(checkKnownFact = knownFactCheckReturns(Fail(VatMigrationInProgress)))
+            .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           thenGo(CannotCreateRequest(emptyBasket))
       }
 
       "transition to ActiveRelationshipExists" in {
-
-        def checkRegDateMatches(vrn: Vrn, regDate: LocalDate) = Future(VatKnownFactCheckOk)
-
         given(IdentifyClient(Business, Service.Vat, emptyBasket)) when
           transitions
-            .copy(checkRegDateMatches = checkRegDateMatches, hasActiveRelationshipFor = hasActiveRelationship)
-            .identifiedVatClient(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+            .copy(checkKnownFact = knownFactCheckPasses, hasActiveRelationshipFor = hasActiveRelationship)
+            .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           matchPattern {
             case (
                 ConfirmClient(
-                  AuthorisationRequest("Piglet", Invitation(Some(ClientType.Business), Service.Vat, Vrn("123456")), AuthorisationRequest.NEW, _),
+                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
                   _,
                   Some(false)),
                 _) =>
@@ -787,15 +764,15 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyClient(Business, Service.Vat, emptyBasket)) when
           transitions
-            .copy(checkRegDateMatches = (_, _) => Future(VatDetailsNotFound))
-            .identifiedVatClient(authorisedAgent)(VatClient("123456", "2010-10-10")) should
+            .copy(checkKnownFact = knownFactCheckClientNotFound)
+            .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           thenGo(ClientNotSignedUp(Service.Vat, emptyBasket))
       }
     }
 
     "at state ConfirmClientItsa" should {
 
-      val authorisationRequest = AuthorisationRequest("Piglet", Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456A")))
+      val authorisationRequest = AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.MtdIt, nino))
 
       def hasPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
         Future successful (true)
@@ -833,7 +810,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         ) when
           transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should
           thenMatch {
-            case PendingInvitationExists(_, "Piglet", "invitation/link", basket) if basket.nonEmpty =>
+            case PendingInvitationExists(_, `someClientName`, "invitation/link", basket) if basket.nonEmpty =>
           }
       }
 
@@ -878,11 +855,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(
           ConfirmClient(
             AuthorisationRequest(
-              "Piglet",
+              someClientName,
               Invitation(
                 Some(Personal),
                 Service.Vat,
-                Vrn("123456")
+                vrn
               )
             ),
             emptyBasket
@@ -897,11 +874,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(
           ConfirmClient(
             AuthorisationRequest(
-              "Piglet",
+              someClientName,
               Invitation(
                 Some(Personal),
                 Service.Vat,
-                Vrn("123456")
+                vrn
               )
             ),
             emptyBasket
@@ -918,11 +895,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(
           ConfirmClient(
             AuthorisationRequest(
-              "Piglet",
+              someClientName,
               Invitation(
                 Some(Personal),
                 Service.Vat,
-                Vrn("123456")
+                vrn
               )
             ),
             emptyBasket,
@@ -940,11 +917,11 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         given(
           ConfirmClient(
             AuthorisationRequest(
-              "Piglet",
+              someClientName,
               Invitation(
                 Some(Personal),
                 Service.Vat,
-                Vrn("123456")
+                vrn
               )
             ),
             emptyBasket
@@ -959,8 +936,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       val authorisationRequest =
         AuthorisationRequest(
-          "Piglet",
-          Invitation(Some(Business), Service.Vat, Vrn("123456"))
+          someClientName,
+          Invitation(Some(Business), Service.Vat, vrn)
         )
 
       "after start transition to Start" in {
@@ -992,7 +969,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(hasPendingInvitationsFor = hasPendingInvitation)
             .clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(PendingInvitationExists(Business, "Piglet", "invitation/link", emptyBasket))
+          thenGo(PendingInvitationExists(Business, someClientName, "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when an active relationship already exists" in {
@@ -1036,7 +1013,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
       val utr = Utr("4937455253")
 
-      val authorisationRequest = AuthorisationRequest("Piglet", Invitation(Some(ClientType.Trust), Service.Trust, utr))
+      val authorisationRequest = AuthorisationRequest(someClientName, Invitation(Some(ClientType.Trust), Service.Trust, utr))
 
       "transition to IdentifyTrustClient if NO is selected" in {
 
@@ -1058,7 +1035,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(hasPendingInvitationsFor = hasPendingInvitation)
             .clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenGo(PendingInvitationExists(Trust, "Piglet", "invitation/link", emptyBasket))
+          thenGo(PendingInvitationExists(Trust, someClientName, "invitation/link", emptyBasket))
       }
 
       "transition to ActiveAuthorisationExists when a pending invitation exists for the service" in {
@@ -1093,7 +1070,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after authorisationsReviewed(false) transition to InvitationSentTrust" in {
 
         val authorisationRequestNew =
-          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         val authorisationRequestCreated = authorisationRequestNew.copy(state = AuthorisationRequest.CREATED)
 
@@ -1110,7 +1087,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
 
         val authorisationRequestNew =
-          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         val authorisationRequestFailed = authorisationRequestNew.copy(state = AuthorisationRequest.FAILED)
 
@@ -1173,7 +1150,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after deleteAuthorisationRequest with a valid itemId transition to DeleteAuthorisationRequestPersonal" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Trust), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         given(
           ReviewAuthorisations(Trust, Services.supportedTrustServices, Set(authorisationRequest))
@@ -1213,7 +1190,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after authorisationsReviewed(false) transition to InvitationSentPersonal" in {
 
         val authorisationRequestNew =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         val authorisationRequestCreated = authorisationRequestNew.copy(state = AuthorisationRequest.CREATED)
 
@@ -1237,7 +1214,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after authorisationsReviewed(false) transition to InvitationSentPersonal (alt itsa)" in {
 
         val authorisationRequestNew =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         val authorisationRequestCreated = authorisationRequestNew.copy(state = AuthorisationRequest.CREATED)
 
@@ -1257,7 +1234,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after authorisationsReviewed(false) when all fail transition to AuthorisationsReviewedAllFailed" in {
 
         val authorisationRequestNew =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         val authorisationRequestFailed = authorisationRequestNew.copy(state = AuthorisationRequest.FAILED)
 
@@ -1309,7 +1286,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after deleteAuthorisationRequest with a valid itemId transition to DeleteAuthorisationRequestPersonal" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         given(
           ReviewAuthorisations(Personal, Services.supportedPersonalServices, Set(authorisationRequest))
@@ -1321,7 +1298,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "throw an Exception when there is no corresponding itemId in the basket" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         intercept[Exception] {
           given(
@@ -1337,7 +1314,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         val authorisationRequest = AuthorisationRequest(
           "Mr Client",
-          Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")),
+          Invitation(Some(Personal), Service.MtdIt, nino),
           AuthorisationRequest.NEW,
           "ABC123"
         )
@@ -1367,7 +1344,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after confirmDeleteAuthorisationRequest(true) should transition to AllAuthorisationsRemoved when there is nothing left in the basket" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         given(
           DeleteAuthorisationRequest(Personal, authorisationRequest, Set(authorisationRequest))
@@ -1379,7 +1356,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "after confirmDeleteAuthorisationRequest(false) should transition to ReviewAuthorisationPersonal with basket in tact" in {
 
         val authorisationRequest =
-          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, Nino("AB123456A")), AuthorisationRequest.NEW, "ABC123")
+          AuthorisationRequest("Mr Client", Invitation(Some(Personal), Service.MtdIt, nino), AuthorisationRequest.NEW, "ABC123")
 
         given(
           DeleteAuthorisationRequest(Personal, authorisationRequest, Set(authorisationRequest))

@@ -17,18 +17,14 @@
 package uk.gov.hmrc.agentinvitationsfrontend.journeys
 
 import play.api.Logging
-import uk.gov.hmrc.agentmtdidentifiers.model.SuspensionDetails
 import uk.gov.hmrc.agentinvitationsfrontend.config.AppConfig
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.FeatureFlags
-import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult.{VatDetailsNotFound, VatKnownFactCheckOk, VatKnownFactNotMatched, VatRecordClientInsolvent, VatRecordMigrationInProgress}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -97,22 +93,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     type HasActiveRelationship = (Arn, String, Service) => Future[Boolean]
     type HasPartialAuthorisation = (Arn, String) => Future[Boolean]
     type GetClientName = (String, Service) => Future[Option[String]]
-    type CheckPostcodeMatches = (Nino, String) => Future[Option[Boolean]]
-    type CheckRegDateMatches = (Vrn, LocalDate) => Future[VatKnownFactCheckResult]
     type CreateMultipleInvitations =
       (Arn, Set[AuthorisationRequest]) => Future[Set[AuthorisationRequest]]
     type GetAgentLink = (Arn, Option[ClientType]) => Future[String]
     type GetAgencyEmail = () => Future[String]
-    type GetTrustName = TrustTaxIdentifier => Future[TrustResponse]
     type GetCgtSubscription = CgtRef => Future[Option[CgtSubscription]]
-    type GetPptSubscription = PptRef => Future[Option[PptSubscription]]
     type GetSuspensionDetails = () => Future[SuspensionDetails]
     type LegacySaRelationshipStatusFor = (Arn, String) => Future[LegacySaRelationshipResult]
-    type CheckDOBMatches = (Nino, LocalDate) => Future[Option[Boolean]]
-    type GetPptCustomerName = PptRef => Future[Option[String]]
-    type CheckPptKnownFact = (PptRef, LocalDate) => Future[Boolean]
     type GetCbcSubscription = CbcId => Future[Option[SimpleCbcSubscription]]
-    type CheckCbcKnownFact = (CbcId, String /* email */ ) => Future[Boolean]
+    type CheckKnownFact = ClientIdSet => Future[KnownFactResult]
   }
 
   import TransitionEffects._
@@ -126,20 +115,14 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     hasPartialAuthorisationFor: HasPartialAuthorisation,
     legacySaRelationshipStatusFor: LegacySaRelationshipStatusFor,
     hasAltItsaInvitations: HasPartialAuthorisation,
-    checkDobMatches: CheckDOBMatches,
-    checkPostcodeMatches: CheckPostcodeMatches,
-    checkRegDateMatches: CheckRegDateMatches,
     getClientName: GetClientName,
     getAgentLink: GetAgentLink,
     getAgencyEmail: GetAgencyEmail,
     createMultipleInvitations: CreateMultipleInvitations,
     createInvitationSent: CreateInvitationSent,
     getCgtSubscription: GetCgtSubscription,
-    getTrustName: GetTrustName,
-    getPptCustomerName: GetPptCustomerName,
-    checkPptKnownFact: CheckPptKnownFact,
     getCbcSubscription: GetCbcSubscription,
-    checkCbcKnownFact: CheckCbcKnownFact
+    checkKnownFact: CheckKnownFact
   ) {
     val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
@@ -188,52 +171,49 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     def identifiedTrustClient(agent: AuthorisedAgent)(trustClient: TrustClient) =
       Transition {
         case IdentifyClient(ClientType.Trust, trustService, basket) if List(Service.Trust, Service.TrustNT).contains(trustService) =>
-          getTrustName(trustClient.taxId).flatMap { trustResponse =>
-            trustResponse.response match {
-              case Right(TrustName(name)) =>
-                trustClient.taxId match {
-                  case Utr(_) =>
-                    goto(
-                      ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.Trust, Utr(trustClient.taxId.value))),
-                        basket)
-                    )
-                  case Urn(_) =>
-                    goto(
-                      ConfirmClient(
-                        AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(trustClient.taxId.value))),
-                        basket)
-                    )
+          getClientName(trustClient.taxId.value, Service.Trust).flatMap {
+            case Some(name) =>
+              trustClient.taxId match {
+                case Utr(_) =>
+                  goto(
+                    ConfirmClient(AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.Trust, Utr(trustClient.taxId.value))), basket)
+                  )
+                case Urn(_) =>
+                  goto(
+                    ConfirmClient(
+                      AuthorisationRequest(name, Invitation(Some(ClientType.Trust), Service.TrustNT, Urn(trustClient.taxId.value))),
+                      basket)
+                  )
 
-                }
-              case Left(invalidTrust) =>
-                logger.warn(s"Des returned $invalidTrust response for utr: ${trustClient.taxId}")
-                goto(TrustNotFound(basket))
-            }
+              }
+            case None => goto(TrustNotFound(basket))
           }
       }
 
-    def identifyCgtClient(agent: AuthorisedAgent)(cgtClient: CgtClient): AgentInvitationJourneyModel.Transition =
+    def identifyCgtClient(agent: AuthorisedAgent)(cgtRef: CgtRef): AgentInvitationJourneyModel.Transition =
       Transition {
         case IdentifyClient(clientType, Service.CapitalGains, basket) =>
           require(Services.isSupported(clientType, Service.CapitalGains))
-          getCgtSubscription(cgtClient.cgtRef).map {
+          getCgtSubscription(cgtRef).map {
             case Some(subscription) =>
               if (subscription.isUKBasedClient) {
-                ConfirmPostcodeCgt(cgtClient.cgtRef, clientType, basket, subscription.postCode, subscription.name)
+                ConfirmPostcodeCgt(cgtRef, clientType, basket, subscription.postCode, subscription.name)
               } else {
-                ConfirmCountryCodeCgt(cgtClient.cgtRef, clientType, basket, subscription.countryCode, subscription.name)
+                ConfirmCountryCodeCgt(cgtRef, clientType, basket, subscription.countryCode, subscription.name)
               }
             case None =>
-              CgtRefNotFound(cgtClient.cgtRef, basket)
+              CgtRefNotFound(cgtRef, basket)
           }
       }
 
     def identifyPptClient(agent: AuthorisedAgent)(pptClient: PptClient): AgentInvitationJourneyModel.Transition = {
       def handle(mkState: String => State, basket: Basket) =
         for {
-          isCheckOK     <- checkPptKnownFact(pptClient.pptRef, LocalDate.parse(pptClient.registrationDate))
-          mCustomerName <- if (isCheckOK) getPptCustomerName(pptClient.pptRef) else Future.successful(None)
+          knownFactResult <- checkKnownFact(pptClient)
+          mCustomerName <- knownFactResult match {
+                            case Pass => getClientName(pptClient.pptRef.value, Service.Ppt)
+                            case _    => Future.successful(None)
+                          }
         } yield {
           mCustomerName match {
             case Some(customerName) => mkState(customerName)
@@ -254,16 +234,35 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       Transition {
         case IdentifyClient(clientType, Service.Cbc | Service.CbcNonUk, basket) =>
           for {
-            knownFactOk <- checkCbcKnownFact(cbcClient.cbcId, cbcClient.email)
-            nextState <- if (knownFactOk) {
+            knownFactResult <- checkKnownFact(cbcClient)
+            nextState <- knownFactResult match {
+                          case Pass =>
+                            for {
+                              maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
+                              subscription = maybeSubscription.getOrElse(
+                                throw new RuntimeException(s"CBC subscription for ${cbcClient.cbcId} not found!"))
+                              adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
+                              clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
+                            } yield
+                              ConfirmClient(AuthorisationRequest(clientName, Invitation(Some(clientType), adjustedService, cbcClient.cbcId)), basket)
+                          case _ => Future.successful(KnownFactNotMatched(basket))
+                        }
+          } yield nextState
+      }
+
+    def identifyPillar2Client(agent: AuthorisedAgent)(pillar2Client: Pillar2Client): AgentInvitationJourneyModel.Transition =
+      Transition {
+        case IdentifyClient(clientType, Service.Pillar2, basket) =>
+          for {
+            knownFactResult <- checkKnownFact(pillar2Client)
+            nextState <- if (knownFactResult.isOk) {
                           for {
-                            maybeSubscription <- getCbcSubscription(cbcClient.cbcId)
-                            subscription = maybeSubscription.getOrElse(
-                              throw new RuntimeException(s"CBC subscription for ${cbcClient.cbcId} not found!"))
-                            adjustedService = if (subscription.isGBUser) Service.Cbc else Service.CbcNonUk
-                            clientName = subscription.anyAvailableName.getOrElse(cbcClient.cbcId.value)
+                            mClientName <- getClientName(pillar2Client.plrId.value, Service.Pillar2)
+                            clientName = mClientName.getOrElse(pillar2Client.plrId.value)
                           } yield
-                            ConfirmClient(AuthorisationRequest(clientName, Invitation(Some(clientType), adjustedService, cbcClient.cbcId)), basket)
+                            ConfirmClient(
+                              AuthorisationRequest(clientName, Invitation(Some(clientType), Service.Pillar2, pillar2Client.plrId)),
+                              basket)
                         } else {
                           Future.successful(KnownFactNotMatched(basket))
                         }
@@ -303,20 +302,18 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       // format: on
       case IdentifyClient(ClientType.Personal, Service.MtdIt, basket) =>
         for {
-          postcodeMatches <- checkPostcodeMatches(Nino(itsaClient.clientIdentifier), itsaClient.postcode)
-          endState <- postcodeMatches match {
-                       case Some(true) =>
-                         getClientName(itsaClient.clientIdentifier, Service.MtdIt).flatMap { clientName =>
+          knownFactResult <- checkKnownFact(itsaClient)
+          endState <- knownFactResult match {
+                       case Pass =>
+                         getClientName(itsaClient.nino.value, Service.MtdIt).flatMap { clientName =>
                            goto(
                              ConfirmClient(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 Invitation(Some(ClientType.Personal), Service.MtdIt, Nino(itsaClient.clientIdentifier))),
+                               AuthorisationRequest(clientName.getOrElse(""), Invitation(Some(ClientType.Personal), Service.MtdIt, itsaClient.nino)),
                                basket))
                          }
-                       case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None =>
+                       case Fail(NotFound) =>
                          if (appConfig.featuresAltItsa) goto(ClientNotRegistered(basket)) else goto(ClientNotSignedUp(Service.MtdIt, basket))
+                       case Fail(NotMatched) | _ => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
     }
@@ -327,45 +324,41 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       // format: on
       case IdentifyClient(ClientType.Personal, Service.Vat, basket) =>
         for {
-          regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
-          endState <- regDateMatches match {
-                       case kfcResponse @ (VatKnownFactCheckOk | VatRecordClientInsolvent) =>
-                         getClientName(vatClient.clientIdentifier, Service.Vat).flatMap { clientName =>
+          knownFactResult <- checkKnownFact(vatClient)
+          endState <- knownFactResult match {
+                       case kfcResponse @ (Pass | Fail(VatClientInsolvent)) =>
+                         getClientName(vatClient.vrn.value, Service.Vat).flatMap { clientName =>
                            goto(
                              ConfirmClient(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 Invitation(Some(ClientType.Personal), Service.Vat, Vrn(vatClient.clientIdentifier))),
+                               AuthorisationRequest(clientName.getOrElse(""), Invitation(Some(ClientType.Personal), Service.Vat, vatClient.vrn)),
                                basket,
-                               clientInsolvent = Some(kfcResponse == VatRecordClientInsolvent)
+                               clientInsolvent = Some(kfcResponse == Fail(VatClientInsolvent))
                              ))
                          }
-                       case VatRecordMigrationInProgress => goto(CannotCreateRequest(basket))
-                       case VatKnownFactNotMatched       => goto(KnownFactNotMatched(basket))
-                       case VatDetailsNotFound           => goto(ClientNotSignedUp(Service.Vat, basket))
+                       case Fail(VatMigrationInProgress) => goto(CannotCreateRequest(basket))
+                       case Fail(NotFound)               => goto(ClientNotSignedUp(Service.Vat, basket))
+                       case Fail(NotMatched) | _         => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
 
-      case IdentifyClient(ClientType.Business, service, basket) =>
+      case IdentifyClient(ClientType.Business, Service.Vat, basket) =>
         for {
-          regDateMatches <- checkRegDateMatches(Vrn(vatClient.clientIdentifier), LocalDate.parse(vatClient.registrationDate))
+          regDateMatches <- checkKnownFact(vatClient)
           endState <- regDateMatches match {
-                       case kfcResponse @ (VatKnownFactCheckOk | VatRecordClientInsolvent) =>
-                         getClientName(vatClient.clientIdentifier, Service.Vat).flatMap { clientName =>
+                       case kfcResponse @ (Pass | Fail(VatClientInsolvent)) =>
+                         getClientName(vatClient.vrn.value, Service.Vat).flatMap { clientName =>
                            goto(
                              ConfirmClient(
-                               AuthorisationRequest(
-                                 clientName.getOrElse(""),
-                                 Invitation(Some(ClientType.Business), Service.Vat, Vrn(vatClient.clientIdentifier))),
+                               AuthorisationRequest(clientName.getOrElse(""), Invitation(Some(ClientType.Business), Service.Vat, vatClient.vrn)),
                                basket,
-                               clientInsolvent = Some(kfcResponse == VatRecordClientInsolvent)
+                               clientInsolvent = Some(kfcResponse == Fail(VatClientInsolvent))
                              )
                            )
 
                          }
-                       case VatRecordMigrationInProgress => goto(CannotCreateRequest(basket))
-                       case VatKnownFactNotMatched       => goto(KnownFactNotMatched(basket))
-                       case VatDetailsNotFound           => goto(ClientNotSignedUp(Service.Vat, Set.empty))
+                       case Fail(VatMigrationInProgress) => goto(CannotCreateRequest(basket))
+                       case Fail(NotFound)               => goto(ClientNotSignedUp(Service.Vat, Set.empty))
+                       case Fail(NotMatched) | _         => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
     }
@@ -376,15 +369,15 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
       // format: on
       case IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord, basket) =>
         for {
-          dobMatches <- checkDobMatches(Nino(irvClient.clientIdentifier), LocalDate.parse(irvClient.dob))
+          knownFactResult <- checkKnownFact(irvClient)
 
-          endState <- dobMatches match {
-                       case Some(true) =>
-                         getClientName(irvClient.clientIdentifier, Service.PersonalIncomeRecord)
+          endState <- knownFactResult match {
+                       case Pass =>
+                         getClientName(irvClient.nino.value, Service.PersonalIncomeRecord)
                            .map { clientName =>
                              AuthorisationRequest(
                                clientName.getOrElse(""),
-                               Invitation(Some(ClientType.Personal), Service.PersonalIncomeRecord, Nino(irvClient.clientIdentifier)))
+                               Invitation(Some(ClientType.Personal), Service.PersonalIncomeRecord, irvClient.nino))
                            }
                            .flatMap { request =>
                              checkIfPendingOrActiveAndGoto(
@@ -395,8 +388,8 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                Service.PersonalIncomeRecord,
                                basket)
                            }
-                       case Some(false) => goto(KnownFactNotMatched(basket))
-                       case None        => goto(KnownFactNotMatched(basket))
+                       case Fail(NotFound)       => goto(KnownFactNotMatched(basket))
+                       case Fail(NotMatched) | _ => goto(KnownFactNotMatched(basket))
                      }
         } yield endState
     }

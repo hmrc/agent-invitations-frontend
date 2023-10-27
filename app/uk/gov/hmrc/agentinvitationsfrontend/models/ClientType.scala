@@ -30,18 +30,17 @@ object ClientType {
 
   val clientTypes: Seq[ClientType] = Seq(Personal, Business, Trust)
 
-  def toEnum: String => ClientType = {
-    case "personal" => Personal
-    case "business" => Business
-    case "trust"    => Trust
-    case alien      => throw new Exception(s"Client type $alien not supported")
-  }
-
   def fromEnum: ClientType => String = {
     case ClientType.Personal => "personal"
     case ClientType.Business => "business"
     case ClientType.Trust    => "trust"
   }
+
+  def toMaybeEnum(str: String): Option[ClientType] = clientTypes.find(fromEnum(_) == str)
+
+  def toEnum(str: String): ClientType = toMaybeEnum(str).getOrElse(throw new Exception(s"Client type $str not supported"))
+
+  def isValid(str: String): Boolean = toMaybeEnum(str).isDefined
 
   implicit val formats: Format[ClientType] = new Format[ClientType] {
     def writes(o: ClientType): JsValue = JsString(fromEnum(o))

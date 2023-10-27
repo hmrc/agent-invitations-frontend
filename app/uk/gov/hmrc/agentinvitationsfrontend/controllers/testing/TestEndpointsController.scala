@@ -24,7 +24,6 @@ import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.PirRelationshipConnector
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.{AuthActions, CancelAuthorisationForm, CancelRequestForm, DateFieldHelper, TrackResendForm, routes => agentRoutes}
-import uk.gov.hmrc.agentinvitationsfrontend.forms.ClientTypeForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AgentFastTrackRequest, ClientType}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
@@ -144,7 +143,7 @@ object TestEndpointsController {
         "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
-            .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+            .verifying("Unsupported client type", ClientType.isValid(_))
             .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
         "isAltItsa"  -> boolean
@@ -157,7 +156,7 @@ object TestEndpointsController {
         "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
         "service"      -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> text
-          .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
+          .verifying("Unsupported client type", ClientType.isValid(_)),
         "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
@@ -169,7 +168,7 @@ object TestEndpointsController {
         "service"  -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientId" -> normalizedText.verifying(validateClientId),
         "clientType" -> text
-          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
+          .verifying("Unsupported ClientType", ClientType.isValid(_)),
         "clientName"   -> text,
         "invitationId" -> text,
         "status"       -> text.verifying("Unexpected InvitationStatus", status => status == "Accepted" || status == "Partialauth")

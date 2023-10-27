@@ -17,34 +17,18 @@
 package uk.gov.hmrc.agentinvitationsfrontend.views.track
 
 import play.api.i18n.Messages
-import play.api.mvc.Call
-import uk.gov.hmrc.agentinvitationsfrontend.controllers.routes
-import uk.gov.hmrc.agentinvitationsfrontend.config.ExternalUrls
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 import java.time.LocalDate
 
 case class ResendLinkPageConfig(
-  externalUrl: String,
   agentLink: String,
   clientType: String,
-  expiryDate: String,
+  expiryDate: LocalDate,
   maybeService: Option[Service],
   agencyEmail: String,
   backLinkUrl: String,
-  isAltItsa: Boolean = false)(implicit externalUrls: ExternalUrls, messages: Messages) {
-
-  val expiryDateAsLocalDate = LocalDate.parse(expiryDate)
-
-  def fullAgentLink: String = s"$externalUrl$agentLink"
-
-  def trackLink: Call =
-    routes.AgentsRequestTrackingController.showTrackRequests()
-
-  def newRequestLink: Call =
-    routes.AgentInvitationJourneyController.showClientType
-
-  val asaUrl = externalUrls.agentServicesAccountUrl
+  isAltItsa: Boolean = false)(implicit messages: Messages) {
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
     maybeService.flatMap(

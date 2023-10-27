@@ -23,7 +23,7 @@ import play.api.data.validation._
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.DateFieldHelper.{parseDate, validateDate}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.ValidateHelper
 import uk.gov.hmrc.agentinvitationsfrontend.models.FilterFormStatus
-import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, ClientIdType, MtdItIdType, PptRef}
+import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, ClientIdType, MtdItIdType, PlrId, PptRef}
 import uk.gov.hmrc.domain.Nino
 
 object Validators {
@@ -183,6 +183,14 @@ object Validators {
       case empty if empty.isEmpty        => Invalid("error.cbcid.required")
       case cbcId if CbcId.isValid(cbcId) => Valid
       case _                             => Invalid("error.cbcid.invalid-format")
+    }
+  }
+
+  val validPlrId: Constraint[String] = Constraint[String] { plrIdString: String =>
+    plrIdString match {
+      case empty if empty.isEmpty        => Invalid("error.plrid.required")
+      case plrId if PlrId.isValid(plrId) => Valid
+      case _                             => Invalid("error.plrid.invalid-format")
     }
   }
 

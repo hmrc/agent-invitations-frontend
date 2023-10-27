@@ -30,7 +30,9 @@ object Services {
       Service.CapitalGains,
       Service.Ppt,
       Service.Cbc,
-      Service.CbcNonUk)
+      Service.CbcNonUk,
+      Service.Pillar2
+    )
 
   /* The following sets of services have different backend representations, but are presented to the user as one.
      Therefore if one service is already subscribed to, the other won't be shown as an option, etc.
@@ -44,9 +46,9 @@ object Services {
   // These are the options that the user will be shown on the 'select service' page.
   // TODO: Can they be merged with the 'all supported enrolment keys' above?
   val supportedPersonalServices: Set[Service] = Set(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.CapitalGains, Service.Ppt)
-  val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
+  val supportedBusinessServices: Set[Service] = Set(Service.Vat, Service.Ppt, Service.Cbc /* implies also CbcNonUk */, Service.Pillar2)
   val supportedTrustServices: Set[Service] =
-    Set(Service.CapitalGains, Service.Trust /* implies also TrustNT */, Service.Ppt, Service.Cbc /* implies also CbcNonUk */ )
+    Set(Service.CapitalGains, Service.Trust /* implies also TrustNT */, Service.Ppt, Service.Cbc /* implies also CbcNonUk */, Service.Pillar2)
 
   def supportedServicesFor(clientType: ClientType): Set[Service] = clientType match {
     case ClientType.Personal => supportedPersonalServices
@@ -75,7 +77,7 @@ object Services {
   // This is the order in which the services are to be displayed on the 'select service' page.
   val serviceDisplayOrdering: Ordering[Service] = new Ordering[Service] {
     val correctOrdering =
-      List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt, Service.Cbc)
+      List(Service.MtdIt, Service.PersonalIncomeRecord, Service.Vat, Service.Trust, Service.CapitalGains, Service.Ppt, Service.Cbc, Service.Pillar2)
     override def compare(x: Service, y: Service): Int = correctOrdering.indexOf(x) - correctOrdering.indexOf(y)
   }
 
@@ -88,7 +90,8 @@ object Services {
     Service.CapitalGains         -> "cgt",
     Service.Ppt                  -> "ppt",
     Service.Cbc                  -> "cbc",
-    Service.CbcNonUk             -> "cbc"
+    Service.CbcNonUk             -> "cbc",
+    Service.Pillar2              -> "pillar2"
   )
 
   def determineService(invitationId: InvitationId): Service = {

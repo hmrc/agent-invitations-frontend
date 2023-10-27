@@ -150,6 +150,14 @@
 @ul(items = (1 to 11).map(i => s"confirm-terms-multi.cbc.list.item$i"))
 }
 
+@pillar2Terms = {
+@p(
+    classes = Some("govuk-!-margin-bottom-4"),
+    key = msgs("confirm-terms-multi.pillar2.p1", pageConfig.agencyName)
+)
+@ul(items = (1 to 11).map(i => s"confirm-terms-multi.pillar2.list.item$i"))
+}
+
 
 @suitableTerms(service: Service, expiryDate: String, isAltItsa: Boolean) = {
     @if(isAltItsa) {
@@ -165,6 +173,7 @@
             case Service.CapitalGains         => cgtTerms
             case Service.Ppt                  => pptTerms
             case Service.Cbc | Service.CbcNonUk => cbcTerms
+            case Service.Pillar2              => pillar2Terms
         }
     }
     @if(!isAltItsa) {

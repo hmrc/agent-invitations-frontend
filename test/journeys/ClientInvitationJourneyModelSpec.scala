@@ -16,20 +16,20 @@
 
 package journeys
 
+import play.api.test.Helpers._
+import support.UnitSpec
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.Transitions._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.ClientInvitationJourneyModel.{State, Transition}
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
-import uk.gov.hmrc.agentinvitationsfrontend.models.{ConfirmedTerms, _}
+import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model.{Arn, InvitationId, Service, SuspensionDetails}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment, Enrolments}
 import uk.gov.hmrc.http.HeaderCarrier
-import support.UnitSpec
-import play.api.test.Helpers._
 
-import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -53,8 +53,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
     date.format(fmt)
   }
 
-  val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("HMRC-MTD-IT"))))
-  val authorisedIndividualClientWithAllSupportedEnrolments =
+  private val authorisedIndividualClient = AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("HMRC-MTD-IT"))))
+  private val authorisedIndividualClientWithAllSupportedEnrolments =
     AuthorisedClient(
       AffinityGroup.Individual,
       Enrolments(
@@ -67,26 +67,20 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         )
       )
     )
-  val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
-  val authorisedBusinessClientWithBusinessOnly =
-    AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"), Enrolment("HMRC-PPT-ORG"), Enrolment("HMRC-CBC-ORG"))))
-  val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
-  val authorisedTrustNTClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-TERSNT-ORG"))))
-  val authorisedIndividualClientWithoutRelevantEnrolments =
+  private val authorisedBusinessClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-MTD-VAT"))))
+  private val authorisedBusinessClientWithBusinessOnly =
+    AuthorisedClient(
+      Organisation,
+      Enrolments(Set(Enrolment("HMRC-MTD-VAT"), Enrolment("HMRC-PPT-ORG"), Enrolment("HMRC-CBC-ORG"), Enrolment("HMRC-PILLAR2-ORG"))))
+  private val authorisedTrustOrEstateClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-CGT-PD"))))
+  private val authorisedTrustNTClient = AuthorisedClient(Organisation, Enrolments(Set(Enrolment("HMRC-TERSNT-ORG"))))
+  private val authorisedIndividualClientWithoutRelevantEnrolments =
     AuthorisedClient(AffinityGroup.Individual, Enrolments(Set(Enrolment("some-key"))))
-  val authorisedOrganisationClientWithoutRelevantEnrolments =
+  private val authorisedOrganisationClientWithoutRelevantEnrolments =
     AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("some-key"))))
-  val availableServices = Set(Service.PersonalIncomeRecord, Service.MtdIt, Service.Vat)
-  val authorisedOrganisationClientWithIRVOnlyEnrolment =
-    AuthorisedClient(AffinityGroup.Organisation, Enrolments(Set(Enrolment("HMRC-NI"))))
 
-  val nino = "AB123456A"
-  val arn = Arn("TARN0000001")
-  val postCode = Some("BN114AW")
-  val vrn = "123456"
-  val vatRegDate = Some("2010-10-10")
-  val dob = Some("1990-10-10")
-  val uid = "uid123"
+  private val arn = Arn("TARN0000001")
+  private val uid = "uid123"
   val invitationIdItsa = InvitationId("A1BEOZEO7MNO6")
   val invitationIdIrv = InvitationId("B1BEOZEO7MNO6")
   val invitationIdVat = InvitationId("C1BEOZEO7MNO6")
@@ -96,6 +90,7 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
   val invitationIdPpt = InvitationId("E1BEOZEO7MNO6")
   val invitationIdCbc = InvitationId("HF99K6PXSBHTG")
   val invitationIdCbcNonUk = InvitationId("IF99K6PXSBHTG")
+  val invitationIdPillar2 = InvitationId("KF99K6PXSBHTG")
   val expiryDate = LocalDate.parse("2010-01-01")
   val invitationStatus = Pending
 
@@ -464,7 +459,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
               ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = false),
               ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = false),
-              ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = false)
+              ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = false),
+              ClientConsent(invitationIdPillar2, expiryDate, Service.Pillar2, consent = false)
             )
           )) when
           submitConsents(authorisedIndividualClient)(
@@ -476,7 +472,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
               Service.TrustNT,
               Service.CapitalGains,
               Service.Ppt,
-              Service.Cbc)) should
+              Service.Cbc,
+              Service.Pillar2)) should
           thenGo(
             CheckAnswers(
               Personal,
@@ -489,7 +486,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
                 ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = true),
                 ClientConsent(invitationIdTrustNT, expiryDate, Service.TrustNT, consent = true),
                 ClientConsent(invitationIdTrust, expiryDate, Service.CapitalGains, consent = true),
-                ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = true)
+                ClientConsent(invitationIdCbc, expiryDate, Service.Cbc, consent = true),
+                ClientConsent(invitationIdPillar2, expiryDate, Service.Pillar2, consent = true),
               )
             )
           )
@@ -531,7 +529,8 @@ class ClientInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State
         (Personal, Service.CapitalGains, invitationIdCgt),
         (Business, Service.Ppt, invitationIdPpt),
         (Business, Service.Cbc, invitationIdCbc),
-        (Business, Service.CbcNonUk, invitationIdCbcNonUk)
+        (Business, Service.CbcNonUk, invitationIdCbcNonUk),
+        (Business, Service.Pillar2, invitationIdPillar2)
       ).foreach {
         case (clientType, service, invitationId) =>
           val authorisedClient = clientType match {

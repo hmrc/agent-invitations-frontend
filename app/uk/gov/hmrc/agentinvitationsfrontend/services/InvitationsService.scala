@@ -29,8 +29,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendHeaderCarrierProvider
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -123,26 +121,6 @@ class InvitationsService @Inject()(
       case Some(name) => name
       case None       => throw new Exception("Agency name not found")
     }
-
-  def checkPostcodeMatches(nino: Nino, postcode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    acaConnector.checkPostcodeForClient(nino, postcode)
-
-  def checkVatRegistrationDateMatches(vrn: Vrn, userInputRegistrationDate: LocalDate)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[VatKnownFactCheckResult] =
-    acaConnector.checkVatRegisteredClient(vrn, userInputRegistrationDate)
-
-  val dateTimeFormatter = DateTimeFormatter.ISO_DATE
-  def checkPptRegistrationDateMatches(pptRef: PptRef, userInputRegistrationDate: LocalDate)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] =
-    acaConnector.checkKnownFactPPT(PptClient(pptRef, userInputRegistrationDate.format(dateTimeFormatter)))
-
-  def checkCitizenRecordMatches(nino: Nino, dob: LocalDate)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Boolean]] =
-    acaConnector.checkCitizenRecord(nino, dob)
-
-  def checkCbcEmailKnownFact(cbcId: CbcId, email: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
-    acaConnector.checkCbcEmailKnownFact(cbcId, email)
 
   def isAltItsa(i: StoredInvitation): Boolean =
     i.service == Service.MtdIt && i.clientId == i.suppliedClientId

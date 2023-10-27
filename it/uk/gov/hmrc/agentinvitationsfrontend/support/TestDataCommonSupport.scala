@@ -54,6 +54,7 @@ trait TestDataCommonSupport {
   val invitationIdPpt = InvitationId("GF99K6PXSBHTG")
   val invitationIdCbc = InvitationId("HF99K6PXSBHTG")
   val invitationIdCbcNonUk = InvitationId("JF99K6PXSBHTG")
+  val invitationIdPillar2 = InvitationId("KF99K6PXSBHTG")
 
   val trustResponse = TrustResponse(Right(TrustName("some-trust")))
   val trustNotFoundJson =
@@ -64,6 +65,7 @@ trait TestDataCommonSupport {
   val cgtRef = CgtRef("XMCGTP123456789")
   val pptRef = PptRef("XAPPT0000012345")
   val cbcId = CbcId("XACBC0516273849")
+  val plrId = PlrId("XAPLR2222222222")
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
@@ -97,4 +99,7 @@ trait TestDataCommonSupport {
   val pptNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 
   val cbcDefaultEmail = "cbc@email.com"
+
+  val pillar2DefaultRegDate: LocalDate = LocalDate.parse("2023-01-01")
+
 }

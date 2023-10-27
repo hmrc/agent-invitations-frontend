@@ -27,14 +27,14 @@ import play.api.{Configuration, Logging}
 import uk.gov.hmrc.hmrcfrontend.config.ContactFrontendConfig
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, ExternalUrls}
 import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AgentClientAuthorisationConnector, PirRelationshipConnector, RelationshipsConnector}
-import uk.gov.hmrc.agentinvitationsfrontend.forms.{ClientTypeForm, FilterTrackRequestsForm}
+import uk.gov.hmrc.agentinvitationsfrontend.forms.FilterTrackRequestsForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.Personal
 import uk.gov.hmrc.agentinvitationsfrontend.models.Services.supportedServices
 import uk.gov.hmrc.agentinvitationsfrontend.models.{AuthorisedAgent, ClientType, FilterFormStatus, PageInfo}
 import uk.gov.hmrc.agentinvitationsfrontend.services.{InvitationsService, TrackService}
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators._
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.track.{confirm_cancel, _}
-import uk.gov.hmrc.agentinvitationsfrontend.views.track.{RequestCancelledPageConfig, ResendLinkPageConfig, TrackPageConfig}
+import uk.gov.hmrc.agentinvitationsfrontend.views.track.{ResendLinkPageConfig, TrackPageConfig}
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -167,10 +167,9 @@ class AgentsRequestTrackingController @Inject()(
           altItsa <- request.session.get("isAltItsa").orElse(Some("false"))
         } yield {
           ResendLinkPageConfig(
-            appConfig.agentInvitationsFrontendExternalUrl,
             link,
             clientType,
-            expiry,
+            LocalDate.parse(expiry),
             service.flatMap(svc => Try(Service.forId(svc)).toOption),
             email,
             routes.AgentsRequestTrackingController.showTrackRequests(1).url,
@@ -284,7 +283,7 @@ class AgentsRequestTrackingController @Inject()(
       val service = request.session.get("service").getOrElse("")
       val clientType = request.session.get("clientType").getOrElse("")
       val clientName = request.session.get("clientName").getOrElse("")
-      Future successful Ok(requestCancelledView(RequestCancelledPageConfig(service, clientType, clientName)))
+      Future successful Ok(requestCancelledView(service, clientName))
     }
   }
 
@@ -381,7 +380,7 @@ class AgentsRequestTrackingController @Inject()(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
-            .verifying("Unsupported client type", clientType => ClientTypeForm.supportedClientTypes.contains(clientType))
+            .verifying("Unsupported client type", ClientType.isValid(_))
             .transform(ClientType.toEnum, ClientType.fromEnum)),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
         "isAltItsa"  -> boolean
@@ -393,9 +392,8 @@ class AgentsRequestTrackingController @Inject()(
       mapping(
         "invitationId" -> text
           .verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
-        "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
-        "clientType" -> text
-          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
+        "service"    -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
+        "clientType" -> text.verifying("Unsupported ClientType", ClientType.isValid(_)),
         "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
@@ -418,10 +416,9 @@ class AgentsRequestTrackingController @Inject()(
   val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
     Form(
       mapping(
-        "service"  -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
-        "clientId" -> normalizedText.verifying(validateClientId),
-        "clientType" -> text
-          .verifying("Unsupported ClientType", clientType => ClientTypeForm.supportedClientTypes.contains(clientType)),
+        "service"      -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
+        "clientId"     -> normalizedText.verifying(validateClientId),
+        "clientType"   -> text.verifying("Unsupported ClientType", ClientType.isValid(_)),
         "clientName"   -> text,
         "invitationId" -> text,
         "status"       -> text.verifying("Unexpected invitationStatus", status => status == "Accepted" || status == "Partialauth")

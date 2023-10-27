@@ -20,6 +20,7 @@ import play.api.data.FormError
 import uk.gov.hmrc.agentinvitationsfrontend.forms.VatClientForm
 import uk.gov.hmrc.agentinvitationsfrontend.models.VatClient
 import support.UnitSpec
+import uk.gov.hmrc.agentmtdidentifiers.model.Vrn
 
 class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
 
@@ -83,7 +84,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       "unbinding the form" in {
         val unboundForm = VatClientForm.form.mapping
           .unbind(
-            VatClient("101747696", "2000-01-01")
+            VatClient(Vrn("101747696"), "2000-01-01")
           )
         unboundForm("registrationDate.year") shouldBe "2000"
         unboundForm("registrationDate.month") shouldBe "1"
@@ -211,7 +212,7 @@ class AgentInvitationIdentifyClientFormVatSpec extends UnitSpec {
       "unbinding the form" in {
         val unboundForm = VatClientForm.form.mapping
           .unbind(
-            VatClient("101747696", "2000-01-01")
+            VatClient(Vrn("101747696"), "2000-01-01")
           )
         unboundForm("registrationDate.year") shouldBe "2000"
         unboundForm("registrationDate.month") shouldBe "1"

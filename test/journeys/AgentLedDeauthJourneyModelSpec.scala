@@ -19,18 +19,15 @@ package journeys
 import play.api.test.Helpers._
 import support.TestIdentifiers._
 import support.{TestFeatureFlags, UnitSpec}
-import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel.TransitionEffects._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.State._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel.TransitionEffects._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentLedDeauthJourneyModel._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys._
-import uk.gov.hmrc.agentinvitationsfrontend.models.VatKnownFactCheckResult._
+import uk.gov.hmrc.agentinvitationsfrontend.models.KnownFactResult._
 import uk.gov.hmrc.agentinvitationsfrontend.models._
 import uk.gov.hmrc.agentmtdidentifiers.model._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -46,15 +43,17 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   }
 
   val authorisedAgent: AuthorisedAgent = AuthorisedAgent(Arn("TARN0000001"))
-  val postCode = "BN114AW"
-  val vatRegDate = "2010-10-10"
-  val dob = "1990-10-10"
+  private val postCode = "BN114AW"
+  private val vatRegDate = "2010-10-10"
+  private val dob = "1990-10-10"
+  private val someClientName = "John Smith"
 
   val TrustNotFoundResponse = TrustResponse(Left(InvalidTrust("RESOURCE_NOT_FOUND", "blah")))
 
   val tpd = TypeOfPersonDetails("Individual", Left(IndividualName("firstName", "lastName")))
 
   def getClientName(clientId: String, service: Service) = Future(Some("John Smith"))
+  def getClientNameFails(clientId: String, service: Service) = Future(None)
 
   def hasNoPendingInvitation(arn: Arn, clientId: String, service: Service): Future[Boolean] =
     Future.successful(false)
@@ -79,8 +78,6 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
 
   def getAgencyName: GetAgencyName = _ => Future("Popeye")
 
-  def getAgencyEmail: GetAgencyEmail = () => Future("abc@xyz.com")
-
   def getCgtSubscription(countryCode: String = "GB"): GetCgtSubscription = { cgtRef: CgtRef =>
     Future.successful(Some(cgtSubscription(countryCode)))
   }
@@ -89,28 +86,24 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
   def deleteRelationshipFails: DeleteRelationship = (_, _, _) => Future.successful(Some(false))
   def setRelationshipEndedSucceeds: SetRelationshipEnded = (_, _, _) => Future.successful(Some(true))
 
-  def vatCheckReturns(result: VatKnownFactCheckResult): VatRegDateMatches = (_, _) => Future.successful(result)
-
-  def cbcKnownFactCheckPasses(cbcId: CbcId, email: String) = Future(true)
-  def cbcKnownFactCheckFails(cbcId: CbcId, email: String) = Future(false)
+  def knownFactCheckReturns(result: KnownFactResult): CheckKnownFact = _ => Future.successful(result)
+  def knownFactCheckPasses = knownFactCheckReturns(Pass)
+  def knownFactCheckDoesntMatch = knownFactCheckReturns(Fail(NotMatched))
+  def knownFactCheckClientNotFound = knownFactCheckReturns(Fail(NotFound))
 
   // This is the default behaviour. Modify as needed in individual tests
   val transitions = Transitions(
     TestFeatureFlags.allEnabled,
-    checkPostcodeMatches = (_, _) => Future.successful(None),
     hasActiveRelationshipFor = hasNoActiveRelationship,
     hasPartialAuthorisationFor = hasNoPartialAuthorisation,
     getClientName = getClientName,
-    checkDOBMatches = (_, _) => Future.successful(None),
-    checkVatRegDateMatches = vatCheckReturns(VatDetailsNotFound),
     deleteRelationship = deleteRelationshipSucceeds,
     setRelationshipEnded = setRelationshipEndedSucceeds,
     getAgencyName = getAgencyName,
     getCgtSubscription = _ => Future(None),
     getPptSubscription = _ => Future(None),
     getCbcSubscription = _ => Future(None),
-    checkCbcKnownFact = cbcKnownFactCheckFails,
-    getTrustName = _ => Future(TrustResponse(Right(TrustName("some-trust"))))
+    checkKnownFact = knownFactCheckClientNotFound,
   )
 
   val transitionsWithActiveRelationship = transitions.copy(hasActiveRelationshipFor = hasActiveRelationship)
@@ -167,108 +160,92 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state IdentifyClientPersonal" should {
-      val itsaClient = ItsaClient(nino.value, postCode)
-      val irvClient = IrvClient(nino.value, dob)
-      val vatClient = VatClient(vrn.value, vatRegDate)
-      val cgtClient = CgtClient(cgtRef)
+      val itsaClient = ItsaClient(nino, postCode)
+      val irvClient = IrvClient(nino, dob)
+      val vatClient = VatClient(vrn, vatRegDate)
+      val cgtClient = cgtRef
 
       "transition to ConfirmClientItsa when postcode matches" in {
-        def postcodeMatches(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(true))
-
         given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
-          .copy(checkPostcodeMatches = postcodeMatches)
+          .copy(checkKnownFact = knownFactCheckPasses)
           .submitIdentifyClientItsa(authorisedAgent)(itsaClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.MtdIt, Some("John Smith"), nino))
+          ConfirmClient(ClientType.Personal, Service.MtdIt, Some(someClientName), nino))
       }
       "transition to KnownFactNotMatched when postcode does not match" in {
-        def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
-
         given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
-          .copy(checkPostcodeMatches = postcodeDoesNotMatch)
+          .copy(checkKnownFact = knownFactCheckDoesntMatch)
           .submitIdentifyClientItsa(authorisedAgent)(itsaClient) should thenGo(KnownFactNotMatched)
       }
       "transition to NotSignedUp when client is not enrolled for itsa" in {
-        def clientNotSignedUp(nino: Nino, postcode: String): Future[Option[Boolean]] = Future(None)
-
         given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
-          .copy(checkPostcodeMatches = clientNotSignedUp)
+          .copy(checkKnownFact = knownFactCheckClientNotFound)
           .submitIdentifyClientItsa(authorisedAgent)(itsaClient) should thenGo(NotSignedUp(Service.MtdIt))
       }
       "throw an Exception when the client has no postcode" in {
-        def postcodeDoesNotMatch(nino: Nino, postcode: String): Future[Some[Boolean]] = Future(Some(false))
-
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.MtdIt)) when transitionsWithActiveRelationship
-            .copy(checkPostcodeMatches = postcodeDoesNotMatch)
-            .submitIdentifyClientItsa(authorisedAgent)(ItsaClient(nino.value, ""))
+            .copy(checkKnownFact = knownFactCheckDoesntMatch)
+            .submitIdentifyClientItsa(authorisedAgent)(ItsaClient(nino, ""))
         }.getMessage shouldBe "Postcode expected but none found"
       }
       "transition to ConfirmCancel when dob matches" in {
-        def dobMatches(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(true))
-
         given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
-          .copy(checkDOBMatches = dobMatches)
+          .copy(checkKnownFact = knownFactCheckPasses)
           .submitIdentifyClientIrv(authorisedAgent)(irvClient) should thenGo(
-          ConfirmCancel(Service.PersonalIncomeRecord, Some("John Smith"), nino.value))
+          ConfirmCancel(Service.PersonalIncomeRecord, Some(someClientName), nino.value))
       }
       "transition to KnownFactNotMatched when dob does not match" in {
-        def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
-
         given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
-          .copy(checkDOBMatches = dobDoesNotMatch)
+          .copy(checkKnownFact = knownFactCheckDoesntMatch)
           .submitIdentifyClientIrv(authorisedAgent)(irvClient) should thenGo(KnownFactNotMatched)
       }
       "transition to NotSignedUp when client endpoint returns None" in {
-        def clientNotSignedUp(nino: Nino, localDate: LocalDate): Future[Option[Boolean]] = Future(None)
-
         given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
-          .copy(checkDOBMatches = clientNotSignedUp)
+          .copy(checkKnownFact = knownFactCheckClientNotFound)
           .submitIdentifyClientIrv(authorisedAgent)(irvClient) should thenGo(NotSignedUp(Service.PersonalIncomeRecord))
       }
       "throw an Exception when the client has no dob" in {
-        def dobDoesNotMatch(nino: Nino, localDate: LocalDate): Future[Some[Boolean]] = Future(Some(false))
-
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.PersonalIncomeRecord)) when transitionsWithActiveRelationship
-            .copy(checkDOBMatches = dobDoesNotMatch)
-            .submitIdentifyClientIrv(authorisedAgent)(IrvClient(nino.value, ""))
+            .copy(checkKnownFact = knownFactCheckDoesntMatch)
+            .submitIdentifyClientIrv(authorisedAgent)(IrvClient(nino, ""))
         }.getMessage shouldBe "Date of birth expected but none found"
       }
       "transition to ConfirmClientVat when vat reg date matches" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactCheckOk))
+          .copy(checkKnownFact = knownFactCheckPasses)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn(vrn.value)))
+          ConfirmClient(ClientType.Personal, Service.Vat, Some(someClientName), Vrn(vrn.value)))
       }
       "transition to KnownFactNotMatched when vat reg date does not match" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactNotMatched))
+          .copy(checkKnownFact = knownFactCheckDoesntMatch)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to ConfirmClientPersonalVat when vat reg date matches but client is insolvent" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatRecordClientInsolvent))
+          .copy(checkKnownFact = knownFactCheckReturns(Fail(VatClientInsolvent)))
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Personal, Service.Vat, Some("John Smith"), Vrn("123456")))
+          ConfirmClient(ClientType.Personal, Service.Vat, Some(someClientName), Vrn("123456")))
       }
 
       "transition to Not signed up when vat record is being migrated" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatRecordMigrationInProgress))
+          .copy(checkKnownFact = knownFactCheckReturns(Fail(VatMigrationInProgress)))
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
 
       "transition to NotSignedUp when client is not enrolled for VAT" in {
         given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatDetailsNotFound))
+          .copy(checkKnownFact = knownFactCheckClientNotFound)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
       "throw an Exception when the client has no vat reg date" in {
         intercept[Exception] {
           given(IdentifyClient(ClientType.Personal, Service.Vat)) when transitionsWithActiveRelationship
-            .copy(checkVatRegDateMatches = vatCheckReturns(VatDetailsNotFound))
-            .submitIdentifyClientVat(authorisedAgent)(VatClient(vrn.value, ""))
+            .copy(checkKnownFact = knownFactCheckClientNotFound)
+            .submitIdentifyClientVat(authorisedAgent)(VatClient(vrn, ""))
         }.getMessage shouldBe "Vat registration date expected but none found"
       }
 
@@ -288,22 +265,22 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
     }
 
     "at state IdentifyClientBusiness" should {
-      val vatClient = VatClient(vrn.value, vatRegDate)
+      val vatClient = VatClient(vrn, vatRegDate)
       "transition to ConfirmClientVat when known fact matches" in {
         given(IdentifyClient(ClientType.Business, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactCheckOk))
+          .copy(checkKnownFact = knownFactCheckPasses)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(
-          ConfirmClient(ClientType.Business, Service.Vat, Some("John Smith"), Vrn(vrn.value)))
+          ConfirmClient(ClientType.Business, Service.Vat, Some(someClientName), Vrn(vrn.value)))
       }
       "transition to KnownFactNotMatched when known fact does not match" in {
         given(IdentifyClient(ClientType.Business, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatKnownFactNotMatched))
+          .copy(checkKnownFact = knownFactCheckDoesntMatch)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(KnownFactNotMatched)
       }
 
       "transition to NotSignedUp when client is not enrolled" in {
         given(IdentifyClient(ClientType.Business, Service.Vat)) when transitionsWithActiveRelationship
-          .copy(checkVatRegDateMatches = vatCheckReturns(VatDetailsNotFound))
+          .copy(checkKnownFact = knownFactCheckClientNotFound)
           .submitIdentifyClientVat(authorisedAgent)(vatClient) should thenGo(NotSignedUp(Service.Vat))
       }
     }
@@ -312,11 +289,11 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       val trustClient = TrustClient(utr)
       "transition to ConfirmClientTrust when a trust is found for a given utr" in {
         given(IdentifyClient(ClientType.Trust, Service.Trust)) when transitions.submitIdentifyClientTrust(authorisedAgent)(trustClient) should thenGo(
-          ConfirmClient(ClientType.Trust, Service.Trust, Some("some-trust"), utr))
+          ConfirmClient(ClientType.Trust, Service.Trust, Some(someClientName), utr))
       }
       "transition to TrustNotFound when a trust is not found for a given utr" in {
         given(IdentifyClient(ClientType.Trust, Service.Trust)) when transitions
-          .copy(getTrustName = _ => Future(TrustNotFoundResponse))
+          .copy(getClientName = getClientNameFails)
           .submitIdentifyClientTrust(authorisedAgent)(trustClient) should thenGo(TrustNotFound)
       }
     }
@@ -406,8 +383,8 @@ class AgentLedDeauthJourneyModelSpec extends UnitSpec with StateMatchers[State] 
       }
 
       "transition to AuthorisationCancelled when YES is selected and service is Trust" in {
-        given(ConfirmCancel(Service.Trust, Some("some-trust"), utr.value)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
-          AuthorisationCancelled(Service.Trust, Some("some-trust"), "Popeye")
+        given(ConfirmCancel(Service.Trust, Some(someClientName), utr.value)) when transitions.cancelConfirmed(authorisedAgent)(Confirmation(true)) should thenGo(
+          AuthorisationCancelled(Service.Trust, Some(someClientName), "Popeye")
         )
       }
 

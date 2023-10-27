@@ -45,6 +45,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AgentInvitationJourneyController @Inject()(
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
+  knownFactService: KnownFactService,
   acaConnector: AgentClientAuthorisationConnector,
   val authActions: AuthActions,
   override val journeyService: AgentInvitationJourneyService,
@@ -61,6 +62,7 @@ class AgentInvitationJourneyController @Inject()(
   identifyClientCgtView: identify_client_cgt,
   identifyClientPptView: identify_client_ppt,
   identifyClientCbcView: identify_client_cbc,
+  identifyClientPillar2View: identify_client_pillar2,
   confirmClientView: confirm_client,
   confirmCountryCodeCgtView: confirm_countryCode_cgt,
   confirmPostcodeCgtView: confirm_postcode_cgt,
@@ -121,20 +123,14 @@ class AgentInvitationJourneyController @Inject()(
     hasPartialAuthorisationFor = invitationsService.hasPartialAuthorisationFor,
     legacySaRelationshipStatusFor = invitationsService.legacySaRelationshipStatusFor,
     hasAltItsaInvitations = invitationsService.hasPartialAuthorisationFor,
-    checkDobMatches = invitationsService.checkCitizenRecordMatches,
-    checkPostcodeMatches = invitationsService.checkPostcodeMatches,
-    checkRegDateMatches = invitationsService.checkVatRegistrationDateMatches,
     getClientName = invitationsService.getClientNameByService,
     getAgentLink = invitationsService.createAgentLink,
     getAgencyEmail = getAgencyEmail,
     createMultipleInvitations = invitationsService.createMultipleInvitations,
     createInvitationSent = invitationsService.createInvitationSent,
     getCgtSubscription = acaConnector.getCgtSubscription,
-    getTrustName = (taxId => acaConnector.getTrustName(taxId.value)),
-    getPptCustomerName = invitationsService.getPptClientName,
-    checkPptKnownFact = invitationsService.checkPptRegistrationDateMatches,
     getCbcSubscription = acaConnector.getCbcSubscription,
-    checkCbcKnownFact = invitationsService.checkCbcEmailKnownFact
+    checkKnownFact = knownFactService.checkKnownFact
   )
 
   val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType))
@@ -223,6 +219,12 @@ class AgentInvitationJourneyController @Inject()(
       .whenAuthorisedWithRetrievals(AsAgent)
       .bindForm(CbcClientForm.form)
       .applyWithRequest(implicit request => transitions.identifyCbcClient)
+
+  val submitIdentifyPillar2Client: Action[AnyContent] =
+    actions
+      .whenAuthorisedWithRetrievals(AsAgent)
+      .bindForm(Pillar2ClientForm.form)
+      .applyWithRequest(implicit request => transitions.identifyPillar2Client)
 
   val showConfirmClient: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[ConfirmClient].orRollback
 
@@ -455,6 +457,14 @@ class AgentInvitationJourneyController @Inject()(
           identifyClientCbcView(
             formWithErrors.or(CbcClientForm.form),
             routes.AgentInvitationJourneyController.submitIdentifyCbcClient,
+            backLinkFor(breadcrumbs).url
+          )
+        )
+      case IdentifyClient(_, Service.Pillar2, _) =>
+        Ok(
+          identifyClientPillar2View(
+            formWithErrors.or(Pillar2ClientForm.form),
+            routes.AgentInvitationJourneyController.submitIdentifyPillar2Client,
             backLinkFor(breadcrumbs).url
           )
         )

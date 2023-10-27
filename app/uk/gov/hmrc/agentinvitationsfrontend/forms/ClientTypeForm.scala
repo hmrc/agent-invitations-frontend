@@ -18,34 +18,24 @@ package uk.gov.hmrc.agentinvitationsfrontend.forms
 
 import play.api.data.Forms._
 import play.api.data._
+import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType
 import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.lowerCaseText
 
 object ClientTypeForm {
-  def form(emptyErrorMsg: String, clientTypes: Set[String]): Form[String] =
+  def form(emptyErrorMsg: String, clientTypes: Set[ClientType]): Form[String] =
     Form[String](
       single(
         "clientType" -> optional(lowerCaseText)
-          .verifying(emptyErrorMsg, ct => clientTypes.contains(ct.getOrElse("")))
+          .verifying(emptyErrorMsg, _.fold(false)(ClientType.isValid))
           .transform(_.getOrElse(""), (Some(_)): String => Option[String])
       )
     )
 
-  val supportedClientTypes: Set[String] = Set("personal", "business", "trust")
-
-  val supportedClientTypesFastTrack: Set[String] = Set("personal", "business")
-
-  val supportedClientTypesForCgt: Set[String] = Set("personal", "trust")
-
-  val supportedClientTypesForPpt: Set[String] = Set("personal", "business", "trust")
-
-  lazy val authorisationForm: Form[String] = form("error.client-type.empty", supportedClientTypes)
+  lazy val authorisationForm: Form[String] = form("error.client-type.empty", ClientType.clientTypes.toSet)
 
   lazy val deAuthorisationForm: Form[String] =
-    form("error.cancel-authorisation.client-type.empty", supportedClientTypes)
+    form("error.cancel-authorisation.client-type.empty", ClientType.clientTypes.toSet)
 
-  lazy val fastTrackForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesFastTrack)
+  def fastTrackForm(clientTypes: Set[ClientType]): Form[String] = form("error.fast-track.client-type.empty", clientTypes)
 
-  lazy val cgtClientTypeForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesForCgt)
-
-  lazy val pptClientTypeForm: Form[String] = form("error.fast-track.client-type.empty", supportedClientTypesForPpt)
 }
