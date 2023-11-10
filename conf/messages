@@ -55,10 +55,10 @@ identify-client.vrn.label=VAT registration number
 identify-client.vrn.hint=This is 9 numbers, for example, 123456789.
 
 # Pillar2 id
-identify-client.pillar2.label=Pillar 2 reference
-identify-client.pillar2.hint=For example, XAPLR0000999999.
-identify-client.pillar2-registration-date.label=identify-client.pillar2-registration-date.label
-identify-client.pillar2-registration-date.hint=identify-client.pillar2-registration-date.hint
+identify-client.pillar2.label=Pillar 2 top-up taxes ID
+identify-client.pillar2.hint=This is 15 characters, for example, XAPLR0000999999. The current filing member can find it on their Report Pillar 2 top-up taxes homepage.
+identify-client.pillar2-registration-date.label=Date of registration to report Pillar 2 top-up taxes
+identify-client.pillar2-registration-date.hint=For example, 27 3 2026.
 
 #UTR
 identify-client.utr.label=Unique Taxpayer Reference (UTR)
@@ -129,6 +129,9 @@ select-service.HMRC-CGT-PD.trust=Manage their trust’s Capital Gains Tax on UK 
 select-service.HMRC-PPT-ORG.personal=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.business=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.trust=Manage their trust’s Plastic Packaging Tax
+select-service.HMRC-PILLAR2-ORG.personal=Manage their Pillar 2 top-up taxes
+select-service.HMRC-PILLAR2-ORG.business=Manage their Pillar 2 top-up taxes
+select-service.HMRC-PILLAR2-ORG.trust=Manage their Pillar 2 top-up taxes
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -350,6 +353,7 @@ review-authorisations.table.HMRC-CGT-PD=Manage their Capital Gains Tax on UK pro
 review-authorisations.table.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 review-authorisations.table.HMRC-CBC-ORG=Manage their country-by-country reports
 review-authorisations.table.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
+review-authorisations.table.HMRC-PILLAR2-ORG=Manage their Pillar 2 top-up taxes
 review-authorisations.table.remove=Remove
 review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=Do you need to add another authorisation for this client?

@@ -53,6 +53,12 @@ error.postcode.required=Nodwch god post eich cleient
 identify-client.vrn.label=Rhif cofrestru TAW
 identify-client.vrn.hint=Rhif 9 digid yw hwn, er enghraifft 123456789.
 
+# Pillar2 id
+identify-client.pillar2.label=ID ar gyfer trethi atodol Colofn 2
+identify-client.pillar2.hint=Mae hwn yn 15 o gymeriadau, er enghraifft XMPLR0123456789. Gall yr aelod presennol sy’n cyflwyno ddod o hyd iddo ar ei dudalen gartref ar gyfer rhoi gwybod ynghylch trethi atodol Colofn 2.
+identify-client.pillar2-registration-date.label=Dyddiad cofrestru ar gyfer rhoi gwybod am drethi atodol Colofn 2
+identify-client.pillar2-registration-date.hint=Er enghraifft, 27 3 2026.
+
 #UTR
 identify-client.utr.label=Cyfeirnod Unigryw y Trethdalwr (UTR)
 identify-client.utr.hint=Nodwch y 10 digid olaf yn unig. Er enghraifft, 12345 67890
@@ -122,6 +128,9 @@ select-service.HMRC-CGT-PD.trust=Rheoli ei cyfrif Treth Enillion Cyfalaf ar eidd
 select-service.HMRC-PPT-ORG.personal=Rheoli ei Dreth Deunydd Pacio Plastig
 select-service.HMRC-PPT-ORG.business=Rheoli ei Dreth Deunydd Pacio Plastig
 select-service.HMRC-PPT-ORG.trust=Rheoli ei Treth Deunydd Pacio Plastig ymddiriedolaeth
+select-service.HMRC-PILLAR2-ORG.personal=Rheoli ei drethi atodol Colofn 2
+select-service.HMRC-PILLAR2-ORG.business=Rheoli ei drethi atodol Colofn 2
+select-service.HMRC-PILLAR2-ORG.trust=Rheoli ei drethi atodol Colofn 2
 
 # multi-choice header
 select-service.header=Beth yr ydych am i’r cleient eich awdurdodi i’w wneud?
@@ -342,6 +351,7 @@ review-authorisations.table.HMRC-CGT-PD=Rheoli ei Treth Enillion Cyfalaf ar ware
 review-authorisations.table.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
 review-authorisations.table.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 review-authorisations.table.HMRC-CBC-NONUK-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
+review-authorisations.table.HMRC-PILLAR2-ORG=Rheoli ei drethi atodol Colofn 2
 review-authorisations.table.remove=Dileu
 review-authorisations.table.remove.aria-text=Dileu {0} ar gyfer {1}
 review-authorisations.subheader=A oes angen i chi ychwanegu awdurdodiad arall ar gyfer y cleient hwn?
