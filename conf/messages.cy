@@ -24,6 +24,7 @@ identify-client.itsa.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaet
 identify-client.vat.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-client.utr.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-client.cbc.p1=identify-client.cbc.p1
+identify-client.pillar2.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 identify-client.irv.hint=Er enghraifft, QQ 12 34 56 C
 
 identify-client.cbc.id=Dynodydd (ID) gwlad-wrth-wlad
@@ -373,6 +374,7 @@ cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Cynnal ymddiriedolaet
 cancel-authorisation.personal.select-service.HMRC-CGT-PD=Rheoli ei fanylion Treth Enillion Cyfalaf ar gyfer eiddo yn y DU
 cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio Plastig
 cancel-authorisation.personal.select-service.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
+cancel-authorisation.personal.select-service.HMRC-PILLAR2-ORG=Rheoli ei drethi atodol Colofn 2
 cancel-authorisation.personal.select-service.hint=Dewiswch opsiwn.
 
 cancel-authorisation.confirm-client.title=Ai hwn yw’r cleient yr hoffech ganslo’ch awdurdodiad ar ei gyfer?
@@ -392,6 +394,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=Os byddwch yn canslo’ch awd
 cancel-authorisation.confirm-cancel.p1.HMRC-PPT-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli Treth Deunydd Pacio Plastig ar ran {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CBC-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CBC-NONUK-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli adroddiadau gwlad-wrth-wlad ar gyfer {0}.
+cancel-authorisation.confirm-cancel.p1.HMRC-PILLAR2-ORG=Os byddwch yn canslo’ch awdurdodiad, ni fyddwch yn gallu rheoli trethi atodol Colofn 2 ar ran {0}.
 cancel-authorisation.confirm-cancel.yes=Iawn
 cancel-authorisation.error.confirm-cancel.required=Dewiswch ‘Iawn’ os hoffech ganslo’r awdurdodiad hwn
 cancel-authorisation.confirm-cancel.itsa-panel=Nid yw canslo’ch awdurdodiad i reoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm cleient yn golygu bod awdurdodiad ar gyfer Hunanasesiad wedi’i ganslo hefyd.
@@ -408,6 +411,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERS-ORG=Nid yw {0} wedi’i awdurdodi mw
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i gynnal ymddiriedolaeth nac ystâd ar ran Ymddiriedolaeth {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Enillion Cyfalaf ar warediadau eiddo yn y DU ar gyfer {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG=Nid yw {0} wedi’i awdurdodi mwyach i reoli Treth Deunydd Pacio Plastig ar ran {1}.
+cancel-authorisation.cancelled.p1.HMRC-PILLAR2-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i reoli ei drethi atodol Colofn 2.
 cancel-authorisation.cancelled.print=Argraffu’r dudalen hon
 cancel-authorisation.business.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.business.select-service.single.header=A ydych am ganslo rheoli TAW y cleient hwn?
@@ -1012,6 +1016,7 @@ recent-invitations.invitation.service.HMRC-PPT-ORG=Rheoli ei Dreth Deunydd Pacio
 recent-invitations.invitation.service.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Rheoli ei adroddiadau gwlad-wrth-wlad
 recent-invitations.invitation.service.HMRC-CBC=Rheoli adroddiadau gwlad-wrth-wlad
+recent-invitations.invitation.service.HMRC-PILLAR2-ORG=Rheoli ei drethi atodol Colofn 2
 recent-invitations.invitation.service.details.HMRC-CBC=Manylion am adroddiadau gwlad-wrth-wlad
 recent-invitations.invitation.service.clients.HMRC-CBC=Rheoli adroddiadau gwlad-wrth-wlad y cleient
 recent-invitations.invitation.identifier.nino=Rhif Yswiriant Gwladol:
@@ -1100,6 +1105,7 @@ request-cancelled.p1.HMRC-CGT-PD=Rydych wedi canslo’ch cais am awdurdodiad i r
 request-cancelled.p1.HMRC-PPT-ORG=Rydych wedi canslo’ch cais am awdurdodiad i reoli ei Dreth Deunydd Pacio Plastig.
 request-cancelled.p1.HMRC-CBC-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
 request-cancelled.p1.HMRC-CBC-NONUK-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
+request-cancelled.p1.HMRC-PILLAR2-ORG=You have cancelled your authorisation request to manage their Pillar 2 top-up taxes.
 request-cancelled.panel=Ni all {0} ymateb i’r cais hwn mwyach.
 request-cancelled.track.link=Rheoli eich ceisiadau diweddar am awdurdodiad
 
@@ -1116,6 +1122,7 @@ confirm-authorisation-cancelled.p1.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli cyfrif
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-PILLAR2-ORG=Ni fyddwch yn gallu rheoli ei drethi atodol Colofn 2 mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=A ydych yn siÅµr eich bod am ganslo awdurdodiad y cleient hwn?
@@ -1128,6 +1135,7 @@ confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=Ni fyddwch yn gallu rheoli 
 confirm-authorisation-cancelled.p1.track.HMRC-PPT-ORG=Ni fyddwch yn gallu rheoli ei Dreth Deunydd Pacio Plastig mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.p1.track.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-PILLAR2-ORG=Ni fyddwch yn gallu rheoli ei drethi atodol Colofn 2 mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 confirm-authorisation-cancelled.track.itsa-panel=Ni fyddwch yn gallu rheoli cynllun Troi Treth yn Ddigidol ar gyfer Treth Incwm dros y person hwn mwyach. Ni fyddwch yn gallu dadwneud y weithred hon.
 
 #Authorisation cancelled page
@@ -1142,6 +1150,7 @@ authorisation-cancelled.p1.HMRC-CGT-PD=Nid ydych wedi’ch awdurdodi mwyach gan 
 authorisation-cancelled.p1.HMRC-PPT-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i reoli ei Dreth Deunydd Pacio Plastig.
 authorisation-cancelled.p1.HMRC-CBC-ORG=Nid ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach
 authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=Nid ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach
+authorisation-cancelled.p1.HMRC-PILLAR2-ORG=Nid ydych wedi’ch awdurdodi mwyach gan {0} i reoli ei drethi atodol Colofn 2.
 authorisation-cancelled.check-sa.subheader=Gwirio neu ganslo awdurdodiad ar gyfer Hunanasesiad
 authorisation-cancelled.check-sa.p1=Gallech fod ag awdurdodiad ar waith o hyd ar gyfer Hunanasesiad y cleient hwn. I wirio neu ganslo awdurdodiad, bydd angen i chi wneud y canlynol:
 authorisation-cancelled.check-sa.l1=allgofnodi o’r cyfrif gwasanaethau asiant hwn
@@ -1172,6 +1181,7 @@ active-authorisation-exists.p1.HMRC-CGT-PD=Mae’r cleient hwn eisoes wedi’ch 
 active-authorisation-exists.p1.HMRC-PPT-ORG=Mae’r cleient hwn eisoes wedi’ch awdurdodi i reoli ei Dreth Deunydd Pacio Plastig.
 active-authorisation-exists.p1.HMRC-CBC-ORG=This client has already authorised you to manage their country-by-country reports.
 active-authorisation-exists.p1.HMRC-CBC-NONUK-ORG=This client has already authorised you to manage their country-by-country reports.
+active-authorisation-exists.p1.HMRC-PILLAR2-ORG=This client has already authorised you to manage their Pillar 2 top-up taxes.
 active-authorisation-exists.p2=Nid oes yn rhaid i chi ofyn iddo eich awdurdodi ar gyfer y gwasanaeth hwn eto.
 active-authorisation-exists.return=Dychwelyd i’ch ceisiadau am awdurdodiad
 
