@@ -55,10 +55,10 @@ identify-client.vrn.label=VAT registration number
 identify-client.vrn.hint=This is 9 numbers, for example, 123456789.
 
 # Pillar2 id
-identify-client.pillar2.label=Pillar 2 reference
-identify-client.pillar2.hint=For example, XAPLR0000999999.
-identify-client.pillar2-registration-date.label=identify-client.pillar2-registration-date.label
-identify-client.pillar2-registration-date.hint=identify-client.pillar2-registration-date.hint
+identify-client.pillar2.label=Pillar 2 top-up taxes ID
+identify-client.pillar2.hint=This is 15 characters, for example, XAPLR0000999999. The current filing member can find it on their Report Pillar 2 top-up taxes homepage.
+identify-client.pillar2-registration-date.label=Date of registration to report Pillar 2 top-up taxes
+identify-client.pillar2-registration-date.hint=For example, 27 3 2026.
 
 #UTR
 identify-client.utr.label=Unique Taxpayer Reference (UTR)
@@ -129,6 +129,9 @@ select-service.HMRC-CGT-PD.trust=Manage their trust’s Capital Gains Tax on UK 
 select-service.HMRC-PPT-ORG.personal=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.business=Manage their Plastic Packaging Tax
 select-service.HMRC-PPT-ORG.trust=Manage their trust’s Plastic Packaging Tax
+select-service.HMRC-PILLAR2-ORG.personal=Manage their Pillar 2 top-up taxes
+select-service.HMRC-PILLAR2-ORG.business=Manage their Pillar 2 top-up taxes
+select-service.HMRC-PILLAR2-ORG.trust=Manage their Pillar 2 top-up taxes
 
 # multi-choice header
 select-service.header=What do you want the client to authorise you to do?
@@ -350,6 +353,7 @@ review-authorisations.table.HMRC-CGT-PD=Manage their Capital Gains Tax on UK pro
 review-authorisations.table.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 review-authorisations.table.HMRC-CBC-ORG=Manage their country-by-country reports
 review-authorisations.table.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
+review-authorisations.table.HMRC-PILLAR2-ORG=Manage their Pillar 2 top-up taxes
 review-authorisations.table.remove=Remove
 review-authorisations.table.remove.aria-text=Remove {0} for {1}
 review-authorisations.subheader=Do you need to add another authorisation for this client?
@@ -371,6 +375,7 @@ cancel-authorisation.personal.select-service.HMRC-TERS-ORG=Maintain a trust or a
 cancel-authorisation.personal.select-service.HMRC-CGT-PD=Manage their Capital Gains Tax on UK property account
 cancel-authorisation.personal.select-service.HMRC-PPT-ORG=Manage their Plastic Packaging Tax
 cancel-authorisation.personal.select-service.HMRC-CBC-ORG=Manage their country-by-country reports
+cancel-authorisation.personal.select-service.HMRC-PILLAR2-ORG=Manage their Pillar 2 top-up taxes
 cancel-authorisation.personal.select-service.hint=Select an option.
 
 cancel-authorisation.confirm-client.title=Is this the client you want to cancel your authorisation for?
@@ -390,6 +395,7 @@ cancel-authorisation.confirm-cancel.p1.HMRC-CGT-PD=If you cancel your authorisat
 cancel-authorisation.confirm-cancel.p1.HMRC-PPT-ORG=If you cancel your authorisation, you will not be able to manage Plastic Packaging Tax for {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CBC-ORG=If you cancel your authorisation, you will not be able to manage country-by-country reports for {0}.
 cancel-authorisation.confirm-cancel.p1.HMRC-CBC-NONUK-ORG=If you cancel your authorisation, you will not be able to manage The Trust of {0} country-by-country reports.
+cancel-authorisation.confirm-cancel.p1.HMRC-PILLAR2-ORG=If you cancel your authorisation, you will not be able to manage {0}’s Pillar 2 top-up taxes.
 cancel-authorisation.confirm-cancel.yes=Yes
 cancel-authorisation.error.confirm-cancel.required=Select yes if you want to cancel this authorisation
 cancel-authorisation.confirm-cancel.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
@@ -406,6 +412,7 @@ cancel-authorisation.cancelled.p1.HMRC-TERS-ORG={0} is no longer authorised to m
 cancel-authorisation.cancelled.p1.HMRC-TERSNT-ORG={0} is no longer authorised to maintain a trust or an estate on behalf of The Trust of {1}.
 cancel-authorisation.cancelled.p1.HMRC-CGT-PD={0} is no longer authorised to manage Capital Gains Tax on UK property account for {1}.
 cancel-authorisation.cancelled.p1.HMRC-PPT-ORG={0} is no longer authorised to manage Plastic Packaging Tax for {1}.
+cancel-authorisation.cancelled.p1.HMRC-PILLAR2-ORG=You are no longer authorised by {0} to manage their Pillar 2 top-up taxes.
 cancel-authorisation.cancelled.print=Print this page
 cancel-authorisation.business.select-service.header=Which authorisation do you want to cancel for this client?
 cancel-authorisation.business.select-service.single.header=Do you want to cancel managing this client’s VAT?
@@ -1011,6 +1018,7 @@ recent-invitations.invitation.service.HMRC-PPT-ORG=Manage their Plastic Packagin
 recent-invitations.invitation.service.HMRC-CBC-ORG=Manage their country-by-country reports
 recent-invitations.invitation.service.HMRC-CBC-NONUK-ORG=Manage their country-by-country reports
 recent-invitations.invitation.service.HMRC-CBC=Manage country-by-country reports
+recent-invitations.invitation.service.HMRC-PILLAR2-ORG=Manage their Pillar 2 top-up taxes
 recent-invitations.invitation.service.details.HMRC-CBC=Details for country-by-country reports
 recent-invitations.invitation.service.clients.HMRC-CBC=Manage the client's country-by-country reports
 recent-invitations.invitation.identifier.nino=National Insurance number:
@@ -1085,6 +1093,7 @@ confirm-cancel.subheader.HMRC-CGT-PD=If you cancel this request, you will not be
 confirm-cancel.subheader.HMRC-PPT-ORG=If you cancel this request, you will not be able to manage their Plastic Packaging Tax.
 confirm-cancel.subheader.HMRC-CBC-ORG=If you cancel this request, you will not be able to manage their country-by-country reports.
 confirm-cancel.subheader.HMRC-CBC-NONUK-ORG=If you cancel this request, you will not be able to manage their country-by-country reports.
+confirm-cancel.subheader.HMRC-PILLAR2-ORG=If you cancel this request, you will not be able to manage their Pillar 2 top-up taxes.
 
 error.confirmCancel.invalid=Select yes if you want to cancel this authorisation request
 
@@ -1099,6 +1108,7 @@ request-cancelled.p1.HMRC-CGT-PD=You have cancelled your authorisation request t
 request-cancelled.p1.HMRC-PPT-ORG=You have cancelled your authorisation request to manage their Plastic Packaging Tax.
 request-cancelled.p1.HMRC-CBC-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
 request-cancelled.p1.HMRC-CBC-NONUK-ORG=You have cancelled your authorisation request to manage their country-by-country reports.
+request-cancelled.p1.HMRC-PILLAR2-ORG=You have cancelled your authorisation request to manage their Pillar 2 top-up taxes.
 request-cancelled.panel= {0} can no longer respond to this request.
 request-cancelled.track.link=Manage your recent authorisation requests
 
@@ -1115,6 +1125,7 @@ confirm-authorisation-cancelled.p1.HMRC-CGT-PD=You will no longer be able to man
 confirm-authorisation-cancelled.p1.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.HMRC-PILLAR2-ORG=You will no longer be able to manage their Pillar 2 top-up taxes. You will not be able to undo this action.
 
 #Confirm cancel authorisation track page
 confirm-authorisation-cancelled.track.header=Are you sure you want to cancel this client’s authorisation?
@@ -1127,6 +1138,7 @@ confirm-authorisation-cancelled.p1.track.HMRC-CGT-PD=You will no longer be able 
 confirm-authorisation-cancelled.p1.track.HMRC-PPT-ORG=You will no longer be able to manage their Plastic Packaging Tax. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-CBC-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
 confirm-authorisation-cancelled.p1.track.HMRC-CBC-NONUK-ORG=You will no longer be able to manage their country-by-country reports. You will not be able to undo this action.
+confirm-authorisation-cancelled.p1.track.HMRC-PILLAR2-ORG=You will no longer be able to manage their Pillar 2 top-up taxes. You will not be able to undo this action.
 confirm-authorisation-cancelled.track.itsa-panel=Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment.
 
 #Authorisation cancelled page
@@ -1141,6 +1153,7 @@ authorisation-cancelled.p1.HMRC-CGT-PD=You are no longer authorised by {0} to ma
 authorisation-cancelled.p1.HMRC-PPT-ORG=You are no longer authorised by {0} to manage their Plastic Packaging Tax.
 authorisation-cancelled.p1.HMRC-CBC-ORG=You are no longer authorised by {0} to manage their country-by-country reports.
 authorisation-cancelled.p1.HMRC-CBC-NONUK-ORG=You are no longer authorised by {0} to manage their country-by-country reports.
+authorisation-cancelled.p1.HMRC-PILLAR2-ORG=You are no longer authorised by {0} to manage their Pillar 2 top-up taxes.
 authorisation-cancelled.check-sa.subheader=Check or cancel an authorisation for Self Assessment
 authorisation-cancelled.check-sa.p1=You could still have an authorisation in place for this client’s Self Assessment. To check or cancel an authorisation, you will need to:
 authorisation-cancelled.check-sa.l1=sign out of this agent services account
@@ -1171,6 +1184,7 @@ active-authorisation-exists.p1.HMRC-CGT-PD=This client has already authorised yo
 active-authorisation-exists.p1.HMRC-PPT-ORG=This client has already authorised you to manage their Plastic Packaging Tax.
 active-authorisation-exists.p1.HMRC-CBC-ORG=This client has already authorised you to manage their country-by-country reports.
 active-authorisation-exists.p1.HMRC-CBC-NONUK-ORG=This client has already authorised you to manage their country-by-country reports.
+active-authorisation-exists.p1.HMRC-PILLAR2-ORG=This client has already authorised you to manage their Pillar 2 top-up taxes.
 active-authorisation-exists.p2=You do not need to ask them to authorise you for this service again.
 active-authorisation-exists.return=Return to your authorisation requests
 
