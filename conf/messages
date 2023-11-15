@@ -33,8 +33,10 @@ identify-client.cbc.hint=For example, XACBC0000999999.
 identify-cbc-client.email.label=Country-by-country contact email address
 identify-cbc-client.email.hint=This is the email address we currently hold for your client. If they have 2 contacts, enter the email address for the first contact.
 error.cbcid.required=Enter your client’s country-by-country ID
+error.plrid.required=Enter your client’s Pillar2 top-up taxes ID
 error.email.required=Enter your client’s email address
 error.cbcid.invalid-format=Your client’s country-by-country ID must start with an ‘X’ followed by a letter, then ‘CBC’ and then 10 numbers
+error.plrid.invalid-format=Enter a Pillar 2 top-up taxes ID in the correct format, like XMPLR0123456789
 enter-email-address.invalid-format=Enter your client’s email address in the correct format, like name@example.com
 
 # Nino
@@ -89,6 +91,7 @@ error.pptref.invalid-format=Enter the client’s Plastic Packaging Tax reference
 identify-client.vat-registration-date.label=VAT registration date
 identify-client.vat-registration-date.hint=For example, 31 8 2015
 enter-vat-registration-date.invalid-format=Enter a valid VAT registration date
+enter-pillar2-registration-date.invalid-format=Enter a valid Pillar 2 top-up taxes registration date
 error.vat-registration-date.required=Enter your client’s VAT registration date
 
 error.vat-registration-date.day=VAT registration date must include a day
@@ -97,6 +100,13 @@ error.vat-registration-date.year=VAT registration date must include a year
 error.vat-registration-date.day-month=VAT registration date must include a day and month
 error.vat-registration-date.day-year=VAT registration date must include a day and year
 error.vat-registration-date.month-year=VAT registration date must include a month and year
+
+error.pillar2-registration-date.day=Pillar 2 top-up taxes registration date must include a day
+error.pillar2-registration-date.month=Pillar 2 top-up taxes registration date must include a month
+error.pillar2-registration-date.year=Pillar 2 top-up taxes registration date must include a year
+error.pillar2-registration-date.day-month=Pillar 2 top-up taxes registration date must include a day and month
+error.pillar2-registration-date.day-year=Pillar 2 top-up taxes registration date must include a day and year
+error.pillar2-registration-date.month-year=Pillar 2 top-up taxes registration date must include a month and year
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Date of birth
@@ -306,6 +316,7 @@ check-details.p.HMRC-TERSNT-ORG=You are about to start a request for authorisati
 check-details.p.HMRC-CGT-PD=You are about to start a request for authorisation to manage a client’s Capital Gains Tax on UK property account.
 check-details.p.HMRC-PPT-ORG=You are about to start a request for authorisation to manage a client’s Plastic Packaging Tax.
 check-details.p.HMRC-CBC-ORG=You are about to start a request for authorisation to manage a client’s country-by-country reports.
+check-details.p.HMRC-PILLAR2-ORG=You are about to start a request for authorisation to manage a client's Pillar 2 top-up taxes.
 check-details.table.heading=Client’s details
 check-details.client-type=Client type
 check-details.client-type.personal=Individual or sole trader
@@ -319,6 +330,7 @@ check-details.client-type.business.HMRC-CBC-ORG=Manage their country-by-country 
 check-details.client-type.trust.HMRC-CGT-PD=A trust or an estate
 check-details.client-type.business.HMRC-PPT-ORG=Company or partnership
 check-details.client-type.trust.HMRC-PPT-ORG=A trust or an estate
+check-details.client-type.business.HMRC-PILLAR2-ORG=Company or partnership
 check-details.nino=National Insurance number
 check-details.vrn=VAT registration number
 check-details.ppt-reg-date=Plastic Packaging Tax registration date
@@ -331,7 +343,7 @@ check-details.urn=Unique Reference Number
 check-details.cgt=Capital Gains Tax account reference
 check-details.ppt=Plastic Packaging Tax reference
 check-details.cbc=Country-by-country ID
-check-details.pillar2=check-details.pillar2
+check-details.pillar2=Pillar 2 top-up taxes ID
 check-details.change.link=Change this information
 check-details.change.p1=We need some more details about this client so we can set up your authorisation request.
 confirm-details.sub-header=Are these details correct?
@@ -461,12 +473,14 @@ known-fact.HMRC-CBC-ORG.heading=What is your client's country by country contact
 known-fact.PERSONAL-INCOME-RECORD.heading=What is your client’s date of birth?
 known-fact.HMRC-MTD-VAT.heading=What is your client’s VAT registration date?
 known-fact.HMRC-PPT-ORG.heading=What is your client’s Plastic Packaging Tax registration date?
+known-fact.HMRC-PILLAR2-ORG.heading=What is your client’s date date of registration to report Pillar 2 top-up taxes?
 known-fact.p1=This will help us match their details against information we hold.
 known-fact.HMRC-MTD-IT.helper=This is the postcode of your client’s registered address
 known-fact.PERSONAL-INCOME-RECORD.helper=For example, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=For example, 31 8 2015
 known-fact.HMRC-PPT-ORG.helper=For example, 31 8 2021
 known-fact.HMRC-CBC-ORG.helper=This will help us match their details against information that we hold.
+known-fact.HMRC-PILLAR2-ORG.helper=For example, 21 3 1980
 
 # Not Enrolled
 not-enrolled.HMRC-MTD-IT=Self Assessment
@@ -695,6 +709,21 @@ confirm-terms-multi.cbc.list.item9=access details of any penalties charged
 confirm-terms-multi.cbc.list.item10=appeal late submission penalties
 confirm-terms-multi.cbc.list.item11=provide additional information when appealing late submission penalties
 confirm-terms-multi.cbc.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
+
+confirm-terms-multi.pillar2.heading=Manage my client's Pillar 2 top-up taxes
+confirm-terms-multi.pillar2.p1=If you consent to HMRC allowing {0} to manage your Pillar 2 top-up taxes, this means {0} can:
+confirm-terms-multi.pillar2.list.item1=send new pillar 2 top-up taxes
+confirm-terms-multi.pillar2.list.item2=send additional information, corrections or deletions for previous pillar 2 top-up taxes
+confirm-terms-multi.pillar2.list.item3=access a list of any pillar 2 top-up taxes sent in the last 28 days.
+confirm-terms-multi.pillar2.list.item4=contact HMRC about your current and previous reports
+confirm-terms-multi.pillar2.list.item5=share information with HMRC about your current or previous pillar 2 top-up taxes
+confirm-terms-multi.pillar2.list.item6=receive information from HMRC about your current or previous pillar 2 top-up taxes
+confirm-terms-multi.pillar2.list.item7=access your PLR ID (pillar 2 ID)
+confirm-terms-multi.pillar2.list.item8=access and change your pillar 2 s contact details, such as your contact names, email addresses and telephone numbers
+confirm-terms-multi.pillar2.list.item9=access details of any penalties charged
+confirm-terms-multi.pillar2.list.item10=appeal late submission penalties
+confirm-terms-multi.pillar2.list.item11=provide additional information when appealing late submission penalties
+confirm-terms-multi.pillar2.label=I consent to HMRC allowing {0} to manage my pillar 2 top-up taxes.
 
 
 confirm-terms-multi.afi.heading=View my income record
