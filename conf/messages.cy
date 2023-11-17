@@ -33,8 +33,10 @@ identify-client.cbc.hint=Er enghraifft, XACBC0000999999.
 identify-cbc-client.email.label=Cyfeiriad e-bost cyswllt gwlad-wrth-wlad
 identify-cbc-client.email.hint=Dyma’r cyfeiriad e-bost sydd gennym ar gyfer eich cleient ar hyn o bryd. Os oes ganddo 2 gyswllt, nodwch y cyfeiriad e-bost ar gyfer y cyswllt cyntaf.
 error.cbcid.required=Nodwch Dynodydd (ID) gwlad-wrth-wlad eich cleient
+error.plrId.required=Nodwch Dynodydd (ID) ar gyfer trethi atodol Colofn 2 eich cleient
 error.email.required=Nodwch gyfeiriad e-bost eich cleient
 error.cbcid.invalid-format=Mae’n rhaid i Dynodydd (ID) gwlad-wrth-wlad eich cleient ddechrau gydag ’X' ac yna llythyr, yna ’CBC' ac yna 10 rhif
+error.plrid.invalid-format=Nodwch ID ar gyfer trethi atodol Colofn 2 yn y fformat cywir, er enghraifft XMPLR0123456789
 enter-email-address.invalid-format=Nodwch gyfeiriad e-bost eich cleient yn y fformat cywir, megis enw@enghraifft.com
 
 # Nino
@@ -90,6 +92,7 @@ identify-client.vat-registration-date.label=Dyddiad cofrestru TAW
 identify-client.vat-registration-date.hint=Er enghraifft, 31 8 2015
 enter-vat-registration-date.invalid-format=Nodwch ddyddiad cofrestru TAW dilys
 error.vat-registration-date.required=Nodwch ddyddiad cofrestru TAW eich cleient
+enter-pillar2-registration-date.invalid-format=Nodwch ddyddiad cofrestru ar gyfer trethi atodol Colofn 2 eich cleient
 
 error.vat-registration-date.day=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod
 error.vat-registration-date.month=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis
@@ -97,6 +100,13 @@ error.vat-registration-date.year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnw
 error.vat-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a mis
 error.vat-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a blwyddyn
 error.vat-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis a blwyddyn
+
+error.pillar2-registration-date.day=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod
+error.pillar2-registration-date.month=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys mis
+error.pillar2-registration-date.year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys blwyddyn
+error.pillar2-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod a mis
+error.pillar2-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod a blwyddyn
+error.pillar2-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys mis a blwyddyn
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Dyddiad geni
@@ -306,6 +316,7 @@ check-details.p.HMRC-TERSNT-ORG=Rydych ar fin dechrau cais am awdurdodiad i gyfl
 check-details.p.HMRC-CGT-PD=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Enillion Cyfalaf cleient ar warediadau eiddo yn y DU.
 check-details.p.HMRC-PPT-ORG=Rydych ar fin dechrau cais am awdurdodiad i reoli Treth Deunydd Pacio Plastig cleient.
 check-details.p.HMRC-CBC-ORG=You are about to start a request for authorisation to manage a client’s country-by-country reports.
+check-details.p.HMRC-PILLAR2-ORG=Rydych ar fin dechrau cais am awdurdodiad i reoli trethi atodol Colofn 2 ar ran cleient.
 check-details.table.heading=Manylion y cleient
 check-details.client-type=Math o gleient
 check-details.client-type.personal=Unigolyn neu unig fasnachwr
@@ -319,6 +330,7 @@ check-details.client-type.business.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth
 check-details.client-type.trust.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-PPT-ORG=Cwmni neu bartneriaeth
 check-details.client-type.trust.HMRC-PPT-ORG=Ymddiriedolaeth neu ystâd
+check-details.client-type.business.HMRC-PILLAR2-ORG=Cwmni neu bartneriaeth
 check-details.nino=Rhif Yswiriant Gwladol
 check-details.vrn=Rhif cofrestru TAW
 check-details.ppt-reg-date=Dyddiad cofrestru ar gyfer Treth Deunydd Pacio Plastig
@@ -331,6 +343,7 @@ check-details.urn=Cyfeirnod Unigryw
 check-details.cgt=Cyfeirnod cyfrif Treth Enillion Cyfalaf
 check-details.ppt=Cyfeirnod Treth Deunydd Pacio Plastig
 check-details.cbc=Dynodydd (ID) gwlad-wrth-wlad
+check-details.pillar2=ID ar gyfer trethi atodol Colofn 2
 check-details.change.link=Newid yr wybodaeth hon
 check-details.change.p1=Mae angen ychydig yn fwy o fanylion arnom am y cleient hwn fel y gallwn greu’ch cais am awdurdodiad.
 confirm-details.sub-header=A yw’r manylion hyn yn gywir?
@@ -460,12 +473,14 @@ known-fact.HMRC-CBC-ORG.heading=Beth yw e-bost cyswllt gwlad-wrth-wlad eich clei
 known-fact.PERSONAL-INCOME-RECORD.heading=Beth yw dyddiad geni eich cleient?
 known-fact.HMRC-MTD-VAT.heading=Beth yw dyddiad cofrestru TAW eich cleient?
 known-fact.HMRC-PPT-ORG.heading=Beth yw dyddiad cofrestru’ch cleient ar gyfer Treth Deunydd Pacio Plastig?
+known-fact.HMRC-PILLAR2-ORG.heading=Beth yw dyddiad cofrestru ar gyfer rhoi gwybod am drethi atodol Colofn 2?
 known-fact.p1=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
 known-fact.HMRC-MTD-IT.helper=Dyma god post cyfeiriad cofrestredig eich cleient
 known-fact.PERSONAL-INCOME-RECORD.helper=Er enghraifft, 31 3 1980
 known-fact.HMRC-MTD-VAT.helper=Er enghraifft, 31 8 2015
 known-fact.HMRC-PPT-ORG.helper=Er enghraifft, 31 8 2021
 known-fact.HMRC-CBC-ORG.helper=Bydd hyn yn ein helpu i baru ei fanylion â’r wybodaeth sydd gennym.
+known-fact.HMRC-PILLAR2-ORG.helper=Er enghraifft, 21 3 1980
 
 # Not Enrolled
 not-enrolled.HMRC-MTD-IT=Hunanasesiad
