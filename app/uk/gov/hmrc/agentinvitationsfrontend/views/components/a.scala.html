@@ -22,19 +22,12 @@
     classes: Option[String] = None,
     id: Option[String] = None,
     attrs: Map[String, String] = Map.empty,
-    openInNewWindow: Boolean = false,
-    rel: Option[String] = None,
-    target: Option[String] = None,
+    openInNewWindow: Boolean = false
 )(implicit msgs: Messages)
 
     @cls = @{classes.getOrElse("govuk-link govuk-body")}
 
     <a href="@href" class="@cls"
         @if(id.nonEmpty){id="@id"}
-        @if(openInNewWindow){
-            target="_blank" rel="noreferrer noopener"
-        } else{
-            @if(rel.nonEmpty){rel="@rel"}
-            @if(target.nonEmpty){target="@target"}
-        }
-        @attrs.map(a => a._1 + "=" + a._2)>@Html(msgs(key))</a>
+        @if(openInNewWindow){ target="_blank" rel="noreferrer noopener" }
+        @attrs.map(a => a._1 + "=" + a._2 + " ")>@Html(msgs(key))</a>
