@@ -93,6 +93,7 @@ identify-client.vat-registration-date.hint=For example, 31 8 2015
 enter-vat-registration-date.invalid-format=Enter a valid VAT registration date
 enter-pillar2-registration-date.invalid-format=Enter a valid Pillar 2 top-up taxes registration date
 error.vat-registration-date.required=Enter your client’s VAT registration date
+error.pillar2-registration-date.required=Enter your client’s Pillar 2 top-up taxes registration date
 
 error.vat-registration-date.day=VAT registration date must include a day
 error.vat-registration-date.month=VAT registration date must include a month
