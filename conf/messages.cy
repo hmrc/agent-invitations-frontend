@@ -102,12 +102,12 @@ error.vat-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru TAW 
 error.vat-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod a blwyddyn
 error.vat-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis a blwyddyn
 
-error.pillar2-registration-date.day=Nodwch ddyddiad go iawn
-error.pillar2-registration-date.month=Nodwch ddyddiad go iawn
-error.pillar2-registration-date.year=Nodwch ddyddiad go iawn
-error.pillar2-registration-date.day-month=Nodwch ddyddiad go iawn
-error.pillar2-registration-date.day-year=Nodwch ddyddiad go iawn
-error.pillar2-registration-date.month-year=Nodwch ddyddiad go iawn
+error.pillar2-registration-date.day=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod
+error.pillar2-registration-date.month=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys mis
+error.pillar2-registration-date.year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys blwyddyn
+error.pillar2-registration-date.day-month=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod a mis
+error.pillar2-registration-date.day-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys diwrnod a blwyddyn
+error.pillar2-registration-date.month-year=Mae’n rhaid i’r dyddiad cofrestru ar gyfer trethi atodol Colofn 2 gynnwys mis a blwyddyn
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Dyddiad geni

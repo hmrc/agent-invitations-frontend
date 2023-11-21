@@ -102,12 +102,12 @@ error.vat-registration-date.day-month=VAT registration date must include a day a
 error.vat-registration-date.day-year=VAT registration date must include a day and year
 error.vat-registration-date.month-year=VAT registration date must include a month and year
 
-error.pillar2-registration-date.day=Enter a real date
-error.pillar2-registration-date.month=Enter a real date
-error.pillar2-registration-date.year=Enter a real date
-error.pillar2-registration-date.day-month=Enter a real date
-error.pillar2-registration-date.day-year=Enter a real date
-error.pillar2-registration-date.month-year=Enter a real date
+error.pillar2-registration-date.day=Pillar 2 top-up taxes registration date must include a day
+error.pillar2-registration-date.month=Pillar 2 top-up taxes registration date must include a month
+error.pillar2-registration-date.year=Pillar 2 top-up taxes registration date must include a year
+error.pillar2-registration-date.day-month=Pillar 2 top-up taxes registration date must include a day and month
+error.pillar2-registration-date.day-year=Pillar 2 top-up taxes registration date must include a day and year
+error.pillar2-registration-date.month-year=Pillar 2 top-up taxes registration date must include a month and year
 
 # Date of Birth
 identify-client.irv-date-of-birth.label=Date of birth
