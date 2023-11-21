@@ -822,6 +822,16 @@ confirm-terms-multi.ppt.trust.p1.l8=manage your PPT using software
 confirm-terms-multi.ppt.trust.label=I consent to HMRC allowing {0} to manage a trust’s Plastic Packaging Tax.
 confirm-terms.itsa.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm.
 
+confirm-terms-multi.pillar2.heading=Rheoli fy nhrethi atodol Colofn 2
+confirm-terms-multi.pillar2.p1=Os ydych yn cydsynio i CThEF alluogi {0} i reoli eich trethi atodol Colofn 2, gall {0} wneud y canlynol:
+confirm-terms-multi.pillar2.list.item1=bwrw golwg dros, newid a chyflwyno eich Ffurflenni Treth atodol Colofn 2
+confirm-terms-multi.pillar2.list.item2=cysylltu â CThEF ynghylch eich Ffurflenni Treth atodol Colofn 2 cyfredol a blaenorol
+confirm-terms-multi.pillar2.list.item3=bwrw golwg dros a newid eich manylion mewn perthynas â’r dreth atodol Colofn 2 megis eich manylion cyswllt, cyfnod cyfrifyddu a math o sefydliad
+confirm-terms-multi.pillar2.list.item4=rhoi manylion banc i CThEF ar gyfer ad-daliadau pan fo ad-daliad yn ddyledus
+confirm-terms-multi.pillar2.list.item5=cwblhau’ch sefyllfa dreth gyffredinol
+confirm-terms-multi.pillar2.list.item6=bwrw golwg dros eich cyfrifiadau a’r symiau dyledus a’r symiau sydd wedi’u talu.
+confirm-terms-multi.pillar2.label=Rwy’n cydsynio i CThEF alluogi {0} i reoli fy nhrethi atodol Colofn 2.
+
 confirm-terms.vat.p1=Mae’n rhaid i’r asiant treth hwn gael mynediad at yr wybodaeth hon er mwyn rheoli’ch TAW.
 
 #Check answers
@@ -835,6 +845,7 @@ check-answers.service.trustNT=Cynnal ymddiriedolaeth neu ystâd
 check-answers.service.cgt=Rheoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 check-answers.service.ppt=Rheoli’ch Treth Deunydd Pacio Plastig
 check-answers.service.cbc=Adroddiadau gwlad wrth wlad
+check-answers.service.pillar2=Rhoi gwybod am drethi atodol Colofn 2
 check-answers.consent.true =Iawn
 check-answers.consent.false =Na
 check-answers.change-link=Newid
@@ -858,6 +869,7 @@ client-complete.cgt.p1=Mae {0} bellach wedi’i gadarnhau’n asiant treth awdur
 client-complete.ppt.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch Treth Deunydd Pacio Plastig.
 client-complete.cbc.p1=Cadarnhawyd {0} bellach fel eich asiant treth awdurdodedig o ran rheoli’ch adroddiadau gwlad-wrth-wlad.
 client-complete.cbc.p2=Mae {0} wedi’i gadarnhau fel asiant {1} a bydd yn rheoli ei adroddiadau gwlad-wrth-wlad.
+client-complete.pillar2.p1=Mae {0} bellach wedi’i gadarnhau fel eich asiant treth awdurdodedig o ran rheoli’ch trethi atodol Colofn 2.
 client-complete.whatHappensNext.p1=Ewch i’r gwasanaeth <a href="{0}">pwy sy’n gallu delio â CThEM ar eich rhan</a> er mwyn:
 client-complete.whatHappensNext.l1=gwirio pwy yr ydych wedi rhoi caniatâd iddo ddelio â CThEM ar eich rhan ar hyn o bryd
 client-complete.whatHappensNext.l2=tynnu’ch caniatâd os hoffech wneud hynny

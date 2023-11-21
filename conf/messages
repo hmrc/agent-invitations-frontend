@@ -103,6 +103,7 @@ error.vat-registration-date.day-year=VAT registration date must include a day an
 error.vat-registration-date.month-year=VAT registration date must include a month and year
 
 error.pillar2-registration-date.day=Pillar 2 top-up taxes registration date must include a day
+error.pillar2-registration-date.day=Pillar 2 top-up taxes registration date must include a day
 error.pillar2-registration-date.month=Pillar 2 top-up taxes registration date must include a month
 error.pillar2-registration-date.year=Pillar 2 top-up taxes registration date must include a year
 error.pillar2-registration-date.day-month=Pillar 2 top-up taxes registration date must include a day and month
@@ -711,20 +712,15 @@ confirm-terms-multi.cbc.list.item10=appeal late submission penalties
 confirm-terms-multi.cbc.list.item11=provide additional information when appealing late submission penalties
 confirm-terms-multi.cbc.label=I consent to HMRC allowing {0} to manage my country-by-country reports.
 
-confirm-terms-multi.pillar2.heading=Manage my client's Pillar 2 top-up taxes
-confirm-terms-multi.pillar2.p1=If you consent to HMRC allowing {0} to manage your Pillar 2 top-up taxes, this means {0} can:
-confirm-terms-multi.pillar2.list.item1=send new pillar 2 top-up taxes
-confirm-terms-multi.pillar2.list.item2=send additional information, corrections or deletions for previous pillar 2 top-up taxes
-confirm-terms-multi.pillar2.list.item3=access a list of any pillar 2 top-up taxes sent in the last 28 days.
-confirm-terms-multi.pillar2.list.item4=contact HMRC about your current and previous reports
-confirm-terms-multi.pillar2.list.item5=share information with HMRC about your current or previous pillar 2 top-up taxes
-confirm-terms-multi.pillar2.list.item6=receive information from HMRC about your current or previous pillar 2 top-up taxes
-confirm-terms-multi.pillar2.list.item7=access your PLR ID (pillar 2 ID)
-confirm-terms-multi.pillar2.list.item8=access and change your pillar 2 s contact details, such as your contact names, email addresses and telephone numbers
-confirm-terms-multi.pillar2.list.item9=access details of any penalties charged
-confirm-terms-multi.pillar2.list.item10=appeal late submission penalties
-confirm-terms-multi.pillar2.list.item11=provide additional information when appealing late submission penalties
-confirm-terms-multi.pillar2.label=I consent to HMRC allowing {0} to manage my pillar 2 top-up taxes.
+confirm-terms-multi.pillar2.heading=Manage my Pillar 2 top-up taxes
+confirm-terms-multi.pillar2.p1=If you consent to HMRC allowing {0} to manage your Pillar 2 top-up taxes, {0} can:
+confirm-terms-multi.pillar2.list.item1=view, change, and submit your Pillar 2 top-up taxes returns
+confirm-terms-multi.pillar2.list.item2=contact HMRC about your current and previous Pillar 2 top-up taxes returns
+confirm-terms-multi.pillar2.list.item3=view and change your Pillar 2 top-up taxes details such as your contact details, accounting period and organisation type
+confirm-terms-multi.pillar2.list.item4=provide repayment bank details to HMRC when repayment is due
+confirm-terms-multi.pillar2.list.item5=finalise your overall tax position
+confirm-terms-multi.pillar2.list.item6=view your calculations and amounts owed and paid.
+confirm-terms-multi.pillar2.label=I consent to HMRC allowing {0} to manage my Pillar 2 top-up taxes.
 
 
 confirm-terms-multi.afi.heading=View my income record
@@ -850,6 +846,7 @@ check-answers.service.trustNT=Maintain a trust or an estate
 check-answers.service.cgt=Manage your Capital Gains Tax for UK property account
 check-answers.service.ppt=Manage your Plastic Packaging Tax
 check-answers.service.cbc=Country-by-country reports
+check-answers.service.pillar2=Report Pillar 2 top-up taxes
 check-answers.consent.true = Yes
 check-answers.consent.false = No
 check-answers.change-link=Change
@@ -874,6 +871,7 @@ client-complete.cgt.p1={0} is now confirmed as your authorised tax agent for man
 client-complete.ppt.p1={0} is now confirmed as your authorised tax agent for managing your Plastic Packaging Tax.
 client-complete.cbc.p1={0} is now confirmed as your authorised tax agent for managing your country-by-country reports.
 client-complete.cbc.p2={0} is confirmed as {1}'s agent for managing their country-by-country reports.
+client-complete.pillar2.p1={0} is now confirmed as your authorised tax agent for managing your Pillar 2 top-up taxes.
 client-complete.whatHappensNext.p1=Go to <a href="{0}">manage who can deal with HMRC for you</a> to:
 client-complete.whatHappensNext.l1=check who you currently allow to deal with HMRC
 client-complete.whatHappensNext.l2=remove your consent if you want to do so
