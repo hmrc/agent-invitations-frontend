@@ -631,6 +631,7 @@ invitation-declined.multi.trustNT.p1=You have not given permission to {0} to mai
 invitation-declined.multi.cgt.p1=You have not given permission to {0} to manage your Capital Gains Tax on UK property account.
 invitation-declined.multi.ppt.p1=You have not given permission to {0} to manage your Plastic Packaging Tax.
 invitation-declined.multi.cbc.p1=You have not given permission to {0} to manage your country-by-country reports.
+invitation-declined.multi.pillar2.p1=You have not given permission to {0} to manage your Pillar 2 top-up taxes.
 invitation-decline.sub-header=You have not given permission to {0} to:
 
 # Confirm Decline Invitation
@@ -644,6 +645,7 @@ confirm-decline.trustNT.sub-header={0} will not be able to maintain a trust or a
 confirm-decline.cgt.sub-header={0} will not be able to manage your Capital Gains Tax on UK property account.
 confirm-decline.ppt.sub-header={0} will not be able to manage your Plastic Packaging Tax.
 confirm-decline.cbc.sub-header={0} will not be able to manage your country-by-country reports.
+confirm-decline.pillar2.sub-header={0} will not be able to manage your Pillar 2 top-up taxes.
 confirm-decline.sub-header={0} will not be able to:
 confirm-decline.itsa.service-name=manage your Making Tax Digital for Income Tax
 confirm-decline.afi.service-name=report your employer PAYE updates through software
