@@ -630,6 +630,7 @@ invitation-declined.multi.trustNT.p1=Nid ydych wedi rhoi caniatâd i {0} gynnal 
 invitation-declined.multi.cgt.p1=Nid ydych wedi rhoi caniatâd i Mjmuyu reoli’ch cyfrif Treth Enillion Cyfalaf ar eiddo yn y DU
 invitation-declined.multi.ppt.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch Treth Deunydd Pacio Plastig.
 invitation-declined.multi.cbc.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch adroddiadau gwlad-wrth-wlad.
+invitation-declined.multi.pillar2.p1=Nid ydych wedi rhoi caniatâd i {0} reoli’ch trethi atodol Colofn 2.
 invitation-decline.sub-header=Nid ydych wedi rhoi caniatâd i {0} wneud y canlynol:
 
 # Confirm Decline Invitation
@@ -643,6 +644,7 @@ confirm-decline.trustNT.sub-header=Ni fydd {0} yn gallu cynnal ymddiriedolaeth n
 confirm-decline.cgt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Enillion Cyfalaf ar warediadau eiddo yn y DU.
 confirm-decline.ppt.sub-header=Ni fydd {0} yn gallu rheoli’ch Treth Deunydd Pacio Plastig.
 confirm-decline.cbc.sub-header=Ni fydd {0} yn gallu rheoli’ch adroddiadau gwlad-wrth-wlad
+confirm-decline.pillar2.sub-header=Ni fydd {0} yn gallu rheoli eich trethi atodol Colofn 2.
 confirm-decline.sub-header=Ni fydd {0} yn gallu:
 confirm-decline.itsa.service-name=rheoli’ch cyfrif Troi Treth yn Ddigidol ar gyfer Treth Incwm
 confirm-decline.afi.service-name=adrodd am eich diweddariadau TWE y cyflogwr drwy feddalwedd
