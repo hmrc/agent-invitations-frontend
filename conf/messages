@@ -1022,6 +1022,7 @@ clientEndsRelationshipNoAgent.p1=You have not allowed any tax agent to view your
 clientEndsRelationship.yes=Yes
 clientEndsRelationship.no=No
 clientEndsRelationshipEnded.HMRC-CBC-ORG=You are no longer authorised by {0} to manage their country-by-country reports
+clientEndsRelationshipEnded.HMRC-PILLAR2-ORG={0} are no longer authorised to manage Pillar 2 top-up taxes for you.
 clientCancelled.header=Your tax agent can still view your income record
 clientCancelled.p1=You can remove their authorisation at any time.
 error.terminate.500.heading=Sorry, we’re experiencing technical difficulties
