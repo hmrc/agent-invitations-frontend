@@ -47,12 +47,12 @@
 @mainTemplate(
     bannerTitle = "service.name.clients",
     title = msgs("generic.title", msgs("suspended-agent.all.header"), msgs("service.name.clients")),
-    isAgent = false) {
+    isAgent = true) {
 
     @if(pageConfig.isAllSuspended) {
         @h1("suspended-agent.all.header")
         @pageBody
-        @a(key = "finish.button", href = externalUrls.signOutUrl(false, None)) 
+        @a(key = "finish.button", href = externalUrls.signOutUrl(true))
 
     } else {
         @if(pageConfig.isOneSuspendedService) {
@@ -66,7 +66,7 @@
         @p(html = Some(
                 Html(
                     span("suspended-agent.p3") + "" +
-                    a(key = "finish.button", href = externalUrls.signOutUrl(false, None))
+                    a(key = "finish.button", href = externalUrls.signOutUrl(true))
                 )
             )
         )
