@@ -1020,6 +1020,7 @@ clientEndsRelationshipNoAgent.p1=Nid ydych wedi rhoi’ch caniatâd i unrhyw asi
 clientEndsRelationship.yes=Iawn
 clientEndsRelationship.no=Na
 clientEndsRelationshipEnded.HMRC-CBC-ORG=Nid ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach
+clientEndsRelationshipEnded.HMRC-PILLAR2-ORG={0} ydych wedi’ch awdurdodi gan {0} i reoli ei adroddiadau gwlad-wrth-wlad mwyach.
 clientCancelled.header=Mae’ch asiant treth yn gallu bwrw golwg dros eich cofnod incwm o hyd
 clientCancelled.p1=Gallwch dynnu ei awdurdodiad ar unrhyw adeg.
 error.terminate.500.heading=Mae’n ddrwg gennym – rydym yn profi anawsterau technegol
