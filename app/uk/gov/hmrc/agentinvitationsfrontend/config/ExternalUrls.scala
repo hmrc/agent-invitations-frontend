@@ -60,8 +60,7 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
       if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$agentOriginToken"
       else agentServicesAccountUrl
     } else {
-      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$clientOriginToken"
-      else s"$businessTaxAccountUrl/business-account"
+      s"$exitSurveyUrl/$clientOriginToken"
     }
     s"$companyAuthFrontendSignOutUrl?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
