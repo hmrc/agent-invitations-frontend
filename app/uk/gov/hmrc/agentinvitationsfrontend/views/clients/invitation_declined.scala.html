@@ -34,8 +34,8 @@ clientType: ClientType
 @mainTemplate(
     bannerTitle = "service.name.clients",
     title = msgs("generic.title", msgs("invitation-declined.header"), msgs("service.name.clients")),
-    isAgent = false,
-    completedInviteGoSurvey = Some(true)) {
+    isAgent = false
+) {
 
     @govukPanel(Panel(
         title = Text(msgs("invitation-declined.header"))
@@ -57,6 +57,6 @@ clientType: ClientType
     @p("invitation-declined.p3")
 
     <p class="govuk-!-margin-top-4 govuk-!-margin-bottom-6">
-        @a(key = "finish.button", id = Some("continue"), href = externalUrls.signOutUrl(false, None))
+        @a(key = "finish.button", id = Some("continue"), href = externalUrls.signOutUrl(false))
     </p>
 }

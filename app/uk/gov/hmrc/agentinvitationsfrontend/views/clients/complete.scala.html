@@ -64,7 +64,6 @@ clientType: ClientType
 bannerTitle = msgs("service.name.clients"),
 title = msgs("generic.title", msgs("client-complete.header"), msgs("service.name.clients")),
 isAgent = false,
-completedInviteGoSurvey = Some(true),
 scriptElem = Some(gtmScript)
 ) {
 
@@ -97,7 +96,7 @@ scriptElem = Some(gtmScript)
     @p( classes= Some("govuk-!-margin-bottom-9"),
         html= Some(Html(
             a(key = "finish.button",
-            href = externalUrls.signOutUrl(false, None)) + "")
+            href = externalUrls.signOutUrl(false)) + "")
         )
     )
 }

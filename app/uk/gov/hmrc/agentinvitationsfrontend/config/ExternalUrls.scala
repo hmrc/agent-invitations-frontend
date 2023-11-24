@@ -55,13 +55,12 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
 
   def contactFrontendServiceId(isAgent: Boolean): String = if (isAgent) agentOriginToken else clientOriginToken
 
-  def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean]): String = {
+  def signOutUrl(isAgent: Boolean, goToSurvey: Option[Boolean] = None): String = {
     val continueUrl = if (isAgent) {
       if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$agentOriginToken"
       else agentServicesAccountUrl
     } else {
-      if (goToSurvey.getOrElse(false)) s"$exitSurveyUrl/$clientOriginToken"
-      else s"$businessTaxAccountUrl/business-account"
+      s"$exitSurveyUrl/$clientOriginToken"
     }
     s"$companyAuthFrontendSignOutUrl?continue=${URLEncoder.encode(continueUrl, StandardCharsets.UTF_8.name())}"
   }
