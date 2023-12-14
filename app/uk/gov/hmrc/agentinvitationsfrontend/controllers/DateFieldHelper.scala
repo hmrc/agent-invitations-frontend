@@ -48,11 +48,7 @@ object DateFieldHelper {
         {
           case (y, m, d) =>
             if (y.isEmpty || m.isEmpty || d.isEmpty) ""
-            else {
-              val month = if (m.length == 1) "0" + m else m
-              val day = if (d.length == 1) "0" + d else d
-              s"$y-$month-$day"
-            }
+            else LocalDate.of(y.toInt, m.toInt, d.toInt).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         },
         date =>
           try {
