@@ -129,6 +129,8 @@ class ClientInvitationJourneyController @Inject()(
 
   def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
     Action.async { implicit request =>
+      println(s"${Console.MAGENTA} Wojciech warmUp hit with request:${request.uri}  ${Console.RESET}")
+      println(s"${Console.MAGENTA} Wojciech warmUp hit with request:$request  ${Console.RESET}")
       (journeyId, attempt) match {
         case (None, att) if att.forall(_ < 3) =>
           // redirect to itself with new journeyId generated and add attempt=1.
