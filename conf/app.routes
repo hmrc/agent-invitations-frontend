@@ -213,7 +213,6 @@ GET         /keep-alive                                                 uk.gov.h
 
 GET         /trust-not-claimed                                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showTrustNotClaimed
 GET         /assets/*file                                               controllers.Assets.versioned(path="/public", file)
-GET         /:clientType/:uid/:agentName                                uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int] ?= None)
 GET         /:clientType-taxes/manage-who-can-deal-with-HMRC-for-you/:uid/:agentName   uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int] ?= None)
 GET         /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.showGGUserIdNeeded
 POST        /Government-Gateway-user-ID-needed                          uk.gov.hmrc.agentinvitationsfrontend.controllers.ClientInvitationJourneyController.submitGGUserIdNeeded
