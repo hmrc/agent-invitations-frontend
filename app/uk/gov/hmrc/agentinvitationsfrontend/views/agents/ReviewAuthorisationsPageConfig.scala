@@ -32,8 +32,8 @@ case class ReviewAuthorisationsPageConfig(
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {
-      case Service.PersonalIncomeRecord => noNameMessage
-      case _                            => authorisationRequest.clientName.stripSuffix(".")
+      case Service.PersonalIncomeRecord if authorisationRequest.clientName.isEmpty => noNameMessage
+      case _                                                                       => authorisationRequest.clientName.stripSuffix(".")
     }
 
   val numberOfItems: Int = basket.size
