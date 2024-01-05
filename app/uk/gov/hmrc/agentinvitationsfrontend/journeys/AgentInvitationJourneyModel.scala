@@ -380,8 +380,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
                                Invitation(Some(ClientType.Personal), Service.PersonalIncomeRecord, irvClient.nino))
                            }
                            .flatMap { request =>
-                             checkIfPendingOrActiveAndGoto(
-                               ReviewAuthorisations(ClientType.Personal, Services.supportedServicesFor(ClientType.Personal), basket + request))(
+                             checkIfPendingOrActiveAndGoto(ConfirmClient(request, basket))(
                                ClientType.Personal,
                                agent.arn,
                                request,

@@ -1363,7 +1363,7 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         givenMatchingCitizenRecord(nino, LocalDate.parse("1990-10-10"))
         givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.PersonalIncomeRecord)
         givenAfiRelationshipNotFoundForAgent(arn, nino)
-        givenCitizenDetailsAreKnownFor(nino, "Virginia", "Woolf")
+        givenCitizenDetailsAreKnownFor(nino, "Thierry", "Henry")
 
         journeyState.set(
           IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket),
@@ -1379,10 +1379,11 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
             arn.value))
 
         status(result) shouldBe 303
-        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showReviewAuthorisations.url)
+        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationJourneyController.showConfirmClient.url)
 
         journeyState.get should havePattern[State](
-          { case ReviewAuthorisations(Personal, _, basket) if basket.nonEmpty => },
+          { case ConfirmClient(
+          AuthorisationRequest("Thierry Henry", Invitation(Some(ClientType.Personal), Service.PersonalIncomeRecord, `nino`), _, _), _, basket) if basket.isEmpty => },
           List(
             IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket),
             SelectService(Personal, availablePersonalServices, emptyBasket),
@@ -1479,6 +1480,36 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
         },
         List(
           IdentifyClient(Personal, Service.Vat, emptyBasket),
+          SelectService(Personal, availablePersonalServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+    }
+
+    "show the confirm client page for personal income records service" in {
+      givenCitizenDetailsAreKnownFor(nino, "Thierry", "Henry")
+      journeyState.set(
+        ConfirmClient(
+          AuthorisationRequest("Thierry Henry", Invitation(Some(Personal), Service.PersonalIncomeRecord, nino)),
+          emptyBasket, clientInsolvent = Some(false)),
+        List(
+          IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket),
+          SelectService(Personal, availablePersonalServices, emptyBasket),
+          SelectClientType(emptyBasket))
+      )
+
+      val result = controller.showConfirmClient()(authorisedAsValidAgent(request, arn.value))
+
+      status(result) shouldBe 200
+      checkHtmlResultWithBodyText(result.futureValue, "Is this the client you want authorisation from?", "Is Thierry Henry the client you want authorisation from?")
+
+      journeyState.get should havePattern[State](
+        {
+          case ConfirmClient(
+          AuthorisationRequest("Thierry Henry", Invitation(_, Service.PersonalIncomeRecord, _), _, _),
+          _, Some(false)) =>
+        },
+        List(
+          IdentifyClient(Personal, Service.PersonalIncomeRecord, emptyBasket),
           SelectService(Personal, availablePersonalServices, emptyBasket),
           SelectClientType(emptyBasket))
       )
