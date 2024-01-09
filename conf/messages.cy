@@ -93,7 +93,7 @@ identify-client.vat-registration-date.hint=Er enghraifft, 31 8 2015
 enter-vat-registration-date.invalid-format=Nodwch ddyddiad cofrestru TAW dilys
 error.vat-registration-date.required=Nodwch ddyddiad cofrestru TAW eich cleient
 enter-pillar2-registration-date.invalid-format=Nodwch ddyddiad cofrestru ar gyfer trethi atodol Colofn 2 eich cleient
-error.pillar2-registration-date.required=Nodwch ddyddiad cofrestru ar gyfer trethi atodol Colofn 2 eich cleient
+error.pillar2-registration-date.required=Nodwch ddyddiad cofrestru eich cleient ar gyfer rhoi gwybod am drethi atodol Colofn 2
 
 error.vat-registration-date.day=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys diwrnod
 error.vat-registration-date.month=Mae’n rhaid i’r dyddiad cofrestru TAW gynnwys mis
