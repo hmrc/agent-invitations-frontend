@@ -332,6 +332,7 @@ check-details.client-type.business.HMRC-CBC-ORG=Manage their country-by-country 
 check-details.client-type.trust.HMRC-CGT-PD=A trust or an estate
 check-details.client-type.business.HMRC-PPT-ORG=Company or partnership
 check-details.client-type.trust.HMRC-PPT-ORG=A trust or an estate
+check-details.client-type.trust.HMRC-PILLAR2-ORG=A trust or an estate
 check-details.client-type.business.HMRC-PILLAR2-ORG=Company or partnership
 check-details.nino=National Insurance number
 check-details.vrn=VAT registration number
