@@ -331,6 +331,7 @@ check-details.client-type.business.HMRC-CBC-ORG=Rheoli ei adroddiadau gwlad-wrth
 check-details.client-type.trust.HMRC-CGT-PD=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-PPT-ORG=Cwmni neu bartneriaeth
 check-details.client-type.trust.HMRC-PPT-ORG=Ymddiriedolaeth neu ystâd
+check-details.client-type.trust.HMRC-PILLAR2-ORG=Ymddiriedolaeth neu ystâd
 check-details.client-type.business.HMRC-PILLAR2-ORG=Cwmni neu bartneriaeth
 check-details.nino=Rhif Yswiriant Gwladol
 check-details.vrn=Rhif cofrestru TAW
