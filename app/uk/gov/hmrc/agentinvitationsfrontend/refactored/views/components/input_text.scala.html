@@ -1,0 +1,53 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.govukfrontend.views.html.components.GovukInput
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Input, Text, Label, Hint, PrefixOrSuffix}
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+
+@this(govukInput: GovukInput)
+
+@(
+        field: Field,
+        label: String,
+        labelAsHeading: Boolean = false,
+        labelClass: Option[String] = None,
+        inputClass: Option[String] = None,
+        hint: Option[String] = None,
+        prefix: Option[String] = None,
+        suffix: Option[String] = None,
+        autocomplete: Option[String] = None,
+        inputMode: Option[String] = None,
+        pattern: Option[String] = None
+)(implicit msgs: Messages)
+
+@govukInput(
+    Input(
+        label = Label(
+            isPageHeading = labelAsHeading,
+            classes = if(labelClass.isDefined) labelClass.get else "",
+            content = Text(label)
+        ),
+        autocomplete = autocomplete,
+        hint = hint.map(hint => Hint(content = Text(hint))),
+        spellcheck = Some(false),
+        inputmode = inputMode,
+        pattern = pattern,
+        prefix = prefix.map(prefix => PrefixOrSuffix(content = Text(prefix))),
+        suffix = suffix.map(suffix => PrefixOrSuffix(content = Text(suffix))),
+        classes = if(inputClass.isDefined) inputClass.get else ""
+    ).withFormField(field)
+)

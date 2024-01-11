@@ -18,4 +18,10 @@ POST        /invitations/test-only/relationships/delete                uk.gov.hm
 
 GET         /invitations/test-only/fast-track                          uk.gov.hmrc.agentinvitationsfrontend.controllers.testing.TestEndpointsController.getFastTrackForm()
 
+#REFACTORED ROUTES
+GET         /invitations/test-only/identify-client/:service            uk.gov.hmrc.agentinvitationsfrontend.refactored.controllers.CreateInvitationController.showIdentifyClient(service: String)
+POST        /invitations/test-only/identify-client/:service            uk.gov.hmrc.agentinvitationsfrontend.refactored.controllers.CreateInvitationController.submitIdentifyClient(service: String)
+
+
+
 ->          /                                                          prod.Routes
