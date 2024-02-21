@@ -25,8 +25,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.util.toFuture
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.play.fsm.JourneyModel
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object AgentInvitationJourneyModel extends JourneyModel with Logging {
 
@@ -123,7 +122,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
     getCgtSubscription: GetCgtSubscription,
     getCbcSubscription: GetCbcSubscription,
     checkKnownFact: CheckKnownFact
-  ) {
+  )(implicit ec: ExecutionContext) {
     val start: AgentInvitationJourneyModel.Transition = AgentInvitationJourneyModel.start
 
     def selectedClientType(agent: AuthorisedAgent)(clientTypeStr: String): Transition = Transition {
