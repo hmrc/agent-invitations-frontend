@@ -24,8 +24,7 @@ import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.TaxIdentifier
 import uk.gov.hmrc.play.fsm.JourneyModel
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
 
@@ -89,7 +88,7 @@ object AgentLedDeauthJourneyModel extends JourneyModel with Logging {
     getPptSubscription: GetPptSubscription,
     getCbcSubscription: GetCbcSubscription,
     checkKnownFact: CheckKnownFact
-  ) {
+  )(implicit ec: ExecutionContext) {
 
     import State._
 

@@ -27,8 +27,7 @@ import uk.gov.hmrc.play.fsm.JourneyModel
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
@@ -124,7 +123,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     type RespondToInvitation = (InvitationId, String, Boolean /* reject/accept */ ) => Future[Boolean]
     type GetSuspensionDetails = Arn => Future[SuspensionDetails]
 
-    def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName) =
+    def start(clientTypeStr: String, uid: String, agentName: String)(getAgentReferenceRecord: GetAgentReferenceRecord)(getAgencyName: GetAgencyName)(
+      implicit ec: ExecutionContext) =
       Transition {
         case _ =>
           for {
@@ -169,24 +169,24 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             isAltItsa = invitation.isAltItsa))
 
     def submitWarmUp(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
-      client: Option[AuthorisedClient]) =
+      client: Option[AuthorisedClient])(implicit ec: ExecutionContext) =
       transitionFromWarmup(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
     def submitCreateNewUserId(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
-      client: AuthorisedClient) =
+      client: AuthorisedClient)(implicit ec: ExecutionContext) =
       transitionFromCreateNewUserId(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
     def submitWarmUpSessionRequired(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
-      client: AuthorisedClient) =
+      client: AuthorisedClient)(implicit ec: ExecutionContext) =
       transitionFromWarmUpWithSession(idealTargetState = MultiConsent.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(client)
 
     def submitWarmUpToDecline(getPendingInvitationIdsAndExpiryDates: GetInvitationDetails, getSuspensionStatus: GetSuspensionDetails)(
-      client: AuthorisedClient) =
+      client: AuthorisedClient)(implicit ec: ExecutionContext) =
       transitionFromWarmup(idealTargetState = ConfirmDecline.apply)(getPendingInvitationIdsAndExpiryDates, getSuspensionStatus)(Some(client))
 
     private def transitionFromWarmUpWithSession(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
-      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
+      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient)(implicit ec: ExecutionContext) =
       Transition {
         case WarmUpSessionRequired(clientType, uid, arn, agentName) =>
           transitionFromWarmUpFunction(
@@ -203,7 +203,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
 
     private def transitionFromWarmup(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
-      getSuspensionDetails: GetSuspensionDetails)(client: Option[AuthorisedClient]) =
+      getSuspensionDetails: GetSuspensionDetails)(client: Option[AuthorisedClient])(implicit ec: ExecutionContext) =
       Transition {
         case WarmUp(clientType, uid, arn, agentName, _) if client.isDefined =>
           transitionFromWarmUpFunction(
@@ -222,7 +222,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
           goto(WarmUpSessionRequired(clientType, uid, arn, agentName))
       }
 
-    private val transitionFromWarmUpFunction = (
+    private def transitionFromWarmUpFunction(
       client: AuthorisedClient,
       clientType: ClientType,
       agentName: String,
@@ -231,7 +231,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
       uid: String,
       arn: Arn,
       idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State
-    ) => {
+    )(implicit ec: ExecutionContext): Future[State] =
       client.enrolmentCoverage match {
         case NoSupportedMTDEnrolments =>
           logger.warn(s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
@@ -287,11 +287,10 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
             }
           }
       }
-    }
 
     private def transitionFromCreateNewUserId(idealTargetState: (ClientType, String, String, Arn, Seq[ClientConsent]) => State)(
       getInvitationDetails: GetInvitationDetails,
-      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient) =
+      getSuspensionDetails: GetSuspensionDetails)(client: AuthorisedClient)(implicit ec: ExecutionContext) =
       Transition {
         case CreateNewUserId(clientType, uid, arn, agentName) =>
           transitionFromWarmUpFunction(client, clientType, agentName, getInvitationDetails, getSuspensionDetails, uid, arn, idealTargetState)
@@ -349,7 +348,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(MultiConsent(clientType, uid, agentName, arn, nonSuspendedConsents))
     }
 
-    def submitConfirmDecline(respondToInvitation: RespondToInvitation)(client: AuthorisedClient)(confirmation: Confirmation) =
+    def submitConfirmDecline(respondToInvitation: RespondToInvitation)(client: AuthorisedClient)(confirmation: Confirmation)(
+      implicit ec: ExecutionContext) =
       Transition {
         case ConfirmDecline(clientType, uid, agentName, arn, consents) =>
           if (confirmation.choice) {
@@ -388,8 +388,8 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
         goto(CheckAnswers(clientType, uid, agentName, newConsents))
     }
 
-    private def processConsents(respondToInvitation: RespondToInvitation)(consents: Seq[ClientConsent])(
-      agentName: String): Future[Seq[ClientConsent]] =
+    private def processConsents(respondToInvitation: RespondToInvitation)(consents: Seq[ClientConsent])(agentName: String)(
+      implicit ec: ExecutionContext): Future[Seq[ClientConsent]] =
       for {
         result <- Future.traverse(consents) {
                    case chosenConsent @ ClientConsent(invitationId, _, _, consent, _, _) =>
@@ -398,7 +398,7 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
                  }
       } yield result
 
-    def submitCheckAnswers(respondToInvitation: RespondToInvitation)(client: AuthorisedClient) = Transition {
+    def submitCheckAnswers(respondToInvitation: RespondToInvitation)(client: AuthorisedClient)(implicit ec: ExecutionContext) = Transition {
       case CheckAnswers(clientType, _, agentName, consents) =>
         for {
           newConsents <- processConsents(respondToInvitation)(consents)(agentName)

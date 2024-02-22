@@ -1,4 +1,3 @@
-import AppDependencies._
 import CodeCoverageSettings._
 
 TwirlKeys.templateImports ++= Seq(
@@ -19,7 +18,7 @@ lazy val root = (project in file("."))
       "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
       Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
     ),
-    libraryDependencies ++= compileDeps ++ testDeps,
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
     scoverageSettings,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
@@ -44,6 +43,7 @@ lazy val root = (project in file("."))
       "-feature",
       "-unchecked",
       "-language:implicitConversions",
+      "-Ypatmat-exhaust-depth", "40",
       "-Wconf:src=target/.*:s", // silence warnings from compiled files
       "-Wconf:src=*routes:s", // silence warnings from routes files
       "-Wconf:src=*html:w", // silence html warnings as they are wrong

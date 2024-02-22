@@ -25,8 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.fsm.JourneyModel
 
 import java.time.LocalDate
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
 
@@ -135,7 +134,7 @@ object AgentInvitationFastTrackJourneyModel extends JourneyModel with Logging {
     createInvitation: CreateInvitation,
     isAltItsa: IsAltItsa,
     checkKnownFact: CheckKnownFact
-  ) {
+  )(implicit ec: ExecutionContext) {
 
     def prologue(failureUrl: Option[String], refererUrl: Option[String]) = Transition {
       case _ => goto(Prologue(failureUrl, refererUrl))
