@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.agentinvitationsfrontend.config
 
-import play.api.Configuration
+import com.google.inject.AbstractModule
 
-import javax.inject.{Inject, Singleton}
+class Module extends AbstractModule {
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
-  val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+  override def configure(): Unit = {
 
+    bind(classOf[AppConfig]).asEagerSingleton()
+  }
 }

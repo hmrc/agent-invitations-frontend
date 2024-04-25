@@ -1,55 +1,24 @@
-import CodeCoverageSettings._
+import uk.gov.hmrc.DefaultBuildSettings
 
-TwirlKeys.templateImports ++= Seq(
-  "uk.gov.hmrc.agentinvitationsfrontend.views.html.components._",
-  "uk.gov.hmrc.govukfrontend.views.html.components._",
-  "uk.gov.hmrc.hmrcfrontend.views.html.components._",
-)
+ThisBuild / majorVersion := 2
+ThisBuild / scalaVersion := "2.13.12"
 
-lazy val root = (project in file("."))
+lazy val microservice = Project("agent-invitations-frontend", file("."))
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .settings(
-    name := "agent-invitations-frontend",
-    organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.15",
-    majorVersion := 1,
-    PlayKeys.playDefaultPort := 9448,
-    resolvers ++= Seq(
-      Resolver.typesafeRepo("releases"),
-      "HMRC-open-artefacts-maven" at "https://open.artefacts.tax.service.gov.uk/maven2",
-      Resolver.url("HMRC-open-artefacts-ivy", url("https://open.artefacts.tax.service.gov.uk/ivy2"))(Resolver.ivyStylePatterns),
-    ),
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    routesImport += "uk.gov.hmrc.agentinvitationsfrontend.binders.UrlBinders._",
-    scoverageSettings,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile := true,
-    routesGenerator := InjectedRoutesGenerator
+    // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
+    // suppress warnings in generated routes files
+    scalacOptions += "-Wconf:src=routes/.*:s",
+    scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s",
+    pipelineStages := Seq(gzip),
   )
-  .configs(IntegrationTest)
-  .settings(
-    IntegrationTest / Keys.fork := false,
-    Defaults.itSettings,
-    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
-    IntegrationTest / parallelExecution := false
-  )
-  .settings(
-    scalacOptions ++= List(
-      "-Yrangepos",
-      "-Xlint:-missing-interpolator,_",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code",
-      "-deprecation",
-      "-feature",
-      "-unchecked",
-      "-language:implicitConversions",
-      "-Ypatmat-exhaust-depth", "40",
-      "-Wconf:src=target/.*:s", // silence warnings from compiled files
-      "-Wconf:src=*routes:s", // silence warnings from routes files
-      "-Wconf:src=*html:w", // silence html warnings as they are wrong
-    )
-  )
-  .enablePlugins(PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin)
+  .settings(resolvers += Resolver.jcenterRepo)
+  .settings(CodeCoverageSettings.settings: _*)
 
-inConfig(IntegrationTest)(scalafmtCoreSettings)
+lazy val it = project
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test")
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(javaOptions += "-Dlogger.resource=logback-test.xml")
+  .settings(libraryDependencies ++= AppDependencies.it)

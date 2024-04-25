@@ -1,18 +1,23 @@
-import sbt.Keys.parallelExecution
-import sbt.Test
+import sbt.Setting
 import scoverage.ScoverageKeys
 
 object CodeCoverageSettings {
 
-  lazy val scoverageSettings = {
+  private val excludedPackages: Seq[String] = Seq(
+    "<empty>",
+    "Reverse.*",
+    "uk.gov.hmrc.BuildInfo",
+    "app.*",
+    "prod.*",
+    ".*Routes.*",
+    "testOnly.*",
+    "testOnlyDoNotUseInAppConf.*"
+  )
 
-    Seq(
-      // Semicolon-separated list of regexs matching classes to exclude
-      ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-      ScoverageKeys.coverageMinimumStmtTotal := 80.00,
-      ScoverageKeys.coverageFailOnMinimum := true,
-      ScoverageKeys.coverageHighlighting := true,
-      Test / parallelExecution := false
-    )
-  }
+  val settings: Seq[Setting[_]] = Seq(
+    ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
+    ScoverageKeys.coverageMinimumStmtTotal := 100,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true
+  )
 }
