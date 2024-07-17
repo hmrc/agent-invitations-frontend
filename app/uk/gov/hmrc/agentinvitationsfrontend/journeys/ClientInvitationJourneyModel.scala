@@ -234,13 +234,13 @@ object ClientInvitationJourneyModel extends JourneyModel with Logging {
     )(implicit ec: ExecutionContext): Future[State] =
       client.enrolmentCoverage match {
         case NoSupportedMTDEnrolments =>
-          logger.warn(s"client had no supported MTD enrolments; client enrolments: ${tempEnrolLog(client.enrolments)}")
+          logger.warn(s"client had no supported MTD enrolments")
           goto(CannotFindRequest(clientType, agentName))
         case maybeAll @ (AllSupportedMTDEnrolments | SomeSupportedMTDEnrolments) =>
           getInvitationDetails(uid).flatMap { invitationDetails =>
             if (invitationDetails.isEmpty) {
               logger.warn(
-                s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}; client enrolments: [${tempEnrolLog(client.enrolments)}]")
+                s"no authorisation requests returned for uid: $uid. client had ${maybeAll.str}")
               if (maybeAll == SomeSupportedMTDEnrolments) goto(CannotFindRequest(clientType, agentName))
               else goto(NoOutstandingRequests)
             } else {
