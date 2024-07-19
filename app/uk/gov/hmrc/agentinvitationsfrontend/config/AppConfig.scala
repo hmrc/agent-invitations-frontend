@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
-class AppConfig @Inject()(servicesConfig: ServicesConfig) {
+class AppConfig @Inject() (servicesConfig: ServicesConfig) {
 
   val appName = "agent-invitations-frontend"
   val ssoRedirectUrl: String = "/government-gateway-registration-frontend?accountType=agent&origin=unknown"
@@ -37,7 +37,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   private def getConfString(config: String) =
     servicesConfig.getConfString(config, throw new RuntimeException(s"config $config not found"))
 
-  //BaseUrls
+  // BaseUrls
   val authBaseUrl: String = baseUrl("auth")
   val agentClientAuthorisationBaseUrl: String = baseUrl("agent-client-authorisation")
   val afiBaseUrl: String = baseUrl("agent-fi-relationship")
@@ -48,7 +48,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   val ivBackendBaseUrl: String = baseUrl("identity-verification")
   val personalDetailsValidationBaseUrl: String = baseUrl("personal-details-validation")
 
-  //Strings
+  // Strings
   val authLoginCallbackUrl: String = servicesConfig.getString("authentication.login-callback.url")
   val companyAuthFrontendExternalUrl: String = getConfString("company-auth-frontend.external-url")
   val companyAuthFrontendSignoutPath: String = getConfString("company-auth-frontend.sign-out.path")
@@ -91,7 +91,7 @@ class AppConfig @Inject()(servicesConfig: ServicesConfig) {
   def routeToSwitchLanguage: String => Call =
     (lang: String) => routes.AgentInvitationsLanguageController.switchToLanguage(lang)
 
-  //Ints
+  // Ints
   val trackRequestsShowLastDays: Int = servicesConfig.getInt("track-requests-show-last-days")
   val trackRequestsPerPage: Int = servicesConfig.getInt("track-requests-per-page")
   val timeoutDialogTimeoutSeconds: Int = servicesConfig.getInt("timeoutDialog.timeout-seconds")

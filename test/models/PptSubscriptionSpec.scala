@@ -94,7 +94,8 @@ class PptSubscriptionSpec extends UnitSpec {
       Json.parse(json).as[PptSubscription] shouldBe PptSubscription(
         "My PPT organisation",
         LocalDate.parse("2021-10-12"),
-        Some(LocalDate.parse("2021-11-12")))
+        Some(LocalDate.parse("2021-11-12"))
+      )
     }
 
     "raise JsError when invalid field" in {

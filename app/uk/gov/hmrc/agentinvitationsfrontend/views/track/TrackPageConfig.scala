@@ -31,7 +31,8 @@ case class TrackPageConfig(
   clientSet: Set[String],
   filterByClient: Option[String],
   filterByStatus: Option[FilterFormStatus],
-  filterForm: Option[Form[FilterTrackRequests]])(implicit messages: Messages) {
+  filterForm: Option[Form[FilterTrackRequests]]
+)(implicit messages: Messages) {
 
   val firstResult: Int = (pageInfo.page - 1) * pageInfo.resultsPerPage + 1
   val lastResult: Int = firstResult + invitationsAndRelationships.size - 1
@@ -47,7 +48,8 @@ case class TrackPageConfig(
 
   val form: Form[FilterTrackRequests] = filterForm.getOrElse(
     FilterTrackRequestsForm
-      .form(Set()))
+      .form(Set())
+  )
 
   val statuses: Seq[FilterFormStatus] = FilterFormStatus.statuses
 

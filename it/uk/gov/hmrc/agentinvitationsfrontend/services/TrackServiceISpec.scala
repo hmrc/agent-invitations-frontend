@@ -1,6 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.services
 
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import play.api.test.Helpers._
 import uk.gov.hmrc.agentinvitationsfrontend.models.{InactiveClient, TrackInformationSorted}
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
@@ -23,43 +23,19 @@ class TrackServiceISpec extends BaseISpec {
 
   def nowMinus(days: Int) = Instant.now.atZone(ZoneOffset.UTC).toLocalDate.minusDays(days).atStartOfDay()
 
-  val itsaRelationship = InactiveClient(
-    Some("personal"),
-    Some(Service.MtdIt),
-    validNino.value,
-    "ni",
-    Some(LocalDate.parse("2015-09-21")))
+  val itsaRelationship = InactiveClient(Some("personal"), Some(Service.MtdIt), validNino.value, "ni", Some(LocalDate.parse("2015-09-21")))
 
   val vatRelationship =
     InactiveClient(Some("personal"), Some(Service.Vat), "101747641", "vrn", Some(LocalDate.parse("2015-09-24")))
 
-  val irvRelationship = InactiveClient(
-    Some("personal"),
-    Some(Service.PersonalIncomeRecord),
-    validNino.value,
-    "ni",
-    Some(LocalDate.parse("2015-09-21")))
+  val irvRelationship =
+    InactiveClient(Some("personal"), Some(Service.PersonalIncomeRecord), validNino.value, "ni", Some(LocalDate.parse("2015-09-21")))
 
-  val irvRelationship2 = InactiveClient(
-    Some("personal"),
-    Some(Service.PersonalIncomeRecord),
-    "GZ753451B",
-    "ni",
-    Some(LocalDate.parse("2018-09-24")))
+  val irvRelationship2 = InactiveClient(Some("personal"), Some(Service.PersonalIncomeRecord), "GZ753451B", "ni", Some(LocalDate.parse("2018-09-24")))
 
-  val trustRelationship = InactiveClient(
-    Some("personal"),
-    Some(Service.Trust),
-    validUtr.value,
-    "utr",
-    Some(LocalDate.parse("2015-09-21")))
+  val trustRelationship = InactiveClient(Some("personal"), Some(Service.Trust), validUtr.value, "utr", Some(LocalDate.parse("2015-09-21")))
 
-  val cgtRelationship = InactiveClient(
-    Some("personal"),
-    Some(Service.CapitalGains),
-    cgtRef.value,
-    "CGTPDRef",
-    Some(LocalDate.parse("2015-09-21")))
+  val cgtRelationship = InactiveClient(Some("personal"), Some(Service.CapitalGains), cgtRef.value, "CGTPDRef", Some(LocalDate.parse("2015-09-21")))
 
   val inactiveRelationships =
     List(itsaRelationship, vatRelationship, irvRelationship, irvRelationship2, trustRelationship, cgtRelationship)
@@ -77,7 +53,7 @@ class TrackServiceISpec extends BaseISpec {
       givenClientDetailsOnlyOrganisation(validVrn9755)
 
       val result: Seq[InactiveClient] = await(service.getInactiveClients)
-      result should contain theSameElementsAs(inactiveRelationships)
+      result should contain theSameElementsAs inactiveRelationships
     }
   }
 
@@ -89,7 +65,10 @@ class TrackServiceISpec extends BaseISpec {
     clientName = Some("Dave"),
     status = status,
     dateTime = Some(Instant.now.atZone(ZoneOffset.UTC).toLocalDate.minusDays(daysInPast).atStartOfDay()),
-    expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = isRelationshipEnded, relationshipEndedBy = Some("Agent"),
+    expiryDate = None,
+    invitationId = Some("foo1"),
+    isRelationshipEnded = isRelationshipEnded,
+    relationshipEndedBy = Some("Agent"),
     lastUpdated = None
   )
 
@@ -100,15 +79,15 @@ class TrackServiceISpec extends BaseISpec {
       val justAccepted = Seq(dummyTrackInformationSorted("123456789", "Accepted", false, 2))
       service.matchAndDiscard(justAccepted) shouldBe justAccepted
 
-      val acceptedAndInvalid = Seq(
-        dummyTrackInformationSorted("123456789", "Accepted", false, 2),
-        dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 1))
+      val acceptedAndInvalid =
+        Seq(dummyTrackInformationSorted("123456789", "Accepted", false, 2), dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 1))
       service.matchAndDiscard(acceptedAndInvalid) shouldBe Seq(dummyTrackInformationSorted("123456789", "Accepted", true, 1))
 
       val acceptedAndInvalidAndAccepted = Seq(
         dummyTrackInformationSorted("123456789", "Accepted", false, 3),
         dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 2),
-        dummyTrackInformationSorted("123456789", "Accepted", false, 1))
+        dummyTrackInformationSorted("123456789", "Accepted", false, 1)
+      )
       service.matchAndDiscard(acceptedAndInvalidAndAccepted) shouldBe Seq(
         dummyTrackInformationSorted("123456789", "Accepted", false, 1),
         dummyTrackInformationSorted("123456789", "Accepted", true, 2)
@@ -116,18 +95,20 @@ class TrackServiceISpec extends BaseISpec {
 
       val acceptedAndDeauthed = Seq(
         dummyTrackInformationSorted("123456789", "Deauthorised", true, 1),
-        dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 1))
+        dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 1)
+      )
       service.matchAndDiscard(acceptedAndDeauthed) shouldBe Seq(
-        dummyTrackInformationSorted("123456789", "Deauthorised", true, 1),
+        dummyTrackInformationSorted("123456789", "Deauthorised", true, 1)
       )
 
       val acceptedAndDeauthedAndAccepted = Seq(
         dummyTrackInformationSorted("123456789", "Deauthorised", true, 2),
         dummyTrackInformationSorted("123456789", "InvalidRelationship", true, 2),
-        dummyTrackInformationSorted("123456789", "Accepted", false, 1))
+        dummyTrackInformationSorted("123456789", "Accepted", false, 1)
+      )
       service.matchAndDiscard(acceptedAndDeauthedAndAccepted) shouldBe Seq(
         dummyTrackInformationSorted("123456789", "Accepted", false, 1),
-        dummyTrackInformationSorted("123456789", "Deauthorised", true, 2),
+        dummyTrackInformationSorted("123456789", "Deauthorised", true, 2)
       )
     }
   }
@@ -143,17 +124,22 @@ class TrackServiceISpec extends BaseISpec {
 
       result.size shouldBe 1
 
-      result shouldBe Seq(TrackInformationSorted(
-        clientType = Some("personal"),
-        service = Some(Service.Vat),
-        clientId = "123456789",
-        clientIdType = "vrn",
-        clientName = Some("Dave"),
-        status = "AcceptedThenCancelledByAgent",
-        dateTime = Some(Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(4).atStartOfDay()),
-        expiryDate = None, invitationId = Some("foo1"), isRelationshipEnded = true, relationshipEndedBy = Some("Agent"),
-        lastUpdated = Some(LocalDateTime.parse(lastUpdated.toString))
-      ))
+      result shouldBe Seq(
+        TrackInformationSorted(
+          clientType = Some("personal"),
+          service = Some(Service.Vat),
+          clientId = "123456789",
+          clientIdType = "vrn",
+          clientName = Some("Dave"),
+          status = "AcceptedThenCancelledByAgent",
+          dateTime = Some(Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(4).atStartOfDay()),
+          expiryDate = None,
+          invitationId = Some("foo1"),
+          isRelationshipEnded = true,
+          relationshipEndedBy = Some("Agent"),
+          lastUpdated = Some(LocalDateTime.parse(lastUpdated.toString))
+        )
+      )
     }
 
     "match an inactive relationship with the corresponding invitation and the agent and client create a new relationship" in {
@@ -190,18 +176,23 @@ class TrackServiceISpec extends BaseISpec {
 
     "match an invalid relationship with the corresponding invitation when the relationship was de-authorised as a " +
       "consequence of another authorisation with another agent" in {
-      givenASingleInvitationWithRelationshipStillActive("123456789", Service.Vat, "vrn", Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(10).atStartOfDay())
-      givenInactiveAfiRelationshipNotFound
-      givenASingleInactiveRelationship(Service.Vat, "123456789", LocalDate.now().minusDays(10).toString, LocalDate.now().minusDays(3).toString)
+        givenASingleInvitationWithRelationshipStillActive(
+          "123456789",
+          Service.Vat,
+          "vrn",
+          Instant.now().atZone(ZoneOffset.UTC).toLocalDate.minusDays(10).atStartOfDay()
+        )
+        givenInactiveAfiRelationshipNotFound
+        givenASingleInactiveRelationship(Service.Vat, "123456789", LocalDate.now().minusDays(10).toString, LocalDate.now().minusDays(3).toString)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
+        val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
-      result.size shouldBe 1
+        result.size shouldBe 1
 
-      result.map(s => (s.dateTime.map(_.toLocalDate.toString), s.status)) shouldBe Seq(
-        (Some(nowMinus(3).toLocalDate.toString), "AcceptedThenCancelledByAgent")
-      )
-    }
+        result.map(s => (s.dateTime.map(_.toLocalDate.toString), s.status)) shouldBe Seq(
+          (Some(nowMinus(3).toLocalDate.toString), "AcceptedThenCancelledByAgent")
+        )
+      }
 
     "match invitations that have relationshipIsEnded = true with invalid relationships, discarding the invalid relationships" in {
 
@@ -210,12 +201,11 @@ class TrackServiceISpec extends BaseISpec {
       givenGetInvitations() // 9 invitations
       givenNinoForMtdItId(mtdItId, validNino)
 
-      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"),30))
+      val result: Seq[TrackInformationSorted] = await(service.allResults(Arn("TARN0000001"), 30))
 
       result.size shouldBe 10
 
       result.map(s => (s.clientId, s.service, s.status, s.dateTime.map(_.toLocalDate.toString))) shouldBe Seq(
-
         ("AB123456A", Some(Service.MtdIt), "AcceptedThenCancelledByAgent", Some(nowMinus(0).toLocalDate.toString)),
         ("101747641", Some(Service.Vat), "AcceptedThenCancelledByClient", Some(nowMinus(1).toLocalDate.toString)),
         ("4937455253", Some(Service.Trust), "AcceptedThenCancelledByAgent", Some(nowMinus(3).toLocalDate.toString)),

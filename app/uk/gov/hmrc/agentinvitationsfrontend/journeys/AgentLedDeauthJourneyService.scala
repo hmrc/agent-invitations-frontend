@@ -34,7 +34,7 @@ trait AgentLedDeauthJourneyService extends PersistentJourneyService[HeaderCarrie
 }
 
 @Singleton
-class MongoDBCachedAgentLedDeauthJourneyService @Inject()(_cacheRepository: SessionCacheRepository) extends AgentLedDeauthJourneyService {
+class MongoDBCachedAgentLedDeauthJourneyService @Inject() (_cacheRepository: SessionCacheRepository) extends AgentLedDeauthJourneyService {
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 

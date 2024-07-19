@@ -40,7 +40,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
   lazy val controller: AgentsRequestTrackingController = app.injector.instanceOf[AgentsRequestTrackingController]
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(UUID.randomUUID().toString)))
 
-   val fmt: DateTimeFormatter  = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
   private def displayDate(dt: LocalDate): String =
     dt.format(fmt)
 
@@ -56,7 +56,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       givenGetInvitationsTrack() // 12 invitations
       givenInactiveRelationships() // 4 relationships
-      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
+      given2InactiveAfiRelationships(nowMinus(3), nowMinus(8)) // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenPutAltItsaAuth(arn)
 
@@ -102,16 +102,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Ddd Itsa Trader")
-       parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Making Tax Digital for Income Tax")
+      parseHtml.getElementsByAttributeValue("id", "row-0").toString should include("Manage their Making Tax Digital for Income Tax")
 
-     val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
+      val resultPageTwo = showTrackRequestsPageTwo(authorisedAsValidAgent(request, arn.value))
       status(resultPageTwo) shouldBe 200
 
       checkHtmlResultWithBodyText(
         resultPageTwo,
         "Accepted",
         "You cancelled this request"
-        )
+      )
 
       val parseHtmlPageTwo = Jsoup.parse(Helpers.contentAsString(resultPageTwo))
 
@@ -128,11 +128,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("recent-invitations.description", 30))
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "recent-invitations.header",
-        "recent-invitations.empty",
-        "recent-invitations.empty.continue")
+      checkHtmlResultWithBodyMsgs(result, "recent-invitations.header", "recent-invitations.empty", "recent-invitations.empty.continue")
     }
 
     "accept valid request with filter by client query param" in {
@@ -142,12 +138,12 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       givenGetInvitationsTrack() // 12 invitations
       givenInactiveRelationships() // 4 relationships
-      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
+      given2InactiveAfiRelationships(nowMinus(3), nowMinus(8)) // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenPutAltItsaAuth(arn)
 
-        val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
-        status(resultPageOne) shouldBe 200
+      val resultPageOne = showTrackRequestsPageOne(authorisedAsValidAgent(request, arn.value))
+      status(resultPageOne) shouldBe 200
 
       val parseHtml = Jsoup.parse(Helpers.contentAsString(resultPageOne))
 
@@ -163,7 +159,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       givenGetInvitationsTrack() // 12 invitations
       givenInactiveRelationships() // 4 relationships
-      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
+      given2InactiveAfiRelationships(nowMinus(3), nowMinus(8)) // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
       givenPutAltItsaAuth(arn)
 
@@ -192,7 +188,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         s"${displayDate(LocalDate.now().minusDays(10))}",
         s"${displayDate(LocalDate.now().minusDays(10))}",
         "Start new request",
-        htmlEscapedMessage("recent-invitations.description", 30))
+        htmlEscapedMessage("recent-invitations.description", 30)
+      )
 
     }
 
@@ -208,16 +205,18 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       givenGetInvitationsTrack() // 12 invitations
       givenInactiveRelationships() // 4 relationships
-      given2InactiveAfiRelationships(nowMinus(3),nowMinus(8))  // 2 relationship
+      given2InactiveAfiRelationships(nowMinus(3), nowMinus(8)) // 2 relationship
       givenNinoForMtdItId(MtdItId("ABCDE1234567890"), Nino("AB123456A"))
 
-      val formData = FilterTrackRequestsForm.form(Set("")).fill(FilterTrackRequests(Some("Ddd Itsa Trader"),Some(AcceptedByClient)))
+      val formData = FilterTrackRequestsForm.form(Set("")).fill(FilterTrackRequests(Some("Ddd Itsa Trader"), Some(AcceptedByClient)))
       val formDataWithButton = (formData.data + ("filter" -> "filter")).toSeq
       val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
 
       status(result) shouldBe 303
 
-      redirectLocation(result) shouldBe Some(routes.AgentsRequestTrackingController.showTrackRequests(1, Some("Ddd Itsa Trader"), Some(AcceptedByClient)).url)
+      redirectLocation(result) shouldBe Some(
+        routes.AgentsRequestTrackingController.showTrackRequests(1, Some("Ddd Itsa Trader"), Some(AcceptedByClient)).url
+      )
     }
 
     "have a clear button to clear the filter" in {
@@ -270,7 +269,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
       givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
 
-      val formData = FilterTrackRequestsForm.form(Set("")).bind(Map("client" -> "Not a name we know", "status" -> "Bad status" ))
+      val formData = FilterTrackRequestsForm.form(Set("")).bind(Map("client" -> "Not a name we know", "status" -> "Bad status"))
       val formDataWithButton = (formData.data + ("filter" -> "filter")).toSeq
       val result = postTrack(authorisedAsValidAgent(request.withFormUrlEncodedBody(formDataWithButton: _*), arn.value))
 
@@ -316,8 +315,7 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
     }
 
     "return 400 BadRequest when form data contains errors in clientType" in {
-      val dataForm = controller.trackInformationForm.bind(
-        Map("service" -> "HMRC-MTD-IT", "clientType" -> "foo", "expiryDate" -> "2019-01-01"))
+      val dataForm = controller.trackInformationForm.bind(Map("service" -> "HMRC-MTD-IT", "clientType" -> "foo", "expiryDate" -> "2019-01-01"))
       val result =
         postResendLink(authorisedAsValidAgent(request.withFormUrlEncodedBody(dataForm.data.toSeq: _*), arn.value))
 
@@ -340,14 +338,19 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 200 and expected content for default (non altItsa) scenario" in {
       val result =
-        getResendLink(authorisedAsValidAgent(request.withSession(
-          "agentLink" -> "/agent/",
-          "clientType" -> "personal",
-          "expiryDate" -> "2017-05-05",
-          "service" -> "HMRC-MTD-IT",
-          "agencyEmail" -> "abc@xyz.com",
-          "isAltItsa" -> "false"
-        ), arn.value))
+        getResendLink(
+          authorisedAsValidAgent(
+            request.withSession(
+              "agentLink"   -> "/agent/",
+              "clientType"  -> "personal",
+              "expiryDate"  -> "2017-05-05",
+              "service"     -> "HMRC-MTD-IT",
+              "agencyEmail" -> "abc@xyz.com",
+              "isAltItsa"   -> "false"
+            ),
+            arn.value
+          )
+        )
 
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
@@ -360,14 +363,19 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return expected content for isAltItsa" in {
 
-      val result = getResendLink(authorisedAsValidAgent(request.withSession(
-          "agentLink" -> "/agent/",
-          "clientType" -> "personal",
-          "expiryDate" -> "2017-05-05",
-          "service" -> "HMRC-MTD-IT",
-          "agencyEmail" -> "abc@xyz.com",
-          "isAltItsa" -> "true"
-        ), arn.value))
+      val result = getResendLink(
+        authorisedAsValidAgent(
+          request.withSession(
+            "agentLink"   -> "/agent/",
+            "clientType"  -> "personal",
+            "expiryDate"  -> "2017-05-05",
+            "service"     -> "HMRC-MTD-IT",
+            "agencyEmail" -> "abc@xyz.com",
+            "isAltItsa"   -> "true"
+          ),
+          arn.value
+        )
+      )
 
       val htmlString = Helpers.contentAsString(result)
       val html = Jsoup.parse(htmlString)
@@ -376,15 +384,23 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.select(Css.H1).text() shouldBe "What you need to do next"
       html.select("p#altItsa-list-hint").text() shouldBe "You must follow all four steps."
 
-
       val listItems = html.select("ol li")
       listItems.size() shouldBe 4
       listItems.get(0).text() matches "Copy this authorisation request link and send it to your client: http://localhost:\\d+/agent/"
-      listItems.get(0).select("strong").text() matches  "http://localhost:\\d+/agent/"
+      listItems.get(0).select("strong").text() matches "http://localhost:\\d+/agent/"
       listItems.get(1).text() shouldBe "Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID."
-      listItems.get(2).select("p").text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
-      listItems.get(2).select(".govuk-warning-text strong").text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
-      listItems.get(3).select("a").attr("href")
+      listItems
+        .get(2)
+        .select("p")
+        .text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
+      listItems
+        .get(2)
+        .select(".govuk-warning-text strong")
+        .text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
+      listItems
+        .get(3)
+        .select("a")
+        .attr("href")
         .shouldBe("https://www.gov.uk/guidance/sign-up-your-client-for-making-tax-digital-for-income-tax")
       listItems.get(3).text() shouldBe "Sign up your client for Making Tax Digital for Income Tax (opens in new tab)."
 
@@ -399,11 +415,13 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = getResendLink(
         authorisedAsValidAgent(
           request.withSession(
-          "agentLink" -> "/agent/",
-          "clientType" -> "personal",
-          "expiryDate" -> "2017-05-05",
-          "service" -> service,
-          "agencyEmail" -> "abc@xyz.com"), arn.value
+            "agentLink"   -> "/agent/",
+            "clientType"  -> "personal",
+            "expiryDate"  -> "2017-05-05",
+            "service"     -> service,
+            "agencyEmail" -> "abc@xyz.com"
+          ),
+          arn.value
         )
       )
 
@@ -416,10 +434,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val olLis = html.select("ol.govuk-list li")
       olLis.size() shouldBe 3
       olLis.get(0).text() matches "Copy this authorisation request link and send it to your client: http://localhost:\\d+/agent/"
-      olLis.get(0).select("strong").text() matches  "http://localhost:\\d+/agent/"
+      olLis.get(0).select("strong").text() matches "http://localhost:\\d+/agent/"
       olLis.get(1).text() shouldBe "Tell them to select this link. They will then be asked to sign in using their Government Gateway user ID."
-      olLis.get(2).select("p").text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
-      olLis.get(2).select(".govuk-warning-text strong").text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
+      olLis
+        .get(2)
+        .select("p")
+        .text() shouldBe "Ask your client to respond by 5 May 2017 or your authorisation request link will expire. We will email you at abc@xyz.com to update you on the status of this request."
+      olLis
+        .get(2)
+        .select(".govuk-warning-text strong")
+        .text() shouldBe "To give you authorisation, clients will need to use the same Government Gateway user ID they used to sign up for this service."
       html.select("h2#further-help-heading").get(0).text() shouldBe "Further help"
       html.select("p#further-help-text").text() shouldBe "Get help to complete another task, including:"
 
@@ -429,11 +453,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       val result = getResendLink(
         authorisedAsValidAgent(
-          request.withSession(
-            "clientType" -> "personal",
-            "expiryDate" -> "2017-05-05",
-            "service" -> "HMRC-MTD-IT",
-            "agencyEmail" -> "abc@xyz.com"), arn.value
+          request.withSession("clientType" -> "personal", "expiryDate" -> "2017-05-05", "service" -> "HMRC-MTD-IT", "agencyEmail" -> "abc@xyz.com"),
+          arn.value
         )
       )
       status(result) shouldBe SEE_OTHER
@@ -444,11 +465,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       val result = getResendLink(
         authorisedAsValidAgent(
-          request.withSession(
-            "clientType" -> "personal",
-            "agentLink" -> "/agent/",
-            "service" -> "HMRC-MTD-IT",
-            "agencyEmail" -> "abc@xyz.com"), arn.value
+          request.withSession("clientType" -> "personal", "agentLink" -> "/agent/", "service" -> "HMRC-MTD-IT", "agencyEmail" -> "abc@xyz.com"),
+          arn.value
         )
       )
       status(result) shouldBe SEE_OTHER
@@ -460,11 +478,13 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = getResendLink(
         authorisedAsValidAgent(
           request.withSession(
-            "clientType" -> "personal",
-            "agentLink" -> "/agent/",
-            "service" -> "HMRC-MTD-IT",
-            "expiryDate" -> "2017-05-05",
-            "agencyEmail" -> "abc@xyz.com"), arn.value
+            "clientType"  -> "personal",
+            "agentLink"   -> "/agent/",
+            "service"     -> "HMRC-MTD-IT",
+            "expiryDate"  -> "2017-05-05",
+            "agencyEmail" -> "abc@xyz.com"
+          ),
+          arn.value
         )
       )
       status(result) shouldBe OK
@@ -510,9 +530,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "render a confirm cancel page" in {
       val result = showConfirmCancel(
-        authorisedAsValidAgent(
-          request.withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT"),
-          arn.value))
+        authorisedAsValidAgent(request.withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT"), arn.value)
+      )
 
       status(result) shouldBe 200
 
@@ -521,7 +540,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
       html.title() shouldBe "Are you sure you want to cancel this authorisation request? - Ask a client to authorise you - GOV.UK"
       html.select(Css.H1).text() shouldBe "Are you sure you want to cancel this authorisation request?"
-      html.select("div#confirmCancel-hint").text().shouldBe("If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.")
+      html
+        .select("div#confirmCancel-hint")
+        .text()
+        .shouldBe("If you cancel this request, you will not be able to manage their Making Tax Digital for Income Tax.")
       html.select("label[for=confirmCancel]").text() shouldBe "Yes"
       html.select("label[for=confirmCancel-2]").text() shouldBe "No"
     }
@@ -538,7 +560,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
             .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/request-cancelled")
@@ -551,7 +575,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
             .withSession("clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track")
@@ -564,7 +590,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
             .withSession("clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track")
@@ -577,7 +605,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
             .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe NOT_FOUND
     }
@@ -589,7 +619,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "true")
             .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe FORBIDDEN
     }
@@ -600,7 +632,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
           request
             .withFormUrlEncodedBody("confirmCancel" -> "false")
             .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track")
@@ -611,7 +645,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withSession("invitationId" -> invitationIdITSA.value, "service" -> "HMRC-MTD-IT", "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to cancel this authorisation request")
@@ -625,11 +661,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = showRequestCancelled(
         authorisedAsValidAgent(
           request
-            .withSession(
-              "invitationId" -> invitationIdITSA.value,
-              "clientName"   -> "Joe Volcano",
-              "service"      -> "HMRC-MTD-IT"),
-          arn.value))
+            .withSession("invitationId" -> invitationIdITSA.value, "clientName" -> "Joe Volcano", "service" -> "HMRC-MTD-IT"),
+          arn.value
+        )
+      )
 
       status(result) shouldBe 200
 
@@ -639,9 +674,13 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.title() shouldBe "Authorisation request cancelled - Ask a client to authorise you - GOV.UK"
       html.select(Css.H1).text() shouldBe "Authorisation request cancelled"
       html.select(".govuk-panel__title").text() shouldBe "Authorisation request cancelled"
-      html.select("p#request-cancelled-text").text() shouldBe "You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax."
+      html
+        .select("p#request-cancelled-text")
+        .text() shouldBe "You have cancelled your authorisation request to manage their Making Tax Digital for Income Tax."
       html.select("p#request-cancelled-for-client").text() shouldBe "Joe Volcano can no longer respond to this request."
-      html.select("p#cancelled-by-mistake-link-text").text() shouldBe "If you cancelled your authorisation request by mistake, you will need to start a new authorisation request."
+      html
+        .select("p#cancelled-by-mistake-link-text")
+        .text() shouldBe "If you cancelled your authorisation request by mistake, you will need to start a new authorisation request."
       html.select("p#cancelled-by-mistake-link-text a").attr("href") shouldBe "/invitations/agents/client-type"
 
       val trackLink = html.select("a[href='/invitations/track']")
@@ -654,11 +693,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       val result = showRequestCancelled(
         authorisedAsValidAgent(
           request
-            .withSession(
-              "invitationId" -> invitationIdPIR.value,
-              "clientName"   -> "Voe Jolcano",
-              "service"      -> "PERSONAL-INCOME-RECORD"),
-          arn.value))
+            .withSession("invitationId" -> invitationIdPIR.value, "clientName" -> "Voe Jolcano", "service" -> "PERSONAL-INCOME-RECORD"),
+          arn.value
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -676,9 +714,10 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 303 redirect to confirm cancel authorisation page when form is correct" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth"))
-      val result = postToConfirmCancelAuth(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+        controller.cancelAuthorisationForm.fill(
+          CancelAuthorisationForm(serviceITSA, validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth")
+        )
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/cancel-authorisation")
@@ -686,27 +725,30 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
 
     "return 400 BadRequest when form data contains errors in service" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm("foo", validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth"))
-      val result = postToConfirmCancelAuth(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+        controller.cancelAuthorisationForm.fill(
+          CancelAuthorisationForm("foo", validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth")
+        )
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
     }
 
     "return 400 BadRequest when form data contains errors in clientId" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, "foo", "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth"))
-      val result = postToConfirmCancelAuth(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+        controller.cancelAuthorisationForm.fill(
+          CancelAuthorisationForm(serviceITSA, "foo", "personal", "Sylvia Plath", "ALFE93Y9KAELF", "Partialauth")
+        )
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
     }
 
     "return 400 BadRequest when form data contains errors in status" in {
       val formData =
-        controller.cancelAuthorisationForm.fill(CancelAuthorisationForm(serviceITSA, validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "foo"))
-      val result = postToConfirmCancelAuth(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
+        controller.cancelAuthorisationForm.fill(
+          CancelAuthorisationForm(serviceITSA, validNino.value, "personal", "Sylvia Plath", "ALFE93Y9KAELF", "foo")
+        )
+      val result = postToConfirmCancelAuth(authorisedAsValidAgent(request.withFormUrlEncodedBody(formData.data.toSeq: _*), arn.value))
 
       status(result) shouldBe 400
     }
@@ -728,8 +770,12 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
       html.title() shouldBe "Are you sure you want to cancel this client’s authorisation? - Ask a client to authorise you - GOV.UK"
       html.select(Css.H1).text() shouldBe "Are you sure you want to cancel this client’s authorisation?"
 
-      html.select("div.govuk-inset-text").text() shouldBe "Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment."
-      html.select("#confirmCancelAuthorisation-hint").text() shouldBe "You will no longer be able to manage their Making Tax Digital for Income Tax. You will not be able to undo this action."
+      html
+        .select("div.govuk-inset-text")
+        .text() shouldBe "Cancelling your authorisation to manage a client’s Making Tax Digital for Income Tax does not automatically cancel any authorisation for Self Assessment."
+      html
+        .select("#confirmCancelAuthorisation-hint")
+        .text() shouldBe "You will no longer be able to manage their Making Tax Digital for Income Tax. You will not be able to undo this action."
       html.select("label[for=confirmCancelAuthorisation]").text() shouldBe "Yes"
       html.select("label[for=confirmCancelAuthorisation-2]").text() shouldBe "No"
       html.select("button.govuk-button#continue").text() shouldBe "Continue"
@@ -755,9 +801,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Accepted"),
+            .withSession(
+              "service"      -> serviceITSA,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdITSA.value,
+              "status"       -> "Accepted"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/cancelled")
@@ -769,9 +822,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Partialauth"),
+            .withSession(
+              "service"      -> serviceITSA,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdITSA.value,
+              "status"       -> "Partialauth"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/cancelled")
@@ -783,9 +843,15 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> servicePIR, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdPIR.value),
+            .withSession(
+              "service"      -> servicePIR,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdPIR.value
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/cancelled")
@@ -797,9 +863,15 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceVAT, "clientId" -> validVrn.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdVAT.value),
+            .withSession(
+              "service"      -> serviceVAT,
+              "clientId"     -> validVrn.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdVAT.value
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track/cancelled")
@@ -813,7 +885,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
             .withSession("service" -> "foo", "clientId" -> validVrn.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdVAT.value),
           arn.value
-        ))
+        )
+      )
 
       an[Exception] shouldBe thrownBy {
         await(result)
@@ -826,9 +899,16 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Accepted"),
+            .withSession(
+              "service"      -> serviceITSA,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdITSA.value,
+              "status"       -> "Accepted"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
     }
@@ -839,34 +919,49 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value),
+            .withSession(
+              "service"      -> serviceITSA,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdITSA.value
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
         "Sorry, there is a problem with the service",
         "The authorisation was not cancelled. Please try again.",
-        "Try again")
+        "Try again"
+      )
     }
 
     "go to problem page when yes is selected on confirm cancel authorisation page for alt-itsa, but set relationship ended fails" in {
-     givenSetRelationshipEndedReturns(arn, validNino.value, Service.MtdIt, 500)
+      givenSetRelationshipEndedReturns(arn, validNino.value, Service.MtdIt, 500)
       val result = postConfirmCancelAuth(
         authorisedAsValidAgent(
           request
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "true")
-            .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano", "invitationId" -> invitationIdITSA.value, "status" -> "Partialauth"),
+            .withSession(
+              "service"      -> serviceITSA,
+              "clientId"     -> validNino.value,
+              "clientName"   -> "Joe Volcano",
+              "invitationId" -> invitationIdITSA.value,
+              "status"       -> "Partialauth"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
         result,
         "Sorry, there is a problem with the service",
         "The authorisation was not cancelled. Please try again.",
-        "Try again")
+        "Try again"
+      )
     }
 
     "when no is selected on confirm cancel authorisation page, go back to manage authorisations page" in {
@@ -876,7 +971,8 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
             .withFormUrlEncodedBody("confirmCancelAuthorisation" -> "false")
             .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/track")
@@ -887,7 +983,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         authorisedAsValidAgent(
           request
             .withSession("service" -> serviceITSA, "clientId" -> validNino.value, "clientName" -> "Joe Volcano"),
-          arn.value))
+          arn.value
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(result, "Select yes if you want to cancel this authorisation request")
@@ -907,9 +1005,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
               "invitationId" -> invitationIdITSA.value,
               "clientId"     -> validNino.value,
               "clientName"   -> "Buttercup Powerpuff",
-              "service"      -> "HMRC-MTD-IT"),
+              "service"      -> "HMRC-MTD-IT"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       val htmlString = Helpers.contentAsString(result)
@@ -925,7 +1025,9 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         "follow the instructions for deleting the client from your client list"
       )
 
-      html.select("a[href='https://www.gov.uk/guidance/self-assessment-for-agents-online-service']").text() shouldBe "sign in to your HMRC online services for agents account"
+      html
+        .select("a[href='https://www.gov.uk/guidance/self-assessment-for-agents-online-service']")
+        .text() shouldBe "sign in to your HMRC online services for agents account"
       html.select("a[href='/invitations/track']").text() shouldBe "Return to manage your recent authorisation requests"
     }
 
@@ -937,9 +1039,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
               "invitationId" -> invitationIdPIR.value,
               "clientId"     -> validNino.value,
               "clientName"   -> "Bubbles Powerpuff",
-              "service"      -> "PERSONAL-INCOME-RECORD"),
+              "service"      -> "PERSONAL-INCOME-RECORD"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(
@@ -959,9 +1063,11 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
               "invitationId" -> invitationIdVAT.value,
               "clientId"     -> validVrn.value,
               "clientName"   -> "Blossom Powerpuff",
-              "service"      -> "HMRC-MTD-VAT"),
+              "service"      -> "HMRC-MTD-VAT"
+            ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyText(

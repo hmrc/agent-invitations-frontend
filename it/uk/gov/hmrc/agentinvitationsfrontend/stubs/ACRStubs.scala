@@ -149,12 +149,14 @@ trait ACRStubs {
     )
   }
 
-
   def givenInactiveRelationshipsNotFound =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/agent/relationships/inactive"))
-        .willReturn(aResponse()
-          .withStatus(404)))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        )
+    )
 
   def givenCancelledAuthorisationItsa(arn: Arn, nino: Nino, status: Int) =
     stubFor(
@@ -238,7 +240,7 @@ trait ACRStubs {
         )
     )
 
-  def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: Nino, status: Int) = {
+  def givenLegacySaRelationshipReturnsStatus(arn: Arn, nino: Nino, status: Int) =
     stubFor(
       get(urlEqualTo(s"/agent-client-relationships/agent/${arn.value}/client/${nino.value}/legacy-mapped-relationship"))
         .willReturn(
@@ -246,5 +248,4 @@ trait ACRStubs {
             .withStatus(status)
         )
     )
-  }
 }

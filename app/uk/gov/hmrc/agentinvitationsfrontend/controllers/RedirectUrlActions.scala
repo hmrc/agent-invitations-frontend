@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
+class RedirectUrlActions @Inject() (ssoConnector: SsoConnector) {
 
   def getRedirectUrl[A](implicit request: Request[A]): Option[RedirectUrl] = getUrl(request.getQueryString("continue"))
 
@@ -47,8 +47,9 @@ class RedirectUrlActions @Inject()(ssoConnector: SsoConnector) {
         None
     }
 
-  def maybeRedirectUrlOrBadRequest(redirectUrlOpt: Option[RedirectUrl])(
-    block: Option[String] => Future[Result])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def maybeRedirectUrlOrBadRequest(
+    redirectUrlOpt: Option[RedirectUrl]
+  )(block: Option[String] => Future[Result])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
 
     val allowlistPolicy = AbsoluteWithHostnameFromAllowlist(ssoConnector.getAllowlistedDomains())
 

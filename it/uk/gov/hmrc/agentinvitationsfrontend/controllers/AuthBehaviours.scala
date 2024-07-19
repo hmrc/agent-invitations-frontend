@@ -12,8 +12,9 @@ import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 trait AuthBehaviours extends AuthStubs {
   self: BaseISpec =>
 
-  def anAuthorisedAgentEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(
-    implicit defaultAwaitTimeout: akka.util.Timeout): Unit = {
+  def anAuthorisedAgentEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(implicit
+    defaultAwaitTimeout: akka.util.Timeout
+  ): Unit = {
 
     "return 303 for an Agent with no enrolments and redirected to agent subscription" in {
       givenUnauthorisedForInsufficientEnrolments()
@@ -35,14 +36,15 @@ trait AuthBehaviours extends AuthStubs {
       givenUnauthorisedWith("MissingBearerToken")
       val result = action(request)
       status(result) shouldBe 303
-      redirectLocation(result) shouldBe Some("http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/track/")
+      redirectLocation(result) shouldBe Some(
+        "http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/track/"
+      )
     }
   }
 
-  def anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(
-    request: FakeRequest[AnyContentAsEmpty.type],
-    action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout): Unit =
-
+  def anIndividualWithLowConfidenceLevelAndNinoGetEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(implicit
+    defaultAwaitTimeout: akka.util.Timeout
+  ): Unit =
     "redirect to Identity Verification when confidence level is below 250 for an Individual with a NINO" in {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -50,17 +52,17 @@ trait AuthBehaviours extends AuthStubs {
       val failureUrl: String =
         URLEncoder.encode(
           routes.ClientInvitationJourneyController.showCannotConfirmIdentity(success = Some(request.uri)).url,
-          StandardCharsets.UTF_8.toString)
+          StandardCharsets.UTF_8.toString
+        )
 
       status(result) shouldBe 303
       redirectLocation(result).get should startWith("/mdtp/uplift?origin=aif&confidenceLevel=250")
       redirectLocation(result).get should endWith(s"failureURL=$failureUrl")
     }
 
-  def anIndividualWithConfidenceLevel200AndNinoGetEndpoint(
-                                                            request: FakeRequest[AnyContentAsEmpty.type],
-                                                            action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout): Unit =
-
+  def anIndividualWithConfidenceLevel200AndNinoGetEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(implicit
+    defaultAwaitTimeout: akka.util.Timeout
+  ): Unit =
     "redirect to Identity Verification when confidence level is 200 for an Individual with a NINO" in {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -68,18 +70,17 @@ trait AuthBehaviours extends AuthStubs {
       val failureUrl: String =
         URLEncoder.encode(
           routes.ClientInvitationJourneyController.showCannotConfirmIdentity(success = Some(request.uri)).url,
-          StandardCharsets.UTF_8.toString)
+          StandardCharsets.UTF_8.toString
+        )
 
       status(result) shouldBe 303
       redirectLocation(result).get should startWith("/mdtp/uplift?origin=aif&confidenceLevel=250")
       redirectLocation(result).get should endWith(s"failureURL=$failureUrl")
     }
 
-
-  def aClientWithLowConfidenceLevelPostEndpoint(
-    request: FakeRequest[AnyContentAsEmpty.type],
-    action: Action[AnyContent])(implicit defaultAwaitTimeout: akka.util.Timeout): Unit =
-
+  def aClientWithLowConfidenceLevelPostEndpoint(request: FakeRequest[AnyContentAsEmpty.type], action: Action[AnyContent])(implicit
+    defaultAwaitTimeout: akka.util.Timeout
+  ): Unit =
     "redirect to cannot confirm identity when the confidence level is below 250 on a post request" in {
       implicit val hc: HeaderCarrier = HeaderCarrier()
 

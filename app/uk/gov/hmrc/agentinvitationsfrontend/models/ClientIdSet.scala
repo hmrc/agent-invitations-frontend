@@ -20,8 +20,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.validators.Validators.{urnPattern, u
 import uk.gov.hmrc.agentmtdidentifiers.model.{CbcId, CgtRef, PlrId, PptRef, TrustTaxIdentifier, Urn, Utr, Vrn}
 import uk.gov.hmrc.domain.Nino
 
-/**
-  A set of data that is sufficient to identify and verify a client by checking the associated known fact.
+/** A set of data that is sufficient to identify and verify a client by checking the associated known fact.
   */
 sealed trait ClientIdSet
 

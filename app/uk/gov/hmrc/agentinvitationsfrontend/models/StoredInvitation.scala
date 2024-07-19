@@ -37,7 +37,8 @@ case class StoredInvitation(
   invitationId: String,
   isRelationshipEnded: Boolean,
   relationshipEndedBy: Option[String] = None,
-  selfUrl: URL) {
+  selfUrl: URL
+) {
   val altItsa: Option[Boolean] = if (service == Service.MtdIt) Some(clientId == suppliedClientId) else None
 }
 
@@ -56,7 +57,8 @@ object StoredInvitation {
     invitationId: String,
     isRelationshipEnded: Boolean,
     relationshipEndedBy: Option[String],
-    selfUrl: URL): StoredInvitation =
+    selfUrl: URL
+  ): StoredInvitation =
     StoredInvitation(
       arn,
       clientType,

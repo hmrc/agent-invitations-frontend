@@ -51,7 +51,9 @@ class InvitationsServiceSpec extends UnitSpec {
         when(
           acaConnector.setRelationshipEnded(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
             any(classOf[HeaderCarrier]),
-            any(classOf[ExecutionContext])))
+            any(classOf[ExecutionContext])
+          )
+        )
           .thenReturn(
             Future successful Some(true)
           )
@@ -62,7 +64,9 @@ class InvitationsServiceSpec extends UnitSpec {
         when(
           acaConnector.setRelationshipEnded(any(classOf[Arn]), any(classOf[String]), any(classOf[String]))(
             any(classOf[HeaderCarrier]),
-            any(classOf[ExecutionContext])))
+            any(classOf[ExecutionContext])
+          )
+        )
           .thenReturn(
             Future successful Some(false)
           )

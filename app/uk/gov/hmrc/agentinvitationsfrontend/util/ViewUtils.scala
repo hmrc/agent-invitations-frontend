@@ -47,9 +47,7 @@ object ViewUtils {
         value = Some(radioData.name),
         id = Some(radioData.id.getOrElse(radioData.name)),
         checked = radioData.isChecked.getOrElse(field.value.contains(radioData.name)),
-        hint = radioData.hint.map(h => {
-          Hint(content = HtmlContent(msgs(h)))
-        })
+        hint = radioData.hint.map(h => Hint(content = HtmlContent(msgs(h))))
       )
     }
 
@@ -63,9 +61,11 @@ object ViewUtils {
     if (form.errors(field).exists(error => error.message.contains("year"))) true else false
 
   def isEmptyOrInvalidError(field: String, form: Form[_]): Boolean =
-    if (form
-          .errors(field)
-          .exists(error => error.message.contains("invalid")) || form.errors(field).exists(error => error.message.contains("required"))) true
+    if (
+      form
+        .errors(field)
+        .exists(error => error.message.contains("invalid")) || form.errors(field).exists(error => error.message.contains("required"))
+    ) true
     else false
 
   def dateErrorMapping(field: String, form: Form[_]): Map[String, String] =

@@ -47,7 +47,7 @@ object DisplayDateUtils {
     DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.UK)
 
   def displayDateForLang(date: Option[java.time.LocalDate], df: DateTimeFormatter = dateFormatter)(implicit request: Request[_]): String =
-    date.fold("")(d => {
+    date.fold("") { d =>
       val lang = request.cookies
         .get("PLAY_LANG")
         .map(_.value)
@@ -60,7 +60,7 @@ object DisplayDateUtils {
         val cyMonth = welshMonthLookup(monthStrEnglish)
         dateStrEnglish.replace(monthStrEnglish, cyMonth)
       } else dateStrEnglish
-    })
+    }
 
   def displayDateForLangFromString(strDate: String)(implicit request: Request[_]): String = {
     val localDate = Try(LocalDate.parse(strDate))

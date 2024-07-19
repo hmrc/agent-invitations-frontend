@@ -81,20 +81,20 @@ trait TestDataCommonSupport {
 
   def pptSubscriptionSuccessBodyJson(pptRef: PptRef, registrationDate: LocalDate) =
     s"""{"pptReference": "${pptRef.value}",
-                                                                               |"legalEntityDetails": {
-                                                                               |"dateOfApplication": "$registrationDate",
-                                                                               |"customerDetails": {
-                                                                               |"customerType": "Organisation",
-                                                                               |"organisationDetails": {
-                                                                               |"organisationName": "Life Insuranco"
-                                                                               |}
-                                                                               |}
-                                                                               |},
-                                                                               |"changeOfCircumstanceDetails": {
-                                                                               |"deregistrationDetails": {
-                                                                               |"deregistrationDate": "2028-01-09"
-                                                                               |}
-                                                                               |}}""".stripMargin
+       |"legalEntityDetails": {
+       |"dateOfApplication": "$registrationDate",
+       |"customerDetails": {
+       |"customerType": "Organisation",
+       |"organisationDetails": {
+       |"organisationName": "Life Insuranco"
+       |}
+       |}
+       |},
+       |"changeOfCircumstanceDetails": {
+       |"deregistrationDetails": {
+       |"deregistrationDate": "2028-01-09"
+       |}
+       |}}""".stripMargin
 
   val pptNotFoundJson = """[{"code":"NOT_FOUND","reason":"Data not found  for the provided Registration Number."}]"""
 

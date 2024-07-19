@@ -33,7 +33,8 @@ class CancelRequestFormSpec extends UnitSpec {
     "return no error with valid input" in {
       val result =
         testCancelRequestForm.bind(
-          Json.obj("invitationId" -> invitationIdITSA.value, "service" -> itsaService, "clientType" -> "personal", "clientName" -> clientName))
+          Json.obj("invitationId" -> invitationIdITSA.value, "service" -> itsaService, "clientType" -> "personal", "clientName" -> clientName)
+        )
 
       result.errors.isEmpty shouldBe true
     }
@@ -41,7 +42,8 @@ class CancelRequestFormSpec extends UnitSpec {
     "return an error when service is invalid" in {
       val result =
         testCancelRequestForm.bind(
-          Json.obj("invitationId" -> invitationIdITSA.value, "service" -> "foo", "clientType" -> "personal", "clientName" -> clientName))
+          Json.obj("invitationId" -> invitationIdITSA.value, "service" -> "foo", "clientType" -> "personal", "clientName" -> clientName)
+        )
 
       result.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
     }
@@ -49,7 +51,8 @@ class CancelRequestFormSpec extends UnitSpec {
     "return an error when invitationId is invalid" in {
       val result =
         testCancelRequestForm.bind(
-          Json.obj("invitationId" -> "foo", "service" -> itsaService, "clientType" -> "personal", "clientName" -> clientName))
+          Json.obj("invitationId" -> "foo", "service" -> itsaService, "clientType" -> "personal", "clientName" -> clientName)
+        )
 
       result.errors shouldBe Seq(FormError("invitationId", List("Invalid invitation Id")))
     }

@@ -66,7 +66,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         someClientName,
         Invitation(Some(ClientType.Business), Service.CapitalGains, CgtRef("X")),
         AuthorisationRequest.NEW,
-        "item-cgt")
+        "item-cgt"
+      )
     case Service.Vat =>
       AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.Vat, vrn), AuthorisationRequest.NEW, "item-vat")
     case Service.MtdIt =>
@@ -121,7 +122,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
     Future.successful(true)
 
   def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
-    Future successful (false)
+    Future successful false
 
   def knownFactCheckReturns(result: KnownFactResult): CheckKnownFact = _ => Future.successful(result)
   def knownFactCheckPasses = knownFactCheckReturns(Pass)
@@ -436,11 +437,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           itsaClientIdentified(knownFactCheckPasses) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.MtdIt, `nino`), AuthorisationRequest.NEW, _),
-                  `emptyBasket`,
-                  _),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.MtdIt, `nino`), AuthorisationRequest.NEW, _),
+                    `emptyBasket`,
+                    _
+                  ),
+                  _
+                ) =>
           }
       }
 
@@ -462,24 +465,21 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
           transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Personal, `emptyBasket`, _, _), _) =>
+          matchPattern { case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Personal, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to ConfirmPostcodeCgt for trust cgt clients" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
           transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
+          matchPattern { case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to CgtRefNotFound" in {
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
           transitions.identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
+          matchPattern { case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
 
@@ -490,11 +490,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Ppt, `pptRef`), _, _),
-                  `emptyBasket`,
-                  _),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Ppt, `pptRef`), _, _),
+                    `emptyBasket`,
+                    _
+                  ),
+                  _
+                ) =>
           }
       }
       "transition to ConfirmClientPpt for business PPT clients" in {
@@ -504,8 +506,9 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
           matchPattern {
             case (
-                ConfirmClient(AuthorisationRequest(`someClientName`, Invitation(Some(Business), Service.Ppt, `pptRef`), _, _), `emptyBasket`, _),
-                _) =>
+                  ConfirmClient(AuthorisationRequest(`someClientName`, Invitation(Some(Business), Service.Ppt, `pptRef`), _, _), `emptyBasket`, _),
+                  _
+                ) =>
           }
       }
       "transition to ConfirmClientPpt for trust PPT clients" in {
@@ -522,8 +525,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(checkKnownFact = knownFactCheckDoesntMatch)
             .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
-          matchPattern {
-            case (PptRefNotFound(PptRef(pptRef), _), _) =>
+          matchPattern { case (PptRefNotFound(PptRef(pptRef), _), _) =>
           }
       }
 
@@ -532,8 +534,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(checkKnownFact = knownFactCheckPasses, getClientName = getClientNameNotFound)
             .identifyPptClient(authorisedAgent)(PptClient(pptRef, pptRegDateStr)) should
-          matchPattern {
-            case (PptRefNotFound(PptRef(pptRef), _), _) =>
+          matchPattern { case (PptRefNotFound(PptRef(pptRef), _), _) =>
           }
       }
 
@@ -543,11 +544,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           vatClientIdentified(knownFactCheckPasses) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
-                  `emptyBasket`,
-                  Some(false)),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
+                    `emptyBasket`,
+                    Some(false)
+                  ),
+                  _
+                ) =>
           }
       }
 
@@ -557,11 +560,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           vatClientIdentified(knownFactCheckReturns(Fail(VatClientInsolvent))) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
-                  `emptyBasket`,
-                  Some(true)),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Personal), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
+                    `emptyBasket`,
+                    Some(true)
+                  ),
+                  _
+                ) =>
           }
       }
 
@@ -628,24 +633,21 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to ConfirmPostcodeCgt when cgt client is identified for a personal" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
           transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
+          matchPattern { case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to ConfirmPostcodeCgt when cgt client is identified for a trust" in {
         given(IdentifyClient(Trust, Service.CapitalGains, emptyBasket)) when
           transitions.copy(getCgtSubscription = getCgtSubscription()).identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
+          matchPattern { case (ConfirmPostcodeCgt(CgtRef("myCgtRef"), ClientType.Trust, `emptyBasket`, _, _), _) =>
           }
       }
 
       "transition to CgtRefNotFound" in {
         given(IdentifyClient(Personal, Service.CapitalGains, emptyBasket)) when
           transitions.identifyCgtClient(authorisedAgent)(CgtRef("myCgtRef")) should
-          matchPattern {
-            case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
+          matchPattern { case (CgtRefNotFound(CgtRef("myCgtRef"), _), _) =>
           }
       }
     }
@@ -671,8 +673,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to KnownFactsNotMatched when the postcode is not matched for a UK client" in {
         given(ConfirmPostcodeCgt(CgtRef("cgtRef"), Personal, emptyBasket, Some("BN13 1FN"), "firstName lastName")) when
           transitions.copy(getCgtSubscription = getCgtSubscription()).confirmPostcodeCgt(authorisedAgent)(Postcode("BN13 1ZZ")) should
-          matchPattern {
-            case (KnownFactNotMatched(_), _) =>
+          matchPattern { case (KnownFactNotMatched(_), _) =>
           }
       }
     }
@@ -698,8 +699,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       "transition to KnownFactsNotMatched when the countryCode is not matched for a non UK client" in {
         given(ConfirmCountryCodeCgt(CgtRef("cgtRef"), Personal, emptyBasket, "IN", "firstName lastName")) when
           transitions.copy(getCgtSubscription = getCgtSubscription("IN")).confirmCountryCodeCgt(authorisedAgent)(CountryCode("FR")) should
-          matchPattern {
-            case (KnownFactNotMatched(_), _) =>
+          matchPattern { case (KnownFactNotMatched(_), _) =>
           }
       }
     }
@@ -719,11 +719,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
-                  _,
-                  Some(false)),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
+                    _,
+                    Some(false)
+                  ),
+                  _
+                ) =>
           }
       }
 
@@ -752,11 +754,13 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             .identifiedVatClient(authorisedAgent)(VatClient(vrn, "2010-10-10")) should
           matchPattern {
             case (
-                ConfirmClient(
-                  AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
-                  _,
-                  Some(false)),
-                _) =>
+                  ConfirmClient(
+                    AuthorisationRequest(`someClientName`, Invitation(Some(ClientType.Business), Service.Vat, `vrn`), AuthorisationRequest.NEW, _),
+                    _,
+                    Some(false)
+                  ),
+                  _
+                ) =>
           }
       }
 
@@ -775,7 +779,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
       val authorisationRequest = AuthorisationRequest(someClientName, Invitation(Some(ClientType.Personal), Service.MtdIt, nino))
 
       def hasPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
-        Future successful (true)
+        Future successful true
 
       "transition to SelectClientType" in {
 
@@ -820,8 +824,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(hasPartialAuthorisationFor = hasPartialAuthorisation)
             .clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenMatch {
-            case PartialAuthorisationExists(_) =>
+          thenMatch { case PartialAuthorisationExists(_) =>
           }
       }
 
@@ -831,8 +834,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(legacySaRelationshipStatusFor = legacySaRelationshipStatusMapped)
             .clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenMatch {
-            case AlreadyCopiedAcrossItsa =>
+          thenMatch { case AlreadyCopiedAcrossItsa =>
           }
       }
 
@@ -842,8 +844,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(legacySaRelationshipStatusFor = legacySaRelationshipStatusNotMapped)
             .clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenMatch {
-            case LegacyAuthorisationDetected(_) =>
+          thenMatch { case LegacyAuthorisationDetected(_) =>
           }
       }
     }
@@ -907,8 +908,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           )
         ) when
           transitions.clientConfirmed(authorisedAgent)(Confirmation(true)) should
-          thenMatch {
-            case ClientInsolvent(_) =>
+          thenMatch { case ClientInsolvent(_) =>
           }
       }
 
@@ -1108,28 +1108,32 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
             "Mr Client",
             Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456B")),
             AuthorisationRequest.NEW,
-            "ABC123")
+            "ABC123"
+          )
 
         val authorisationRequestNew2 =
           AuthorisationRequest(
             "Mr Client",
             Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456B")),
             AuthorisationRequest.NEW,
-            "ABC124")
+            "ABC124"
+          )
 
         val authorisationRequestSuccess1 =
           AuthorisationRequest(
             "Mr Client",
             Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456A")),
             AuthorisationRequest.CREATED,
-            "ABC123")
+            "ABC123"
+          )
 
         val authorisationRequestFailed2 =
           AuthorisationRequest(
             "Mr Client",
             Invitation(Some(ClientType.Personal), Service.MtdIt, Nino("AB123456B")),
             AuthorisationRequest.FAILED,
-            "ABC124")
+            "ABC124"
+          )
 
         given(
           ReviewAuthorisations(Trust, Services.supportedTrustServices, Set(authorisationRequestNew1, authorisationRequestNew2))
@@ -1184,7 +1188,7 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
 
         given(ReviewAuthorisations(Personal, Services.supportedPersonalServices, emptyBasket)) when
           transitions.authorisationsReviewed(authorisedAgent)(Confirmation(true)) should
-          thenGo(SelectService(Personal, Services.supportedPersonalServices, emptyBasket)) //FIXME check basket has invitation added
+          thenGo(SelectService(Personal, Services.supportedPersonalServices, emptyBasket)) // FIXME check basket has invitation added
       }
 
       "after authorisationsReviewed(false) transition to InvitationSentPersonal" in {
@@ -1200,7 +1204,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createInvitationSent: CreateInvitationSent =
           (_: String, _: String, _: Arn, _: Basket) =>
             Future.successful(
-              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false)))
+              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false))
+            )
 
         given(
           ReviewAuthorisations(Personal, Services.supportedPersonalServices, Set(authorisationRequestNew))
@@ -1241,7 +1246,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createInvitationSent: CreateInvitationSent =
           (_: String, _: String, _: Arn, _: Basket) =>
             Future.successful(
-              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false)))
+              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false))
+            )
 
         given(
           ReviewAuthorisations(Personal, Services.supportedPersonalServices, Set(authorisationRequestNew))
@@ -1263,7 +1269,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
         def createInvitationSent: CreateInvitationSent =
           (_: String, _: String, _: Arn, _: Basket) =>
             Future.successful(
-              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false)))
+              InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Set(Service.MtdIt), isAltItsa = Some(false))
+            )
 
         given(
           ReviewAuthorisations(Personal, Services.supportedPersonalServices, Set(authorisationRequestNew1, authorisationRequestNew2))
@@ -1271,7 +1278,8 @@ class AgentInvitationJourneyModelSpec extends UnitSpec with StateMatchers[State]
           transitions
             .copy(
               createMultipleInvitations = (_, _) => Future(Set(authorisationRequestSuccess1, authorisationRequestFailed2)),
-              createInvitationSent = createInvitationSent)
+              createInvitationSent = createInvitationSent
+            )
             .authorisationsReviewed(authorisedAgent)(Confirmation(false)) should
           thenGo(
             SomeAuthorisationsFailed(

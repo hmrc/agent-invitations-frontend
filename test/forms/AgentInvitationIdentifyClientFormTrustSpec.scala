@@ -25,8 +25,8 @@ import support.UnitSpec
 
 class AgentInvitationIdentifyClientFormTrustSpec extends UnitSpec {
 
-  val validUtrFormData = Json.obj("taxId"   -> "8571842718")
-  val validUrnFormData = Json.obj("taxId"   -> "XATRUST59123128")
+  val validUtrFormData = Json.obj("taxId" -> "8571842718")
+  val validUrnFormData = Json.obj("taxId" -> "XATRUST59123128")
   val invalidUtrFormData = Json.obj("taxId" -> "012345")
   val invalidUrnFormData = Json.obj("taxId" -> "XXXXXXX12345678")
 

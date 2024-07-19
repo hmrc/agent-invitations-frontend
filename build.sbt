@@ -10,7 +10,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "agent-invitations-frontend",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.12.19",
     majorVersion := 1,
     PlayKeys.playDefaultPort := 9448,
     resolvers ++= Seq(
@@ -51,5 +51,3 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
-
-inConfig(IntegrationTest)(scalafmtCoreSettings)

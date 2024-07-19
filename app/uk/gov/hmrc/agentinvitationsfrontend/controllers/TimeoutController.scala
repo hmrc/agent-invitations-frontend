@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.Future
 
-class TimeoutController @Inject()()(val externalUrls: ExternalUrls, val mcc: MessagesControllerComponents, val appConfig: AppConfig)
+class TimeoutController @Inject() ()(val externalUrls: ExternalUrls, val mcc: MessagesControllerComponents, val appConfig: AppConfig)
     extends FrontendController(mcc) {
 
   def keepAlive: Action[AnyContent] = Action.async { _ =>

@@ -39,7 +39,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
+class AgentClientAuthorisationConnector @Inject() (http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -205,9 +205,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def getAllPendingInvitationsForClient(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[StoredInvitation]] =
+  def getAllPendingInvitationsForClient(arn: Arn, clientId: String, service: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Seq[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-AllInvitations-GET") {
       val url = getAllPendingInvitationsForClientUrl(arn, clientId, service)
       http.GET[HttpResponse](url.toString).map { r =>
@@ -233,9 +234,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def getInvitationsForClient(arn: Arn, clientId: String, service: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Seq[StoredInvitation]] =
+  def getInvitationsForClient(arn: Arn, clientId: String, service: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Seq[StoredInvitation]] =
     monitor(s"ConsumedAPI-Get-MostRecentAcceptedInvitation-GET") {
       val url = getAcceptedInvitationsForClientUrl(arn, clientId, service)
       http.GET[HttpResponse](url.toString).map { r =>
@@ -248,9 +250,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def respondToInvitation(service: Service, taxId: TaxIdentifier, invitationId: InvitationId, accepted: Boolean)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Boolean] = {
+  def respondToInvitation(service: Service, taxId: TaxIdentifier, invitationId: InvitationId, accepted: Boolean)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Boolean] = {
     val taxIdType = (service, taxId) match {
       /* TODO [Service onboarding]
          another pattern match that could be centralised. But we still have several anomalies which make usage vary...
@@ -275,14 +278,14 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
     val acceptReject: String = if (accepted) "accept" else "reject"
     val url = new URL(
       baseUrl,
-      s"/agent-client-authorisation/clients/$taxIdType/${taxId.value}/invitations/received/${invitationId.value}/$acceptReject").toString
+      s"/agent-client-authorisation/clients/$taxIdType/${taxId.value}/invitations/received/${invitationId.value}/$acceptReject"
+    ).toString
     monitor(s"ConsumedAPI-${acceptReject.capitalize}-Invitation-PUT") {
       http.PUT[Boolean, HttpResponse](url, false).map(_.status == 204)
-    }.recover {
-      case e =>
-        val ifAltItsa = if (isAltItsa) "(alt-ITSA)" else ""
-        logger.error(s"${acceptReject.capitalize} $service $ifAltItsa invitation failed: ${e.getMessage}")
-        false
+    }.recover { case e =>
+      val ifAltItsa = if (isAltItsa) "(alt-ITSA)" else ""
+      logger.error(s"${acceptReject.capitalize} $service $ifAltItsa invitation failed: ${e.getMessage}")
+      false
     }
   }
 
@@ -323,9 +326,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[KnownFactResult] =
+  def checkVatRegisteredClient(vrn: Vrn, registrationDateKnownFact: LocalDate)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[KnownFactResult] =
     monitor(s"ConsumedAPI-CheckVatRegDate-GET") {
       http.GET[HttpResponse](checkVatRegisteredClientUrl(vrn, registrationDateKnownFact).toString).map { r =>
         r.status match {
@@ -340,9 +344,10 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
       }
     }
 
-  def checkCitizenRecord(nino: Nino, dob: LocalDate)(
-    implicit headerCarrier: HeaderCarrier,
-    executionContext: ExecutionContext): Future[KnownFactResult] =
+  def checkCitizenRecord(nino: Nino, dob: LocalDate)(implicit
+    headerCarrier: HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[KnownFactResult] =
     monitor(s"ConsumedAPI-CheckCitizenRecord-GET") {
       http.GET[HttpResponse](checkCitizenRecordUrl(nino, dob).toString).map { r =>
         r.status match {
@@ -426,7 +431,7 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         .map { response =>
           response.status match {
             case OK if (response.json \ "customerName").isDefined =>
-              val customerNameField = (response.json \ "customerName")
+              val customerNameField = response.json \ "customerName"
               if (customerNameField.isEmpty) logger.warn(s"Malformed JSON received when getting customer name for pptRef: ${pptRef.value}")
               customerNameField.asOpt[String]
             case NOT_FOUND =>
@@ -453,7 +458,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
               Fail(NotMatched)
             case status =>
               logger.warn(
-                s"$status response for PPT known fact check for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}")
+                s"$status response for PPT known fact check for pptRef: ${pptClient.pptRef.value} and registration date: ${pptClient.registrationDate}"
+              )
               Fail(HttpStatus(status))
           }
         }
@@ -536,7 +542,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
             case OK         => Json.parse(response.body).as[AgencyEmail].email
             case NO_CONTENT => throw AgencyEmailNotFound("No email found in the record for this agent")
             case NOT_FOUND  => throw AgencyEmailNotFound("No record found for this agent")
-        })
+          }
+        )
     }
 
   def getAgencySuspensionDetails()(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SuspensionDetails] =
@@ -548,7 +555,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
             case OK         => Json.parse(response.body).as[SuspensionDetails]
             case NO_CONTENT => SuspensionDetails(suspensionStatus = false, None)
             case NOT_FOUND  => throw SuspensionDetailsNotFound("No record found for this agent")
-        })
+          }
+        )
     }
 
   // This call is cached as we are doing this check on almost every page
@@ -609,15 +617,13 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
 
   def updateAltItsaAuthorisation(arn: Arn)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     monitor(s"ConsumedAPI-updateAltItsaAuthorisation-PUT") {
-      {
-        http
-          .PUT[Boolean, HttpResponse](putAltItsaAuthorisationUrl(arn).toString, false)
-          .map(_.status == 204)
-      }.recover {
-        case e =>
+      http
+        .PUT[Boolean, HttpResponse](putAltItsaAuthorisationUrl(arn).toString, false)
+        .map(_.status == 204)
+        .recover { case e =>
           logger.error(s"update AlT-ITSA Relationship Failed: ${e.getMessage}")
           false
-      }
+        }
     }
 
   def getCbcSubscription(cbcId: CbcId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[SimpleCbcSubscription]] = {
@@ -663,8 +669,8 @@ class AgentClientAuthorisationConnector @Inject()(http: HttpClient)(implicit val
         (JsPath \ "invitationId").read[String] and
         (JsPath \ "isRelationshipEnded").read[Boolean] and
         (JsPath \ "relationshipEndedBy").readNullable[String] and
-        (JsPath \ "_links" \ "self").read[URL])(
-        (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
+        (JsPath \ "_links" \ "self").read[URL])((a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) =>
+        StoredInvitation.apply(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
       )
     }
   }

@@ -27,12 +27,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TrackService @Inject()(
+class TrackService @Inject() (
   relationshipsConnector: RelationshipsConnector,
   pirRelationshipConnector: PirRelationshipConnector,
   val acaConnector: AgentClientAuthorisationConnector,
-  val citizenDetailsConnector: CitizenDetailsConnector)
-    extends GetClientName {
+  val citizenDetailsConnector: CitizenDetailsConnector
+) extends GetClientName {
 
   def relationships(identifierOpt: Option[TaxIdentifier])(f: TaxIdentifier => Future[Seq[TrackRelationship]]): Future[Seq[TrackRelationship]] =
     identifierOpt match {
@@ -74,19 +74,20 @@ class TrackService @Inject()(
     showLastDays: Int,
     pageInfo: PageInfo,
     filterByClient: Option[String],
-    filterByStatus: Option[FilterFormStatus])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
+    filterByStatus: Option[FilterFormStatus]
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TrackResultsPage] =
     allResults(arn, showLastDays).map { all =>
       val filteredResults = applyFilter(all)(filterByClient, filterByStatus)
       val from = (pageInfo.page - 1) * pageInfo.resultsPerPage
       val until = from + pageInfo.resultsPerPage
       val pageItems: Seq[TrackInformationSorted] = filteredResults.slice(from, until)
-      val clientNames: Set[String] = all.flatMap(_.clientName).toSet //we need all client names for filtering
+      val clientNames: Set[String] = all.flatMap(_.clientName).toSet // we need all client names for filtering
       TrackResultsPage(pageItems, filteredResults.size, clientNames)
     }
 
-  def applyFilter(unfilteredResults: Seq[TrackInformationSorted])(
-    filterByClient: Option[String],
-    filterByStatus: Option[FilterFormStatus]): Seq[TrackInformationSorted] = {
+  def applyFilter(
+    unfilteredResults: Seq[TrackInformationSorted]
+  )(filterByClient: Option[String], filterByStatus: Option[FilterFormStatus]): Seq[TrackInformationSorted] = {
     val maybeClientFiltered = filterByClient.fold(unfilteredResults)(client => unfilteredResults.filter(_.clientName.getOrElse("") == client))
     filterByStatus.fold(maybeClientFiltered)(status => maybeClientFiltered.filter(status.filterForStatus))
   }
@@ -134,20 +135,24 @@ class TrackService @Inject()(
       refinedResults = refineStatus(matched)
       (nameOk, nameEmpty) = refinedResults.partition(_.clientName.isDefined)
       nameRetrieved <- Future.traverse(nameEmpty) { trackInfo =>
-                        logger.warn(s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
-                          s" status: ${trackInfo.status} date: ${trackInfo.dateTime} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES")
-                        trackInfo.service match {
-                          case Some(service) => getClientNameByService(trackInfo.clientId, service).map(name => trackInfo.copy(clientName = name))
-                          case None          => Future.successful(trackInfo.copy(clientName = None))
-                        }
-                      }
+                         logger.warn(
+                           s"ClientName was not available in invitation store for ${trackInfo.clientId}," +
+                             s" status: ${trackInfo.status} date: ${trackInfo.dateTime} isEnded ${trackInfo.isRelationshipEnded} service: ${trackInfo.service} getting it from DES"
+                         )
+                         trackInfo.service match {
+                           case Some(service) => getClientNameByService(trackInfo.clientId, service).map(name => trackInfo.copy(clientName = name))
+                           case None          => Future.successful(trackInfo.copy(clientName = None))
+                         }
+                       }
       finalResults = nameOk ++ nameRetrieved
     } yield finalResults.sorted(TrackInformationSorted.orderingByDate)
   }
 
-  def getRecentAgentInvitations(
-    arn: Arn,
-    showLastDays: Int)(implicit hc: HeaderCarrier, ec: ExecutionContext, now: LocalDate): Future[Seq[TrackedInvitation]] =
+  def getRecentAgentInvitations(arn: Arn, showLastDays: Int)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    now: LocalDate
+  ): Future[Seq[TrackedInvitation]] =
     acaConnector
       .getAllInvitations(arn, now.minusDays(showLastDays))
       .map {
@@ -157,30 +162,31 @@ class TrackService @Inject()(
   def getInactiveClients(implicit c: HeaderCarrier, ec: ExecutionContext): Future[Seq[InactiveClient]] =
     for {
       relationships <- Future
-                        .sequence(Seq(relationshipsConnector.getInactiveRelationships, pirRelationshipConnector.getInactiveIrvRelationships))
-                        .map(_.flatten)
+                         .sequence(Seq(relationshipsConnector.getInactiveRelationships, pirRelationshipConnector.getInactiveIrvRelationships))
+                         .map(_.flatten)
       filteredRelationships = relationships.filter(rel => relationshipsConnector.isServiceEnabled(rel.service))
 
       inactiveClients <- Future.traverse(filteredRelationships) {
 
-                          case r if r.service == Service.MtdIt =>
-                            acaConnector
-                              .getNinoForMtdItId(MtdItId(r.clientId))
-                              .map(nino => InactiveClient(Some(r.clientType), Some(r.service), nino.fold("")(_.value), "ni", r.dateTo))
+                           case r if r.service == Service.MtdIt =>
+                             acaConnector
+                               .getNinoForMtdItId(MtdItId(r.clientId))
+                               .map(nino => InactiveClient(Some(r.clientType), Some(r.service), nino.fold("")(_.value), "ni", r.dateTo))
 
-                          case rel: InactiveTrackRelationship =>
-                            Future successful InactiveClient(
-                              Some(rel.clientType),
-                              Some(rel.service),
-                              rel.clientId,
-                              rel.service.supportedSuppliedClientIdType.id,
-                              rel.dateTo)
+                           case rel: InactiveTrackRelationship =>
+                             Future successful InactiveClient(
+                               Some(rel.clientType),
+                               Some(rel.service),
+                               rel.clientId,
+                               rel.service.supportedSuppliedClientIdType.id,
+                               rel.dateTo
+                             )
 
-                          case IrvTrackRelationship(_, dateTo, clientId) =>
-                            Future successful InactiveClient(Some("personal"), Some(Service.PersonalIncomeRecord), clientId, "ni", dateTo)
+                           case IrvTrackRelationship(_, dateTo, clientId) =>
+                             Future successful InactiveClient(Some("personal"), Some(Service.PersonalIncomeRecord), clientId, "ni", dateTo)
 
-                          case _ => Future successful InactiveClient(None, None, "", "", None)
-                        }
+                           case _ => Future successful InactiveClient(None, None, "", "", None)
+                         }
     } yield inactiveClients.filter(_.service.nonEmpty)
 
   /*This method will match an Accepted with an Invalid. It is based on the premise that for a given client,
@@ -206,7 +212,7 @@ class TrackService @Inject()(
           case hd :: tl =>
             hd.status match {
               case "Pending" | "Rejected" | "Expired" | "Cancelled" | "Partialauth" => _match(tl, Some(hd) :: acc)
-              case "Accepted" | "InvalidRelationship" | "Deauthorised" => {
+              case "Accepted" | "InvalidRelationship" | "Deauthorised" =>
                 acceptedOrDeauthed
                   .filter(_.service == hd.service)
                   .map(Some(_))
@@ -215,7 +221,8 @@ class TrackService @Inject()(
                       .filter(invalid => servicesMatch(invalid, hd))
                       .map(Some(_)),
                     None,
-                    None)
+                    None
+                  )
                   .find(_._1.contains(hd)) match {
                   case Some((Some(accepted), Some(invalid))) =>
                     _match(
@@ -224,18 +231,19 @@ class TrackService @Inject()(
                         accepted.copy(
                           dateTime = invalid.dateTime,
                           isRelationshipEnded = true,
-                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent")))) :: acc //assumed agent led de-auth-- setRelationshipEnded was not in place until APB-5115), should change to Client after 30 days (allow for change to take effect)
+                          relationshipEndedBy = accepted.relationshipEndedBy.orElse(Some("Agent"))
+                        )
+                      ) :: acc // assumed agent led de-auth-- setRelationshipEnded was not in place until APB-5115), should change to Client after 30 days (allow for change to take effect)
                     )
-                  case Some((Some(active), None)) => _match(tl, Some(active) :: acc) //unmatched so must still be active
-                  case None                       => _match(tl, None :: acc) //invalid found
-                  case e => {
+                  case Some((Some(active), None)) => _match(tl, Some(active) :: acc) // unmatched so must still be active
+                  case None                       => _match(tl, None :: acc) // invalid found
+                  case e =>
                     logger.error(
                       s"unexpected match result on the track page: $e accepted or deauthed" +
-                        s"size: ${acceptedOrDeauthed.size} invalid size: ${invalid.size}")
+                        s"size: ${acceptedOrDeauthed.size} invalid size: ${invalid.size}"
+                    )
                     _match(tl, None :: acc)
-                  }
                 }
-              }
             }
         }
       _match(a.toList, List.empty)
@@ -246,12 +254,10 @@ class TrackService @Inject()(
   private def refineStatus(unrefined: Seq[TrackInformationSorted]) =
     unrefined.map {
       case a: TrackInformationSorted
-          if (a.status == "Accepted" || a.status == "Deauthorised") && a.isRelationshipEnded && a.relationshipEndedBy.isDefined => {
+          if (a.status == "Accepted" || a.status == "Deauthorised") && a.isRelationshipEnded && a.relationshipEndedBy.isDefined =>
         a.copy(status = s"AcceptedThenCancelledBy${a.relationshipEndedBy.get}")
-      }
-      case a: TrackInformationSorted if a.status == "Deauthorised" && !(a.isRelationshipEnded && a.relationshipEndedBy.isDefined) => {
+      case a: TrackInformationSorted if a.status == "Deauthorised" && !(a.isRelationshipEnded && a.relationshipEndedBy.isDefined) =>
         a.copy(status = "Accepted")
-      }
 
       case b: TrackInformationSorted => b
     }

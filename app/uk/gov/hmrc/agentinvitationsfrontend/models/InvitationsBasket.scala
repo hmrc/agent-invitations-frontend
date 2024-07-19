@@ -22,7 +22,6 @@ import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationJourneyModel
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
 /** The set of services available that an agent can choose for authorisation
-  *
   */
 case class InvitationsBasket(clientType: ClientType, services: Set[Service], basket: Basket, featureFlags: FeatureFlags) {
 
@@ -31,9 +30,9 @@ case class InvitationsBasket(clientType: ClientType, services: Set[Service], bas
       .supportedServicesFor(clientType)
       .filter(showService)
 
-  /** Returns a set of pairs of string which can be used to populate a selection form
-    *  depends on what the set of services are, and whether any are in your basket already
-    * */
+  /** Returns a set of pairs of string which can be used to populate a selection form depends on what the set of services are, and whether any are in
+    * your basket already
+    */
   def availableServicesAndNames(implicit messages: Messages): Set[(Service, String)] =
     availableServices.map(service => service -> Messages(s"select-service.${service.id}.${clientType.toString}"))
 

@@ -46,16 +46,15 @@ object UrlBinders {
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, FilterFormStatus]] =
         for {
           status <- queryStringBinder.bind(key, params)
-        } yield
-          status match {
-            case Right(s) =>
-              try {
-                Right(FilterFormStatus.toEnum(s))
-              } catch {
-                case e: Exception => Left(ErrorConstants.StatusError)
-              }
-            case _ => Left(ErrorConstants.StatusError)
-          }
+        } yield status match {
+          case Right(s) =>
+            try
+              Right(FilterFormStatus.toEnum(s))
+            catch {
+              case e: Exception => Left(ErrorConstants.StatusError)
+            }
+          case _ => Left(ErrorConstants.StatusError)
+        }
 
       override def unbind(key: String, ffs: FilterFormStatus): String =
         queryStringBinder.unbind(key, FilterFormStatus.fromEnum(ffs))

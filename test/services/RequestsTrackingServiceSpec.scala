@@ -56,7 +56,8 @@ class RequestsTrackingServiceSpec extends UnitSpec {
 
         when(acaConnector.getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
-            Future.successful(CustomerDetails(Some("Aaa"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), Some("Ccc"))))
+            Future.successful(CustomerDetails(Some("Aaa"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), Some("Ccc")))
+          )
 
         await(tested.getVatName(vrn)) shouldBe Some("Ccc")
       }
@@ -64,7 +65,8 @@ class RequestsTrackingServiceSpec extends UnitSpec {
       "return business name if trading name not available" in {
         when(acaConnector.getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(
-            Future.successful(CustomerDetails(Some("Aaa"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None)))
+            Future.successful(CustomerDetails(Some("Aaa"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), None))
+          )
 
         await(tested.getVatName(vrn)) shouldBe Some("Aaa")
       }
@@ -152,8 +154,11 @@ class RequestsTrackingServiceSpec extends UnitSpec {
           .thenReturn(Future.successful(Some("Aaa Itsa Trader")))
 
         when(acaConnector.getCustomerDetails(any(classOf[Vrn]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
-          .thenReturn(Future.successful(
-            CustomerDetails(Some("Aaa Vat Trader"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), Some("Aaa Ltd."))))
+          .thenReturn(
+            Future.successful(
+              CustomerDetails(Some("Aaa Vat Trader"), Some(IndividualDetails(Some("Bb1"), Some("Bb2"), Some("Bb3"), Some("Bb4"))), Some("Aaa Ltd."))
+            )
+          )
 
         when(citizenDetailsConnector.getCitizenDetails(any(classOf[Nino]))(any(classOf[HeaderCarrier]), any(classOf[ExecutionContext])))
           .thenReturn(Future.successful(Citizen(Some("Aa1"), Some("Aa2"))))
@@ -218,7 +223,9 @@ class RequestsTrackingServiceSpec extends UnitSpec {
                 invitationForService(Service.MtdIt),
                 invitationForService(Service.Vat),
                 invitationForService(Service.PersonalIncomeRecord)
-              )))
+              )
+            )
+          )
 
         val result = await(tested.getRecentAgentInvitations(Arn(""), 30))
 

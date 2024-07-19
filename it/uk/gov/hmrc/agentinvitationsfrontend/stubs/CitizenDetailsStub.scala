@@ -25,17 +25,25 @@ trait CitizenDetailsStub {
                          |      "nino": "${nino.value}"
                          |   },
                          |   "dateOfBirth": "11121971"
-                         |}""".stripMargin)))
+                         |}""".stripMargin)
+        )
+    )
 
   def givenCitizenDetailsReturns404For(nino: Nino) =
     stubFor(
       get(urlEqualTo(s"/citizen-details/nino/${nino.value}"))
-        .willReturn(aResponse()
-          .withStatus(404)))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        )
+    )
 
   def givenCitizenDetailsReturns400For(nino: Nino) =
     stubFor(
       get(urlEqualTo(s"/citizen-details/nino/${nino.value}"))
-        .willReturn(aResponse()
-          .withStatus(400)))
+        .willReturn(
+          aResponse()
+            .withStatus(400)
+        )
+    )
 }
