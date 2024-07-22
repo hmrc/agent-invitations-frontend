@@ -27,5 +27,6 @@ object TrustClientForm {
     Form(
       mapping(
         "taxId" -> normalizedText.verifying(validTrustTaxIdentifier())
-      )(x => TrustClient.apply(x))(x => Some(x.taxId.value)))
+      )(x => TrustClient.apply(x))(x => Some(x.taxId.value))
+    )
 }

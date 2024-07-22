@@ -34,7 +34,7 @@ trait AgentInvitationFastTrackJourneyService extends PersistentJourneyService[He
 }
 
 @Singleton
-class MongoDBCachedAgentInvitationFastTrackJourneyService @Inject()(_cacheRepository: SessionCacheRepository)
+class MongoDBCachedAgentInvitationFastTrackJourneyService @Inject() (_cacheRepository: SessionCacheRepository)
     extends AgentInvitationFastTrackJourneyService {
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])

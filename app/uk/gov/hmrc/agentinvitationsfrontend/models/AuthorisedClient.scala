@@ -27,24 +27,22 @@ case class AuthorisedClient(affinityGroup: AffinityGroup, enrolments: Enrolments
   def enrolmentCoverage: EnrolmentCoverage = {
     val enrolKeys: Set[String] = this.enrolments.enrolments.map(_.key)
     this.affinityGroup match {
-      case Individual => {
+      case Individual =>
         val coverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Personal))
         if (coverage.size == Services.supportedEnrolmentKeysFor(ClientType.Personal).size) AllSupportedMTDEnrolments
         else if (coverage.isEmpty) NoSupportedMTDEnrolments
         else SomeSupportedMTDEnrolments
-      }
-      case Organisation => {
+      case Organisation =>
         val businessCoverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Business))
         val trustOrEstateCoverage = enrolKeys.intersect(Services.supportedEnrolmentKeysFor(ClientType.Trust))
         if (businessCoverage.isEmpty) {
           if (trustOrEstateCoverage.isEmpty) NoSupportedMTDEnrolments
-          else if (trustOrEstateCoverage.size == Services.supportedEnrolmentKeysFor(ClientType.Trust).size - 1) //not going to have both UTR and URN
+          else if (trustOrEstateCoverage.size == Services.supportedEnrolmentKeysFor(ClientType.Trust).size - 1) // not going to have both UTR and URN
             AllSupportedMTDEnrolments
           else SomeSupportedMTDEnrolments
         } else {
           organisationCoverageResultIgnoringIRV(enrolKeys)
         }
-      }
       case e => throw new RuntimeException(s"client had unexpected Affinity Group: $e")
     }
   }

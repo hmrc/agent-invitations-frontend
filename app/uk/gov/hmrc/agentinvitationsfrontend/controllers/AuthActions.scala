@@ -36,7 +36,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AuthActions @Inject()(
+class AuthActions @Inject() (
   val externalUrls: ExternalUrls,
   val env: Environment,
   val config: Configuration,
@@ -68,7 +68,8 @@ class AuthActions @Inject()(
 
   // In addition to checking enrolment as agent, this also checks if the agent is suspended.
   def withAuthorisedAsAgent[A](
-    body: AuthorisedAgent => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    body: AuthorisedAgent => Future[Result]
+  )(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(Enrolment("HMRC-AS-AGENT") and AuthProviders(GovernmentGateway))
       .retrieve(authorisedEnrolments) { enrolments =>
         getArn(enrolments) match {
@@ -105,8 +106,9 @@ class AuthActions @Inject()(
         handleFailure(isAgent = false)
       }
 
-  def withAuthorisedAsAnyClient[A](journeyId: Option[String])(
-    body: AuthorisedClient => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+  def withAuthorisedAsAnyClient[A](
+    journeyId: Option[String]
+  )(body: AuthorisedClient => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(affinityGroup and confidenceLevel and allEnrolments and nino) {
         case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
@@ -115,14 +117,13 @@ class AuthActions @Inject()(
               withConfidenceLevelUplift(cl, enrols) {
                 body(AuthorisedClient(affinity, enrols))
               }
-            case (AffinityGroup.Organisation, cl) => {
+            case (AffinityGroup.Organisation, cl) =>
               if (enrols.enrolments.map(_.key).contains(Service.MtdIt.id)) withConfidenceLevelUplift(cl, enrols) {
                 body(AuthorisedClient(affinity, enrols))
-              } else body(AuthorisedClient(affinity, enrols))
-            }
-            case (AffinityGroup.Agent, _) => {
+              }
+              else body(AuthorisedClient(affinity, enrols))
+            case (AffinityGroup.Agent, _) =>
               Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest)
-            }
             case (affinityGroup, _) =>
               logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
               Future successful Forbidden
@@ -137,7 +138,8 @@ class AuthActions @Inject()(
       }
 
   def withMaybeLoggedInClient[A](
-    body: Option[AuthorisedClient] => Future[Result])(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
+    body: Option[AuthorisedClient] => Future[Result]
+  )(implicit request: Request[A], hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
     authorised(AuthProviders(GovernmentGateway))
       .retrieve(affinityGroup and confidenceLevel and allEnrolments and nino) {
         case Some(affinity) ~ confidence ~ enrols ~ maybeNino =>
@@ -146,14 +148,13 @@ class AuthActions @Inject()(
               withConfidenceLevelUplift(cl, enrols) {
                 body(Some(AuthorisedClient(affinity, enrols)))
               }
-            case (AffinityGroup.Organisation, cl) => {
+            case (AffinityGroup.Organisation, cl) =>
               if (enrols.enrolments.map(_.key).contains(Service.MtdIt.id)) withConfidenceLevelUplift(cl, enrols) {
                 body(Some(AuthorisedClient(affinity, enrols)))
-              } else body(Some(AuthorisedClient(affinity, enrols)))
-            }
-            case (AffinityGroup.Agent, _) => {
+              }
+              else body(Some(AuthorisedClient(affinity, enrols)))
+            case (AffinityGroup.Agent, _) =>
               Future successful Redirect(routes.ClientInvitationJourneyController.showErrorCannotViewRequest)
-            }
             case (affinityGroup, _) =>
               logger.warn(s"unknown affinity group: $affinityGroup - cannot determine auth status")
               Future successful Forbidden
@@ -176,10 +177,11 @@ class AuthActions @Inject()(
           Future.successful(Forbidden)
       }
 
-  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, enrols: Enrolments)(body: => Future[Result])(
-    implicit request: Request[A]): Future[Result] = {
+  private def withConfidenceLevelUplift[A, BodyArgs](currentLevel: ConfidenceLevel, enrols: Enrolments)(
+    body: => Future[Result]
+  )(implicit request: Request[A]): Future[Result] = {
 
-    //APB-4856: Clients with only CGT enrol dont need to go through IV
+    // APB-4856: Clients with only CGT enrol dont need to go through IV
     val isCgtOnlyClient: Boolean = {
       val enrolKeys: Set[String] = enrols.enrolments.map(_.key)
       enrolKeys.intersect(Services.supportedEnrolmentKeys) == Set(Service.CapitalGains.id)
@@ -200,7 +202,7 @@ class AuthActions @Inject()(
     val rawFailureUrl =
       toLocalFriendlyUrl(routes.ClientInvitationJourneyController.showCannotConfirmIdentity().url, request.host)
 
-    //add success url to params so that when the user succeeds after failing they can continue their journey.
+    // add success url to params so that when the user succeeds after failing they can continue their journey.
     val failureUrl = CallOps.addParamsToUrl(rawFailureUrl, "success" -> Some(successUrl))
 
     val ivUpliftUrl = CallOps.addParamsToUrl(

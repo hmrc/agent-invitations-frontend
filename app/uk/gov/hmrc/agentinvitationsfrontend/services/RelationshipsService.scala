@@ -24,19 +24,20 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelationshipsService @Inject()(relationshipsConnector: RelationshipsConnector, pirRelationshipConnector: PirRelationshipConnector) {
+class RelationshipsService @Inject() (relationshipsConnector: RelationshipsConnector, pirRelationshipConnector: PirRelationshipConnector) {
 
   def hasActiveRelationshipFor(arn: Arn, clientId: String, service: Service)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] =
     service match {
       case Service.PersonalIncomeRecord => pirRelationshipConnector.getPirRelationshipForAgent(arn, Nino(clientId)).map(_.nonEmpty)
-      case _                            => relationshipsConnector.checkRelationship(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
+      case _ => relationshipsConnector.checkRelationship(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
     }
 
-  def deleteRelationshipForService(service: Service, arn: Arn, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] =
+  def deleteRelationshipForService(service: Service, arn: Arn, clientId: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Option[Boolean]] =
     service match {
       case Service.PersonalIncomeRecord => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case _                            => relationshipsConnector.deleteRelationshipForService(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
+      case _ => relationshipsConnector.deleteRelationshipForService(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
     }
 }

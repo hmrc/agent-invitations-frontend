@@ -52,7 +52,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "ConfirmPostcodeCgt" in {
         val state = ConfirmPostcodeCgt(ClientType.Personal, cgtRef, Some("BN13 1FN"), "some-client")
         val json = Json.parse(
-          """{"state":"ConfirmPostcodeCgt", "properties": {"clientType": "personal", "cgtRef": "XMCGTP123456789", "postcode": "BN13 1FN", "clientName": "some-client"}}""")
+          """{"state":"ConfirmPostcodeCgt", "properties": {"clientType": "personal", "cgtRef": "XMCGTP123456789", "postcode": "BN13 1FN", "clientName": "some-client"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -61,7 +62,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "ConfirmCountryCodeCgt" in {
         val state = ConfirmCountryCodeCgt(ClientType.Personal, cgtRef, "GB", "some-client")
         val json = Json.parse(
-          """{"state":"ConfirmCountryCodeCgt", "properties": {"clientType": "personal", "cgtRef": "XMCGTP123456789", "countryCode": "GB", "clientName": "some-client"}}""")
+          """{"state":"ConfirmCountryCodeCgt", "properties": {"clientType": "personal", "cgtRef": "XMCGTP123456789", "countryCode": "GB", "clientName": "some-client"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -78,7 +80,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "ConfirmClient" in {
         val state = ConfirmClient(ClientType.Personal, Service.MtdIt, Some("Cersei not KEEPing well"), Nino("AB123456A"))
         val json = Json.parse(
-          """{"state":"ConfirmClient","properties": {"clientType": "personal", "service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "Nino|AB123456A"}}""")
+          """{"state":"ConfirmClient","properties": {"clientType": "personal", "service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "Nino|AB123456A"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -87,7 +90,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "ConfirmCancel" in {
         val state = ConfirmCancel(Service.MtdIt, Some("Cersei not KEEPing well"), "AB123456A")
         val json = Json.parse(
-          """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A", "isPartialAuth": false}}""")
+          """{"state":"ConfirmCancel","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","clientId": "AB123456A", "isPartialAuth": false}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -95,7 +99,8 @@ class AgentLedDeauthJourneyStateFormatsSpec extends UnitSpec {
       "AuthorisationCancelled" in {
         val state = AuthorisationCancelled(Service.MtdIt, Some("Cersei not KEEPing well"), "agent name")
         val json = Json.parse(
-          """{"state":"AuthorisationCancelled","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","agencyName": "agent name"}}""")
+          """{"state":"AuthorisationCancelled","properties": {"service": "HMRC-MTD-IT", "clientName":"Cersei not KEEPing well","agencyName": "agent name"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

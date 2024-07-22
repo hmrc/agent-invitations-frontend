@@ -33,7 +33,7 @@ trait AgentInvitationJourneyService extends PersistentJourneyService[HeaderCarri
 }
 
 @Singleton
-class MongoDBCachedAgentInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository) extends AgentInvitationJourneyService {
+class MongoDBCachedAgentInvitationJourneyService @Inject() (_cacheRepository: SessionCacheRepository) extends AgentInvitationJourneyService {
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 

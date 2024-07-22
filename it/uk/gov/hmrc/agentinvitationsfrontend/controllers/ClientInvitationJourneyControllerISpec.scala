@@ -63,11 +63,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
         html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        html
+          .select("#inset_text")
+          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
         val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
-        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
+        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
+        paragraphs
+          .get(1)
+          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs
+          .get(2)
+          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "show old warmup prototype when business client type" in new Setup {
@@ -78,10 +84,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
         html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        html
+          .select("#inset_text")
+          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
         val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
-        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your business tax affairs."
+        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
+        paragraphs
+          .get(1)
+          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your business tax affairs."
         paragraphs.get(2).text() shouldBe "I do not want to authorise My Agency"
       }
 
@@ -93,11 +103,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
         html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        html
+          .select("#inset_text")
+          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
         val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
-        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
+        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
+        paragraphs
+          .get(1)
+          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs
+          .get(2)
+          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "work when not signed in" in new Setup {
@@ -107,11 +123,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val htmlString = Helpers.contentAsString(result)
         val html = Jsoup.parse(htmlString)
         html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        html
+          .select("#inset_text")
+          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
         val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
-        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
+        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
+        paragraphs
+          .get(1)
+          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs
+          .get(2)
+          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "remove spaces in the url" in new Setup {
@@ -122,11 +144,17 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         val html = Jsoup.parse(htmlString)
         val agencyName = "My Agency"
         html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html.select("#inset_text").text() shouldBe s"If you authorise ${agencyName}, this will cancel any consent you gave to someone else to act for you for the same service."
+        html
+          .select("#inset_text")
+          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
         val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow ${agencyName} to manage your tax affairs."
-        paragraphs.get(1).text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs.get(2).text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
+        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
+        paragraphs
+          .get(1)
+          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
+        paragraphs
+          .get(2)
+          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
       }
 
       "show not-found content on the same page if the url is corrupted" in new Setup {
@@ -240,23 +268,23 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to /respond/error/cannot-find-request if there are no invitations found " +
         "and the client has SOME supported MTD enrolments" in {
-        givenAllInvitationIdsByStatusReturnsEmpty(uid)
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsByStatusReturnsEmpty(uid)
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorCannotFindRequest.url)
+        }
 
       "redirect to /respond/error/no-outstanding-requests if there are no invitations found " +
         "and the client has ALL supported MTD enrolments" in {
-        givenAllInvitationIdsByStatusReturnsEmpty(uid)
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsByStatusReturnsEmpty(uid)
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorNoOutstandingRequests.url)
+        }
 
       "redirect to /cannot-find-request if the client has no supported MTD enrolments" in {
         journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
@@ -268,73 +296,73 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Accepted or Rejected " +
         "and the client has only SOME supported MTD enrolments" in {
-        givenAllInvitationIdsByStatus(uid, "Accepted")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsByStatus(uid, "Accepted")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+        }
 
       "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Deauthorised " +
         "and the client has only SOME supported MTD enrolments" in {
-        givenAllInvitationIdsByStatus(uid, "Deauthorised")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsByStatus(uid, "Deauthorised")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+        }
 
       "redirect to /respond/error/authorisation-request-already-responded if the invitation has status of Partialauth " +
         "and the client has only SOME supported MTD enrolments" in {
-        givenAllInvitationIdsByStatus(uid, "Partialauth")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsByStatus(uid, "Partialauth")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+        }
 
       "redirect to /respond/error/already-responded if the most recent authorisation request has status of Accepted or Rejected " +
         "and the client has ALL supported MTD enrolments" in {
-        givenAllInvitationIdsWithMixedStatus(uid, "Rejected")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsWithMixedStatus(uid, "Rejected")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
+        }
 
       "redirect to /respond/error/agent-cancelled-request if the most recent authorisation request has status of Cancelled " +
         "and the client has ALL supported MTD enrolments" in {
-        givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithAllSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestInvalid.url)
+        }
 
       "redirect to /respond/error/authorisation-request-cancelled if the most recent authorisation request has status of Cancelled " +
         "and the client has only SOME supported MTD enrolments" in {
-        givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsWithMixedStatus(uid, "Cancelled")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+        }
 
       "redirect to /respond/error/authorisation-request-expired if the most recent authorisation request has status of Expired " +
         "and the client has only SOME supported MTD enrolments" in {
-        givenAllInvitationIdsWithMixedStatus(uid, "Expired")
-        journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
+          givenAllInvitationIdsWithMixedStatus(uid, "Expired")
+          journeyState.set(WarmUp(Personal, uid, arn, "My Agency", "my-agency"), Nil)
 
-        val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
-        status(result) shouldBe 303
-        redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
-      }
+          val result = controller.submitWarmUp(authorisedAsIndividualClientWithSomeSupportedEnrolments(request()))
+          status(result) shouldBe 303
+          redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showErrorAuthorisationRequestUnsuccessful.url)
+        }
 
       "redirect to /respond/error/authorisation-request-expired if the invitation has mixed statuses, none of which are Pending" in {
         givenAllInvitationIdsWithMixedStatus(uid, "Expired")
@@ -375,7 +403,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 303
 
       redirectLocation(result) shouldBe Some(
-      "/invitations/respond/error/cannot-view-request"
+        "/invitations/respond/error/cannot-view-request"
       )
     }
 
@@ -416,17 +444,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
   "GET /Government-Gateway-user-ID-needed" should {
     "display the correct content" in {
       def request() = requestWithJourneyIdInCookie("GET", "/Government-Gateway-user-ID-needed")
-    journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
+      journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
       val result = controller.showGGUserIdNeeded(request())
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "gg-user-id-needed.h1",
-        "gg-user-id-needed.p",
-        "global.yes",
-        "global.no")
+      checkHtmlResultWithBodyMsgs(result, "gg-user-id-needed.h1", "gg-user-id-needed.p", "global.yes", "global.no")
     }
   }
 
@@ -448,7 +471,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(GGUserIdNeeded(Personal, "uid", arn, "name"), Nil)
 
       val result =
-        controller.submitGGUserIdNeeded(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
+        controller.submitGGUserIdNeeded(
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false"))
+        )
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showWhichTaxService.url)
     }
@@ -462,11 +487,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "which-service.header",
-        "global.yes",
-        "global.no")
+      checkHtmlResultWithBodyMsgs(result, "which-service.header", "global.yes", "global.no")
     }
   }
 
@@ -477,7 +498,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(WhichTaxService(Personal, "uid", arn, "name"), Nil)
 
       val result =
-        controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+        controller.submitWhichTaxService(
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true"))
+        )
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showCreateNewUserId.url)
     }
@@ -488,7 +511,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       journeyState.set(WhichTaxService(Personal, "uid", arn, "name"), Nil)
 
       val result =
-        controller.submitWhichTaxService(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
+        controller.submitWhichTaxService(
+          authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false"))
+        )
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSignUpToTaxService.url)
     }
@@ -502,11 +527,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "new-gg-id.header",
-        "new-gg-id.li1",
-        "new-gg-id.li2")
+      checkHtmlResultWithBodyMsgs(result, "new-gg-id.header", "new-gg-id.li1", "new-gg-id.li2")
     }
   }
 
@@ -518,11 +539,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyMsgs(
-        result,
-        "tax-service.header",
-        "tax-service.l1",
-        "tax-service.l2")
+      checkHtmlResultWithBodyMsgs(result, "tax-service.header", "tax-service.l1", "tax-service.l2")
     }
   }
 
@@ -554,7 +571,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
         "suspended-agent.all.header",
         "suspended-agent.p1.multi",
         "suspended-agent.p1.ITSA",
-        "suspended-agent.p1.VATC")
+        "suspended-agent.p1.VATC"
+      )
     }
   }
 
@@ -672,8 +690,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true, isAltItsa = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true, isAltItsa = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -705,8 +725,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdITSA, LocalDate.now().plusDays(1), Service.MtdIt, consent = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -738,8 +760,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -770,16 +794,19 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true),
-            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true))),
-        Nil)
+          Seq(
+            ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true),
+            ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true)
+          )
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("confirm-terms.legend.multi", "My Agency"))
     }
-
 
     "display the multi consent page for cgt business" in {
       journeyState.set(
@@ -788,8 +815,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdCgt, LocalDate.now().plusDays(1), Service.CapitalGains, consent = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -818,8 +847,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), Service.Trust, consent = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdTrust, LocalDate.now().plusDays(1), Service.Trust, consent = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUtr)(request))
       status(result) shouldBe 200
@@ -838,8 +869,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           uid,
           "My Agency",
           arn,
-          Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), Service.TrustNT, consent = true))),
-        Nil)
+          Seq(ClientConsent(invitationIdTrustNT, LocalDate.now().plusDays(1), Service.TrustNT, consent = true))
+        ),
+        Nil
+      )
 
       val result = controller.showConsent(authorisedAsOrganisationTrustClient(validUrn)(request))
       status(result) shouldBe 200
@@ -859,13 +892,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "redirect to check answers when continuing" in {
       journeyState.set(
-        MultiConsent(
-          Personal,
-          uid,
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
-        Nil)
+        MultiConsent(Personal, uid, "My Agency", arn, Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
+        Nil
+      )
 
       val result =
         controller.submitConsent(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
@@ -1091,13 +1120,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the confirm decline page for single itsa consent" in {
       journeyState.set(
-        ConfirmDecline(
-          Personal,
-          "uid",
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
-        Nil)
+        ConfirmDecline(Personal, "uid", "My Agency", arn, Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
+        Nil
+      )
 
       val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1108,13 +1133,9 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the confirm decline page for single cgt consent" in {
       journeyState.set(
-        ConfirmDecline(
-          Personal,
-          "uid",
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))),
-        Nil)
+        ConfirmDecline(Personal, "uid", "My Agency", arn, Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))),
+        Nil
+      )
 
       val result = controller.showConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1132,7 +1153,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           arn,
           Seq(
             ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false),
-            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false))
+            ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)
+          )
         ),
         Nil
       )
@@ -1155,32 +1177,25 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenInvitationByIdSuccess(invitationIdITSA, "ABCDEF123456789", suppliedClientId = Some(nino.value))
       givenRejectInvitationSucceeds("ABCDEF123456789", invitationIdITSA, identifierITSA)
       journeyState.set(
-        ConfirmDecline(
-          Personal,
-          "uid",
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
-        Nil)
+        ConfirmDecline(Personal, "uid", "My Agency", arn, Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
+        Nil
+      )
 
-      val result = controller.submitConfirmDecline(
-        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+      val result =
+        controller.submitConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsDeclined.url)
     }
 
     "redirect to confirm terms when no is selected" in {
       journeyState.set(
-        ConfirmDecline(
-          Personal,
-          "uid",
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
-        Nil)
+        ConfirmDecline(Personal, "uid", "My Agency", arn, Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false))),
+        Nil
+      )
 
       val result = controller.submitConfirmDecline(
-        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false")))
+        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "false"))
+      )
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showConsent.url)
     }
@@ -1190,16 +1205,12 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       givenRejectInvitationReturnsWithStatus(validUtr.value, invitationIdTrust, identifierTrust, 404)
 
       journeyState.set(
-        ConfirmDecline(
-          Personal,
-          "uid",
-          "My Agency",
-          arn,
-          Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false))),
-        Nil)
+        ConfirmDecline(Personal, "uid", "My Agency", arn, Seq(ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false))),
+        Nil
+      )
 
-      val result = controller.submitConfirmDecline(
-        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+      val result =
+        controller.submitConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showAllResponsesFailed.url)
     }
@@ -1218,13 +1229,14 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           arn,
           Seq(
             ClientConsent(invitationIdTrust, expiryDate, Service.Trust, consent = false),
-            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false))
+            ClientConsent(invitationIdVAT, expiryDate, Service.Vat, consent = false)
+          )
         ),
         Nil
       )
 
-      val result = controller.submitConfirmDecline(
-        authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
+      val result =
+        controller.submitConfirmDecline(authorisedAsIndividualClientWithSomeSupportedEnrolments(request.withFormUrlEncodedBody("accepted" -> "true")))
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showSomeResponsesFailed.url)
     }
@@ -1242,8 +1254,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             "My Agency",
             Seq(
               ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
-              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
-            Personal),
+              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)
+            ),
+            Personal
+          ),
           Nil
         )
 
@@ -1260,12 +1274,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the accepted page for single consent" in {
       journeyState
-        .set(
-          InvitationsAccepted(
-            "My Agency",
-            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
-            Business),
-          Nil)
+        .set(InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)), Business), Nil)
 
       val result = controller.showInvitationsAccepted(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1281,12 +1290,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the rejected page for itsa" in {
       journeyState
-        .set(
-          InvitationsDeclined(
-            "My Agency",
-            Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false)),
-            Personal),
-          Nil)
+        .set(InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = false)), Personal), Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1297,12 +1301,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "display the rejected page for cgt" in {
       journeyState
-        .set(
-          InvitationsDeclined(
-            "My Agency",
-            Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)),
-            Personal),
-          Nil)
+        .set(InvitationsDeclined("My Agency", Seq(ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = false)), Personal), Nil)
 
       val result = controller.showInvitationsDeclined(authorisedAsIndividualClientWithSomeSupportedEnrolments(request))
       status(result) shouldBe 200
@@ -1339,7 +1338,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
             "My Agency",
             Seq(
               ClientConsent(invitationIdITSA, expiryDate, Service.MtdIt, consent = true),
-              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)),
+              ClientConsent(invitationIdCgt, expiryDate, Service.CapitalGains, consent = true)
+            ),
             Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)),
             Personal
           ),
@@ -1376,10 +1376,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       redirectLocation(result) shouldBe Some(routes.ClientInvitationJourneyController.showInvitationsAccepted.url)
 
       journeyState.get.get._1 shouldBe
-        InvitationsAccepted(
-          "My Agency",
-          Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)),
-          Personal)
+        InvitationsAccepted("My Agency", Seq(ClientConsent(invitationIdPIR, expiryDate, Service.PersonalIncomeRecord, consent = true)), Personal)
     }
   }
 
@@ -1428,8 +1425,18 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.vat.link-text")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.itsa")))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.itsa.link-text")))
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true)
-      checkResultContainsLink(result,"https://www.gov.uk/guidance/use-software-to-send-income-tax-updates", "sign up to the Making Tax Digital pilot for Income Tax (opens in a new tab)", newWin = true)
+      checkResultContainsLink(
+        result,
+        "https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat",
+        "sign up to Making Tax Digital for VAT (opens in a new tab)",
+        newWin = true
+      )
+      checkResultContainsLink(
+        result,
+        "https://www.gov.uk/guidance/use-software-to-send-income-tax-updates",
+        "sign up to the Making Tax Digital pilot for Income Tax (opens in a new tab)",
+        newWin = true
+      )
     }
     "display the page as expected for clientType=business" in {
       journeyState.set(ActionNeeded(Business), Nil)
@@ -1438,13 +1445,18 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.header"))
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.vat")))
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.vat.link-text")))
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.ters")))
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p1"))
-    checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p2"))
-    checkResultContainsLink(result,"https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat", "sign up to Making Tax Digital for VAT (opens in a new tab)", newWin = true)
-  }
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.vat")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.p1", htmlEscapedMessage("action-needed.vat.link-text")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.summary", htmlEscapedMessage("action-needed.ters")))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p1"))
+      checkHtmlResultWithBodyText(result, htmlEscapedMessage("action-needed.details.ters.p2"))
+      checkResultContainsLink(
+        result,
+        "https://www.gov.uk/guidance/sign-up-for-making-tax-digital-for-vat",
+        "sign up to Making Tax Digital for VAT (opens in a new tab)",
+        newWin = true
+      )
+    }
   }
 
   "GET /respond/error/already-responded-to-request" should {
@@ -1456,8 +1468,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("already-responded.header"))
-      checkIncludesText(result,"You responded to this request on 1/1/2020.")
-      checkIncludesText(result,"If you think this is wrong, contact the agent who sent you the request or <a href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history")
+      checkIncludesText(result, "You responded to this request on 1/1/2020.")
+      checkIncludesText(
+        result,
+        "If you think this is wrong, contact the agent who sent you the request or <a href=\"someAgentClientManagementFrontendExternalUrl#history\">view your request history"
+      )
     }
   }
 
@@ -1477,7 +1492,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       html.select("p#no-outstanding").text() contains "If you think this is wrong, contact the agent who sent you the request or "
       html.select(Css.H1).text() shouldBe "Your agent cancelled this authorisation request"
 
-      checkIncludesText(result, "This request was cancelled on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them.")
+      checkIncludesText(
+        result,
+        "This request was cancelled on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
+      )
 
     }
   }
@@ -1494,7 +1512,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val html = Jsoup.parse(htmlString)
 
       html.select(Css.H1).get(0).text() shouldBe "This authorisation request has expired"
-      html.select(Css.paragraphs).get(0).text() shouldBe "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
+      html
+        .select(Css.paragraphs)
+        .get(0)
+        .text() shouldBe "This request expired on d/M/yyyy. Ask your agent to send you another authorisation request link if you still want to authorise them."
       html.select("a[href=someAgentClientManagementFrontendExternalUrl#history]").text() shouldBe "View your request history"
 
     }
@@ -1513,12 +1534,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
       html.select(Css.H1).get(0).text() shouldBe "This authorisation request has already expired"
       val paragraphs = html.select(Css.paragraphs)
-      paragraphs.get(0).text() shouldBe "This request expired on d/M/yyyy. For details, view your history to check for any expired, cancelled or outstanding requests."
+      paragraphs
+        .get(0)
+        .text() shouldBe "This request expired on d/M/yyyy. For details, view your history to check for any expired, cancelled or outstanding requests."
       paragraphs.get(0).select("a").text() shouldBe "view your history"
       paragraphs.get(0).select("a").attr("href") shouldBe "someAgentClientManagementFrontendExternalUrl#history"
       paragraphs.get(0).select("a").hasClass("govuk-link")
       paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
-      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs
+        .get(2)
+        .text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
       paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
       paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
     }
@@ -1535,11 +1560,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val html = Jsoup.parse(htmlString)
 
       checkIncludesText(result, "This authorisation request has been cancelled")
-      checkIncludesText(result, "This request was cancelled by your agent on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
+      checkIncludesText(
+        result,
+        "This request was cancelled by your agent on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests."
+      )
 
       val paragraphs = html.select(Css.paragraphs)
       paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
-      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs
+        .get(2)
+        .text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
       paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
       paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
     }
@@ -1557,11 +1587,16 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       val html = Jsoup.parse(htmlString)
 
       checkIncludesText(result, "This authorisation request has already been responded to")
-      checkIncludesText(result, "This request has already been responded to on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests.")
+      checkIncludesText(
+        result,
+        "This request has already been responded to on d/M/yyyy. For details, <a href=someAgentClientManagementFrontendExternalUrl#history>view your history</a> to check for any expired, cancelled or outstanding requests."
+      )
 
       val paragraphs = html.select(Css.paragraphs)
       paragraphs.get(1).text() shouldBe "If your agent has sent you a recent request, make sure you have signed up to the tax service you need."
-      paragraphs.get(2).text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
+      paragraphs
+        .get(2)
+        .text() shouldBe "You could also check you have signed in with the correct Government Gateway user ID. It must be the same one you used to sign up to the tax service the authorisation request is for."
       paragraphs.get(3).select("a").text() shouldBe "Sign in with the Government Gateway user ID"
       paragraphs.get(3).select("span").text() shouldBe "you use for managing your personal tax affairs."
 
@@ -1591,7 +1626,10 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.header"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.p1"))
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("error.cannot-view-request.p2"))
-      checkHtmlResultWithBodyText(result , "If you are not an agent, sign in with the Government Gateway user ID that you use for your personal tax affairs.")
+      checkHtmlResultWithBodyText(
+        result,
+        "If you are not an agent, sign in with the Government Gateway user ID that you use for your personal tax affairs."
+      )
     }
 
     "display the not authorised as client view if the current state is not WarmUp" in {
@@ -1615,19 +1653,27 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       status(result) shouldBe 200
 
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.header"))
-      checkIncludesText(result,"We cannot find a request from My Agency.")
+      checkIncludesText(result, "We cannot find a request from My Agency.")
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.p2"))
-      checkIncludesText(result,"You need to sign in with the correct Government Gateway user ID. " +
-        "It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service " +
-        "the authorisation request is for. <a href=/invitations/sign-out-redirect>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your personal tax affairs).")
+      checkIncludesText(
+        result,
+        "You need to sign in with the correct Government Gateway user ID. " +
+          "It is possible to have more than one, so make sure it is the same one you used to sign up to the tax service " +
+          "the authorisation request is for. <a href=/invitations/sign-out-redirect>Try signing in with a different Government Gateway user ID</a> (the one that you use for managing your personal tax affairs)."
+      )
       checkHtmlResultWithBodyText(result, htmlEscapedMessage("cannot-find-request.p4"))
     }
   }
 
   "GET /sign-out-redirect" should {
     "clear current session and redirect to /warm-up when the journeyId is in session" in {
-      val result = controller.signOutAndRedirect(authorisedAsValidAgent(FakeRequest()
-        .withSession("clientInvitationJourney" -> "foo"),arn.value))
+      val result = controller.signOutAndRedirect(
+        authorisedAsValidAgent(
+          FakeRequest()
+            .withSession("clientInvitationJourney" -> "foo"),
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
 
@@ -1635,7 +1681,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
 
     "redirect to /gg/-sign-out when journeyId is not in session" in {
-      val result = controller.signOutAndRedirect(authorisedAsValidAgent(FakeRequest(),arn.value))
+      val result = controller.signOutAndRedirect(authorisedAsValidAgent(FakeRequest(), arn.value))
 
       status(result) shouldBe 303
 
@@ -1674,7 +1720,8 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
       checkResultContainsLink(
         result,
         "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
-        "Call the VAT online services helpline")
+        "Call the VAT online services helpline"
+      )
       checkResultContainsLink(
         result,
         "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
@@ -1700,15 +1747,7 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
     }
   }
 
-  Set(
-    TechnicalIssue,
-    FailedMatching,
-    FailedDirectorCheck,
-    FailedIV,
-    InsufficientEvidence,
-    TimedOut,
-    UserAborted,
-    LockedOut)
+  Set(TechnicalIssue, FailedMatching, FailedDirectorCheck, FailedIV, InsufficientEvidence, TimedOut, UserAborted, LockedOut)
     .foreach { reason =>
       s"IV returns failed reason $reason" when {
         "display the signed out page" in {
@@ -1716,25 +1755,21 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
           val result = controller.showCannotConfirmIdentity(Some("valid-uuid"), Some("success-url"))(FakeRequest())
           val resultCode = status(result)
           reason match {
-            case TechnicalIssue => {
+            case TechnicalIssue =>
               resultCode shouldBe 403
 
-              checkHtmlResultWithBodyMsgs(
-                result,
-                "technical-issues.header",
-                "technical-issues.p1",
-                "technical-issues.p2")
+              checkHtmlResultWithBodyMsgs(result, "technical-issues.header", "technical-issues.p1", "technical-issues.p2")
               checkResultContainsLink(
                 result,
                 "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/vat-online-services-helpdesk",
-                "Call the VAT online services helpline")
+                "Call the VAT online services helpline"
+              )
               checkResultContainsLink(
                 result,
                 "https://www.gov.uk/government/organisations/hm-revenue-customs/contact/self-assessment-online-services-helpdesk",
                 "Call the HMRC Self Assessment online services helpline"
               )
-            }
-            case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence => {
+            case FailedMatching | FailedDirectorCheck | FailedIV | InsufficientEvidence =>
               resultCode shouldBe 403
 
               val html = Jsoup.parse(Helpers.contentAsString(result))
@@ -1744,7 +1779,6 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
               paragraphs.get(1).text() shouldBe "If you need help with confirming your identity, use the ‘Get help with this page’ link."
               html.select("a#tryAgainButton").text() shouldBe "Try again"
               html.select("a#tryAgainButton").attr("href") shouldBe "/invitations/warm-up"
-            }
             case UserAborted | TimedOut => resultCode shouldBe 303
             case LockedOut              => resultCode shouldBe 303
             case _                      => resultCode shouldBe 403

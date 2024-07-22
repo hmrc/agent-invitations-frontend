@@ -39,8 +39,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "delete an existing relationship" in {
       givenTestOnlyTerminateAfiRelationshipSucceeds(arn, afiService, clientId)
 
-      val result = submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(relationshipForm: _*))
+      val result = submitDeleteRelationship(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)
+      )
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getDeleteRelationship().url
@@ -49,8 +51,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "show not matched page as an error page if unable to delete an existing relationship" in {
       givenTerminateAfiRelationshipFails(arn, afiService, clientId)
 
-      val result = submitDeleteRelationship(authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(relationshipForm: _*))
+      val result = submitDeleteRelationship(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)
+      )
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentInvitationJourneyController.showNotMatched.url
@@ -81,8 +85,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "delete an existing relationship" in {
       givenTestOnlyCreateAfiRelationshipSucceeds(arn, afiService, clientId)
 
-      val result = submitCreateRelationship(authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(relationshipForm: _*))
+      val result = submitCreateRelationship(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)
+      )
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe testing.routes.TestEndpointsController.getCreateRelationship.url
@@ -91,8 +97,10 @@ class TestEndpointsControllerISpec extends BaseISpec {
     "show not matched page as an error page if unable to delete an existing relationship" in {
       givenTestOnlyCreateAfiRelationshipFails(arn, afiService, clientId)
 
-      val result = submitCreateRelationship(authorisedAsValidAgent(request, arn.value)
-          .withFormUrlEncodedBody(relationshipForm: _*))
+      val result = submitCreateRelationship(
+        authorisedAsValidAgent(request, arn.value)
+          .withFormUrlEncodedBody(relationshipForm: _*)
+      )
 
       status(result) shouldBe 303
       redirectLocation(result).get shouldBe routes.AgentInvitationJourneyController.showNotMatched.url

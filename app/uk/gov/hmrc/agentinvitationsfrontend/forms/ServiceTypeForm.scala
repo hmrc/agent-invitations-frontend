@@ -35,14 +35,14 @@ object ServiceTypeForm {
       )
     )
 
-  /** Single select - returns String to be compatible with the above form
-    * empty string denotes selecting "No"
-    * */
+  /** Single select - returns String to be compatible with the above form empty string denotes selecting "No"
+    */
   def selectSingleServiceForm(service: Service, clientType: ClientType): Form[Option[Service]] =
     Form[Option[Service]](
       single(
         "accepted" -> optional(normalizedText)
           .verifying(s"select-single-service.${service.id}.$clientType.error", _.exists(List("true", "false").contains))
           .transform[Option[Service]](svc => if (svc.contains("true")) Some(service) else None, _.fold(Option.empty[String])(svc => Some(svc.id)))
-      ))
+      )
+    )
 }

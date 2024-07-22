@@ -271,7 +271,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ClientNotSignedUp(AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("KnownFact")), Some("continue/url"))
         val json = Json.parse(
-          """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
+          """{"state":"ClientNotSignedUp","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -282,7 +283,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
             AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("KnownFact")),
             "invitation link",
             "Acme Ltd",
-            Some("continue/url"))
+            Some("continue/url")
+          )
         val json = Json.parse("""{"state":"PendingInvitationExists","properties":{"fastTrackRequest":{"clientType": "personal",
                                 |"service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A",
                                 | "knownFact": "KnownFact"},
@@ -296,7 +298,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ActiveAuthorisationExists(AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("KnownFact")), Some("continue/url"))
         val json = Json.parse(
-          """{"state":"ActiveAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
+          """{"state":"ActiveAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -306,7 +309,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val state =
           PartialAuthorisationExists(AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("KnownFact")), Some("continue/url"))
         val json = Json.parse(
-          """{"state":"PartialAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
+          """{"state":"PartialAuthorisationExists","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -316,7 +320,8 @@ class AgentInvitationFastTrackJourneyStateFormatsSpec extends UnitSpec {
         val state =
           ClientNotRegistered(AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("KnownFact")), Some("continue/url"))
         val json = Json.parse(
-          """{"state":"ClientNotRegistered","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}""")
+          """{"state":"ClientNotRegistered","properties":{"fastTrackRequest":{"clientType": "personal","service": "HMRC-MTD-IT", "clientId": "Nino|AB123456A", "knownFact": "KnownFact"}, "continueUrl": "continue/url"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state

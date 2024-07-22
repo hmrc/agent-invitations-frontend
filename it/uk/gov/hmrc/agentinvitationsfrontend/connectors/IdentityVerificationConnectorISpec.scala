@@ -50,23 +50,23 @@ class IdentityVerificationConnectorISpec extends BaseISpec {
       result shouldBe Some(InsufficientEvidence)
     }
 
-  "return FailedMatching when the UUID is valid" in {
-    givenIVFailureReasonResponse(FailedMatching)
-    val result = await(connector.getIVResult("valid-uuid"))
-    result shouldBe Some(FailedMatching)
-  }
+    "return FailedMatching when the UUID is valid" in {
+      givenIVFailureReasonResponse(FailedMatching)
+      val result = await(connector.getIVResult("valid-uuid"))
+      result shouldBe Some(FailedMatching)
+    }
 
     "return UserAborted when the UUID is valid" in {
-    givenIVFailureReasonResponse(UserAborted)
-    val result = await(connector.getIVResult("valid-uuid"))
-    result shouldBe Some(UserAborted)
+      givenIVFailureReasonResponse(UserAborted)
+      val result = await(connector.getIVResult("valid-uuid"))
+      result shouldBe Some(UserAborted)
     }
 
     "return TimedOut when the UUID is valid" in {
-  givenIVFailureReasonResponse(TimedOut)
-  val result = await(connector.getIVResult("valid-uuid"))
-  result shouldBe Some(TimedOut)
-}
+      givenIVFailureReasonResponse(TimedOut)
+      val result = await(connector.getIVResult("valid-uuid"))
+      result shouldBe Some(TimedOut)
+    }
 
     "return FailedIV when the UUID is valid" in {
       givenIVFailureReasonResponse(FailedIV)
@@ -80,8 +80,6 @@ class IdentityVerificationConnectorISpec extends BaseISpec {
       result shouldBe Some(FailedDirectorCheck)
     }
 
-
-
     "return None when the UUID is not valid" in {
       givenIVResponseInvalidUUID()
       val result = await(connector.getIVResult("invalid"))
@@ -92,25 +90,17 @@ class IdentityVerificationConnectorISpec extends BaseISpec {
   "updateEntry" should {
     "return 200 when the response is successful" in {
       givenIVUpsertSucceeded
-      val result = await(connector.updateEntry(
-        NinoClStoreEntry(
-          credId = "cred-1",
-          nino = nino,
-          confidenceLevel = None,
-          createdAt = None,
-          updatedAt = None), "cred-1"))
+      val result = await(
+        connector.updateEntry(NinoClStoreEntry(credId = "cred-1", nino = nino, confidenceLevel = None, createdAt = None, updatedAt = None), "cred-1")
+      )
       result shouldBe OK
     }
 
     "return 500 when there has been an error" in {
       givenIVUpsertFailed
-      val result = await(connector.updateEntry(
-        NinoClStoreEntry(
-          credId = "cred-1",
-          nino = nino,
-          confidenceLevel = None,
-          createdAt = None,
-          updatedAt = None), "cred-1"))
+      val result = await(
+        connector.updateEntry(NinoClStoreEntry(credId = "cred-1", nino = nino, confidenceLevel = None, createdAt = None, updatedAt = None), "cred-1")
+      )
       result shouldBe INTERNAL_SERVER_ERROR
     }
   }

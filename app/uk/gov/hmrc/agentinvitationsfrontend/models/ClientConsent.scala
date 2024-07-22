@@ -27,7 +27,8 @@ case class ClientConsent(
   service: Service,
   consent: Boolean,
   processed: Boolean = false,
-  isAltItsa: Boolean = false)
+  isAltItsa: Boolean = false
+)
 
 object ClientConsent {
   implicit val format = Json.format[ClientConsent]

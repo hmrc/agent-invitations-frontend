@@ -14,23 +14,23 @@ class TestAgentInvitationJourneyService extends AgentInvitationJourneyService {
   @volatile
   private var state: Option[StateAndBreadcrumbs] = None
 
-  def set(state: model.State, breadcrumbs: List[model.State])(
-    implicit headerCarrier: HeaderCarrier,
+  def set(state: model.State, breadcrumbs: List[model.State])(implicit
+    headerCarrier: HeaderCarrier,
     timeout: Duration,
-    ec: ExecutionContext): (AgentInvitationJourneyModel.State, List[AgentInvitationJourneyModel.State]) =
+    ec: ExecutionContext
+  ): (AgentInvitationJourneyModel.State, List[AgentInvitationJourneyModel.State]) =
     Await.result(save((state, breadcrumbs)), timeout)
 
   def get: Option[StateAndBreadcrumbs] = state
 
-  override protected def fetch(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[(model.State, List[model.State])]] = Future.successful(
-    state
-  )
+  override protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[(model.State, List[model.State])]] =
+    Future.successful(
+      state
+    )
 
-  override protected def save(state: (model.State, List[model.State]))(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[(model.State, List[model.State])] =
+  override protected def save(
+    state: (model.State, List[model.State])
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(model.State, List[model.State])] =
     Future {
       this.state = Some(state)
       state

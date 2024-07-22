@@ -22,7 +22,7 @@ import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class CountryNamesLoader @Inject()(implicit val appConfig: AppConfig) {
+class CountryNamesLoader @Inject() (implicit val appConfig: AppConfig) {
 
   val location = appConfig.countryListLocation
 

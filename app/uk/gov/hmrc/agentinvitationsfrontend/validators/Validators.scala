@@ -31,7 +31,7 @@ object Validators {
 
   val trimmedUppercaseText: Mapping[String] = of[String].transform(_.trim.toUpperCase, identity)
 
-  //Patterns
+  // Patterns
   val postcodeCharactersRegex = "^[a-zA-Z0-9 ]+$"
 
   val postcodeRegex = "^[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$|BFPO\\s?[0-9]{1,5}$"
@@ -132,7 +132,7 @@ object Validators {
   def validateDateFields(formMessageKey: String): Constraint[(String, String, String)] =
     Constraint[(String, String, String)] { s: (String, String, String) =>
       (s._1.matches(yearFieldRegex), s._2.matches(monthFieldRegex), s._3.matches(dayFieldRegex)) match {
-        //y   //m   //d
+        // y   //m   //d
         case a @ (true, true, true) =>
           if (parseDate(s"${s._1}-${s._2}-${s._3}")) Valid
           else invalid(s"enter-$formMessageKey-date.invalid-format", s"$day-$month-$year")
@@ -157,7 +157,8 @@ object Validators {
 
   val validVatDateFormat: Constraint[String] =
     ValidateHelper.validateField("error.vat-registration-date.required", "enter-vat-registration-date.invalid-format")(vatRegistrationDate =>
-      validateDate(vatRegistrationDate))
+      validateDate(vatRegistrationDate)
+    )
 
   val validNino: Constraint[String] =
     ValidateHelper.validateField("error.nino.required", "enter-nino.invalid-format")(nino => Nino.isValid(nino))
@@ -224,7 +225,8 @@ object Validators {
   val validateClientId: Constraint[String] = Constraint[String] { fieldValue: String =>
     /* TODO [Service onboarding]
       it is really dodgy to try to "validate" a clientId without knowing what it is. We should validate it in conjunction with its type! */
-    val supportedTypesNoMtdIt = ClientIdType.supportedTypes.toSet - MtdItIdType // we need to exclude MTDITID as it is too permissive - it would match everything!
+    val supportedTypesNoMtdIt =
+      ClientIdType.supportedTypes.toSet - MtdItIdType // we need to exclude MTDITID as it is too permissive - it would match everything!
     val isValid = fieldValue.nonEmpty && supportedTypesNoMtdIt.exists(clientIdType => clientIdType.isValid(fieldValue))
     if (isValid) Valid else Invalid(ValidationError(s"INVALID_CLIENT_ID_RECEIVED:${if (fieldValue.nonEmpty) fieldValue else "NOTHING"}"))
   }

@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
+class ExternalUrls @Inject() (implicit appConfig: AppConfig) {
 
   val companyAuthUrl: String = appConfig.companyAuthFrontendExternalUrl
   val companyAuthSignOutPath: String = appConfig.companyAuthFrontendSignoutPath
@@ -45,9 +45,8 @@ class ExternalUrls @Inject()(implicit appConfig: AppConfig) {
   val guidanceUrlVatNew = s"${appConfig.govUkGuidanceExternalUrl}/sign-your-business-up-for-making-tax-digital-for-vat"
   val guidanceUrlSaExisting = s"${appConfig.govUkGuidanceExternalUrl}/agents-use-software-to-send-income-tax-updates"
   val guidanceUrlSaNew = s"${appConfig.govUkGuidanceExternalUrl}/use-software-to-send-income-tax-updates"
-  val guidanceAuthoriseAgent: String = {
+  val guidanceAuthoriseAgent: String =
     s"${appConfig.govUkGuidanceExternalUrl}/authorise-an-agent-to-deal-with-certain-tax-services-for-you"
-  }
   val guidanceUrlSaSignup = s"${appConfig.govUkExternalUrl}/register-for-self-assessment/self-employed"
 
   val companyAuthFrontendSignOutUrl = s"$companyAuthUrl$companyAuthSignOutPath"

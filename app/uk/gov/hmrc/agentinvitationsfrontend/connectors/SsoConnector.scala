@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SsoConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
+class SsoConnector @Inject() (http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   val url = s"${appConfig.ssoBaseUrl}/sso/domains"

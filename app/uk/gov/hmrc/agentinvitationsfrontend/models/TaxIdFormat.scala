@@ -20,8 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.agentmtdidentifiers.model._
 import uk.gov.hmrc.domain.{Nino, TaxIdentifier}
 
-/**
-  * A single-string and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
+/** A single-string and human-friendly Json format for the TaxIdentifiers we deal with in Agents.
   */
 object TaxIdFormat {
   /* TODO [Service onboarding]

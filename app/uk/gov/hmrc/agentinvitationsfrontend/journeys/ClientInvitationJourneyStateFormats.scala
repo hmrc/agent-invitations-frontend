@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object ClientInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
-  //Happy states
+  // Happy states
   val WarmUpFormat = Json.format[WarmUp]
   val MultiConsentFormat = Json.format[MultiConsent]
   val SingleConsentFormat = Json.format[SingleConsent]

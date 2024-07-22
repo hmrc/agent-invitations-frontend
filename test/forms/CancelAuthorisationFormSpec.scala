@@ -40,7 +40,9 @@ class CancelAuthorisationFormSpec extends UnitSpec {
             "clientName"   -> clientName,
             "clientType"   -> clientType,
             "invitationId" -> invitationId,
-            "status"       -> "Partialauth"))
+            "status"       -> "Partialauth"
+          )
+        )
 
       result.errors.isEmpty shouldBe true
     }
@@ -55,7 +57,9 @@ class CancelAuthorisationFormSpec extends UnitSpec {
               "clientName"   -> clientName,
               "clientType"   -> clientType,
               "invitationId" -> invitationId,
-              "status"       -> "Partialauth"))
+              "status"       -> "Partialauth"
+            )
+        )
 
       result.errors shouldBe Seq(FormError("service", List("Unsupported Service")))
     }
@@ -70,7 +74,9 @@ class CancelAuthorisationFormSpec extends UnitSpec {
               "clientName"   -> clientName,
               "clientType"   -> clientType,
               "invitationId" -> invitationId,
-              "status"       -> "Partialauth"))
+              "status"       -> "Partialauth"
+            )
+        )
 
       result.errors shouldBe Seq(FormError("clientId", List("INVALID_CLIENT_ID_RECEIVED:foo")))
     }
@@ -85,7 +91,9 @@ class CancelAuthorisationFormSpec extends UnitSpec {
               "clientName"   -> clientName,
               "clientType"   -> "abc",
               "invitationId" -> invitationId,
-              "status"       -> "Partialauth"))
+              "status"       -> "Partialauth"
+            )
+        )
 
       result.errors shouldBe Seq(FormError("clientType", List("Unsupported ClientType")))
     }
@@ -100,7 +108,9 @@ class CancelAuthorisationFormSpec extends UnitSpec {
               "clientName"   -> clientName,
               "clientType"   -> clientType,
               "invitationId" -> invitationId,
-              "status"       -> "foo"))
+              "status"       -> "foo"
+            )
+        )
 
       result.errors shouldBe Seq(FormError("status", List("Unexpected InvitationStatus")))
     }

@@ -29,7 +29,8 @@ class InvitationsBasketSpec extends UnitSpec {
     def basketWith(services: Service*) =
       emptyBasket.copy(
         basket =
-          services.map(svc => AuthorisationRequest("name", Invitation(Some(ClientType.Business), svc, TestIdentifiers.anIdentifierFor(svc)))).toSet)
+          services.map(svc => AuthorisationRequest("name", Invitation(Some(ClientType.Business), svc, TestIdentifiers.anIdentifierFor(svc)))).toSet
+      )
 
     "calculate services available to select based on what is in the basket" in {
       // return all services when nothing is selected

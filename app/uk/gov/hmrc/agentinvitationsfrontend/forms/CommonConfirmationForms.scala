@@ -28,7 +28,8 @@ object CommonConfirmationForms {
         "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessageKey))
-      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString))
+    )
 
   val confirmCancelForm: Form[Confirmation] =
     confirmationForm("cancel-authorisation.error.confirm-cancel.required")

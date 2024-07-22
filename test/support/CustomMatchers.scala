@@ -86,8 +86,9 @@ object CustomMatchers extends Matchers {
       }
     }
 
-  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)(expectHtmlEscaped: Boolean = true)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containMessageWithParams(expectedMessageKey: String, expectedMessageParameters: String*)(
+    expectHtmlEscaped: Boolean = true
+  )(implicit messagesProvider: MessagesProvider): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         checkMessageIsDefined(expectedMessageKey)
@@ -103,9 +104,9 @@ object CustomMatchers extends Matchers {
         MatchResult(
           msgIsPresent,
           s"Content is missing in the html for message key: $expectedMessageKey with params: ${expectedMessageParameters
-            .mkString(", ")}. Expected message was '$expectedMessage'",
+              .mkString(", ")}. Expected message was '$expectedMessage'",
           s"Content is present in the html for message keys: $expectedMessageKey with params: ${expectedMessageParameters
-            .mkString(", ")}. Message was '$expectedMessage'"
+              .mkString(", ")}. Message was '$expectedMessage'"
         )
       }
     }
@@ -133,14 +134,12 @@ object CustomMatchers extends Matchers {
         val foundElement = doc.getElementById(id)
         val isAsExpected = Option(foundElement) match {
           case None => false
-          case Some(elFound) => {
+          case Some(elFound) =>
             val isExpectedTag = elFound.tagName() == tag
-            val hasExpectedAttrs = attrs.forall {
-              case (expectedAttr, expectedValue) =>
-                elFound.attr(expectedAttr) == expectedValue
+            val hasExpectedAttrs = attrs.forall { case (expectedAttr, expectedValue) =>
+              elFound.attr(expectedAttr) == expectedValue
             }
             isExpectedTag && hasExpectedAttrs
-          }
         }
         MatchResult(
           isAsExpected,
@@ -166,7 +165,8 @@ object CustomMatchers extends Matchers {
       }
     }
   def containSubmitButton(expectedMessageKey: String, expectedElementId: String, expectedTagName: String = "button", expectedType: String = "submit")(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+    implicit messagesProvider: MessagesProvider
+  ): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)
@@ -174,12 +174,11 @@ object CustomMatchers extends Matchers {
         val foundElement = doc.getElementById(expectedElementId)
         val isAsExpected = Option(foundElement) match {
           case None => false
-          case Some(element) => {
+          case Some(element) =>
             val isExpectedTag = element.tagName() == expectedTagName
             val isExpectedType = element.attr("type") == expectedType
             val hasExpectedMsg = element.text() == messagesProvider.messages(expectedMessageKey)
             isExpectedTag && isExpectedType && hasExpectedMsg
-          }
         }
         MatchResult(
           isAsExpected,
@@ -188,8 +187,9 @@ object CustomMatchers extends Matchers {
         )
       }
     }
-  def containLink(expectedMessageKey: String, expectedHref: String, expectedClasses: Set[String] = Set.empty)(
-    implicit messagesProvider: MessagesProvider): Matcher[Html] =
+  def containLink(expectedMessageKey: String, expectedHref: String, expectedClasses: Set[String] = Set.empty)(implicit
+    messagesProvider: MessagesProvider
+  ): Matcher[Html] =
     new Matcher[Html] {
       override def apply(html: Html): MatchResult = {
         val doc = Jsoup.parse(html.toString)
@@ -206,9 +206,9 @@ object CustomMatchers extends Matchers {
         MatchResult(
           wasFoundWithCorrectMessage && hasExpectedClasses,
           s"""Response does not contain a link to "$expectedHref" with content for message key "$expectedMessageKey" and with classes: "${expectedClasses
-            .mkString(", ")}" """,
+              .mkString(", ")}" """,
           s"""Response contains a link to "$expectedHref" with content for message key "$expectedMessageKey" and with classes: "${expectedClasses
-            .mkString(", ")} """
+              .mkString(", ")} """
         )
       }
     }

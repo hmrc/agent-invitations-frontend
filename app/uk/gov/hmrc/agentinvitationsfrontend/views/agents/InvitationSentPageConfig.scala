@@ -32,7 +32,8 @@ case class InvitationSentPageConfig(
   expiryDate: LocalDate,
   agencyEmail: String,
   services: Set[Service],
-  isAltItsa: Boolean)(implicit externalUrls: ExternalUrls, messages: Messages) {
+  isAltItsa: Boolean
+)(implicit externalUrls: ExternalUrls, messages: Messages) {
 
   val continueUrl: String = continueUrlOpt match {
     case Some(url) => url

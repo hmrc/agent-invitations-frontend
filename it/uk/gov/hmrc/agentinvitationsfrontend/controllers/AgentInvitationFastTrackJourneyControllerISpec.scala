@@ -17,8 +17,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
-class AgentInvitationFastTrackJourneyControllerISpec
-    extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
+class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -62,18 +61,17 @@ class AgentInvitationFastTrackJourneyControllerISpec
               "service"              -> "HMRC-MTD-IT",
               "clientIdentifierType" -> "ni",
               "clientIdentifier"     -> submittedNinoStr,
-              "knownFact"            -> "BN32TN"),
+              "knownFact"            -> "BN32TN"
+            ),
             arn.value
-          ))
+          )
+        )
         status(result) shouldBe 303
         Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
 
         val expectedFtr =
           AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino(submittedNinoStr.toUpperCase), Some("BN32TN"))
-        journeyState.get shouldBe Some(
-          (
-            CheckDetails(fastTrackRequest = expectedFtr, None),
-            List(Prologue(None, None))))
+        journeyState.get shouldBe Some((CheckDetails(fastTrackRequest = expectedFtr, None), List(Prologue(None, None))))
       }
     }
 
@@ -91,9 +89,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-MTD-IT",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "AB123456A",
-            "knownFact"            -> "BN32TN"),
+            "knownFact"            -> "BN32TN"
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -112,16 +112,17 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-MTD-IT",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "AB123456A",
-            "knownFact"            -> "BN32TN"),
+            "knownFact"            -> "BN32TN"
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
       val expectedFtr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN32TN"))
       journeyState.get shouldBe Some(
-        (
-          CheckDetails(fastTrackRequest = expectedFtr, None),
-          List(Prologue(None, Some("/some/referer/url")), Prologue(None, None))))
+        (CheckDetails(fastTrackRequest = expectedFtr, None), List(Prologue(None, Some("/some/referer/url")), Prologue(None, None)))
+      )
     }
 
     "redirect to check details when service is IRV" in {
@@ -135,9 +136,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "PERSONAL-INCOME-RECORD",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> nino.value,
-            "knownFact"            -> dateOfBirth),
+            "knownFact"            -> dateOfBirth
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -153,9 +156,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "PERSONAL-INCOME-RECORD",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> nino.value,
-            "knownFact"            -> dateOfBirth),
+            "knownFact"            -> dateOfBirth
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended.url)
     }
@@ -171,9 +176,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-MTD-VAT",
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> vrn.value,
-            "knownFact"            -> validRegistrationDate),
+            "knownFact"            -> validRegistrationDate
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -189,9 +196,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "HMRC-MTD-VAT",
             "clientIdentifierType" -> "vrn",
             "clientIdentifier"     -> vrn.value,
-            "knownFact"            -> validRegistrationDate),
+            "knownFact"            -> validRegistrationDate
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -206,9 +215,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-TERS-ORG",
             "clientIdentifierType" -> "taxId",
-            "clientIdentifier"     -> validUtr.value),
+            "clientIdentifier"     -> validUtr.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType.url)
     }
@@ -223,9 +234,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-TERSNT-ORG",
             "clientIdentifierType" -> "taxId",
-            "clientIdentifier"     -> validUrn.value),
+            "clientIdentifier"     -> validUrn.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientType.url)
     }
@@ -240,9 +253,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-TERS-ORG",
             "clientIdentifierType" -> "utr",
-            "clientIdentifier"     -> validUtr.value),
+            "clientIdentifier"     -> validUtr.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended.url)
     }
@@ -257,9 +272,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-CGT-PD",
             "clientIdentifierType" -> "CGTPDRef",
-            "clientIdentifier"     -> cgtRef.value),
+            "clientIdentifier"     -> cgtRef.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -274,9 +291,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-CGT-PD",
             "clientIdentifierType" -> "CGTPDRef",
-            "clientIdentifier"     -> cgtRef.value),
+            "clientIdentifier"     -> cgtRef.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended.url)
     }
@@ -291,9 +310,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-PPT-ORG",
             "clientIdentifierType" -> "EtmpRegistrationNumber",
-            "clientIdentifier"     -> pptRef.value),
+            "clientIdentifier"     -> pptRef.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -308,9 +329,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "business",
             "service"              -> "HMRC-CBC-ORG",
             "clientIdentifierType" -> "cbcId",
-            "clientIdentifier"     -> cbcId.value),
+            "clientIdentifier"     -> cbcId.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -325,9 +348,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "personal",
             "service"              -> "HMRC-MTD-IT",
             "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> nino.value),
+            "clientIdentifier"     -> nino.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -342,9 +367,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "personal",
             "service"              -> "PERSONAL-INCOME-RECORD",
             "clientIdentifierType" -> "ni",
-            "clientIdentifier"     -> nino.value),
+            "clientIdentifier"     -> nino.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -359,9 +386,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientType"           -> "personal",
             "service"              -> "HMRC-MTD-VAT",
             "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> vrn.value),
+            "clientIdentifier"     -> vrn.value
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -372,12 +401,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "service"              -> "HMRC-MTD-VAT",
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> vrn.value),
+          request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn", "clientIdentifier" -> vrn.value),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -388,12 +415,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "service"              -> "HMRC-CGT-PD",
-            "clientIdentifierType" -> "CGTPDRef",
-            "clientIdentifier"     -> cgtRef.value),
+          request.withFormUrlEncodedBody("service" -> "HMRC-CGT-PD", "clientIdentifierType" -> "CGTPDRef", "clientIdentifier" -> cgtRef.value),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -404,12 +429,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "service"              -> "HMRC-CBC-ORG",
-            "clientIdentifierType" -> "cbcId",
-            "clientIdentifier"     -> cbcId.value),
+          request.withFormUrlEncodedBody("service" -> "HMRC-CBC-ORG", "clientIdentifierType" -> "cbcId", "clientIdentifier" -> cbcId.value),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCheckDetails.url)
     }
@@ -420,17 +443,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val request = FakeRequest("POST", "/agents/fast-track")
       val result = controller.agentFastTrack(
         authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "service"              -> "HMRC-MTD-VAT",
-            "clientIdentifierType" -> "vrn",
-            "clientIdentifier"     -> vrn.value),
+          request.withFormUrlEncodedBody("service" -> "HMRC-MTD-VAT", "clientIdentifierType" -> "vrn", "clientIdentifier" -> vrn.value),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showSuspended.url)
     }
-
-
 
     "redirect to the error url with appended error reason if all values in request are valid with a continue and error url query parameters" in {
       givenAllowlistedDomains
@@ -445,12 +464,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "service"              -> "foo",
             "clientIdentifierType" -> "ni",
             "clientIdentifier"     -> "AB123456A",
-            "knownFact"            -> "BN32TN"),
+            "knownFact"            -> "BN32TN"
+          ),
           arn.value
-        ))
+        )
+      )
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        "http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
+      Helpers.redirectLocation(result) shouldBe Some("http://localhost:9996/tax-history/not-authorised?issue=UNSUPPORTED_SERVICE")
     }
 
     "throw a Bad Request exception if the continue url is not allowlisted" in {
@@ -461,15 +481,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
       intercept[BadRequestException] {
         await(
-          controller.agentFastTrack(authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientType"           -> "personal",
-              "service"              -> "foo",
-              "clientIdentifierType" -> "ni",
-              "clientIdentifier"     -> "AB123456A",
-              "knownFact"            -> "BN32TN"),
-            arn.value
-          )))
+          controller.agentFastTrack(
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientType"           -> "personal",
+                "service"              -> "foo",
+                "clientIdentifierType" -> "ni",
+                "clientIdentifier"     -> "AB123456A",
+                "knownFact"            -> "BN32TN"
+              ),
+              arn.value
+            )
+          )
+        )
       }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the error url is not allowlisted" in {
@@ -480,15 +504,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
       intercept[BadRequestException] {
         await(
-          controller.agentFastTrack(authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientType"           -> "personal",
-              "service"              -> "foo",
-              "clientIdentifierType" -> "ni",
-              "clientIdentifier"     -> "AB123456A",
-              "knownFact"            -> "BN32TN"),
-            arn.value
-          )))
+          controller.agentFastTrack(
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientType"           -> "personal",
+                "service"              -> "foo",
+                "clientIdentifierType" -> "ni",
+                "clientIdentifier"     -> "AB123456A",
+                "knownFact"            -> "BN32TN"
+              ),
+              arn.value
+            )
+          )
+        )
       }.getMessage shouldBe "Provided URL [https://www.google.com] doesn't comply with redirect policy"
     }
     "throw a Bad Request exception if the continue url is invalid" in {
@@ -498,15 +526,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
       intercept[BadRequestException] {
         await(
-          controller.agentFastTrack(authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientType"           -> "personal",
-              "service"              -> "foo",
-              "clientIdentifierType" -> "ni",
-              "clientIdentifier"     -> "AB123456A",
-              "knownFact"            -> "BN32TN"),
-            arn.value
-          )))
+          controller.agentFastTrack(
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientType"           -> "personal",
+                "service"              -> "foo",
+                "clientIdentifierType" -> "ni",
+                "clientIdentifier"     -> "AB123456A",
+                "knownFact"            -> "BN32TN"
+              ),
+              arn.value
+            )
+          )
+        )
       }.getMessage startsWith "[foo] is not a valid continue URL"
     }
     "throw a Bad Request exception if the error url is invalid" in {
@@ -516,15 +548,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       )
       intercept[BadRequestException] {
         await(
-          controller.agentFastTrack(authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientType"           -> "personal",
-              "service"              -> "foo",
-              "clientIdentifierType" -> "ni",
-              "clientIdentifier"     -> "AB123456A",
-              "knownFact"            -> "BN32TN"),
-            arn.value
-          )))
+          controller.agentFastTrack(
+            authorisedAsValidAgent(
+              request.withFormUrlEncodedBody(
+                "clientType"           -> "personal",
+                "service"              -> "foo",
+                "clientIdentifierType" -> "ni",
+                "clientIdentifier"     -> "AB123456A",
+                "knownFact"            -> "BN32TN"
+              ),
+              arn.value
+            )
+          )
+        )
       }.getMessage startsWith "[bar] is not a valid error URL"
     }
   }
@@ -533,14 +569,16 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "render the page content" in {
       val request = FakeRequest("GET", "/agents/suspended")
       journeyState.set(
-        SuspendedAgent(Service.Vat, None), List()
+        SuspendedAgent(Service.Vat, None),
+        List()
       )
       val result = controller.showSuspended(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue,
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
         "agent-suspended.fastrack.heading",
-      "agent-suspended.fastrack.p1",
+        "agent-suspended.fastrack.p1",
         "agent-suspended.fastrack.p3",
         "agent-suspended.fastrack.p4"
       )
@@ -551,18 +589,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
     val request = FakeRequest("GET", "/agents/fast-track/check-details")
     "show the check-details page for ITSA service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN32TN"))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "check-details.heading",
-        "check-details.p.HMRC-MTD-IT",
-        "check-details.client-type.personal")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "check-details.heading", "check-details.p.HMRC-MTD-IT", "check-details.client-type.personal")
     }
     "show the check-details page for IRV service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, Nino("AB123456A"), Some(dateOfBirth))
@@ -575,7 +607,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result.futureValue,
         "check-details.heading",
         "check-details.p.PERSONAL-INCOME-RECORD",
-        "check-details.client-type.personal")
+        "check-details.client-type.personal"
+      )
     }
     "show the check-details page for personal VAT service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some(validRegistrationDate))
@@ -585,11 +618,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "check-details.heading",
-        "check-details.p.HMRC-MTD-VAT",
-        "check-details.client-type.personal")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "check-details.heading", "check-details.p.HMRC-MTD-VAT", "check-details.client-type.personal")
     }
     "show the check-details page for business VAT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Vat, vrn, Some(validRegistrationDate))
@@ -603,7 +632,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result.futureValue,
         "check-details.heading",
         "check-details.p.HMRC-MTD-VAT",
-        "check-details.client-type.business.HMRC-MTD-VAT")
+        "check-details.client-type.business.HMRC-MTD-VAT"
+      )
     }
 
     "show the check-details page for Trust service" in {
@@ -618,7 +648,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result.futureValue,
         "check-details.heading",
         "check-details.p.HMRC-TERS-ORG",
-        "check-details.client-type.business.HMRC-TERS-ORG")
+        "check-details.client-type.business.HMRC-TERS-ORG"
+      )
     }
 
     "show the check-details page for business CGT service" in {
@@ -633,7 +664,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result.futureValue,
         "check-details.heading",
         "check-details.p.HMRC-CGT-PD",
-        "check-details.client-type.business.HMRC-CGT-PD")
+        "check-details.client-type.business.HMRC-CGT-PD"
+      )
     }
 
     "show the check-details page for personal CGT service" in {
@@ -644,11 +676,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "check-details.heading",
-        "check-details.p.HMRC-CGT-PD",
-        "check-details.client-type.personal")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "check-details.heading", "check-details.p.HMRC-CGT-PD", "check-details.client-type.personal")
     }
 
     "show the check-details page for personal PPT service" in {
@@ -659,11 +687,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "check-details.heading",
-        "check-details.p.HMRC-PPT-ORG",
-        "check-details.client-type.personal")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "check-details.heading", "check-details.p.HMRC-PPT-ORG", "check-details.client-type.personal")
     }
 
     "show the check-details page for business CBC service" in {
@@ -680,7 +704,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.client-type.business.HMRC-CBC-ORG",
         "check-details.cbc-email",
         "check-details.cbc"
-       )
+      )
     }
 
     "show the check-details page for business Pillar2 service" in {
@@ -694,7 +718,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyMsgs(
         result.futureValue,
         "check-details.heading",
-        "check-details.pillar2",
+        "check-details.pillar2"
       )
     }
 
@@ -710,7 +734,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.heading",
         "check-details.p.HMRC-MTD-IT",
         "check-details.client-type.personal",
-        "check-details.change.p1")
+        "check-details.change.p1"
+      )
     }
     "show the check-details page for IRV client with no date of birth" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, Nino("AB123456A"), None)
@@ -724,7 +749,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.heading",
         "check-details.p.PERSONAL-INCOME-RECORD",
         "check-details.client-type.personal",
-        "check-details.change.p1")
+        "check-details.change.p1"
+      )
     }
     "show the check-details page for VAT client with no vat registration date" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
@@ -738,7 +764,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "check-details.heading",
         "check-details.p.HMRC-MTD-VAT",
         "check-details.client-type.personal",
-        "check-details.change.p1")
+        "check-details.change.p1"
+      )
     }
     "show the check-details page for VAT client with no client type" in {
       val ftr = AgentFastTrackRequest(None, Service.Vat, vrn, None)
@@ -748,11 +775,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showCheckDetails(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "check-details.heading",
-        "check-details.p.HMRC-MTD-VAT",
-        "check-details.change.p1")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "check-details.heading", "check-details.p.HMRC-MTD-VAT", "check-details.change.p1")
     }
   }
 
@@ -761,12 +784,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
     "redirect to invitation-sent" in new ItsaHappyScenario {
       givenGetAgencyEmailAgentStub
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -776,12 +796,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenGetAgencyEmailAgentStub
       givenLegacySaRelationshipReturnsStatus(arn, nino, 204)
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showAlreadyCopiedAcrossItsa.url)
@@ -791,26 +808,19 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenGetAgencyEmailAgentStub
       givenLegacySaRelationshipReturnsStatus(arn, nino, 200)
       val ftr: AgentFastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN32TN"))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showLegacyAuthorisationDetected.url)
     }
 
-
     "redirect to client-identify for a personal service" in {
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some("BN114AW"))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient.url)
@@ -818,12 +828,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to client-identify for a business service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Vat, vrn, Some(validRegistrationDate))
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient.url)
@@ -831,12 +838,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /identify-client for a trust service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Trust, validUtr, None)
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient.url)
@@ -844,12 +848,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /identify-client for a CGT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.CapitalGains, cgtRef, None)
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient.url)
@@ -857,12 +858,9 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "redirect to /identify-client for a PPT service" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Ppt, pptRef, None)
-      journeyState.set(
-        CheckDetails(fastTrackRequest = ftr, None),
-        List(Prologue(None, None)))
+      journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List(Prologue(None, None)))
 
-      val result = controller.submitCheckDetails(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result = controller.submitCheckDetails(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showIdentifyClient.url)
@@ -877,8 +875,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact.url)
@@ -889,8 +886,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, nino, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact.url)
@@ -901,8 +897,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showKnownFact.url)
@@ -913,8 +908,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.CapitalGains, cgtRef, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode.url)
@@ -925,8 +919,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.CapitalGains, cgtRef, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode.url)
@@ -937,8 +930,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, None)
       journeyState.set(CheckDetails(fastTrackRequest = ftr, None), List())
 
-      val result = controller.progressToKnownFact(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result = controller.progressToKnownFact(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmPptRegDate.url)
@@ -1028,7 +1020,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result.futureValue, "identify-trust-client.header", "identify-trust-client.p1")
-      checkHtmlResultWithBodyText(result.futureValue, "Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable.")
+      checkHtmlResultWithBodyText(
+        result.futureValue,
+        "Use a Unique Taxpayer Reference (UTR) if the trust is taxable or a Unique Reference Number (URN) if the trust is non-taxable."
+      )
     }
 
     "show the client-details page for CGT" in {
@@ -1067,10 +1062,17 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.cbc.p1","identify-client.cbc.hint", "identify-cbc-client.email.label", "identify-cbc-client.email.hint")
+      checkHtmlResultWithBodyMsgs(
+        result.futureValue,
+        "identify-client.header",
+        "identify-client.cbc.p1",
+        "identify-client.cbc.hint",
+        "identify-cbc-client.email.label",
+        "identify-cbc-client.email.hint"
+      )
     }
 
-    "show the client-details page for Pillar2" in   {
+    "show the client-details page for Pillar2" in {
       val ftr = AgentFastTrackRequest(Some(Business), Service.Pillar2, plrId, None)
       journeyState.set(
         IdentifyClient(ftr, None),
@@ -1080,7 +1082,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showIdentifyClient(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.pillar2.p1","identify-client.pillar2.hint")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "identify-client.header", "identify-client.pillar2.p1", "identify-client.pillar2.hint")
     }
 
     "show the client-details page when there is no client type for VAT" in {
@@ -1124,11 +1126,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
               "clientIdentifier" -> submittedNinoStr,
               "postcode"         -> "BN32TN"
             ),
-            arn.value))
+            arn.value
+          )
+        )
 
         status(result) shouldBe 303
-        Helpers.redirectLocation(result) shouldBe Some(
-          routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
+        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
       }
     }
   }
@@ -1156,16 +1159,13 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
         val result = controller.submitIdentifyIrvClient(
           authorisedAsValidAgent(
-            request.withFormUrlEncodedBody(
-              "clientIdentifier" -> submittedNinoStr,
-              "dob.year"         -> "1990",
-              "dob.month"        -> "10",
-              "dob.day"          -> "10"),
-            arn.value))
+            request.withFormUrlEncodedBody("clientIdentifier" -> submittedNinoStr, "dob.year" -> "1990", "dob.month" -> "10", "dob.day" -> "10"),
+            arn.value
+          )
+        )
 
         status(result) shouldBe 303
-        Helpers.redirectLocation(result) shouldBe Some(
-          routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
+        Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
       }
     }
   }
@@ -1188,9 +1188,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifier"       -> "101747696",
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
-            "registrationDate.day"   -> "10"),
+            "registrationDate.day"   -> "10"
+          ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -1213,9 +1215,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifier"       -> "101747696",
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
-            "registrationDate.day"   -> "10"),
+            "registrationDate.day"   -> "10"
+          ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientInsolvent.url)
@@ -1238,9 +1242,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifier"       -> "101747696",
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
-            "registrationDate.day"   -> "10"),
+            "registrationDate.day"   -> "10"
+          ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showCannotCreateFastTrackRequest.url)
@@ -1264,9 +1270,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifier"       -> "101747696",
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
-            "registrationDate.day"   -> "10"),
+            "registrationDate.day"   -> "10"
+          ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched.url)
@@ -1283,9 +1291,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
             "clientIdentifier"       -> "101747696",
             "registrationDate.year"  -> "2010",
             "registrationDate.month" -> "10",
-            "registrationDate.day"   -> "10"),
+            "registrationDate.day"   -> "10"
+          ),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -1308,18 +1318,18 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("taxId" -> validUtr.value),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmTrustClient.url)
     }
   }
 
   "POST /agents/client-details-ppt" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-ppt-client")
     "redirect to invitation-sent" in {
-      givenPptCheckKnownFactReturns(PptClient(pptRef,pptDefaultRegDate.toString), 200)
+      givenPptCheckKnownFactReturns(PptClient(pptRef, pptDefaultRegDate.toString), 200)
       givenGetPptCustomerName(pptRef, "a ppt customer")
       val ftr = AgentFastTrackRequest(Some(Personal), Service.Ppt, pptRef, Some(pptDefaultRegDate.toString))
       journeyState.set(
@@ -1332,28 +1342,30 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.submitIdentifyPptClient(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody(
-            "pptRef" -> "XAPPT0000012345",
-            "registrationDate.year" -> "2021",
+            "pptRef"                 -> "XAPPT0000012345",
+            "registrationDate.year"  -> "2021",
             "registrationDate.month" -> "01",
-            "registrationDate.day" -> "01"),
-          arn.value))
+            "registrationDate.day"   -> "01"
+          ),
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmClientPpt.url)
     }
   }
 
   "POST /agents/client-details-cbc" should {
     val request = FakeRequest("POST", "/agents/fast-track/identify-cbc-client")
     "redirect to invitation-sent" in {
-      givenCbcCheckKnownFactReturns(CbcClient(cbcId,cbcDefaultEmail), 204)
+      givenCbcCheckKnownFactReturns(CbcClient(cbcId, cbcDefaultEmail), 204)
       givenGetCbcSubscription(cbcId, "a cbc customer", false)
       givenGetAllPendingInvitationsReturnsEmpty(arn, cbcId.value, Service.Cbc)
       givenGetAgencyEmailAgentStub
       givenInvitationCreationSucceeds(arn, Some(Business), cbcId.value, invitationIdCbc, cbcId.value, "cbcId", Service.CbcNonUk, "CBC")
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn,"uid", ClientType.Business)
+      givenAgentReference(arn, "uid", ClientType.Business)
       givenCheckRelationshipCbcWithStatus(arn, cbcId.value, 404)
       val ftr = AgentFastTrackRequest(Some(Business), Service.Cbc, cbcId, Some(cbcDefaultEmail))
       journeyState.set(
@@ -1364,16 +1376,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
       val result = controller.submitIdentifyCbcClient(
-        authorisedAsValidAgent(
-          request.withFormUrlEncodedBody(
-            "cbcId" -> "XACBC0516273849",
-            "email" -> "cbc@email.com")
-          ,
-          arn.value))
+        authorisedAsValidAgent(request.withFormUrlEncodedBody("cbcId" -> "XACBC0516273849", "email" -> "cbc@email.com"), arn.value)
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
     }
   }
 
@@ -1383,7 +1390,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenGetAllPendingInvitationsReturnsEmpty(arn, plrId.value, Service.Pillar2)
       givenGetAgencyEmailAgentStub
       givenAgentReferenceRecordExistsForArn(arn, "FOO")
-      givenAgentReference(arn,"uid", ClientType.Business)
+      givenAgentReference(arn, "uid", ClientType.Business)
       givenPillar2CheckKnownFactReturns(Pillar2Client(plrId, pillar2DefaultRegDate.toString), 204)
       givenGetPillar2Subscription(plrId, Pillar2Subscription("Pillar2 Client", pillar2DefaultRegDate))
       givenInvitationCreationSucceeds(arn, Some(Business), plrId.value, invitationIdPillar2, plrId.value, "PLRID", Service.Pillar2, "PLR")
@@ -1398,16 +1405,18 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.submitIdentifyPillar2Client(
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody(
-            "plrId" -> plrId.value,
-            "registrationDate.year" -> pillar2DefaultRegDate.getYear.toString,
+            "plrId"                  -> plrId.value,
+            "registrationDate.year"  -> pillar2DefaultRegDate.getYear.toString,
             "registrationDate.month" -> pillar2DefaultRegDate.getMonthValue.toString,
-            "registrationDate.day" -> pillar2DefaultRegDate.getDayOfMonth.toString),
-          arn.value))
+            "registrationDate.day"   -> pillar2DefaultRegDate.getDayOfMonth.toString
+          ),
+          arn.value
+        )
+      )
 
       status(result) shouldBe 303
 
-      Helpers.redirectLocation(result) shouldBe Some(
-      routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
     }
   }
 
@@ -1429,11 +1438,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("cgtRef" -> cgtRef.value),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode.url)
     }
   }
 
@@ -1455,11 +1464,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtPostcode.url)
     }
 
     "redirect to /agents/client-country" in new CgtHappyScenario {
@@ -1477,11 +1486,11 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("clientType" -> "personal"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showConfirmCgtCountryCode.url)
     }
   }
 
@@ -1501,11 +1510,12 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("utr" -> validUtr.value),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 200
       checkHtmlResultWithBodyMsgs(result.futureValue, "global.yes", "global.no-start-over")
-      checkIncludesText(result,"Is this the client you want authorisation from?", "Is trustName the client you want authorisation from?")
+      checkIncludesText(result, "Is this the client you want authorisation from?", "Is trustName the client you want authorisation from?")
     }
   }
 
@@ -1525,7 +1535,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("accepted" -> "true"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -1570,7 +1581,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("accepted" -> "true"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -1610,7 +1622,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("postcode" -> "BN13 1XX"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched.url)
@@ -1650,7 +1663,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         authorisedAsValidAgent(
           request.withFormUrlEncodedBody("countryCode" -> "IN"),
           arn.value
-        ))
+        )
+      )
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched.url)
@@ -1682,10 +1696,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val result = controller.showKnownFact(authorisedAsValidAgent(request, arn.value))
 
       status(result) shouldBe 200
-      checkHtmlResultWithBodyMsgs(
-        result.futureValue,
-        "known-fact.PERSONAL-INCOME-RECORD.heading",
-        "known-fact.PERSONAL-INCOME-RECORD.helper")
+      checkHtmlResultWithBodyMsgs(result.futureValue, "known-fact.PERSONAL-INCOME-RECORD.heading", "known-fact.PERSONAL-INCOME-RECORD.helper")
     }
 
     "show the more-details page for VAT service" in {
@@ -1711,8 +1722,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
 
-      val result = controller.submitKnownFactItsa(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
+      val result = controller.submitKnownFactItsa(authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showInvitationSent.url)
@@ -1728,8 +1738,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
 
-      val result = controller.submitKnownFactItsa(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
+      val result = controller.submitKnownFactItsa(authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
 
       status(result) shouldBe 303
       Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showNotMatched.url)
@@ -1744,12 +1753,10 @@ class AgentInvitationFastTrackJourneyControllerISpec
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), None)
       journeyState.set(MissingDetail(ftr, None), List())
 
-      val result = controller.submitKnownFactItsa(
-        authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
+      val result = controller.submitKnownFactItsa(authorisedAsValidAgent(request.withFormUrlEncodedBody("knownFact" -> "BN32TN"), arn.value))
 
       status(result) shouldBe 303
-      Helpers.redirectLocation(result) shouldBe Some(
-        routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered.url)
+      Helpers.redirectLocation(result) shouldBe Some(routes.AgentInvitationFastTrackJourneyController.showClientNotRegistered.url)
 
     }
   }
@@ -1884,12 +1891,16 @@ class AgentInvitationFastTrackJourneyControllerISpec
         result.futureValue,
         "invitation-sent.header",
         "invitation-sent.link-text",
-      "invitation-sent.select-link",
-      "invitation-sent.client-warning")
+        "invitation-sent.select-link",
+        "invitation-sent.client-warning"
+      )
 
-      checkHtmlResultWithNotBodyText(result.futureValue, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT.",
-      "Check with your client that they have a Government Gateway user ID for their personal tax affairs.",
-      "Check with your client that they have signed up to Making Tax Digital for VAT.")
+      checkHtmlResultWithNotBodyText(
+        result.futureValue,
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT.",
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs.",
+        "Check with your client that they have signed up to Making Tax Digital for VAT."
+      )
     }
 
     "show the invitation sent page for a personal service with the first step - check client is signed up for the service- when the service is VAT" in {
@@ -1911,10 +1922,14 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "invitation-sent.step1.personal.vat",
         "invitation-sent.link-text",
         "invitation-sent.select-link",
-        "invitation-sent.client-warning")
+        "invitation-sent.client-warning"
+      )
 
-      checkHtmlResultWithNotBodyText(result.futureValue, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
-        "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
+      checkHtmlResultWithNotBodyText(
+        result.futureValue,
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to MTD VAT.",
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs."
+      )
     }
 
     "show the invitation sent page for a personal service with alt Itsa" in {
@@ -1931,7 +1946,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
 
-      checkHtmlResultWithBodyText(result,"Sign up your client for Making Tax Digital for Income Tax")
+      checkHtmlResultWithBodyText(result, "Sign up your client for Making Tax Digital for Income Tax")
     }
 
     "show the invitation sent page for a business service" in {
@@ -1946,10 +1961,14 @@ class AgentInvitationFastTrackJourneyControllerISpec
         "invitation-sent.step1.business.vat",
         "invitation-sent.link-text",
         "invitation-sent.select-link",
-        "invitation-sent.client-warning")
+        "invitation-sent.client-warning"
+      )
 
-      checkHtmlResultWithNotBodyText(result.futureValue, "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT.",
-        "Check with your client that they have a Government Gateway user ID for their personal tax affairs.")
+      checkHtmlResultWithNotBodyText(
+        result.futureValue,
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs and that they have signed up to Making Tax Digital for VAT.",
+        "Check with your client that they have a Government Gateway user ID for their personal tax affairs."
+      )
     }
   }
 
@@ -1971,8 +1990,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.title", "signed up to Making Tax Digital for Income Tax"))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.p", "signed up."))
       checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("not-enrolled.existing.header", "Self Assessment"))
-      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
-      checkResultContainsLink(result,"http://localhost:9438/agent-mapping/start","copy across an existing authorisation")
+      checkResultContainsLink(result, "http://localhost:9438/agent-mapping/start", "copy across an existing authorisation")
+      checkResultContainsLink(result, "http://localhost:9438/agent-mapping/start", "copy across an existing authorisation")
 
     }
   }
@@ -2013,11 +2032,14 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
       status(result) shouldBe 200
       val html = Jsoup.parse(Helpers.contentAsString(result))
-      html.title shouldBe  "You already created an authorisation request for this tax service - Ask a client to authorise you - GOV.UK"
+      html.title shouldBe "You already created an authorisation request for this tax service - Ask a client to authorise you - GOV.UK"
       html.select("main h1").text() shouldBe "You already created an authorisation request for this tax service"
       html.select("main p").get(0).text() shouldBe "You cannot continue until Charmarti Ltd. has accepted the authorisation request link."
-      html.select("main p").get(1).text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
-      html.select("main p").get(2).text() should include ("/invitation-link/ABC123")
+      html
+        .select("main p")
+        .get(1)
+        .text() shouldBe "Resend the authorisation request link that was created when you originally asked Charmarti Ltd. to authorise you:"
+      html.select("main p").get(2).text() should include("/invitation-link/ABC123")
       html.select("main p").get(2).classNames() contains "govuk-!-font-weight-bold"
       html.select("main p").get(2).classNames() contains "govuk-body"
       html.select("main .govuk-button").text() shouldBe "Manage your authorisation requests"
@@ -2061,7 +2083,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     "show the already copied across warning page when there is a legacy mapping" in {
       val request = FakeRequest("GET", "/agents/track/already-copied-across-itsa")
-      //ignore unused warning
+      // ignore unused warning
       val ftr = AgentFastTrackRequest(Some(Personal), Service.MtdIt, Nino("AB123456A"), Some("BN114AW"))
       journeyState.set(
         AlreadyCopiedAcrossItsa,
@@ -2122,7 +2144,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
         )
       )
 
-      val result = controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
+      val result =
+        controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "true"), arn.value))
 
       status(result.futureValue) shouldBe 303
       redirectLocation(result) shouldBe Some("http://localhost:9438/agent-mapping/start")
@@ -2143,7 +2166,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       givenAgentReference(arn, "uid", Personal)
       givenGetAgencyEmailAgentStub
 
-      val result = controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
+      val result =
+        controller.submitLegacyAuthorisationDetected(authorisedAsValidAgent(request.withFormUrlEncodedBody("accepted" -> "false"), arn.value))
 
       status(result.futureValue) shouldBe 303
       redirectLocation(result) shouldBe Some("/invitations/agents/sent-invitation")
@@ -2161,7 +2185,6 @@ class AgentInvitationFastTrackJourneyControllerISpec
       redirectLocation(result) shouldBe Some(appConfig.accountLimitedUrl)
     }
   }
-
 
   class ItsaHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, nino.value, Service.MtdIt)
@@ -2227,34 +2250,17 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
     givenTrustClientReturns(validUtr, 200, Json.toJson(trustResponse).toString())
     givenCheckRelationshipVatWithStatus(arn, vrn, 404)
-    givenInvitationCreationSucceeds(
-      arn,
-      Some(Trust),
-      validUtr.value,
-      invitationIdTrust,
-      validUtr.value,
-      "utr",
-      Service.Trust,
-      "UTR")
+    givenInvitationCreationSucceeds(arn, Some(Trust), validUtr.value, invitationIdTrust, validUtr.value, "utr", Service.Trust, "UTR")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", Business)
     givenGetAgencyEmailAgentStub
   }
 
-
   class CgtHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, cgtRef.value, Service.CapitalGains)
     givenGetCgtSubscriptionReturns(cgtRef, 200, Json.toJson(cgtSubscription()).toString())
     givenCheckRelationshipVatWithStatus(arn, vrn, 404)
-    givenInvitationCreationSucceeds(
-      arn,
-      Some(Business),
-      cgtRef.value,
-      invitationIdCgt,
-      cgtRef.value,
-      "CGTPDRef",
-      Service.CapitalGains,
-      "CGTPDRef")
+    givenInvitationCreationSucceeds(arn, Some(Business), cgtRef.value, invitationIdCgt, cgtRef.value, "CGTPDRef", Service.CapitalGains, "CGTPDRef")
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", Business)
     givenGetAgencyEmailAgentStub
@@ -2262,7 +2268,7 @@ class AgentInvitationFastTrackJourneyControllerISpec
 
   class PPTHappyScenario {
     givenGetAllPendingInvitationsReturnsEmpty(arn, pptRef.value, Service.Ppt)
-    givenGetPptSubscriptionReturns(pptRef, 200, Json.toJson(pptSubscriptionSuccessBodyJson(pptRef,pptDefaultRegDate)).toString())
+    givenGetPptSubscriptionReturns(pptRef, 200, Json.toJson(pptSubscriptionSuccessBodyJson(pptRef, pptDefaultRegDate)).toString())
     givenCheckRelationshipPptWithStatus(arn, pptRef.value, 404)
     givenInvitationCreationSucceeds(
       arn,
@@ -2272,7 +2278,8 @@ class AgentInvitationFastTrackJourneyControllerISpec
       pptRef.value,
       "EtmpRegistrationNumber",
       Service.Ppt,
-      "EtmpRegistrationNumber")
+      "EtmpRegistrationNumber"
+    )
     givenAgentReferenceRecordExistsForArn(arn, "FOO")
     givenAgentReference(arn, "uid", Business)
     givenGetAgencyEmailAgentStub

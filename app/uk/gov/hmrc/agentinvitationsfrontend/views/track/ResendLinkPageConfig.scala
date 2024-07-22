@@ -28,19 +28,20 @@ case class ResendLinkPageConfig(
   maybeService: Option[Service],
   agencyEmail: String,
   backLinkUrl: String,
-  isAltItsa: Boolean = false)(implicit messages: Messages) {
+  isAltItsa: Boolean = false
+)(implicit messages: Messages) {
 
   val step1Instructions: Option[String] = if (clientType == "personal") {
-    maybeService.flatMap(
-      service =>
-        if (service == Service.PersonalIncomeRecord) Some(Messages("invitation-sent.step1.personal.paye"))
-        else if (service == Service.Vat) Some(Messages("invitation-sent.step1.personal.vat"))
-        else None)
+    maybeService.flatMap(service =>
+      if (service == Service.PersonalIncomeRecord) Some(Messages("invitation-sent.step1.personal.paye"))
+      else if (service == Service.Vat) Some(Messages("invitation-sent.step1.personal.vat"))
+      else None
+    )
   } else if (clientType == "business") {
-    maybeService.flatMap(
-      service =>
-        if (service == Service.Vat) Some(Messages("invitation-sent.step1.business.vat"))
-        else if (service == Service.Trust || service == Service.TrustNT) Some(Messages("invitation-sent.step1.business.trust"))
-        else None)
+    maybeService.flatMap(service =>
+      if (service == Service.Vat) Some(Messages("invitation-sent.step1.business.vat"))
+      else if (service == Service.Trust || service == Service.TrustNT) Some(Messages("invitation-sent.step1.business.trust"))
+      else None
+    )
   } else None
 }

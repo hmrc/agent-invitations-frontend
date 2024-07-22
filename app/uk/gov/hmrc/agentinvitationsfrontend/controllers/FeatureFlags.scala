@@ -33,7 +33,7 @@ trait FeatureFlags {
 }
 
 @Singleton
-case class ConfigFeatureFlags @Inject()(appConfig: AppConfig) extends FeatureFlags {
+case class ConfigFeatureFlags @Inject() (appConfig: AppConfig) extends FeatureFlags {
 
   def isServiceEnabled(service: Service): Boolean = service match {
     case Service.MtdIt                   => appConfig.featuresMtdIt

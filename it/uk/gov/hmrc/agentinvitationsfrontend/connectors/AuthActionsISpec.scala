@@ -28,8 +28,7 @@ class AuthActionsISpec extends BaseISpec {
     FakeRequest("GET", "/path-of-request").withSession(SessionKeys.authToken -> "Bearer XYZ")
   implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-  object TestController
-      extends AuthActions(externalUrls, env, config, authConnector, acaConnector, appConfig, featureFlags) {
+  object TestController extends AuthActions(externalUrls, env, config, authConnector, acaConnector, appConfig, featureFlags) {
     def testWithAuthorisedAsAgent: Result =
       await(super.withAuthorisedAsAgent { agent =>
         Future.successful(Ok(agent.arn.value))
@@ -64,20 +63,20 @@ class AuthActionsISpec extends BaseISpec {
 
     "redirect to 'account limited' when agent is authenticated but suspended" in {
       givenAuthorisedFor(
-      "{}",
-      s"""{
-         |"authorisedEnrolments": [
-         |  { "key":"HMRC-AS-AGENT", "identifiers": [
-         |    { "key":"AgentReferenceNumber", "value": "fooArn" }
-         |  ]}
-         |]}""".stripMargin
+        "{}",
+        s"""{
+           |"authorisedEnrolments": [
+           |  { "key":"HMRC-AS-AGENT", "identifiers": [
+           |    { "key":"AgentReferenceNumber", "value": "fooArn" }
+           |  ]}
+           |]}""".stripMargin
       )
       givenSuspended()
 
       val result = TestController.testWithAuthorisedAsAgent
       status(result) shouldBe 303
       val redirectUrl = redirectLocation(Future.successful(result)).get
-      redirectUrl should include ("account-limited")
+      redirectUrl should include("account-limited")
     }
 
     "throw Forbidden when expected agent's identifier missing" in {

@@ -36,27 +36,27 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestEndpointsController @Inject()(
+class TestEndpointsController @Inject() (
   val authActions: AuthActions,
   pirRelationshipConnector: PirRelationshipConnector,
   val authConnector: AuthConnector,
   val env: Environment,
   deleteRelationshipView: delete_relationship,
   createRelationshipView: create_relationship,
-  testFastTrackView: test_fast_track)(
-  implicit val config: Configuration,
+  testFastTrackView: test_fast_track
+)(implicit
+  val config: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
-  val appConfig: AppConfig)
-    extends FrontendController(cc) with I18nSupport {
+  val appConfig: AppConfig
+) extends FrontendController(cc) with I18nSupport {
 
   import TestEndpointsController._
 
-  val isLocalEnv = {
+  val isLocalEnv =
     if (env.mode.equals(Mode.Test)) false else env.mode.equals(Mode.Dev)
-  }
 
   def getDeleteRelationship: Action[AnyContent] = Action.async { implicit request =>
     Future successful Ok(deleteRelationshipView(testRelationshipForm))
@@ -67,14 +67,13 @@ class TestEndpointsController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors => Future successful BadRequest(deleteRelationshipView(formWithErrors)),
-        validFormData => {
+        validFormData =>
           pirRelationshipConnector
             .testOnlyDeleteRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
               case Some(true) => Redirect(routes.TestEndpointsController.getDeleteRelationship())
               case _          => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched)
             }
-        }
       )
   }
 
@@ -87,14 +86,13 @@ class TestEndpointsController @Inject()(
       .bindFromRequest()
       .fold(
         formWithErrors ⇒ Future successful BadRequest(createRelationshipView(formWithErrors)),
-        validFormData => {
+        validFormData =>
           pirRelationshipConnector
             .testOnlyCreateRelationship(validFormData.arn, validFormData.service, validFormData.clientId)
             .map {
               case CREATED => Redirect(routes.TestEndpointsController.getCreateRelationship)
               case _       => Redirect(agentRoutes.AgentInvitationJourneyController.showNotMatched)
             }
-        }
       )
   }
 
@@ -109,20 +107,20 @@ object TestEndpointsController {
 
   case class Relationship(arn: Arn, service: String, clientId: String)
 
-  val testRelationshipForm: Form[Relationship] = {
+  val testRelationshipForm: Form[Relationship] =
     Form(
       mapping(
         "arn"      -> text,
         "service"  -> text,
         "clientId" -> text
-      )({
-        case (arn, service, clientId) => Relationship(Arn(arn), service, clientId)
-      })({ dr: Relationship =>
+      ) { case (arn, service, clientId) =>
+        Relationship(Arn(arn), service, clientId)
+      } { dr: Relationship =>
         Some((dr.arn.value, dr.service, dr.clientId))
-      }))
-  }
+      }
+    )
 
-  val testCurrentAuthorisationRequestForm: Form[AgentFastTrackRequest] = {
+  val testCurrentAuthorisationRequestForm: Form[AgentFastTrackRequest] =
     Form(
       mapping(
         "clientType"           -> optional(text.transform(ClientType.toEnum, ClientType.fromEnum)),
@@ -130,27 +128,28 @@ object TestEndpointsController {
         "clientIdentifierType" -> text,
         "clientIdentifier"     -> normalizedText,
         "knownFact"            -> optional(text)
-      )({ (clientType, service, clientIdType, clientId, knownFact) =>
+      ) { (clientType, service, clientIdType, clientId, knownFact) =>
         AgentFastTrackRequest(clientType, service, ClientIdType.forId(clientIdType).createUnderlying(clientId), knownFact)
-      })({ fastTrack =>
+      } { fastTrack =>
         Some((fastTrack.clientType, fastTrack.service, ClientIdentifier(fastTrack.clientId).typeId, fastTrack.clientId.value, fastTrack.knownFact))
-      }))
-  }
+      }
+    )
 
-  val testTrackInformationForm: Form[TrackResendForm] = {
+  val testTrackInformationForm: Form[TrackResendForm] =
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
             .verifying("Unsupported client type", ClientType.isValid(_))
-            .transform(ClientType.toEnum, ClientType.fromEnum)),
+            .transform(ClientType.toEnum, ClientType.fromEnum)
+        ),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
         "isAltItsa"  -> boolean
-      )(TrackResendForm.apply)(TrackResendForm.unapply))
-  }
+      )(TrackResendForm.apply)(TrackResendForm.unapply)
+    )
 
-  val testCancelRequestForm: Form[CancelRequestForm] = {
+  val testCancelRequestForm: Form[CancelRequestForm] =
     Form(
       mapping(
         "invitationId" -> text.verifying("Invalid invitation Id", invitationId => InvitationId.isValid(invitationId)),
@@ -160,9 +159,8 @@ object TestEndpointsController {
         "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
-  }
 
-  val testCancelAuthorisationForm: Form[CancelAuthorisationForm] = {
+  val testCancelAuthorisationForm: Form[CancelAuthorisationForm] =
     Form(
       mapping(
         "service"  -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
@@ -172,6 +170,6 @@ object TestEndpointsController {
         "clientName"   -> text,
         "invitationId" -> text,
         "status"       -> text.verifying("Unexpected InvitationStatus", status => status == "Accepted" || status == "Partialauth")
-      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
-  }
+      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply)
+    )
 }

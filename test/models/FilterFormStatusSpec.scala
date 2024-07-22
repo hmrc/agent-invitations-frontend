@@ -48,15 +48,24 @@ class FilterFormStatusSpec extends UnitSpec {
     "filter by AgentCancelledAuthorisation" in {
       testFilter(AgentCancelledAuthorisation, minimumRecord("AcceptedThenCancelledByAgent")) shouldBe true
       testFilter(AgentCancelledAuthorisation, minimumRecord("Accepted", isRelationshipEnded = true)) shouldBe true
-      testFilter(AgentCancelledAuthorisation, minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("HMRC"))) shouldBe false
-      testFilter(AgentCancelledAuthorisation, minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("Client"))) shouldBe false
+      testFilter(
+        AgentCancelledAuthorisation,
+        minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("HMRC"))
+      ) shouldBe false
+      testFilter(
+        AgentCancelledAuthorisation,
+        minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("Client"))
+      ) shouldBe false
       testFilter(AllStatuses, minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("Client"))) shouldBe true
     }
 
     "filter by ClientCancelledAuthorisation" in {
       testFilter(ClientCancelledAuthorisation, minimumRecord("AcceptedThenCancelledByClient")) shouldBe true
       testFilter(ClientCancelledAuthorisation, minimumRecord("Accepted", isRelationshipEnded = true)) shouldBe false
-      testFilter(ClientCancelledAuthorisation, minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("HMRC"))) shouldBe false
+      testFilter(
+        ClientCancelledAuthorisation,
+        minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("HMRC"))
+      ) shouldBe false
       testFilter(AllStatuses, minimumRecord("Accepted", isRelationshipEnded = true, relationshipEndedBy = Some("HMRC"))) shouldBe true
     }
 
@@ -83,7 +92,8 @@ class FilterFormStatusSpec extends UnitSpec {
     date: Option[LocalDate] = None,
     expiryDate: Option[LocalDate] = None,
     isRelationshipEnded: Boolean = false,
-    relationshipEndedBy: Option[String] = None): TrackInformationSorted =
+    relationshipEndedBy: Option[String] = None
+  ): TrackInformationSorted =
     TrackInformationSorted(
       None,
       None,

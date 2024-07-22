@@ -24,7 +24,8 @@ case class FastTrackErrors(
   service: Option[String],
   clientIdentifier: Option[String],
   clientIdentifierType: Option[String],
-  globalFormError: Option[String]) {
+  globalFormError: Option[String]
+) {
 
   def formErrorsMessages: String =
     Seq(clientType, service, clientIdentifier, clientIdentifierType, globalFormError).flatten
@@ -35,20 +36,18 @@ case class FastTrackErrors(
 
 object FastTrackErrors {
 
-  implicit val reads: Reads[FastTrackErrors] = {
+  implicit val reads: Reads[FastTrackErrors] =
     ((JsPath \ "clientType").readNullable[Seq[String]] and
       (JsPath \ "service").readNullable[Seq[String]] and
       (JsPath \ "clientIdentifier").readNullable[Seq[String]] and
       (JsPath \ "clientIdentifierType").readNullable[Seq[String]] and
-      (JsPath \ "").readNullable[Seq[String]])(
-      (clientTypeOpts, serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts, globalFormErrorOpts) =>
-        FastTrackErrors.apply(
-          clientTypeOpts.getOrElse(Seq.empty).headOption,
-          serviceOpts.getOrElse(Seq.empty).headOption,
-          clientIdentifierOpts.getOrElse(Seq.empty).headOption,
-          clientIdentifierTypeOpts.getOrElse(Seq.empty).headOption,
-          globalFormErrorOpts.getOrElse(Seq.empty).headOption
+      (JsPath \ "").readNullable[Seq[String]])((clientTypeOpts, serviceOpts, clientIdentifierTypeOpts, clientIdentifierOpts, globalFormErrorOpts) =>
+      FastTrackErrors.apply(
+        clientTypeOpts.getOrElse(Seq.empty).headOption,
+        serviceOpts.getOrElse(Seq.empty).headOption,
+        clientIdentifierOpts.getOrElse(Seq.empty).headOption,
+        clientIdentifierTypeOpts.getOrElse(Seq.empty).headOption,
+        globalFormErrorOpts.getOrElse(Seq.empty).headOption
       )
     )
-  }
 }

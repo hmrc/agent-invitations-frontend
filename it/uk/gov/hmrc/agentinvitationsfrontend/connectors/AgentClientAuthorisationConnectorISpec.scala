@@ -55,19 +55,10 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "service is for ITSA" should {
       val agentInvitationITSA = AgentInvitation(Some(Personal), "HMRC-MTD-IT", "ni", "AB123456B")
       "return a link of a ITSA created invitation" in {
-        givenInvitationCreationSucceeds(
-          arn,
-          Some(Personal),
-          "AB123456B",
-          invitationIdITSA,
-          "AB123456B",
-          "ni",
-          Service.MtdIt,
-          identifierITSA)
+        givenInvitationCreationSucceeds(arn, Some(Personal), "AB123456B", invitationIdITSA, "AB123456B", "ni", Service.MtdIt, identifierITSA)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationITSA))
         result.isDefined shouldBe true
-        result.get should include(
-          "agent-client-authorisation/clients/MTDITID/AB123456B/invitations/received/ABERULMHCKKW3")
+        result.get should include("agent-client-authorisation/clients/MTDITID/AB123456B/invitations/received/ABERULMHCKKW3")
       }
 
       "return None if unexpected response when creating ITSA invitation" in {
@@ -87,7 +78,8 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
           "AB123456B",
           "ni",
           Service.PersonalIncomeRecord,
-          identifierPIR)
+          identifierPIR
+        )
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationPIR))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/NI/AB123456B/invitations/received/B9SCS2T4NZBAX")
@@ -102,15 +94,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "service is for VAT" should {
       val agentInvitationVAT = AgentInvitation(Some(Business), "HMRC-MTD-VAT", "vrn", validVrn.value)
       "return a link of a VAT created invitation" in {
-        givenInvitationCreationSucceeds(
-          arn,
-          Some(Business),
-          validVrn.value,
-          invitationIdVAT,
-          validVrn.value,
-          "vrn",
-          Service.Vat,
-          identifierVAT)
+        givenInvitationCreationSucceeds(arn, Some(Business), validVrn.value, invitationIdVAT, validVrn.value, "vrn", Service.Vat, identifierVAT)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationVAT))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/VRN/101747696/invitations/received/CZTW1KY6RTAAT")
@@ -125,15 +109,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
     "service is for Trust" should {
       val agentInvitationTrust = AgentInvitation(Some(Business), "HMRC-TERS-ORG", "utr", validUtr.value)
       "return a link of a Trust created invitation" in {
-        givenInvitationCreationSucceeds(
-          arn,
-          Some(Business),
-          validUtr.value,
-          invitationIdTrust,
-          validUtr.value,
-          "utr",
-          Service.Trust,
-          identifierTrust)
+        givenInvitationCreationSucceeds(arn, Some(Business), validUtr.value, invitationIdTrust, validUtr.value, "utr", Service.Trust, identifierTrust)
         val result: Option[String] = await(connector.createInvitation(arn, agentInvitationTrust))
         result.isDefined shouldBe true
         result.get should include("agent-client-authorisation/clients/UTR/4937455253/invitations/received/DF99K6PXSBHTF")
@@ -170,7 +146,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         Some("personal"),
         Service.MtdIt,
         "AB123456A",
-        Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
+        Some(DetailsForEmail("agent@email.com", "someAgent", "The Client name")),
         "Pending",
         LocalDateTime.parse("2017-10-31T23:22:50.971"),
         LocalDateTime.parse("2018-09-11T00:00:00.000"),
@@ -185,7 +161,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         Some("personal"),
         Service.Vat,
         "101747696",
-        Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
+        Some(DetailsForEmail("agent@email.com", "someAgent", "The Client name")),
         "Accepted",
         LocalDateTime.parse("2017-10-31T23:22:50.971"),
         LocalDateTime.parse("2018-09-11T00:00:00.000"),
@@ -200,7 +176,7 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         Some("personal"),
         Service.PersonalIncomeRecord,
         "AB123456B",
-        Some(DetailsForEmail("agent@email.com","someAgent", "The Client name")),
+        Some(DetailsForEmail("agent@email.com", "someAgent", "The Client name")),
         "Rejected",
         LocalDateTime.parse("2017-10-31T23:22:50.971"),
         LocalDateTime.parse("2018-09-11T00:00:00.000"),
@@ -230,15 +206,19 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         givenInvitationExists(arn, mtdItId.value, invitationIdITSA, Service.MtdIt, identifierITSA, "Pending")
         val result = await(
           connector
-            .getInvitation(getITSAInvitation))
+            .getInvitation(getITSAInvitation)
+        )
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if invitation not found" in {
         givenInvitationNotFound(mtdItId.value, invitationIdITSA, identifierITSA)
         an[RuntimeException] shouldBe thrownBy(
-          await(connector
-            .getInvitation(getITSAInvitation)))
+          await(
+            connector
+              .getInvitation(getITSAInvitation)
+          )
+        )
       }
     }
 
@@ -249,15 +229,19 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         givenInvitationExists(arn, nino.value, invitationIdPIR, Service.PersonalIncomeRecord, identifierPIR, "Pending")
         val result = await(
           connector
-            .getInvitation(getPIRInvitation))
+            .getInvitation(getPIRInvitation)
+        )
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if PIR invitation not found" in {
         givenInvitationNotFound(nino.value, invitationIdPIR, identifierPIR)
         an[RuntimeException] shouldBe thrownBy(
-          await(connector
-            .getInvitation(getPIRInvitation)))
+          await(
+            connector
+              .getInvitation(getPIRInvitation)
+          )
+        )
       }
     }
 
@@ -268,15 +252,19 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
         givenInvitationExists(arn, validVrn.value, invitationIdVAT, Service.Vat, identifierVAT, "Pending")
         val result = await(
           connector
-            .getInvitation(getVATInvitation))
+            .getInvitation(getVATInvitation)
+        )
         result.arn shouldBe Arn("TARN0000001")
       }
 
       "return an error if VAT invitation not found" in {
         givenInvitationNotFound(validVrn.value, invitationIdVAT, identifierVAT)
         an[RuntimeException] shouldBe thrownBy(
-          await(connector
-            .getInvitation(getVATInvitation)))
+          await(
+            connector
+              .getInvitation(getVATInvitation)
+          )
+        )
       }
     }
   }
@@ -305,17 +293,17 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
   "Responding to an invitation" when {
 
     Seq[(String, Service, TaxIdentifier, InvitationId, String)](
-      ("ITSA",         Service.MtdIt,                mtdItId,  invitationIdITSA,     identifierITSA),
-      ("alt-ITSA",     Service.MtdIt,                nino,     invitationIdITSA,     "NI"),
-      ("PIR",          Service.PersonalIncomeRecord, nino,     invitationIdPIR,      identifierPIR),
-      ("VAT",          Service.Vat,                  validVrn, invitationIdVAT,      identifierVAT),
-      ("Trust",        Service.Trust,                validUtr, invitationIdTrust,    identifierTrust),
-      ("Trust (NT)",   Service.TrustNT,              validUrn, invitationIdTrustNT,  "URN"),
-      ("CGT",          Service.CapitalGains,         cgtRef,   invitationIdCgt,      CgtRefType.id),
-      ("PPT",          Service.Ppt,                  pptRef,   invitationIdPpt,      PptRefType.id),
-      ("CBC",          Service.Cbc,                  cbcId,    invitationIdCbc,      CbcIdType.id),
-      ("CBC (non-UK)", Service.CbcNonUk,             cbcId,    invitationIdCbcNonUk, CbcIdType.id),
-      ("Pillar2",      Service.Pillar2,              plrId,    invitationIdPillar2,  PlrIdType.id)
+      ("ITSA", Service.MtdIt, mtdItId, invitationIdITSA, identifierITSA),
+      ("alt-ITSA", Service.MtdIt, nino, invitationIdITSA, "NI"),
+      ("PIR", Service.PersonalIncomeRecord, nino, invitationIdPIR, identifierPIR),
+      ("VAT", Service.Vat, validVrn, invitationIdVAT, identifierVAT),
+      ("Trust", Service.Trust, validUtr, invitationIdTrust, identifierTrust),
+      ("Trust (NT)", Service.TrustNT, validUrn, invitationIdTrustNT, "URN"),
+      ("CGT", Service.CapitalGains, cgtRef, invitationIdCgt, CgtRefType.id),
+      ("PPT", Service.Ppt, pptRef, invitationIdPpt, PptRefType.id),
+      ("CBC", Service.Cbc, cbcId, invitationIdCbc, CbcIdType.id),
+      ("CBC (non-UK)", Service.CbcNonUk, cbcId, invitationIdCbcNonUk, CbcIdType.id),
+      ("Pillar2", Service.Pillar2, plrId, invitationIdPillar2, PlrIdType.id)
     ).foreach { case (serviceName, service, taxId, invitationId, taxIdTag) =>
       s"accepting an invitation for $serviceName" should {
         "return true if invitation was accepted" in {
@@ -532,10 +520,8 @@ class AgentClientAuthorisationConnectorISpec extends BaseISpec with TestDataComm
 
   "getCustomerDetails" should {
     val vrn = Vrn("101747696")
-    val customerDetailsAll = CustomerDetails(
-      Some("Gadgetron"),
-      Some(IndividualDetails(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))),
-      Some("GDT"))
+    val customerDetailsAll =
+      CustomerDetails(Some("Gadgetron"), Some(IndividualDetails(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))), Some("GDT"))
     val customerDetailsOnlyPersonal =
       CustomerDetails(None, Some(IndividualDetails(Some("Mr"), Some("Winston"), Some("H"), Some("Greenburg"))), None)
     val customerDetailsOnlyOrganisation = CustomerDetails(Some("Gadgetron"), None, None)

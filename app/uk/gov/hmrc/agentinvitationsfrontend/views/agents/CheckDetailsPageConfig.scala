@@ -26,7 +26,8 @@ case class CheckDetailsPageConfig(
   knownFactUrl: Call,
   changeDetailsCall: Call,
   submitFormCall: Call,
-  backLinkUrl: Option[String]) {
+  backLinkUrl: Option[String]
+) {
 
   val needClientType: Boolean = fastTrackRequest.clientType.isEmpty
 

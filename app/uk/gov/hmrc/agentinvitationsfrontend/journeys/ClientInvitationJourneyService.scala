@@ -54,7 +54,7 @@ trait ClientInvitationJourneyService extends PersistentJourneyService[HeaderCarr
 }
 
 @Singleton
-class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: SessionCacheRepository) extends ClientInvitationJourneyService {
+class MongoDBCachedClientInvitationJourneyService @Inject() (_cacheRepository: SessionCacheRepository) extends ClientInvitationJourneyService {
 
   case class PersistentState(state: model.State, breadcrumbs: List[model.State])
 
@@ -65,7 +65,7 @@ class MongoDBCachedClientInvitationJourneyService @Inject()(_cacheRepository: Se
     override val sessionName: String = journeyKey
     override val cacheRepository: SessionCacheRepository = _cacheRepository
     override def getSessionId(implicit hc: HeaderCarrier): Option[String] =
-      hc.extraHeaders.collectFirst({ case (headerName, headerValue) if headerName == journeyKey => headerValue })
+      hc.extraHeaders.collectFirst { case (headerName, headerValue) if headerName == journeyKey => headerValue }
   }
 
   protected def fetch(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[StateAndBreadcrumbs]] =

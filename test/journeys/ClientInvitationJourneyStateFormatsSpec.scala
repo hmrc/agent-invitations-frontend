@@ -59,7 +59,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       "WarmUp" in {
         val state = WarmUp(Personal, "uid", Arn("TARN0000001"), "agent name", "agent-name")
         val json = Json.parse(
-          """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "arn": "TARN0000001", "agentName": "agent name", "normalisedAgentName":"agent-name"}}""")
+          """{"state":"WarmUp","properties":{"clientType": "personal", "uid": "uid", "arn": "TARN0000001", "agentName": "agent name", "normalisedAgentName":"agent-name"}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -104,7 +105,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       "SuspendedAgent" in {
         val state = SuspendedAgent(Personal, "uid", "agent name", Arn("1234"), Set("ITSA", "VATC"), Seq())
         val json = Json.parse(
-          """{"state":"SuspendedAgent","properties":{"clientType": "personal", "uid": "uid",  "agentName": "agent name", "arn": "1234", "suspendedRegimes": ["ITSA", "VATC"], "nonSuspendedConsents": []}}""")
+          """{"state":"SuspendedAgent","properties":{"clientType": "personal", "uid": "uid",  "agentName": "agent name", "arn": "1234", "suspendedRegimes": ["ITSA", "VATC"], "nonSuspendedConsents": []}}"""
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -162,7 +164,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           )
         )
         val json = Json.parse(
-          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "service": "PERSONAL-INCOME-RECORD", "consent": true, "processed": false, "isAltItsa":false}, $jsonConsents}}""".stripMargin)
+          s"""{"state":"SingleConsent","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "consent": {"invitationId": {"value": "B1BEOZEO7MNO6"}, "expiryDate": "2010-02-02", "service": "PERSONAL-INCOME-RECORD", "consent": true, "processed": false, "isAltItsa":false}, $jsonConsents}}""".stripMargin
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -189,7 +192,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           )
         )
         val json = Json.parse(
-          s"""{"state":"CheckAnswers","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin)
+          s"""{"state":"CheckAnswers","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", $jsonConsents}}""".stripMargin
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -214,7 +218,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           Personal
         )
         val json = Json.parse(
-          s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents, "clientType": "personal"}}""".stripMargin)
+          s"""{"state":"InvitationsAccepted","properties":{"agentName": "agent name", $jsonConsents, "clientType": "personal"}}""".stripMargin
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -272,7 +277,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
               Service.PersonalIncomeRecord,
               consent = true,
               processed = true
-            )),
+            )
+          ),
           Personal
         )
         val json =
@@ -324,7 +330,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
           )
         )
         val json = Json.parse(
-          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "arn": "1234", $jsonConsents}}""".stripMargin)
+          s"""{"state":"ConfirmDecline","properties":{"clientType": "personal", "uid": "uid", "agentName": "agent name", "arn": "1234", $jsonConsents}}""".stripMargin
+        )
 
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
@@ -341,7 +348,8 @@ class ClientInvitationJourneyStateFormatsSpec extends UnitSpec {
       "WarmUpSessionRequired" in {
         val state = WarmUpSessionRequired(ClientType.Personal, "uid", Arn("1234"), "agentName")
         val json = Json.parse(
-          s"""{"state":"WarmUpSessionRequired","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}""")
+          s"""{"state":"WarmUpSessionRequired","properties":{"clientType": "personal", "uid": "uid", "arn": "1234", "agentName": "agentName"}}"""
+        )
         Json.toJson(state: State) shouldBe json
         json.as[State] shouldBe state
       }

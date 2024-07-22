@@ -65,8 +65,9 @@ class RedirectUrlActionsISpec extends BaseISpec {
           FakeRequest("GET", "/some/url?continue=http%3A%2F%2Flocalhost%3A9996%2Ftax-history%2Fselect-client")
 
         val result =
-            redirectUrlActions.maybeRedirectUrlOrBadRequest(
-              Some(RedirectUrl("http://localhost:9996/tax-history/select-client")))(_ => Future(Ok("success")))
+          redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("http://localhost:9996/tax-history/select-client")))(_ =>
+            Future(Ok("success"))
+          )
         status(result) shouldBe 200
       }
       "carry out the function block when the continue url is relative" in {
@@ -74,16 +75,17 @@ class RedirectUrlActionsISpec extends BaseISpec {
           FakeRequest("GET", "/some/url?continue=%2Ffoo%2Fbar%2Fdah")
 
         val result =
-          redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("/foo/bar/dah")))(_ =>
-            Future(Ok("success")))
+          redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("/foo/bar/dah")))(_ => Future(Ok("success")))
         status(result) shouldBe 200
       }
       "throw a Bad Request exception when the url domain is not allowlisted" in {
         givenAllowlistedDomains
         implicit val request = FakeRequest("GET", "/some/url?continue=https://www.google.com")
 
-        redirectUrlActions.maybeRedirectUrlOrBadRequest(Some(RedirectUrl("https://www.google.com")))(_ =>
-            Future(Ok)).failed.futureValue shouldBe a[BadRequestException]
+        redirectUrlActions
+          .maybeRedirectUrlOrBadRequest(Some(RedirectUrl("https://www.google.com")))(_ => Future(Ok))
+          .failed
+          .futureValue shouldBe a[BadRequestException]
       }
       "carry out the function block when there is no continue url" in {
         implicit val request =

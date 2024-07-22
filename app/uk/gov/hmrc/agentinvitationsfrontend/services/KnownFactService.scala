@@ -28,11 +28,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class KnownFactService @Inject()(
+class KnownFactService @Inject() (
   val acaConnector: AgentClientAuthorisationConnector,
   val citizenDetailsConnector: CitizenDetailsConnector,
-  val relationshipsConnector: RelationshipsConnector)
-    extends GetClientName with FrontendHeaderCarrierProvider with Logging {
+  val relationshipsConnector: RelationshipsConnector
+) extends GetClientName with FrontendHeaderCarrierProvider with Logging {
 
   def checkKnownFact(clientIdSet: ClientIdSet)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[KnownFactResult] =
     (clientIdSet match {

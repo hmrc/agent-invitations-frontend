@@ -44,9 +44,11 @@ object TrackedInvitation {
   def fromStored(i: StoredInvitation): TrackedInvitation = {
 
     val (clientId, clientIdType) =
-      if (preferredIdTypes.contains(i.clientIdType)
-          || i.suppliedClientIdType.isEmpty
-          || i.suppliedClientId.isEmpty) (i.clientId, i.clientIdType)
+      if (
+        preferredIdTypes.contains(i.clientIdType)
+        || i.suppliedClientIdType.isEmpty
+        || i.suppliedClientId.isEmpty
+      ) (i.clientId, i.clientIdType)
       else (i.suppliedClientId, i.suppliedClientIdType)
 
     TrackedInvitation(

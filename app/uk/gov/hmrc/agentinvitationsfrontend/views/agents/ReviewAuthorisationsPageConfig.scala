@@ -28,7 +28,8 @@ case class ReviewAuthorisationsPageConfig(
   basket: Basket,
   featureFlags: FeatureFlags,
   services: Set[Service],
-  submitCall: Call)(implicit messages: Messages) {
+  submitCall: Call
+)(implicit messages: Messages) {
 
   def clientNameOf(authorisationRequest: AuthorisationRequest, noNameMessage: String): String =
     authorisationRequest.invitation.service match {

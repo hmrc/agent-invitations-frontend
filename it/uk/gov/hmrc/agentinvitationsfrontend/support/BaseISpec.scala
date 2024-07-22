@@ -26,9 +26,8 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import scala.concurrent.Future
 
 abstract class BaseISpec
-    extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs
-    with CitizenDetailsStub with AfiRelationshipStub with DataStreamStubs with ACRStubs with SSOStubs
-    with TestDataCommonSupport with CleanMongoCollectionSupport with IVStubs {
+    extends UnitSpec with GuiceOneServerPerSuite with WireMockSupport with AuthStubs with ACAStubs with CitizenDetailsStub with AfiRelationshipStub
+    with DataStreamStubs with ACRStubs with SSOStubs with TestDataCommonSupport with CleanMongoCollectionSupport with IVStubs {
 
   override implicit lazy val app: Application = appBuilder.build()
 
@@ -89,7 +88,7 @@ abstract class BaseISpec
         "microservice.services.agent-subscription-frontend.external-url"          -> "someSubscriptionExternalUrl",
         "microservice.services.agent-client-management-frontend.external-url"     -> "someAgentClientManagementFrontendExternalUrl",
         "mongodb.uri"                                                             -> mongoUri,
-        "cache.suspensionDetails.duration"                                        -> "0 seconds" // disable cache or tests will interfere with each other
+        "cache.suspensionDetails.duration" -> "0 seconds" // disable cache or tests will interfere with each other
       )
       .configure(extraConfig)
       .overrides(new TestGuiceModule)
@@ -171,7 +170,7 @@ abstract class BaseISpec
 
   def checkInviteSentPageContainsSurveyLink(result: Future[Result], isAgent: Boolean): Unit = {
     checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("common.sign-out"))
-    val service = if(isAgent) "INVITAGENT" else "INVITCLIENT"
+    val service = if (isAgent) "INVITAGENT" else "INVITCLIENT"
     checkHtmlResultWithBodyText(result.futureValue, s"http://localhost:9025/gg/sign-out?continue=http%3A%2F%2Flocalhost%3A9514%2Ffeedback%2F$service")
   }
 
@@ -182,15 +181,16 @@ abstract class BaseISpec
     linkId: Option[String] = Some("button-link"),
     clazz: Option[String] = Some(""),
     newWin: Boolean = false,
-    roleIsButton: Boolean = false): Unit = {
-    val t = if(newWin) "target=" + "\"" + """_blank""" + "\"" else ""
-    val nonr = if(newWin) " " + "rel=" + "\"" + """noopener noreferrer""" + "\"" else ""
+    roleIsButton: Boolean = false
+  ): Unit = {
+    val t = if (newWin) "target=" + "\"" + """_blank""" + "\"" else ""
+    val nonr = if (newWin) " " + "rel=" + "\"" + """noopener noreferrer""" + "\"" else ""
     val a = s"<a $t$nonr".trim
-    val element = if(roleIsButton) {
-        s"""$a id="${linkId.get}" href="$linkUrl" class="govuk-button ${clazz.get}" draggable="false" role="button">$linkText</a>"""
-      } else {
-        s"""$a href="$linkUrl">$linkText</a>"""
-      }
+    val element = if (roleIsButton) {
+      s"""$a id="${linkId.get}" href="$linkUrl" class="govuk-button ${clazz.get}" draggable="false" role="button">$linkText</a>"""
+    } else {
+      s"""$a href="$linkUrl">$linkText</a>"""
+    }
 
     checkHtmlResultWithBodyText(result.futureValue, element)
   }
@@ -220,7 +220,8 @@ abstract class BaseISpec
     clientIdType: String,
     clientId: String,
     service: String,
-    agencyName: String): Unit =
+    agencyName: String
+  ): Unit =
     verifyAuditRequestSent(
       1,
       AgentClientInvitationResponse,
@@ -252,7 +253,8 @@ abstract class BaseISpec
     clientIdType: String,
     result: String,
     service: String,
-    uid: String): Unit =
+    uid: String
+  ): Unit =
     verifyAuditRequestSent(
       1,
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
@@ -276,7 +278,8 @@ abstract class BaseISpec
     clientId: String,
     clientIdType: String,
     result: String,
-    service: String): Unit =
+    service: String
+  ): Unit =
     verifyAuditRequestSent(
       1,
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
@@ -293,10 +296,7 @@ abstract class BaseISpec
       )
     )
 
-  protected def checkRedirectedToIVUplift(
-    result: Future[Result],
-    expectedCompletionUrl: String,
-    expectedFailureUrl: String): Assertion = {
+  protected def checkRedirectedToIVUplift(result: Future[Result], expectedCompletionUrl: String, expectedFailureUrl: String): Assertion = {
     val expectedRedirectUrl = CallOps.addParamsToUrl(
       url = "/mdtp/uplift?origin=aif",
       "confidenceLevel" -> Some("200"),

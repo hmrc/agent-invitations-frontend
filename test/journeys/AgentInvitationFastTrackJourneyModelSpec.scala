@@ -86,7 +86,7 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
     Future.successful(false)
 
   def hasNoPartialAuthorisation(arn: Arn, clientId: String): Future[Boolean] =
-    Future successful (false)
+    Future successful false
 
   def isNotAltItsa(arn: Arn, clientId: String): Future[Boolean] = Future.successful(false)
 
@@ -167,7 +167,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest.copy(clientType = Some(Personal)),
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetailsNoPostcode when the postcode is missing for itsa service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, Service.MtdIt, nino, None)
@@ -177,7 +178,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest.copy(clientType = Some(Personal)),
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetails when all required fields are present for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, Service.PersonalIncomeRecord, nino, Some(dob))
@@ -187,7 +189,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest.copy(clientType = Some(Personal)),
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetailsNoDob when there is no dob for irv service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, Service.PersonalIncomeRecord, nino, None)
@@ -197,23 +200,24 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest.copy(clientType = Some(Personal)),
               None
-            ))
+            )
+          )
       }
 
       "transition to AgentSuspended when there are all the required fields are present for irv service but the agent has been suspended" +
         "for this service" in {
-        val fastTrackRequest =
-          AgentFastTrackRequest(None, Service.MtdIt, nino, None)
+          val fastTrackRequest =
+            AgentFastTrackRequest(None, Service.MtdIt, nino, None)
 
-        def suspendedForIT() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
+          def suspendedForIT() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("ITSA"))))
 
-        given(Prologue(None, None)) when transitions
-          .copy(getSuspensionDetails = suspendedForIT)
-          .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
-          thenGo(
-            SuspendedAgent(Service.MtdIt, Some("continue/url"))
-          )
-      }
+          given(Prologue(None, None)) when transitions
+            .copy(getSuspensionDetails = suspendedForIT)
+            .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
+            thenGo(
+              SuspendedAgent(Service.MtdIt, Some("continue/url"))
+            )
+        }
 
       "transition to CheckDetails when all required fields are present for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, nino, Some(vatRegDate))
@@ -223,7 +227,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for personal vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, nino, None)
@@ -233,7 +238,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetails when all required fields are present for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), Service.Vat, nino, Some(vatRegDate))
@@ -243,7 +249,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetailsNoVatRegDate when there is no vat reg date for business vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), Service.Vat, nino, None)
@@ -253,7 +260,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
       "transition to CheckDetailsNoClientTypeVat when there is no client type for vat service" in {
         val fastTrackRequest = AgentFastTrackRequest(None, Service.Vat, nino, None)
@@ -263,23 +271,24 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
 
       "transition to AgentSuspended when there are all the required fields are present for vat service but the agent has been suspended" +
         "for this service" in {
-        val fastTrackRequest =
-          AgentFastTrackRequest(None, Service.Vat, nino, None)
+          val fastTrackRequest =
+            AgentFastTrackRequest(None, Service.Vat, nino, None)
 
-        def suspendedForVat() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("VATC"))))
+          def suspendedForVat() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("VATC"))))
 
-        given(Prologue(None, None)) when transitions
-          .copy(getSuspensionDetails = suspendedForVat)
-          .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
-          thenGo(
-            SuspendedAgent(Service.Vat, Some("continue/url"))
-          )
-      }
+          given(Prologue(None, None)) when transitions
+            .copy(getSuspensionDetails = suspendedForVat)
+            .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
+            thenGo(
+              SuspendedAgent(Service.Vat, Some("continue/url"))
+            )
+        }
 
       "transition to CheckDetails when there are all the required fields are present for a Trust service" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(ClientType.Trust), Service.Trust, utr, None)
@@ -289,7 +298,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
 
       "transition to CheckDetails when there are all the required fields are present for a TrustNT service" in {
@@ -300,7 +310,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
 
       "transition to CheckDetails when there are all the required fields are present for a CGT service" in {
@@ -312,7 +323,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
 
       "transition to CheckDetails when there are all the required fields are present for a PPT service" in {
@@ -324,38 +336,39 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
             CheckDetails(
               fastTrackRequest = fastTrackRequest,
               None
-            ))
+            )
+          )
       }
 
       "transition to AgentSuspended when there are all the required fields are present for Trust service but the agent has been suspended" +
         "for this service" in {
-        val fastTrackRequest =
-          AgentFastTrackRequest(Some(ClientType.Business), Service.CapitalGains, cgtRef, None)
+          val fastTrackRequest =
+            AgentFastTrackRequest(Some(ClientType.Business), Service.CapitalGains, cgtRef, None)
 
-        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("CGT"))))
+          def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("CGT"))))
 
-        given(Prologue(None, None)) when transitions
-          .copy(getSuspensionDetails = suspendedForTrust)
-          .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
-          thenGo(
-            SuspendedAgent(Service.CapitalGains, Some("continue/url"))
-          )
-      }
+          given(Prologue(None, None)) when transitions
+            .copy(getSuspensionDetails = suspendedForTrust)
+            .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
+            thenGo(
+              SuspendedAgent(Service.CapitalGains, Some("continue/url"))
+            )
+        }
 
       "transition to AgentSuspended when there are all the required fields are present for PPT service but the agent has been suspended" +
         "for this service" in {
-        val fastTrackRequest =
-          AgentFastTrackRequest(Some(ClientType.Business), Service.Ppt, pptRef, None)
+          val fastTrackRequest =
+            AgentFastTrackRequest(Some(ClientType.Business), Service.Ppt, pptRef, None)
 
-        def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("PPT"))))
+          def suspendedForTrust() = Future.successful(SuspensionDetails(suspensionStatus = true, Some(Set("PPT"))))
 
-        given(Prologue(None, None)) when transitions
-          .copy(getSuspensionDetails = suspendedForTrust)
-          .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
-          thenGo(
-            SuspendedAgent(Service.Ppt, Some("continue/url"))
-          )
-      }
+          given(Prologue(None, None)) when transitions
+            .copy(getSuspensionDetails = suspendedForTrust)
+            .start(Some("continue/url"))(authorisedAgent)(fastTrackRequest) should
+            thenGo(
+              SuspendedAgent(Service.Ppt, Some("continue/url"))
+            )
+        }
     }
 
     "at CheckDetails" should {
@@ -575,7 +588,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.MtdIt, nino, Some(postCode))
 
         given(CheckDetails(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.checkedDetailsAllInformation(mockAppConfig)(
-          authorisedAgent)(Confirmation(true)) should
+          authorisedAgent
+        )(Confirmation(true)) should
           thenGo(InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Service.MtdIt, isAltItsa = Some(false)))
       }
       "transition to IdentifyClient for ITSA when changing information" in {
@@ -588,7 +602,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.PersonalIncomeRecord, nino, Some(dob))
 
         given(CheckDetails(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.checkedDetailsAllInformation(mockAppConfig)(
-          authorisedAgent)(Confirmation(true)) should
+          authorisedAgent
+        )(Confirmation(true)) should
           thenGo(InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Service.PersonalIncomeRecord, isAltItsa = Some(false)))
       }
       "transition to IdentifyClient for IRV when changing information" in {
@@ -601,7 +616,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Personal), Service.Vat, vrn, Some(vatRegDate))
 
         given(CheckDetails(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.checkedDetailsAllInformation(mockAppConfig)(
-          authorisedAgent)(Confirmation(true)) should
+          authorisedAgent
+        )(Confirmation(true)) should
           thenGo(InvitationSent(ClientType.Personal, "invitation/link", None, "abc@xyz.com", Service.Vat, isAltItsa = Some(false)))
       }
       "transition to IdentifyClient for Personal VAT when changing information" in {
@@ -614,14 +630,16 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), Service.Vat, vrn, Some(vatRegDate))
 
         given(CheckDetails(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.checkedDetailsAllInformation(mockAppConfig)(
-          authorisedAgent)(Confirmation(true)) should
+          authorisedAgent
+        )(Confirmation(true)) should
           thenGo(InvitationSent(ClientType.Business, "invitation/link", None, "abc@xyz.com", Service.Vat))
       }
       "transition to InvitationSentBusiness if all fields are present, no pending or active invitations and known facts match for Trust" in {
         val fastTrackRequest = AgentFastTrackRequest(Some(Business), Service.Trust, utr, None)
 
         given(CheckDetails(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.checkedDetailsAllInformation(mockAppConfig)(
-          authorisedAgent)(Confirmation(true)) should
+          authorisedAgent
+        )(Confirmation(true)) should
           thenGo(InvitationSent(ClientType.Business, "invitation/link", None, "abc@xyz.com", Service.Trust))
       }
       "transition to IdentifyBusinessClient for Business VAT when changing information" in {
@@ -915,19 +933,19 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
         (Business, Service.Vat, vrn, vatRegDate),
         (Business, Service.CapitalGains, cgtRef, cgtPostcode),
         (Business, Service.Ppt, pptRef, pptRegDate),
-        (Business, Service.Cbc, cbcId, cbcEmail),
+        (Business, Service.Cbc, cbcId, cbcEmail)
       )
 
-      scenarios.foreach {
-        case (clientType, service, identifier, knownFact) =>
-          s"transition to InvitationSent for $service ($clientType) service" in {
-            val fastTrackRequest = AgentFastTrackRequest(Some(clientType), service, identifier, Some(knownFact))
+      scenarios.foreach { case (clientType, service, identifier, knownFact) =>
+        s"transition to InvitationSent for $service ($clientType) service" in {
+          val fastTrackRequest = AgentFastTrackRequest(Some(clientType), service, identifier, Some(knownFact))
 
-            given(MissingDetail(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.moreDetailsSupplied(mockAppConfig)(authorisedAgent)(
-              knownFact) should thenMatch {
-              case InvitationSent(clientType, "invitation/link", None, "abc@xyz.com", service, None | Some(false) /* isAltItsa */ ) =>
-            }
+          given(MissingDetail(fastTrackRequest, None)) when transitionsWithKnownFactsPassing.moreDetailsSupplied(mockAppConfig)(authorisedAgent)(
+            knownFact
+          ) should thenMatch {
+            case InvitationSent(clientType, "invitation/link", None, "abc@xyz.com", service, None | Some(false) /* isAltItsa */ ) =>
           }
+        }
       }
     }
     "at SelectClientType" should {
@@ -969,7 +987,8 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           ClientNotFound(
             fastTrackRequest = ftr,
             continueUrl = None
-          )) when
+          )
+        ) when
           transitions.tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(SelectClientType(fastTrackRequest = ftr, continueUrl = None))
       }
@@ -986,13 +1005,15 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           ClientNotFound(
             fastTrackRequest = ftr,
             continueUrl = None
-          )) when
+          )
+        ) when
           transitions.tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
             IdentifyClient(
               fastTrackRequest = ftr,
               continueUrl = None
-            ))
+            )
+          )
       }
 
       "fast track request is for MTD-IT service (and clientType was personal)" in {
@@ -1007,13 +1028,15 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           ClientNotFound(
             fastTrackRequest = ftr,
             continueUrl = None
-          )) when
+          )
+        ) when
           transitions.tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
             IdentifyClient(
               fastTrackRequest = ftr,
               continueUrl = None
-            ))
+            )
+          )
       }
 
       "original request was for IRV service (and clientType was personal)" in {
@@ -1028,13 +1051,15 @@ class AgentInvitationFastTrackJourneyModelSpec extends UnitSpec with StateMatche
           ClientNotFound(
             fastTrackRequest = ftr,
             continueUrl = None
-          )) when
+          )
+        ) when
           transitions.tryAgainNotMatchedKnownFact(authorisedAgent) should
           thenGo(
             IdentifyClient(
               fastTrackRequest = ftr,
               continueUrl = None
-            ))
+            )
+          )
       }
 
       "original request was for a Trust service" when {

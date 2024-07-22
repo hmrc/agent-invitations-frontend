@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.fsm.JsonStateFormats
 
 object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
 
-  //Happy states
+  // Happy states
   val SelectClientTypeFormat: OFormat[SelectClientType] = Json.format
   val SelectServiceFormat: OFormat[SelectService] = Json.format
   val IdentifyClientFormat: OFormat[IdentifyClient] = Json.format
@@ -39,7 +39,7 @@ object AgentInvitationJourneyStateFormats extends JsonStateFormats[State] {
   val PartialAuthorisationExistsFormat: OFormat[PartialAuthorisationExists] = Json.format
   val LegacyAuthorisationDetectedFormat: OFormat[LegacyAuthorisationDetected] = Json.format
 
-  //Unhappy states
+  // Unhappy states
   val KnownFactNotMatchedFormat: OFormat[KnownFactNotMatched] = Json.format
   val CannotCreateRequestFormat: OFormat[CannotCreateRequest] = Json.format
   val SomeAuthorisationsFailedFormat: OFormat[SomeAuthorisationsFailed] = Json.format

@@ -37,7 +37,7 @@ class ErrorHandlerSpec extends UnitSpec with GuiceOneServerPerSuite with LogCapt
     new GuiceApplicationBuilder()
       .configure(
         "metrics.jvm"     -> false,
-        "metrics.logback" -> false,
+        "metrics.logback" -> false
       )
 
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]

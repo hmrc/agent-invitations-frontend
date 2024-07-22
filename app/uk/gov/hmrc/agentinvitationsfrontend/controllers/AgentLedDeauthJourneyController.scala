@@ -42,7 +42,7 @@ import uk.gov.hmrc.play.fsm.JourneyController
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class AgentLedDeauthJourneyController @Inject()(
+class AgentLedDeauthJourneyController @Inject() (
   override val journeyService: AgentLedDeauthJourneyService,
   authActions: AuthActions,
   invitationsService: InvitationsService,
@@ -71,14 +71,14 @@ class AgentLedDeauthJourneyController @Inject()(
   responseFailedView: response_failed,
   confirmCancelView: confirm_cancel,
   override val actionBuilder: DefaultActionBuilder
-)(
-  implicit ec: ExecutionContext,
+)(implicit
+  ec: ExecutionContext,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
-  val cc: MessagesControllerComponents)
-    extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
+  val cc: MessagesControllerComponents
+) extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   override def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
@@ -112,7 +112,8 @@ class AgentLedDeauthJourneyController @Inject()(
 
   def submitClientType: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.deAuthorisationForm) applyWithRequest (implicit request =>
-      transitions.selectedClientType)
+      transitions.selectedClientType
+    )
 
   def showSelectService: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectService].orRollback
 
@@ -233,8 +234,9 @@ class AgentLedDeauthJourneyController @Inject()(
     case _                         => throw new Exception(s"Link not found for $state")
   }
 
-  override def renderState(state: journeyService.model.State, breadcrumbs: journeyService.Breadcrumbs, formWithErrors: Option[Form[_]])(
-    implicit request: Request[_]): Result = state match {
+  override def renderState(state: journeyService.model.State, breadcrumbs: journeyService.Breadcrumbs, formWithErrors: Option[Form[_]])(implicit
+    request: Request[_]
+  ): Result = state match {
 
     case SelectClientType =>
       def backLinkForClientType(implicit request: Request[_]): String =
@@ -244,7 +246,8 @@ class AgentLedDeauthJourneyController @Inject()(
         clientTypeView(
           formWithErrors.or(ClientTypeForm.deAuthorisationForm),
           ClientTypePageConfig(backLinkForClientType, routes.AgentLedDeauthJourneyController.submitClientType)
-        ))
+        )
+      )
 
     case SelectService(clientType, availableServices) =>
       val pageConfig = SelectServicePageConfigCancel(
@@ -280,7 +283,8 @@ class AgentLedDeauthJourneyController @Inject()(
               routes.AgentLedDeauthJourneyController.submitIdentifyItsaClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
-            ))
+            )
+          )
         case Service.PersonalIncomeRecord =>
           Ok(
             identifyClientIrvView(
@@ -297,7 +301,8 @@ class AgentLedDeauthJourneyController @Inject()(
               routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
-            ))
+            )
+          )
         case Service.CapitalGains =>
           Ok(
             identifyClientCgtView(
@@ -305,7 +310,8 @@ class AgentLedDeauthJourneyController @Inject()(
               routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
-            ))
+            )
+          )
         case Service.Ppt =>
           Ok(
             identifyClientPptView(
@@ -313,7 +319,8 @@ class AgentLedDeauthJourneyController @Inject()(
               routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
               backLinkFor(breadcrumbs).url,
               isDeAuthJourney = true
-            ))
+            )
+          )
       }
 
     case IdentifyClient(ClientType.Business, Service.Vat) =>
@@ -323,7 +330,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyVatClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case IdentifyClient(ClientType.Trust, Service.Trust | Service.TrustNT) =>
       Ok(
@@ -332,7 +340,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyTrustClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case IdentifyClient(_, Service.CapitalGains) =>
       Ok(
@@ -341,7 +350,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyCgtClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case IdentifyClient(_, Service.Ppt) =>
       Ok(
@@ -350,7 +360,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyPptClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case IdentifyClient(_, Service.Cbc | Service.CbcNonUk) =>
       Ok(
@@ -359,7 +370,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyCbcClient,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case IdentifyClient(_, Service.Pillar2) =>
       Ok(
@@ -368,7 +380,8 @@ class AgentLedDeauthJourneyController @Inject()(
           routes.AgentLedDeauthJourneyController.submitIdentifyPillar2Client,
           backLinkFor(breadcrumbs).url,
           isDeAuthJourney = true
-        ))
+        )
+      )
 
     case ConfirmClient(_, _, clientName, _) =>
       Ok(
@@ -377,7 +390,8 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(confirmCancelForm),
           routes.AgentLedDeauthJourneyController.submitConfirmClient,
           backLinkFor(breadcrumbs).url
-        ))
+        )
+      )
 
     case _: ConfirmCountryCodeCgt =>
       Ok(
@@ -387,7 +401,9 @@ class AgentLedDeauthJourneyController @Inject()(
           formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
           backLinkFor(breadcrumbs).url,
           fromFastTrack = false,
-          isDeAuth = true))
+          isDeAuth = true
+        )
+      )
 
     case _: ConfirmPostcodeCgt =>
       Ok(confirmPostcodeCgtView(Personal, formWithErrors.or(PostcodeForm.form), backLinkFor(breadcrumbs).url, fromFastTrack = false, isDeAuth = true))
@@ -400,7 +416,8 @@ class AgentLedDeauthJourneyController @Inject()(
           clientName.getOrElse(""),
           routes.AgentLedDeauthJourneyController.submitConfirmCancel,
           backLinkFor(breadcrumbs).url
-        ))
+        )
+      )
 
     case AuthorisationCancelled(service, clientName, agencyName) =>
       journeyService.cleanBreadcrumbs(_ => Nil)

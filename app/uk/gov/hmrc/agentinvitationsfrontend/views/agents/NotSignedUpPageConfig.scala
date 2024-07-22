@@ -24,7 +24,7 @@ import uk.gov.hmrc.agentinvitationsfrontend.models.NotSignedUpPageUrls
 import uk.gov.hmrc.agentinvitationsfrontend.views.html.agents.not_signed_up_partial
 import uk.gov.hmrc.agentmtdidentifiers.model.Service
 
-class NotSignedUpPageConfig @Inject()(notSignedUpPartial: not_signed_up_partial)(implicit externalUrls: ExternalUrls, messages: MessagesApi) {
+class NotSignedUpPageConfig @Inject() (notSignedUpPartial: not_signed_up_partial)(implicit externalUrls: ExternalUrls, messages: MessagesApi) {
 
   def render(service: Service)(implicit externalUrls: ExternalUrls, messages: Messages): Option[Html] = {
     val urls = service match {

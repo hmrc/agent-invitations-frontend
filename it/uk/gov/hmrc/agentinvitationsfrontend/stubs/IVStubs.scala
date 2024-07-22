@@ -7,36 +7,42 @@ import uk.gov.hmrc.agentinvitationsfrontend.support.WireMockSupport
 trait IVStubs {
   me: WireMockSupport =>
 
-    def givenIVFailureReasonResponse(failureReason: IVResult): StubMapping = {
-      stubFor(
-        get(urlEqualTo(s"/mdtp/journey/journeyId/valid-uuid"))
-          .willReturn(aResponse()
-          .withStatus(200)
-          .withBody(s"""{"token":"fd53ef15-5073-401f-8390-ee7b8769452f","result":"${failureReason.value}"}
-                      |""".stripMargin))
-      )
-    }
+  def givenIVFailureReasonResponse(failureReason: IVResult): StubMapping =
+    stubFor(
+      get(urlEqualTo(s"/mdtp/journey/journeyId/valid-uuid"))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(s"""{"token":"fd53ef15-5073-401f-8390-ee7b8769452f","result":"${failureReason.value}"}
+                         |""".stripMargin)
+        )
+    )
 
-  def givenIVResponseInvalidUUID(): StubMapping = {
+  def givenIVResponseInvalidUUID(): StubMapping =
     stubFor(
       get(urlEqualTo(s"/mdtp/journey/journeyId/invalid"))
-        .willReturn(aResponse()
-        .withStatus(404))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+        )
     )
-  }
 
-  def givenIVUpsertSucceeded: StubMapping = {
+  def givenIVUpsertSucceeded: StubMapping =
     stubFor(
       put(urlPathMatching("/identity-verification/nino/.+"))
-        .willReturn(aResponse()
-                      .withStatus(200)))
-  }
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+        )
+    )
 
-  def givenIVUpsertFailed: StubMapping = {
+  def givenIVUpsertFailed: StubMapping =
     stubFor(
       put(urlPathMatching(s"/identity-verification/nino/.+"))
-        .willReturn(aResponse()
-                      .withStatus(500)))
-  }
+        .willReturn(
+          aResponse()
+            .withStatus(500)
+        )
+    )
 
 }
