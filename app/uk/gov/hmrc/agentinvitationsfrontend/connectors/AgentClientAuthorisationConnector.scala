@@ -320,7 +320,7 @@ class AgentClientAuthorisationConnector @Inject() (http: HttpClient)(implicit va
           case _ if r.body.contains("POSTCODE_DOES_NOT_MATCH")       => Fail(NotMatched)
           case _ if r.body.contains("CLIENT_REGISTRATION_NOT_FOUND") => Fail(NotFound)
           case s if s / 100 == 5 =>
-            logger.error(s"unexpected $s response during postcode match check, error: ${r.body}")
+            logger.error(s"unexpected $s response during postcode match check")
             Fail(HttpStatus(s))
         }
       }
@@ -339,7 +339,7 @@ class AgentClientAuthorisationConnector @Inject() (http: HttpClient)(implicit va
           case FORBIDDEN if r.body.contains("VAT_RECORD_CLIENT_INSOLVENT_TRUE")     => Fail(VatClientInsolvent)
           case LOCKED                                                               => Fail(VatMigrationInProgress)
           case s if s / 100 == 5 =>
-            throw new RuntimeException(s"unexpected $s response during vat registration date match check, error: ${r.body}")
+            throw new RuntimeException(s"unexpected $s response during vat registration date match check")
         }
       }
     }
