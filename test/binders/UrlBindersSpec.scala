@@ -33,7 +33,7 @@ class UrlBindersSpec extends UnitSpec with GuiceOneServerPerSuite {
     new GuiceApplicationBuilder()
       .configure(
         "metrics.jvm"     -> false,
-        "metrics.logback" -> false,
+        "metrics.logback" -> false
       )
 
   private val invitationIdError = Left(ErrorConstants.InvitationIdNotFound)

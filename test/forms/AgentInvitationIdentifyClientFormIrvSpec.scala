@@ -39,9 +39,9 @@ class AgentInvitationIdentifyClientFormIrvSpec extends UnitSpec {
   val dayYearFormatMessage: String = "error.irv-date-of-birth-date.day-year"
   val monthYearFormatMessage: String = "error.irv-date-of-birth-date.month-year"
 
-  val dayFormatFormError: FormError = FormError("dob", List(dayFormatMessage), Seq("inputFieldClass"     -> "day"))
+  val dayFormatFormError: FormError = FormError("dob", List(dayFormatMessage), Seq("inputFieldClass" -> "day"))
   val monthFormatFormError: FormError = FormError("dob", List(monthFormatMessage), Seq("inputFieldClass" -> "month"))
-  val yearFormatFormError: FormError = FormError("dob", List(yearFormatMessage), Seq("inputFieldClass"   -> "year"))
+  val yearFormatFormError: FormError = FormError("dob", List(yearFormatMessage), Seq("inputFieldClass" -> "year"))
   val dateRequiredFormError: FormError =
     FormError("dob", List(dateRequiredMessage), Seq("inputFieldClass" -> "day-month-year"))
   val invalidDateFormError: FormError =

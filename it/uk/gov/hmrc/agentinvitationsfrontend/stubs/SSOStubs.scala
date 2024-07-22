@@ -12,7 +12,8 @@ trait SSOStubs {
       get(urlEqualTo("/sso/domains")).willReturn(
         aResponse()
           .withStatus(200)
-          .withBody(
-            """{"externalDomains": ["127.0.0.1","online-qa.ibt.hmrc.gov.uk","ibt.hmrc.gov.uk"],"internalDomains":["localhost"]}""")))
+          .withBody("""{"externalDomains": ["127.0.0.1","online-qa.ibt.hmrc.gov.uk","ibt.hmrc.gov.uk"],"internalDomains":["localhost"]}""")
+      )
+    )
 
 }

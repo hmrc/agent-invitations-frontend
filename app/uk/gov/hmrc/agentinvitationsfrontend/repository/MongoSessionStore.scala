@@ -44,7 +44,8 @@ trait MongoSessionStore[T] extends Logging {
                     delete(nameOfExistingSession).map {
                       case Left(msg) => Left(msg)
                       case Right(()) => Right(None)
-                    } else {
+                    }
+                  else {
                     Future successful Right(Some((entity.data \ sessionName).as[T]))
                   }
                 case None => Future successful Right(None)
@@ -60,8 +61,8 @@ trait MongoSessionStore[T] extends Logging {
         cacheRepository
           .put(sessionId)(DataKey[T](sessionName), newSession)
           .map(_ => Right(()))
-          .recover {
-            case e: Exception => Left(e.getMessage)
+          .recover { case e: Exception =>
+            Left(e.getMessage)
           }
       case None => Future successful Left("Could not store session as no session Id found.")
     }

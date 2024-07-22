@@ -36,18 +36,19 @@ import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ErrorHandler @Inject()(
+class ErrorHandler @Inject() (
   val env: Environment,
   val auditConnector: AuditConnector,
   errorTemplate: error_template,
-  errorTemplate5xx: error_template_5xx)(
-  implicit val config: Configuration,
+  errorTemplate5xx: error_template_5xx
+)(implicit
+  val config: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   ec: ExecutionContext,
   externalUrls: ExternalUrls,
   appConfig: AppConfig,
-  val messagesApi: MessagesApi)
-    extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames with Logging {
+  val messagesApi: MessagesApi
+) extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with HeaderNames with Logging {
 
   def theLogger: Logger = logger // exposing the logger for testing
 
@@ -74,10 +75,8 @@ class ErrorHandler @Inject()(
       case ex: OtacFailureThrowable =>
         logger.error(s"There has been an Unauthorised Attempt: ${ex.getMessage}")
         Forbidden(
-          errorTemplate(
-            Messages("global.error.passcode.title"),
-            Messages("global.error.passcode.heading"),
-            Messages("global.error.passcode.message"))).withHeaders(CACHE_CONTROL -> "no-cache")
+          errorTemplate(Messages("global.error.passcode.title"), Messages("global.error.passcode.heading"), Messages("global.error.passcode.message"))
+        ).withHeaders(CACHE_CONTROL -> "no-cache")
 
       case ex =>
         logger.error(s"There has been a failure", ex)

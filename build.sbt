@@ -51,5 +51,3 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
-
-inConfig(IntegrationTest)(scalafmtCoreSettings)

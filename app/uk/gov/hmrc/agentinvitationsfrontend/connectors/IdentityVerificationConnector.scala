@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{HttpClient, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
+class IdentityVerificationConnector @Inject() (http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -57,9 +57,9 @@ class IdentityVerificationConnector @Inject()(http: HttpClient)(implicit val app
     }
 
   /** Call identity-verification to update NINO store
-    * @return The HTTP status code of the PUT response
-    *
-    * */
+    * @return
+    *   The HTTP status code of the PUT response
+    */
   def updateEntry(entry: NinoClStoreEntry, credId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] =
     monitor("ConsumedAPI-Client-updateNinoOnAuthRecord-PUT") {
       http

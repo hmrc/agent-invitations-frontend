@@ -28,11 +28,12 @@ case class ConfirmTermsPageConfig(
   consentSeq: Seq[ClientConsent],
   submitUrl: Call,
   checkAnswersUrl: Call,
-  backLink: Call) {
+  backLink: Call
+) {
 
   val expiryDateDescending: (ClientConsent, ClientConsent) => Boolean = (c1, c2) => c2.expiryDate.isAfter(c1.expiryDate)
 
-  val serviceKeyAndExpiryDateSeq: Seq[ClientConsent] = {
+  val serviceKeyAndExpiryDateSeq: Seq[ClientConsent] =
     consentSeq
       .sortWith(expiryDateDescending)
       .map(consent => consent.service -> consent)
@@ -40,7 +41,6 @@ case class ConfirmTermsPageConfig(
       .values
       .toSeq
       .sortWith(expiryDateDescending)
-  }
 
   def isPending(consent: ClientConsent): Boolean =
     if (consent.expiryDate.isBefore(LocalDate.now())) false else true

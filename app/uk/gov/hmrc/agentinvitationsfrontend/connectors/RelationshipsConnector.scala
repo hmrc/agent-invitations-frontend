@@ -34,7 +34,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFlags)(implicit appConfig: AppConfig, metrics: Metrics)
+class RelationshipsConnector @Inject() (http: HttpClient, featureFlags: FeatureFlags)(implicit appConfig: AppConfig, metrics: Metrics)
     extends HttpAPIMonitor with Logging {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
@@ -59,7 +59,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
     new URL(
       baseUrl,
       s"/agent-client-relationships/agent/${arn.value}/service" +
-        s"/${service.id}/client/${serviceIdentifierType(service)}/${identifier.value}").toString
+        s"/${service.id}/client/${serviceIdentifierType(service)}/${identifier.value}"
+    ).toString
 
   private def hasMappedLegacyRelationshipUrlFor(arn: Arn, nino: String): String =
     s"$baseUrl/agent-client-relationships/agent/${arn.value}/client/$nino/legacy-mapped-relationship"
@@ -91,9 +92,10 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
         }
     }
 
-  def deleteRelationshipForService(service: Service, arn: Arn, identifier: TaxIdentifier)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] = {
+  def deleteRelationshipForService(service: Service, arn: Arn, identifier: TaxIdentifier)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Option[Boolean]] = {
     require(service != Service.PersonalIncomeRecord) // Note that we need to go a different route for the PIR service
     if (isServiceEnabled(service)) {
       monitor(s"ConsumedAPI-DELETE-$service-Relationship-DELETE") {
@@ -125,7 +127,8 @@ class RelationshipsConnector @Inject()(http: HttpClient, featureFlags: FeatureFl
               case _ =>
                 throw UpstreamErrorResponse(
                   s"Could not check whether a $service relationship exists for $arn: upstream status code ${r.status}",
-                  r.status)
+                  r.status
+                )
             }
           }
       }

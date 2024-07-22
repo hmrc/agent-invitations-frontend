@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class Citizen(firstName: Option[String], lastName: Option[String], nino: Option[String] = None) {
   lazy val name: Option[String] = {
-    val n = Seq(firstName, lastName).collect({ case Some(x) => x }).mkString(" ")
+    val n = Seq(firstName, lastName).collect { case Some(x) => x }.mkString(" ")
     if (n.isEmpty) None else Some(n)
   }
 }
@@ -48,7 +48,7 @@ object Citizen {
 }
 
 @Singleton
-class CitizenDetailsConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
+class CitizenDetailsConnector @Inject() (http: HttpClient)(implicit val appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 

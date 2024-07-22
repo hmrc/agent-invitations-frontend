@@ -43,7 +43,7 @@ import uk.gov.hmrc.play.fsm.{JourneyController, JourneyIdSupport}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ClientInvitationJourneyController @Inject()(
+class ClientInvitationJourneyController @Inject() (
   invitationsService: InvitationsService,
   invitationsConnector: AgentClientAuthorisationConnector,
   identityVerificationConnector: IdentityVerificationConnector,
@@ -78,15 +78,16 @@ class ClientInvitationJourneyController @Inject()(
   cannotFindRequestView: cannot_find_request,
   ggUserIdNeededView: gg_user_id_needed,
   authorisationRequestErrorTemplateView: authorisation_request_error_template,
-  error_template_5xx: error_template_5xx)(
-  implicit configuration: Configuration,
+  error_template_5xx: error_template_5xx
+)(implicit
+  configuration: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   val mcc: MessagesControllerComponents,
   ec: ExecutionContext,
   val appConfig: AppConfig,
-  override val actionBuilder: DefaultActionBuilder)
-    extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier] with I18nSupport {
+  override val actionBuilder: DefaultActionBuilder
+) extends FrontendController(mcc) with JourneyController[HeaderCarrier] with JourneyIdSupport[HeaderCarrier] with I18nSupport {
 
   import ClientInvitationJourneyController._
   import authActions._
@@ -123,8 +124,7 @@ class ClientInvitationJourneyController @Inject()(
   /* Here we decide how to handle HTTP request and transition the state of the journey */
 
   def showMissingJourneyHistory =
-    legacy.actionShowState {
-      case _ =>
+    legacy.actionShowState { case _ =>
     }
 
   def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
@@ -134,8 +134,10 @@ class ClientInvitationJourneyController @Inject()(
           // redirect to itself with new journeyId generated and add attempt=1.
           // Maximum of 2 attempts which allows for 1 timeout before an error page response
           Future.successful(
-            appendJourneyId(Results.Redirect(
-              routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, attempt.map(_ + 1).orElse(Some(1)))))(request))
+            appendJourneyId(
+              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, attempt.map(_ + 1).orElse(Some(1))))
+            )(request)
+          )
         case (None, Some(_)) => Future successful Results.Forbidden(error_template_5xx())
         // infinite redirect defender
         case _ =>
@@ -195,8 +197,7 @@ class ClientInvitationJourneyController @Inject()(
     actions.whenAuthorisedWithRetrievals(AsClient).bindForm(confirmTermsMultiForm).apply(Transitions.submitConsents)
 
   // TODO: Broken using DSL
-  val showConsentChange: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsClient) {
-    case _: SingleConsent =>
+  val showConsentChange: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsClient) { case _: SingleConsent =>
   }
 
   val submitChangeConsents: Action[AnyContent] =
@@ -207,9 +208,7 @@ class ClientInvitationJourneyController @Inject()(
   val submitCheckAnswers: Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsClient)
-      .applyWithRequest(
-        implicit request => Transitions.submitCheckAnswers(invitationsService.respondToInvitation)
-      )
+      .applyWithRequest(implicit request => Transitions.submitCheckAnswers(invitationsService.respondToInvitation))
       .redirect
 
   def submitCheckAnswersChange(serviceId: String): Action[AnyContent] =
@@ -257,11 +256,12 @@ class ClientInvitationJourneyController @Inject()(
 
   val signOutAndRedirect: Action[AnyContent] = Action.async { implicit request =>
     journeyId
-      .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(
-        jid =>
-          journeyService.stepBack.map(_ =>
-            Redirect(routes.ClientInvitationJourneyController.submitWarmUp).withNewSession
-              .addingToSession("clientInvitationJourney" -> jid)))
+      .fold(Future successful Redirect(externalUrls.companyAuthFrontendSignOutUrl))(jid =>
+        journeyService.stepBack.map(_ =>
+          Redirect(routes.ClientInvitationJourneyController.submitWarmUp).withNewSession
+            .addingToSession("clientInvitationJourney" -> jid)
+        )
+      )
   }
 
   def incorrectlyAuthorisedAsAgent: Action[AnyContent] = Action.async { implicit request =>
@@ -302,11 +302,11 @@ class ClientInvitationJourneyController @Inject()(
     journeyId
       .fold(
         Future.successful(Forbidden(cannotConfirmIdentityView()))
-      )(
-        id =>
-          identityVerificationConnector
-            .getIVResult(id)
-            .map(reason => getErrorPage(reason, success)))
+      )(id =>
+        identityVerificationConnector
+          .getIVResult(id)
+          .map(reason => getErrorPage(reason, success))
+      )
   }
 
   private def getErrorPage(reason: Option[IVResult], success: Option[String])(implicit request: Request[_]) =
@@ -375,7 +375,8 @@ class ClientInvitationJourneyController @Inject()(
               appConfig.ggRegistrationFrontendExternalUrl,
               "continue" -> Some(appConfig.agentInvitationsFrontendExternalUrl + routes.ClientInvitationJourneyController.submitWarmUp.url)
             )
-          ))
+          )
+        )
 
       case _: CreateNewUserId =>
         Ok(
@@ -390,7 +391,9 @@ class ClientInvitationJourneyController @Inject()(
           ggUserIdNeededView(
             formWithErrors.or(confirmHasGGIdForm),
             backLinkFor(breadcrumbs),
-            routes.ClientInvitationJourneyController.submitGGUserIdNeeded))
+            routes.ClientInvitationJourneyController.submitGGUserIdNeeded
+          )
+        )
 
       case _: WarmUpSessionRequired =>
         Redirect(routes.ClientInvitationJourneyController.submitWarmUpSessionRequired)
@@ -401,7 +404,8 @@ class ClientInvitationJourneyController @Inject()(
             formWithErrors.or(whichTaxServiceForm),
             backLinkFor(breadcrumbs),
             routes.ClientInvitationJourneyController.submitWhichTaxService
-          ))
+          )
+        )
 
       case _: SignUpToTaxService =>
         Ok(
@@ -447,7 +451,8 @@ class ClientInvitationJourneyController @Inject()(
                 if (breadcrumbs.exists(_.isInstanceOf[WarmUp])) backLinkFor(breadcrumbs)
                 else Call("GET", externalUrls.agentClientManagementUrl)
             )
-          ))
+          )
+        )
 
       case SingleConsent(clientType, uid, agentName, consent, consents) =>
         Ok(
@@ -463,7 +468,8 @@ class ClientInvitationJourneyController @Inject()(
               backLink = backLinkFor(breadcrumbs)
             ),
             changingConsent = true
-          ))
+          )
+        )
 
       case CheckAnswers(clientType, uid, agentName, consents) =>
         Ok(
@@ -474,7 +480,9 @@ class ClientInvitationJourneyController @Inject()(
               submitCall = routes.ClientInvitationJourneyController.submitCheckAnswers,
               changeCall = (serviceKey: String) => routes.ClientInvitationJourneyController.submitCheckAnswersChange(serviceKey),
               backLink = backLinkFor(breadcrumbs)
-            )))
+            )
+          )
+        )
 
       case ConfirmDecline(clientType, uid, agentName, _, consents) =>
         Ok(
@@ -486,7 +494,8 @@ class ClientInvitationJourneyController @Inject()(
             consents.map(_.service).distinct,
             submitUrl = routes.ClientInvitationJourneyController.submitConfirmDecline,
             backLink = backLinkFor(breadcrumbs)
-          ))
+          )
+        )
 
       case InvitationsAccepted(agentName, consents, clientType) =>
         Ok(completeView(agentName, consents, clientType))
@@ -503,7 +512,8 @@ class ClientInvitationJourneyController @Inject()(
             agentName,
             routes.ClientInvitationJourneyController.submitSomeResponsesFailed,
             clientType
-          ))
+          )
+        )
 
       case TrustNotClaimed =>
         val backLink =
@@ -540,8 +550,9 @@ object ClientInvitationJourneyController {
         "confirmedTerms.trustNT" -> boolean,
         "confirmedTerms.ppt"     -> boolean,
         "confirmedTerms.cbc"     -> boolean,
-        "confirmedTerms.pillar2" -> boolean,
-      )(ConfirmedTerms.apply)(ConfirmedTerms.unapply))
+        "confirmedTerms.pillar2" -> boolean
+      )(ConfirmedTerms.apply)(ConfirmedTerms.unapply)
+    )
 
   def confirmationForm(errorMessage: String): Form[Confirmation] =
     Form(
@@ -549,7 +560,8 @@ object ClientInvitationJourneyController {
         "accepted" -> optional(normalizedText)
           .transform[String](_.getOrElse(""), s => Some(s))
           .verifying(confirmationChoice(errorMessage))
-      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString)))
+      )(choice => Confirmation(choice.toBoolean))(confirmation => Some(confirmation.choice.toString))
+    )
 
   val confirmDeclineForm: Form[Confirmation] = confirmationForm("error.confirmDecline.invalid")
 

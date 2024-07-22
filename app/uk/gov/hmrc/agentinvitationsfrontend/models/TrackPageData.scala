@@ -33,7 +33,8 @@ case class TrackInformationSorted(
   isRelationshipEnded: Boolean,
   relationshipEndedBy: Option[String],
   lastUpdated: Option[LocalDateTime],
-  isAltItsa: Boolean = false) {
+  isAltItsa: Boolean = false
+) {
 
   def sortDate: Option[LocalDateTime] =
     if (dateTime.isEmpty) expiryDate

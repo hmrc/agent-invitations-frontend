@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
-
 import org.scalatest.BeforeAndAfter
 import play.api.Application
 import play.api.test.FakeRequest
@@ -10,7 +9,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration._
 
-class AgentInvitationsLanguageControllerISpec extends BaseISpec with BeforeAndAfter{
+class AgentInvitationsLanguageControllerISpec extends BaseISpec with BeforeAndAfter {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override implicit lazy val app: Application = appBuilder
@@ -19,9 +18,7 @@ class AgentInvitationsLanguageControllerISpec extends BaseISpec with BeforeAndAf
 
   implicit val timeout = 2.seconds
 
-
   lazy private val controller: AgentInvitationsLanguageController = app.injector.instanceOf[AgentInvitationsLanguageController]
-
 
   "GET /language/:lang" should {
 

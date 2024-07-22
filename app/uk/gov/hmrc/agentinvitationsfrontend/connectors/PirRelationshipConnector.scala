@@ -36,7 +36,7 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
+class PirRelationshipConnector @Inject() (http: HttpClient)(implicit appConfig: AppConfig, metrics: Metrics) extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
@@ -110,9 +110,10 @@ class PirRelationshipConnector @Inject()(http: HttpClient)(implicit appConfig: A
   }
 
   /* TEST ONLY Connector method for delete relationship. This method should not be used in production code */
-  def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[Option[Boolean]] = {
+  def testOnlyDeleteRelationship(arn: Arn, service: String, clientId: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Option[Boolean]] = {
     val url = new URL(baseUrl, s"/agent-fi-relationship/test-only/relationships/agent/${arn.value}/service/$service/client/$clientId")
     http.DELETE[HttpResponse](url.toString).map { r =>
       r.status match {

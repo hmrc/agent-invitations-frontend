@@ -52,7 +52,7 @@ case class CancelAuthorisationForm(service: String, clientId: String, clientType
 case class ConfirmForm(value: Option[Boolean])
 
 @Singleton
-class AgentsRequestTrackingController @Inject()(
+class AgentsRequestTrackingController @Inject() (
   val authActions: AuthActions,
   val featureFlags: FeatureFlags,
   val trackService: TrackService,
@@ -67,14 +67,15 @@ class AgentsRequestTrackingController @Inject()(
   requestCancelledView: request_cancelled,
   confirmCancelAuthView: confirm_cancel_authorisation,
   authorisationCancelledView: authorisation_cancelled,
-  cancelAuthProblemView: cancel_authorisation_problem)(
-  implicit val externalUrls: ExternalUrls,
+  cancelAuthProblemView: cancel_authorisation_problem
+)(implicit
+  val externalUrls: ExternalUrls,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   configuration: Configuration,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
-  appConfig: AppConfig)
-    extends FrontendController(cc) with I18nSupport with Logging {
+  appConfig: AppConfig
+) extends FrontendController(cc) with I18nSupport with Logging {
   import authActions._
 
   def showTrackRequests(page: Int, client: Option[String], status: Option[FilterFormStatus]): Action[AnyContent] =
@@ -82,47 +83,44 @@ class AgentsRequestTrackingController @Inject()(
       withAuthorisedAsAgent { agent =>
         implicit val now: LocalDate = LocalDate.now()
         for {
-          _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover {
-                case e =>
-                  logger.warn("Error updating alt-itsa authorisations from track page", e)
-                  ()
-              }
+          _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover { case e =>
+                 logger.warn("Error updating alt-itsa authorisations from track page", e)
+                 ()
+               }
           config <- trackPageConfig(page, agent, client, status)
-        } yield {
+        } yield
           if (config.totalResults > 0 && page > config.numberOfPages) {
             Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
           } else {
             Ok(trackView(config))
           }
-        }
       }
     }
 
-  private def trackPageConfig(page: Int, agent: AuthorisedAgent, client: Option[String], status: Option[FilterFormStatus])(
-    implicit hc: HeaderCarrier,
+  private def trackPageConfig(page: Int, agent: AuthorisedAgent, client: Option[String], status: Option[FilterFormStatus])(implicit
+    hc: HeaderCarrier,
     ec: ExecutionContext,
-    messages: Messages) = {
+    messages: Messages
+  ) = {
     val pageInfo = PageInfo(math.max(page, 1), appConfig.trackRequestsPerPage)
     for {
       trackResultsPage <- trackService.bindInvitationsAndRelationships(
-                           agent.arn,
-                           appConfig.trackRequestsShowLastDays,
-                           pageInfo,
-                           client,
-                           status
-                         )
-    } yield {
-      TrackPageConfig(
-        trackResultsPage.results,
-        appConfig.trackRequestsShowLastDays,
-        pageInfo,
-        trackResultsPage.totalResults,
-        trackResultsPage.clientSet,
-        client,
-        status,
-        None
-      )
-    }
+                            agent.arn,
+                            appConfig.trackRequestsShowLastDays,
+                            pageInfo,
+                            client,
+                            status
+                          )
+    } yield TrackPageConfig(
+      trackResultsPage.results,
+      appConfig.trackRequestsShowLastDays,
+      pageInfo,
+      trackResultsPage.totalResults,
+      trackResultsPage.clientSet,
+      client,
+      status,
+      None
+    )
   }
 
   def submitFilterTrackRequests: Action[AnyContent] = Action.async { implicit request =>
@@ -135,11 +133,10 @@ class AgentsRequestTrackingController @Inject()(
             .form(clientNames)
             .bindFromRequest
             .fold(
-              formWithError => {
+              formWithError =>
                 trackPageConfig(1, agent, None, None).map { config =>
                   Ok(trackView(config.copy(filterForm = Some(formWithError))))
-                }
-              },
+                },
               filterForm => {
                 val filterAndStatus: (Option[String], Option[FilterFormStatus]) = request.body.asFormUrlEncoded
                   .fold(Seq.empty: Seq[String])(someMap => someMap.getOrElse("filter", Seq.empty))
@@ -165,20 +162,19 @@ class AgentsRequestTrackingController @Inject()(
           service = request.session.get("service")
           email   <- request.session.get("agencyEmail")
           altItsa <- request.session.get("isAltItsa").orElse(Some("false"))
-        } yield {
-          ResendLinkPageConfig(
-            link,
-            clientType,
-            LocalDate.parse(expiry),
-            service.flatMap(svc => Try(Service.forId(svc)).toOption),
-            email,
-            routes.AgentsRequestTrackingController.showTrackRequests(1).url,
-            altItsa.toBoolean
-          )
-        }
+        } yield ResendLinkPageConfig(
+          link,
+          clientType,
+          LocalDate.parse(expiry),
+          service.flatMap(svc => Try(Service.forId(svc)).toOption),
+          email,
+          routes.AgentsRequestTrackingController.showTrackRequests(1).url,
+          altItsa.toBoolean
+        )
         pageConfig
           .fold(Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests(1, None, None)))(config =>
-            Future successful Ok(resendLinkView(config)))
+            Future successful Ok(resendLinkView(config))
+          )
       }
     }
 
@@ -191,7 +187,7 @@ class AgentsRequestTrackingController @Inject()(
             logger.error("Error in form when redirecting to resend-link page.")
             Future successful BadRequest
           },
-          (form: TrackResendForm) => {
+          (form: TrackResendForm) =>
             for {
               agentLink   <- invitationsService.createAgentLink(agent.arn, form.clientType)
               agencyEmail <- acaConnector.getAgencyEmail()
@@ -206,7 +202,6 @@ class AgentsRequestTrackingController @Inject()(
                 "agencyEmail" -> agencyEmail
               )
             }
-          }
         )
     }
   }
@@ -225,7 +220,8 @@ class AgentsRequestTrackingController @Inject()(
               "invitationId" -> data.invitationId,
               "service"      -> data.service,
               "clientType"   -> data.clientType,
-              "clientName"   -> data.clientName)
+              "clientName"   -> data.clientName
+            )
         )
     }
   }
@@ -236,7 +232,8 @@ class AgentsRequestTrackingController @Inject()(
         case Some(service) =>
           val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
           Future successful Ok(
-            confirmCancelView(service, clientType, confirmCancelForm, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
+            confirmCancelView(service, clientType, confirmCancelForm, routes.AgentsRequestTrackingController.showTrackRequests(1).url)
+          )
         case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
       }
     }
@@ -254,11 +251,11 @@ class AgentsRequestTrackingController @Inject()(
               confirmCancelForm
                 .bindFromRequest()
                 .fold(
-                  formWithErrors => {
+                  formWithErrors =>
                     Future successful Ok(
-                      confirmCancelView(service, clientType, formWithErrors, routes.AgentsRequestTrackingController.showTrackRequests(1).url))
-                  },
-                  data => {
+                      confirmCancelView(service, clientType, formWithErrors, routes.AgentsRequestTrackingController.showTrackRequests(1).url)
+                    ),
+                  data =>
                     if (data.value.getOrElse(true)) {
                       acaConnector
                         .cancelInvitation(agent.arn, invitationId)
@@ -270,7 +267,6 @@ class AgentsRequestTrackingController @Inject()(
                     } else {
                       Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
                     }
-                  }
                 )
             case None => Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
           }
@@ -305,7 +301,7 @@ class AgentsRequestTrackingController @Inject()(
                 "clientType"   -> data.clientType,
                 "invitationId" -> data.invitationId,
                 "status"       -> data.status
-            )
+              )
         )
     }
   }
@@ -315,15 +311,15 @@ class AgentsRequestTrackingController @Inject()(
       request.session
         .get("service")
         .fold(Future.successful(Redirect(routes.AgentsRequestTrackingController.showTrackRequests(1)))) { service =>
-          {
-            val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
-            Future successful Ok(
-              confirmCancelAuthView(
-                confirmCancelAuthorisationForm,
-                Service.forId(service),
-                clientType,
-                routes.AgentsRequestTrackingController.showTrackRequests(1).url))
-          }
+          val clientType = request.session.get("clientType").map(ClientType.toEnum).getOrElse(Personal)
+          Future successful Ok(
+            confirmCancelAuthView(
+              confirmCancelAuthorisationForm,
+              Service.forId(service),
+              clientType,
+              routes.AgentsRequestTrackingController.showTrackRequests(1).url
+            )
+          )
         }
     }
   }
@@ -340,19 +336,19 @@ class AgentsRequestTrackingController @Inject()(
         .fold(
           formWithErrors =>
             Future successful Ok(
-              confirmCancelAuthView(formWithErrors, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url)),
+              confirmCancelAuthView(formWithErrors, service, clientType, routes.AgentsRequestTrackingController.showTrackRequests(1).url)
+            ),
           data =>
             if (data.value.getOrElse(true)) {
               for {
                 response <- if (isAltItsa) acaConnector.setRelationshipEnded(agent.arn, clientId, service.id)
-                           else deleteRelationshipForService(service, agent.arn, clientId)
+                            else deleteRelationshipForService(service, agent.arn, clientId)
                 success = if (isAltItsa) response.exists(x => x) else response.isDefined
-              } yield {
+              } yield
                 if (success)
                   Redirect(routes.AgentsRequestTrackingController.showAuthorisationCancelled)
                 else
                   Ok(cancelAuthProblemView())
-              }
             } else Future successful Redirect(routes.AgentsRequestTrackingController.showTrackRequests())
         )
     }
@@ -371,23 +367,24 @@ class AgentsRequestTrackingController @Inject()(
   def deleteRelationshipForService(service: Service, arn: Arn, clientId: String)(implicit hc: HeaderCarrier) =
     service match {
       case Service.PersonalIncomeRecord => pirRelationshipConnector.deleteRelationship(arn, service, clientId)
-      case _                            => relationshipsConnector.deleteRelationshipForService(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
+      case _ => relationshipsConnector.deleteRelationshipForService(service, arn, service.supportedSuppliedClientIdType.createUnderlying(clientId))
     }
 
-  val trackInformationForm: Form[TrackResendForm] = {
+  val trackInformationForm: Form[TrackResendForm] =
     Form(
       mapping(
         "service" -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
         "clientType" -> optional(
           text
             .verifying("Unsupported client type", ClientType.isValid(_))
-            .transform(ClientType.toEnum, ClientType.fromEnum)),
+            .transform(ClientType.toEnum, ClientType.fromEnum)
+        ),
         "expiryDate" -> text.verifying("Invalid date format", expiryDate => DateFieldHelper.parseDate(expiryDate)),
         "isAltItsa"  -> boolean
-      )(TrackResendForm.apply)(TrackResendForm.unapply))
-  }
+      )(TrackResendForm.apply)(TrackResendForm.unapply)
+    )
 
-  val cancelRequestForm: Form[CancelRequestForm] = {
+  val cancelRequestForm: Form[CancelRequestForm] =
     Form(
       mapping(
         "invitationId" -> text
@@ -397,23 +394,24 @@ class AgentsRequestTrackingController @Inject()(
         "clientName" -> text
       )(CancelRequestForm.apply)(CancelRequestForm.unapply)
     )
-  }
 
   val cancelChoice: Constraint[Option[Boolean]] = radioChoice("error.confirmCancel.invalid")
 
   val confirmCancelForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping(
       "confirmCancel" -> optional(boolean)
-        .verifying(cancelChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
+        .verifying(cancelChoice)
+    )(ConfirmForm.apply)(ConfirmForm.unapply)
   )
 
   val confirmCancelAuthorisationForm: Form[ConfirmForm] = Form[ConfirmForm](
     mapping(
       "confirmCancelAuthorisation" -> optional(boolean)
-        .verifying(cancelChoice))(ConfirmForm.apply)(ConfirmForm.unapply)
+        .verifying(cancelChoice)
+    )(ConfirmForm.apply)(ConfirmForm.unapply)
   )
 
-  val cancelAuthorisationForm: Form[CancelAuthorisationForm] = {
+  val cancelAuthorisationForm: Form[CancelAuthorisationForm] =
     Form(
       mapping(
         "service"      -> text.verifying("Unsupported Service", service => supportedServices.exists(_.id == service)),
@@ -422,8 +420,8 @@ class AgentsRequestTrackingController @Inject()(
         "clientName"   -> text,
         "invitationId" -> text,
         "status"       -> text.verifying("Unexpected invitationStatus", status => status == "Accepted" || status == "Partialauth")
-      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply))
-  }
+      )(CancelAuthorisationForm.apply)(CancelAuthorisationForm.unapply)
+    )
 
   def radioChoice[A](invalidError: String): Constraint[Option[A]] = Constraint[Option[A]] { fieldValue: Option[A] =>
     if (fieldValue.isDefined)

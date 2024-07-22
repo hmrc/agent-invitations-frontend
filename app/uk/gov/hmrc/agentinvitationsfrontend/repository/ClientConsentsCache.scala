@@ -21,6 +21,6 @@ import javax.inject.Inject
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientConsentsJourneyState
 
 @Singleton
-class ClientConsentsCache @Inject()(val cacheRepository: SessionCacheRepository) extends SessionCache[ClientConsentsJourneyState] {
+class ClientConsentsCache @Inject() (val cacheRepository: SessionCacheRepository) extends SessionCache[ClientConsentsJourneyState] {
   override val sessionName: String = "clientSession"
 }

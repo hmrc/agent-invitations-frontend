@@ -17,7 +17,8 @@ trait DataStreamStubs extends Eventually {
     count: Int,
     event: AgentInvitationEvent,
     tags: Map[String, String] = Map.empty,
-    detail: Map[String, String] = Map.empty): Unit =
+    detail: Map[String, String] = Map.empty
+  ): Unit =
     eventually {
       verify(
         1,
@@ -30,7 +31,8 @@ trait DataStreamStubs extends Eventually {
               |  "tags": ${Json.toJson(tags)},
               |  "detail": ${Json.toJson(detail)}
               |}"""
-            ))
+            )
+          )
       )
     }
 
@@ -45,16 +47,16 @@ trait DataStreamStubs extends Eventually {
               |  "auditSource": "agent-invitations-frontend",
               |  "auditType": "$event"
               |}"""
-            ))
+            )
+          )
       )
     }
 
-  def givenAuditConnector(): Seq[StubMapping] = {
+  def givenAuditConnector(): Seq[StubMapping] =
     List(
       stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204))),
       stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
     )
-  }
 
   private def auditUrl = "/write/audit"
 

@@ -42,7 +42,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AgentInvitationJourneyController @Inject()(
+class AgentInvitationJourneyController @Inject() (
   invitationsService: InvitationsService,
   relationshipsService: RelationshipsService,
   knownFactService: KnownFactService,
@@ -83,16 +83,17 @@ class AgentInvitationJourneyController @Inject()(
   agentSuspendedView: agent_suspended,
   partialAuthExistsView: partial_auth_exists,
   clientNotRegisteredView: client_not_registered,
-  clientInsolventView: client_insolvent)(
-  implicit configuration: Configuration,
+  clientInsolventView: client_insolvent
+)(implicit
+  configuration: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
   val externalUrls: ExternalUrls,
   featureFlags: FeatureFlags,
   ec: ExecutionContext,
   val cc: MessagesControllerComponents,
   appConfig: AppConfig,
-  override val actionBuilder: DefaultActionBuilder)
-    extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
+  override val actionBuilder: DefaultActionBuilder
+) extends FrontendController(cc) with JourneyController[HeaderCarrier] with I18nSupport {
 
   import AgentInvitationJourneyController._
   import acaConnector._
@@ -102,7 +103,7 @@ class AgentInvitationJourneyController @Inject()(
 
   override implicit def context(implicit rh: RequestHeader): HeaderCarrier = hc
 
-  //TODO Add local date service to provide flexibility for testing
+  // TODO Add local date service to provide flexibility for testing
   private def inferredExpiryDate = LocalDate.now().plusDays(appConfig.invitationExpirationDuration.toDays.toInt)
 
   private val countries = countryNamesLoader.load
@@ -144,8 +145,7 @@ class AgentInvitationJourneyController @Inject()(
       .applyWithRequest(implicit request => transitions.selectedClientType)
 
   // TODO: Broken using DSL
-  val showSelectService: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
-    case _: SelectService =>
+  val showSelectService: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) { case _: SelectService =>
   }
 
   val submitSelectServiceMulti: Action[AnyContent] =
@@ -235,8 +235,7 @@ class AgentInvitationJourneyController @Inject()(
       .applyWithRequest(implicit request => transitions.clientConfirmed)
 
   // TODO review whether we only need one state/page here?
-  def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) {
-    case _: ReviewAuthorisations =>
+  def showReviewAuthorisations: Action[AnyContent] = legacy.actionShowStateWhenAuthorised(AsAgent) { case _: ReviewAuthorisations =>
   }
 
   val submitReviewAuthorisations: Action[AnyContent] =
@@ -248,7 +247,7 @@ class AgentInvitationJourneyController @Inject()(
   def showDeleteAuthorisation(itemId: String): Action[AnyContent] =
     actions
       .whenAuthorisedWithRetrievals(AsAgent)
-      .applyWithRequest(implicit request => (agent => transitions.deleteAuthorisationRequest(itemId)(agent)))
+      .applyWithRequest(implicit request => agent => transitions.deleteAuthorisationRequest(itemId)(agent))
       .display
 
   val submitDeleteAuthorisation: Action[AnyContent] =
@@ -292,19 +291,20 @@ class AgentInvitationJourneyController @Inject()(
     withAuthorisedAsAgent { agent =>
       LegacyAuthorisationForm.bindFromRequest
         .fold(
-          { hasErrors =>
+          hasErrors =>
             Future successful Ok(
               legacyAuthorisationDetectedView(
                 hasErrors,
                 routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected,
-                routes.AgentInvitationJourneyController.showConfirmClient.url))
-          }, { valid =>
+                routes.AgentInvitationJourneyController.showConfirmClient.url
+              )
+            ),
+          valid =>
             if (valid.choice)
               Future successful Redirect(externalUrls.agentMappingFrontendUrl)
                 .addingToSession(toReturnFromMapping)
             else
               helpers.apply(transitions.confirmedLegacyAuthorisation(agent), helpers.redirect)
-          }
         )
     }
   }
@@ -375,7 +375,8 @@ class AgentInvitationJourneyController @Inject()(
           clientTypeView(
             formWithErrors.or(ClientTypeForm.authorisationForm),
             ClientTypePageConfig(backLinkForClientType, routes.AgentInvitationJourneyController.submitClientType)
-          ))
+          )
+        )
 
       case SelectService(clientType, services, basket) =>
         val config = SelectServicePageConfig(
@@ -395,7 +396,9 @@ class AgentInvitationJourneyController @Inject()(
               formWithErrors
                 .asInstanceOf[Option[Form[Option[Service]]]]
                 .or(ServiceTypeForm.selectSingleServiceForm(config.remainingService, clientType)),
-              config))
+              config
+            )
+          )
 
       case IdentifyClient(ClientType.Trust, Service.Trust, _) =>
         Ok(
@@ -477,7 +480,8 @@ class AgentInvitationJourneyController @Inject()(
             backLinkFor(breadcrumbs).url,
             routes.AgentInvitationJourneyController.submitConfirmClient,
             authorisationRequest.invitation.clientIdentifier
-          ))
+          )
+        )
 
       case ConfirmPostcodeCgt(_, clientType, _, _, _) =>
         Ok(
@@ -486,7 +490,9 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(PostcodeForm.form),
             backLinkFor(breadcrumbs).url,
             fromFastTrack = false,
-            isDeAuth = false))
+            isDeAuth = false
+          )
+        )
 
       case ConfirmCountryCodeCgt(_, clientType, _, _, _) =>
         Ok(
@@ -496,7 +502,9 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(CountrycodeForm.form(validCountryCodes)),
             backLinkFor(breadcrumbs).url,
             fromFastTrack = false,
-            isDeAuth = false))
+            isDeAuth = false
+          )
+        )
 
       case ReviewAuthorisations(clientType, services, basket) =>
         Ok(
@@ -506,10 +514,12 @@ class AgentInvitationJourneyController @Inject()(
               basket,
               featureFlags,
               services,
-              routes.AgentInvitationJourneyController.submitReviewAuthorisations),
+              routes.AgentInvitationJourneyController.submitReviewAuthorisations
+            ),
             formWithErrors.or(ReviewAuthorisationsForm),
             backLinkFor(breadcrumbs).url
-          ))
+          )
+        )
 
       case DeleteAuthorisationRequest(_, authorisationRequest, _) =>
         Ok(
@@ -518,7 +528,8 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.submitDeleteAuthorisation,
             routes.AgentInvitationJourneyController.showReviewAuthorisations.url,
             formWithErrors.or(DeleteAuthorisationForm)
-          ))
+          )
+        )
 
       case InvitationSent(clientType, invitationLink, continueUrl, agencyEmail, services, isAltItsa) =>
         Ok(
@@ -532,14 +543,18 @@ class AgentInvitationJourneyController @Inject()(
               agencyEmail,
               services,
               isAltItsa.getOrElse(false)
-            )))
+            )
+          )
+        )
 
       case KnownFactNotMatched(basket) =>
         Ok(
           notMatchedView(
             basket.nonEmpty,
             routes.AgentInvitationJourneyController.showIdentifyClient,
-            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)))
+            Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)
+          )
+        )
 
       case TrustNotFound(basket) =>
         Ok(
@@ -547,7 +562,8 @@ class AgentInvitationJourneyController @Inject()(
             basket.nonEmpty,
             routes.AgentInvitationJourneyController.showIdentifyClient,
             Some(routes.AgentInvitationJourneyController.showReviewAuthorisations)
-          ))
+          )
+        )
 
       case CgtRefNotFound(cgtRef, basket) =>
         Ok(
@@ -556,7 +572,8 @@ class AgentInvitationJourneyController @Inject()(
             routes.AgentInvitationJourneyController.showIdentifyClient,
             Some(routes.AgentInvitationJourneyController.showReviewAuthorisations),
             cgtRef.value
-          ))
+          )
+        )
 
       case PptRefNotFound(pptRef, basket) =>
         Ok(
@@ -586,7 +603,8 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             routes.AgentInvitationJourneyController.showReviewAuthorisations,
             routes.AgentInvitationJourneyController.showClientType
-          ))
+          )
+        )
 
       case PendingInvitationExists(_, clientName, agentLink, basket) =>
         Ok(
@@ -598,7 +616,8 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             routes.AgentInvitationJourneyController.showReviewAuthorisations,
             routes.AgentInvitationJourneyController.showClientType
-          ))
+          )
+        )
 
       case PartialAuthorisationExists(basket) =>
         Ok(
@@ -607,7 +626,8 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             routes.AgentInvitationJourneyController.showReviewAuthorisations,
             routes.AgentInvitationJourneyController.showClientType
-          ))
+          )
+        )
 
       case ClientNotSignedUp(service, basket) =>
         val pageConfig = notSignedUpPageConfig.render(service)
@@ -620,7 +640,8 @@ class AgentInvitationJourneyController @Inject()(
             fromFastTrack = false,
             routes.AgentInvitationJourneyController.showReviewAuthorisations,
             routes.AgentInvitationJourneyController.showClientType
-          ))
+          )
+        )
 
       case AllAuthorisationsRemoved =>
         Ok(allAuthRemovedView(routes.AgentInvitationJourneyController.showClientType))
@@ -636,7 +657,8 @@ class AgentInvitationJourneyController @Inject()(
             formWithErrors.or(LegacyAuthorisationForm),
             routes.AgentInvitationJourneyController.submitLegacyAuthorisationDetected,
             backLinkFor(breadcrumbs).url
-          ))
+          )
+        )
 
       case ClientInsolvent(basket) =>
         Ok(

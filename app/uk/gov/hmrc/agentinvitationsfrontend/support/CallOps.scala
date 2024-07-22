@@ -34,15 +34,12 @@ object CallOps {
     }
   }
 
-  /**
-    * Creates a URL string with localhost and port if running locally, for relative URLs
-    * Absolute URLs are unaffected
-    * Just passes through the URL as normal if running in a non-local environment
-    * */
+  /** Creates a URL string with localhost and port if running locally, for relative URLs Absolute URLs are unaffected Just passes through the URL as
+    * normal if running in a non-local environment
+    */
   def localFriendlyUrl(env: Environment)(url: String, hostAndPort: String) = {
-    val isLocalEnv = {
+    val isLocalEnv =
       if (env.mode.equals(Mode.Test)) false else env.mode.equals(Mode.Dev)
-    }
 
     val uri = new URI(url)
 

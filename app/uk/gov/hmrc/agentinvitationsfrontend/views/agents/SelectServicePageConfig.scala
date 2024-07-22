@@ -29,7 +29,8 @@ case class SelectServicePageConfig(
   featureFlags: FeatureFlags,
   services: Set[Service],
   backLink: String,
-  reviewAuthsCall: Call)(implicit messages: Messages) {
+  reviewAuthsCall: Call
+)(implicit messages: Messages) {
 
   /** Whether to show the multiple service selection form for this client type journey */
   val showMultiSelect: Boolean = availableServices.size > 1
@@ -44,10 +45,9 @@ case class SelectServicePageConfig(
     case (clientType, true)  => routes.AgentInvitationJourneyController.submitSelectServiceMulti
   }
 
-  /** The list of available services for the user to select,
-    * based on what is available according to feature enablement
-    * and what they have already selected in their basket
-    * */
+  /** The list of available services for the user to select, based on what is available according to feature enablement and what they have already
+    * selected in their basket
+    */
   def availableServices: Seq[(Service, String)] =
     InvitationsBasket(clientType, services, basket, featureFlags).availableServicesAndNames.toSeq.sortBy(_._1)(Services.serviceDisplayOrdering)
 

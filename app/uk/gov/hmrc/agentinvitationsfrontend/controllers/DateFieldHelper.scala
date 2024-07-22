@@ -45,10 +45,9 @@ object DateFieldHelper {
       "day"   -> text
     ).verifying(validateDateFields(formMessageKey))
       .transform[String](
-        {
-          case (y, m, d) =>
-            if (y.isEmpty || m.isEmpty || d.isEmpty) ""
-            else LocalDate.of(y.toInt, m.toInt, d.toInt).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        { case (y, m, d) =>
+          if (y.isEmpty || m.isEmpty || d.isEmpty) ""
+          else LocalDate.of(y.toInt, m.toInt, d.toInt).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         },
         date =>
           try {
@@ -56,7 +55,7 @@ object DateFieldHelper {
             (l.getYear.toString, l.getMonthValue.toString, l.getDayOfMonth.toString)
           } catch {
             case e: Exception => throw new IllegalArgumentException(s"unexpected date input pattern $e")
-        }
+          }
       )
 
 }

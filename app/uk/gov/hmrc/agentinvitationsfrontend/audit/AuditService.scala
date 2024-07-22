@@ -35,7 +35,7 @@ object AgentInvitationEvent extends Enumeration {
 }
 
 @Singleton
-class AuditService @Inject()(val auditConnector: AuditConnector) {
+class AuditService @Inject() (val auditConnector: AuditConnector) {
 
   def sendAgentInvitationSubmitted(
     arn: Arn,
@@ -44,7 +44,8 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     uid: String,
     result: String,
     failure: Option[String] = None,
-    altItsa: Option[Boolean] = None)(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
+    altItsa: Option[Boolean] = None
+  )(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientAuthorisationRequestCreated,
       "Agent client service authorisation request created",
@@ -59,7 +60,7 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
         "uid"                  -> uid
       ).filter(_._2.nonEmpty)
         ++ failure.map(e => Seq("failureDescription" -> e)).getOrElse(Seq.empty)
-        ++ altItsa.map(r => Seq("altITSASource"      -> r)).getOrElse(Seq.empty)
+        ++ altItsa.map(r => Seq("altITSASource" -> r)).getOrElse(Seq.empty)
     )
 
   def sendAgentInvitationResponse(
@@ -69,7 +70,8 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     clientIdType: String,
     clientId: String,
     service: Service,
-    agencyName: String)(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
+    agencyName: String
+  )(implicit hc: HeaderCarrier, request: RequestHeader, ec: ExecutionContext): Future[Unit] =
     auditEvent(
       AgentInvitationEvent.AgentClientInvitationResponse,
       "agent-client-invitation-response",
@@ -84,15 +86,17 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
       )
     )
 
-  private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(
-    implicit hc: HeaderCarrier,
+  private[audit] def auditEvent(event: AgentInvitationEvent, transactionName: String, details: Seq[(String, Any)] = Seq.empty)(implicit
+    hc: HeaderCarrier,
     request: RequestHeader,
-    ec: ExecutionContext): Future[Unit] =
+    ec: ExecutionContext
+  ): Future[Unit] =
     send(createEvent(event, transactionName, details: _*))
 
-  private def createEvent(event: AgentInvitationEvent, transactionName: String, details: (String, Any)*)(
-    implicit hc: HeaderCarrier,
-    request: RequestHeader): DataEvent = {
+  private def createEvent(event: AgentInvitationEvent, transactionName: String, details: (String, Any)*)(implicit
+    hc: HeaderCarrier,
+    request: RequestHeader
+  ): DataEvent = {
 
     val detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     val tags = hc.toAuditTags(transactionName, request.path)

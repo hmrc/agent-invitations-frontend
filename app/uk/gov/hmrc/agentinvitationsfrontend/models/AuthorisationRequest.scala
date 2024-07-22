@@ -23,7 +23,8 @@ case class AuthorisationRequest(
   clientName: String,
   invitation: Invitation,
   state: String = AuthorisationRequest.NEW,
-  itemId: String = AuthorisationRequest.randomItemId)
+  itemId: String = AuthorisationRequest.randomItemId
+)
 
 object AuthorisationRequest {
 
