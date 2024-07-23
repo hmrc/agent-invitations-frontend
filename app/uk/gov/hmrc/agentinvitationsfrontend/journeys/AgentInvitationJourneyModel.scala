@@ -274,8 +274,7 @@ object AgentInvitationJourneyModel extends JourneyModel with Logging {
         if (desPostcodeWithoutSpace == userPostcodeWithoutSpace) {
           goto(ConfirmClient(AuthorisationRequest(name, Invitation(Some(clientType), Service.CapitalGains, cgtRef)), basket))
         } else {
-          logger.warn(s"CGT postcode match failed. DES postcode was ${postcodeFromDes
-              .getOrElse("not found")} and user entered ${postcode.value}")
+          logger.warn(s"CGT postcode match failed. DES postcode did not match user entered postcode")
           goto(KnownFactNotMatched(basket))
         }
       }
