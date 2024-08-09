@@ -1608,7 +1608,7 @@ trait ACAStubs {
       get(urlEqualTo(s"/agent-client-authorisation/client/agency-name/${encodePathSegment(arn.value)}"))
         .willReturn(
           aResponse()
-            .withStatus(404)
+            .withStatus(204)
         )
     )
 

@@ -527,8 +527,8 @@ class AgentClientAuthorisationConnector @Inject() (http: HttpClient)(implicit va
     monitor(s"ConsumedAPI-Get-AgencyName-GET") {
       http.GET[HttpResponse](s"$baseUrl/agent-client-authorisation/client/agency-name/$arn").map { r =>
         r.status match {
-          case OK        => (r.json \ "agencyName").asOpt[String]
-          case NOT_FOUND => throw AgencyNameNotFound()
+          case OK         => (r.json \ "agencyName").asOpt[String]
+          case NO_CONTENT => throw AgencyNameNotFound()
         }
       }
     }
