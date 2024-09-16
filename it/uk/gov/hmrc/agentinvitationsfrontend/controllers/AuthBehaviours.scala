@@ -37,7 +37,7 @@ trait AuthBehaviours extends AuthStubs {
       val result = action(request)
       status(result) shouldBe 303
       redirectLocation(result) shouldBe Some(
-        "http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/track/"
+        "http://localhost:9099/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/track/"
       )
     }
   }

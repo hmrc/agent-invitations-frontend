@@ -28,7 +28,7 @@ class AuthActionsIrvAllowlistISpec extends BaseISpec with Injecting {
         authActions.withAuthorisedAsAgent(_ => Future.successful(NotImplemented))(request, hc, ExecutionContext.global)
       status(result) shouldBe SEE_OTHER
       redirectLocation(result) shouldBe Some(
-        "http://localhost:9553/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/"
+        "http://localhost:9099/bas-gateway/sign-in?origin=agent-invitations-frontend&continue_url=http://localhost:9448/"
       )
     }
 
