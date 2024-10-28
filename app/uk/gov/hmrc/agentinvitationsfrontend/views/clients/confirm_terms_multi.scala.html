@@ -54,14 +54,12 @@
     )
 
     @ul_html(
-        items =  Seq(span(s"confirm-terms-multi.pir.list.item1"))
-                .union(
+        items =
             Seq(
                 Html(
-                    msgs("confirm-terms-multi.pir.list.item2") +
-                            ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item2.$i")))
+                    msgs("confirm-terms-multi.pir.list.item1") +
+                            ul(items = (1 to 4).map(i => s"confirm-terms-multi.pir.list.item1.$i")))
             )
-        )
     )
 }
 

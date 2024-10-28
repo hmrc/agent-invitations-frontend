@@ -728,12 +728,11 @@ confirm-terms-multi.pillar2.label=I consent to HMRC allowing {0} to manage my Pi
 
 confirm-terms-multi.afi.heading=View my income record
 confirm-terms-multi.pir.p1=If you consent to HMRC allowing {0} to view your income record, this means {0} can:
-confirm-terms-multi.pir.list.item1=contact HMRC about your income record
-confirm-terms-multi.pir.list.item2=access information about:
-confirm-terms-multi.pir.list.item2.1=who you have worked for in the past
-confirm-terms-multi.pir.list.item2.2=taxable benefits like medical insurance and company car
-confirm-terms-multi.pir.list.item2.3=your pensions
-confirm-terms-multi.pir.list.item2.4=your PAYE involvement start and end dates
+confirm-terms-multi.pir.list.item1=access information about:
+confirm-terms-multi.pir.list.item1.1=who you have worked for in the past
+confirm-terms-multi.pir.list.item1.2=taxable benefits like medical insurance and company car
+confirm-terms-multi.pir.list.item1.3=your pensions
+confirm-terms-multi.pir.list.item1.4=your PAYE involvement start and end dates
 confirm-terms-multi.expires.p2=You need to respond to this request before {0}, or else it will expire.
 confirm-terms-multi.afi.label=I consent to HMRC allowing {0} to view my Income record and contact HMRC about it.
 
