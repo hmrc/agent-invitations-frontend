@@ -454,6 +454,7 @@ not-authorised.HMRC-CGT-PD.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli 
 not-authorised.HMRC-PPT-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei Dreth Deunydd Pacio Plastig.
 not-authorised.HMRC-CBC-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei adroddiadau gwlad-wrth-wlad.
 not-authorised.HMRC-CBC-NONUK-ORG.p=Nid yw’r cleient hwn wedi’ch awdurdodi i reoli ei adroddiadau gwlad-wrth-wlad.
+not-authorised.HMRC-PILLAR2-ORG.p=Nid yw'r cleient hwn wedi’ch awdurdodi i reoli ei drethi atodol Colofn 2
 
 #Delete
 delete.heading=A ydych yn siÅµr eich bod am ddileu’ch cais am awdurdodiad ar gyfer {0}?

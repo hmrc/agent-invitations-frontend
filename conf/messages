@@ -455,6 +455,7 @@ not-authorised.HMRC-CGT-PD.p=This client has not authorised you to manage their 
 not-authorised.HMRC-PPT-ORG.p=This client has not authorised you to manage their Plastic Packaging Tax.
 not-authorised.HMRC-CBC-ORG.p=This client has not authorised you to manage their country-by-country reports
 not-authorised.HMRC-CBC-NONUK-ORG.p=This client has not authorised you to manage their country-by-country reports
+not-authorised.HMRC-PILLAR2-ORG.p=This client has not authorised you to manage their Pillar 2 top-up taxes
 
 #Delete
 delete.heading=Are you sure you want to remove your authorisation request for {0}?
