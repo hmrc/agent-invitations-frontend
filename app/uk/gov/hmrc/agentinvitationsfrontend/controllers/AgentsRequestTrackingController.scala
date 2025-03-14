@@ -80,20 +80,24 @@ class AgentsRequestTrackingController @Inject() (
 
   def showTrackRequests(page: Int, client: Option[String], status: Option[FilterFormStatus]): Action[AnyContent] =
     Action.async { implicit request =>
-      withAuthorisedAsAgent { agent =>
-        implicit val now: LocalDate = LocalDate.now()
-        for {
-          _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover { case e =>
-                 logger.warn("Error updating alt-itsa authorisations from track page", e)
-                 ()
-               }
-          config <- trackPageConfig(page, agent, client, status)
-        } yield
-          if (config.totalResults > 0 && page > config.numberOfPages) {
-            Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
-          } else {
-            Ok(trackView(config))
-          }
+      if (appConfig.enableAcrfRedirects) {
+        Future.successful(Redirect(appConfig.manageAuthRequestsUrl))
+      } else {
+        withAuthorisedAsAgent { agent =>
+          implicit val now: LocalDate = LocalDate.now()
+          for {
+            _ <- agentClientAuthorisationConnector.updateAltItsaAuthorisation(agent.arn).recover { case e =>
+                   logger.warn("Error updating alt-itsa authorisations from track page", e)
+                   ()
+                 }
+            config <- trackPageConfig(page, agent, client, status)
+          } yield
+            if (config.totalResults > 0 && page > config.numberOfPages) {
+              Redirect(routes.AgentsRequestTrackingController.showTrackRequests(page = config.numberOfPages))
+            } else {
+              Ok(trackView(config))
+            }
+        }
       }
     }
 

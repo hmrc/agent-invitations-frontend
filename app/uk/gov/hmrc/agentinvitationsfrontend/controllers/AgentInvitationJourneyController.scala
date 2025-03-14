@@ -136,7 +136,11 @@ class AgentInvitationJourneyController @Inject() (
 
   val agentsRoot: Action[AnyContent] = Action(Redirect(routes.AgentInvitationJourneyController.showClientType))
 
-  val showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType]
+  val showClientType: Action[AnyContent] = if (appConfig.enableAcrfRedirects) {
+    Action(Redirect(appConfig.createAuthRequestUrl))
+  } else {
+    actions.whenAuthorised(AsAgent).show[SelectClientType]
+  }
 
   val submitClientType: Action[AnyContent] =
     actions

@@ -110,5 +110,12 @@ class AppConfig @Inject() (servicesConfig: ServicesConfig) {
   val featuresCbc: Boolean = servicesConfig.getBoolean("features.show-cbc")
   val featuresPillar2: Boolean = servicesConfig.getBoolean("features.show-pillar2")
   val languageToggle: Boolean = servicesConfig.getBoolean("features.enable-welsh-toggle")
+  val enableAcrfRedirects: Boolean = servicesConfig.getBoolean("features.enable-acrf-redirects")
 
+  // ACRF routes
+  val acrfBaseUrl: String = getConfString("agent-client-relationships-frontend.base-url")
+  val createAuthRequestUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.create-auth-request-url")
+  val cancelAuthRequestUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.cancel-auth-request-url")
+  val manageAuthRequestsUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.manage-auth-requests-url")
+  val fastTrackUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.fast-track-url")
 }
