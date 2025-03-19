@@ -108,7 +108,11 @@ class AgentLedDeauthJourneyController @Inject() (
 
   val agentLedDeauthRoot: Action[AnyContent] = Action(Redirect(routes.AgentLedDeauthJourneyController.showClientType))
 
-  def showClientType: Action[AnyContent] = actions.whenAuthorised(AsAgent).show[SelectClientType.type]
+  def showClientType: Action[AnyContent] = if (appConfig.enableAcrfRedirects) {
+    Action(Redirect(appConfig.cancelAuthRequestUrl))
+  } else {
+    actions.whenAuthorised(AsAgent).show[SelectClientType.type]
+  }
 
   def submitClientType: Action[AnyContent] =
     actions.whenAuthorisedWithRetrievals(AsAgent).bindForm(ClientTypeForm.deAuthorisationForm) applyWithRequest (implicit request =>

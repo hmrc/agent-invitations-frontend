@@ -9,6 +9,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.agentinvitationsfrontend.models.ClientType.{Business, Personal, Trust}
 import uk.gov.hmrc.agentinvitationsfrontend.models._
+import uk.gov.hmrc.agentinvitationsfrontend.stubs.AcrfStubs
 import uk.gov.hmrc.agentinvitationsfrontend.support.BaseISpec
 import uk.gov.hmrc.agentmtdidentifiers.model.{Service, SuspensionDetails, Vrn}
 import uk.gov.hmrc.domain.Nino
@@ -17,7 +18,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
-class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter {
+class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with BeforeAndAfter with AcrfStubs {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -562,6 +563,25 @@ class AgentInvitationFastTrackJourneyControllerISpec extends BaseISpec with Stat
           )
         )
       }.getMessage startsWith "[bar] is not a valid error URL"
+    }
+
+    "redirect to ACRF's fast track when the enableAcrfRedirects feature is enabled" in {
+
+      val appWithAcrfFeature: Application = appBuilder
+        .overrides(new TestAgentInvitationJourneyModule)
+        .configure("features.enable-acrf-redirects" -> true)
+        .build()
+
+      val controllerWithAcrfFeature: AgentInvitationFastTrackJourneyController =
+        appWithAcrfFeature.injector.instanceOf[AgentInvitationFastTrackJourneyController]
+
+      val redirectUrl = "/my-url"
+
+      givenFastTrackUrlFromAcrf(redirectUrl)
+
+      val result = controllerWithAcrfFeature.agentFastTrack(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.acrfBaseUrl + redirectUrl)
     }
   }
 

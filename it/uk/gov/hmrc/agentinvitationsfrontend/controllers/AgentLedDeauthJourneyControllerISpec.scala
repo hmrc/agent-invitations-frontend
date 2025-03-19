@@ -53,10 +53,13 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
   }
 
   "GET /agents/cancel-authorisation/client-type" should {
+
+    lazy val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
+
     "display the client type page" when {
+
       "there is a current state of SelectClientType and no breadcrumbs" in {
         journeyState.set(SelectClientType, Nil)
-        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
         val selectClientType = controller.showClientType()
 
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
@@ -75,7 +78,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       }
       "there is no state or breadcrumbs redirect to the client type page" in {
         journeyState.clear
-        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
         val selectClientType = controller.showClientType()
 
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
@@ -85,7 +87,6 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
       "there is a state and breadcrumbs" in {
         journeyState
           .set(SelectClientType, List(AuthorisationCancelled(Service.MtdIt, Some("clienty name"), "agenty name")))
-        val request = FakeRequest("GET", "/agents/cancel-authorisation/client-type")
         val selectClientType = controller.showClientType()
 
         val result = selectClientType(authorisedAsValidAgent(request, arn.value))
@@ -93,6 +94,21 @@ class AgentLedDeauthJourneyControllerISpec extends BaseISpec with StateAndBreadc
         checkHtmlResultWithBodyText(result.futureValue, htmlEscapedMessage("cancel-authorisation.client-type.header"))
         checkResultContainsBackLink(result, routes.AgentLedDeauthJourneyController.showAuthorisationCancelled.url)
       }
+    }
+
+    "redirect to ACRF to cancel auth request when the enableAcrfRedirects feature is enabled" in {
+
+      val appWithAcrfFeature: Application = appBuilder
+        .overrides(new TestAgentInvitationJourneyModule)
+        .configure("features.enable-acrf-redirects" -> true)
+        .build()
+
+      val controllerWithAcrfFeature: AgentLedDeauthJourneyController =
+        appWithAcrfFeature.injector.instanceOf[AgentLedDeauthJourneyController]
+
+      val result = controllerWithAcrfFeature.showClientType()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.cancelAuthRequestUrl)
     }
   }
 

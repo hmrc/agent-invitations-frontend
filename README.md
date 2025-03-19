@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.org/hmrc/agent-invitations-frontend.svg)](https://travis-ci.org/hmrc/agent-invitations-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/agent-invitations-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/agent-invitations-frontend/_latestVersion)
 
+## This service is due to be decommissioned
+
+As of April 2025 all endpoints on this service are deprecated and any service teams looking to make use of these endpoints should contact Team Agents (`#team-agents`) to discuss alternatives. The replacement service is [agent-client-relationships-frontend](https://github.com/hmrc/agent-client-relationships-frontend).
+
 ## What the service does
 This is a frontend microservice for Agent Client Authorisation.
 

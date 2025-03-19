@@ -23,7 +23,7 @@ import play.api.data.{Form, Mapping}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import uk.gov.hmrc.agentinvitationsfrontend.config.{AppConfig, CountryNamesLoader, ExternalUrls}
-import uk.gov.hmrc.agentinvitationsfrontend.connectors.AgentClientAuthorisationConnector
+import uk.gov.hmrc.agentinvitationsfrontend.connectors.{AcrfConnector, AgentClientAuthorisationConnector}
 import uk.gov.hmrc.agentinvitationsfrontend.controllers.AgentInvitationJourneyController.{ConfirmClientForm, LegacyAuthorisationForm}
 import uk.gov.hmrc.agentinvitationsfrontend.forms._
 import uk.gov.hmrc.agentinvitationsfrontend.journeys.AgentInvitationFastTrackJourneyModel._
@@ -87,7 +87,8 @@ class AgentInvitationFastTrackJourneyController @Inject() (
   alreadyCopiedAcrossView: already_copied_across_itsa,
   legacyAuthorisationDetectedView: legacy_authorisation_detected,
   clientInsolventView: client_insolvent,
-  cannotCreateRequestView: cannot_create_request
+  cannotCreateRequestView: cannot_create_request,
+  acrfConnector: AcrfConnector
 )(implicit
   configuration: Configuration,
   implicit val contactFrontendConfig: ContactFrontendConfig,
@@ -138,11 +139,18 @@ class AgentInvitationFastTrackJourneyController @Inject() (
 
   val agentFastTrack: Action[AnyContent] =
     action { implicit request =>
-      maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
-        maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
-          maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
-            legacy.whenAuthorisedWithBootstrapAndForm(transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm) {
-              transitions.start(redirectUrl)
+      if (appConfig.enableAcrfRedirects) {
+        val continueUrl = request.getQueryString("continue")
+        val errorUrl = request.getQueryString("error")
+        val formData = agentFastTrackForm.bindFromRequest().data.mapValues(Seq(_))
+        acrfConnector.fastTrack(formData, continueUrl, errorUrl, hc).map(url => Redirect(url))
+      } else {
+        maybeRedirectUrlOrBadRequest(getRedirectUrl) { redirectUrl =>
+          maybeRedirectUrlOrBadRequest(getErrorUrl) { errorUrl =>
+            maybeRedirectUrlOrBadRequest(getRefererUrl) { refererUrl =>
+              legacy.whenAuthorisedWithBootstrapAndForm(transitions.prologue(errorUrl, refererUrl))(AsAgent)(agentFastTrackForm) {
+                transitions.start(redirectUrl)
+              }
             }
           }
         }

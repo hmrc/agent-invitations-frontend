@@ -29,8 +29,10 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
     .build()
 
   lazy private val journeyState = app.injector.instanceOf[TestAgentInvitationJourneyService]
-  lazy private val controller: AgentInvitationJourneyController = app.injector.instanceOf[AgentInvitationJourneyController]
   lazy private val externalUrls = app.injector.instanceOf[ExternalUrls]
+
+  lazy private val controller: AgentInvitationJourneyController =
+    app.injector.instanceOf[AgentInvitationJourneyController]
 
   lazy private val deAuthJourneyState = app.injector.instanceOf[TestAgentLedDeauthJourneyService]
 
@@ -123,6 +125,21 @@ class AgentInvitationJourneyControllerISpec extends BaseISpec with StateAndBread
 
         checkResultContainsBackLink(result, withBackLinkUrl)
       }
+    }
+
+    "redirect to ACRF to create auth request when the enableAcrfRedirects feature is enabled" in {
+
+      val appWithAcrfFeature: Application = appBuilder
+        .overrides(new TestAgentInvitationJourneyModule)
+        .configure("features.enable-acrf-redirects" -> true)
+        .build()
+
+      val controllerWithAcrfFeature: AgentInvitationJourneyController =
+        appWithAcrfFeature.injector.instanceOf[AgentInvitationJourneyController]
+
+      val result = controllerWithAcrfFeature.showClientType()(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.createAuthRequestUrl)
     }
   }
 

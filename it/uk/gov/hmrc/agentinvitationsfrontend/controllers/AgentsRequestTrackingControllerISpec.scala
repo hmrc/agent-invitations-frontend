@@ -18,6 +18,7 @@ package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import java.time.{LocalDate, LocalDateTime}
 import org.jsoup.Jsoup
+import play.api.Application
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -191,6 +192,21 @@ class AgentsRequestTrackingControllerISpec extends BaseISpec with AuthBehaviours
         htmlEscapedMessage("recent-invitations.description", 30)
       )
 
+    }
+
+    "redirect to ACRF to manage auth requests when the enableAcrfRedirects feature is enabled" in {
+
+      val appWithAcrfFeature: Application = appBuilder
+        .overrides(new TestAgentInvitationJourneyModule)
+        .configure("features.enable-acrf-redirects" -> true)
+        .build()
+
+      val controllerWithAcrfFeature: AgentsRequestTrackingController =
+        appWithAcrfFeature.injector.instanceOf[AgentsRequestTrackingController]
+
+      val result = controllerWithAcrfFeature.showTrackRequests(1, None, None)(authorisedAsValidAgent(request, arn.value))
+      status(result) shouldBe 303
+      redirectLocation(result) shouldBe Some(appConfig.manageAuthRequestsUrl)
     }
 
     behave like anAuthorisedAgentEndpoint(request, showTrackRequestsPageOne)
