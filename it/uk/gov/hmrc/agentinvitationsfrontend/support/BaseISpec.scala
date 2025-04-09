@@ -69,6 +69,8 @@ abstract class BaseISpec
         "microservice.services.identity-verification.port"                        -> wireMockPort,
         "microservice.services.personal-details-validation.host"                  -> wireMockHost,
         "microservice.services.personal-details-validation.port"                  -> wireMockPort,
+        "microservice.services.agent-client-relationships-frontend.host"          -> wireMockHost,
+        "microservice.services.agent-client-relationships-frontend.port"          -> wireMockPort,
         "microservice.services.personal-details-validation-frontend.external-url" -> pdvFrontendUrl,
         "auditing.enabled"                                                        -> true,
         "auditing.consumer.baseUri.host"                                          -> wireMockHost,

@@ -114,8 +114,9 @@ class AppConfig @Inject() (servicesConfig: ServicesConfig) {
 
   // ACRF routes
   val acrfBaseUrl: String = getConfString("agent-client-relationships-frontend.base-url")
+  val acrfConnectorUrl: String = baseUrl("agent-client-relationships-frontend")
   val createAuthRequestUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.create-auth-request-url")
   val cancelAuthRequestUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.cancel-auth-request-url")
   val manageAuthRequestsUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.manage-auth-requests-url")
-  val fastTrackUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.fast-track-url")
+  val fastTrackUrl: String = acrfConnectorUrl + getConfString("agent-client-relationships-frontend.fast-track-url")
 }
