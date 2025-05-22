@@ -127,25 +127,13 @@ class ClientInvitationJourneyController @Inject() (
     legacy.actionShowState { case _ =>
     }
 
-  def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
+  def warmUp: Action[AnyContent] =
     Action.async { implicit request =>
-      (journeyId, attempt) match {
-        case (None, att) if att.forall(_ < 3) =>
-          // redirect to itself with new journeyId generated and add attempt=1.
-          // Maximum of 2 attempts which allows for 1 timeout before an error page response
-          Future.successful(
-            appendJourneyId(
-              Results.Redirect(routes.ClientInvitationJourneyController.warmUp(clientType, uid, agentName, attempt.map(_ + 1).orElse(Some(1))))
-            )(request)
-          )
-        case (None, Some(_)) => Future successful Results.Forbidden(error_template_5xx())
-        // infinite redirect defender
-        case _ =>
-          helpers.apply(
-            Transitions.start(clientType, uid, agentName)(getAgentReferenceRecord)(invitationsService.getAgencyName),
-            helpers.display
-          )
-      }
+      Future.successful(
+        appendJourneyId(
+          Results.Redirect(appConfig.manageYourTaxAgentsUrl)
+        )(request)
+      )
     }
 
   val showGGUserIdNeeded: Action[AnyContent] = actions.show[GGUserIdNeeded].orApply(Transitions.transitionFromMultiConsent)

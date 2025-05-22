@@ -12,7 +12,9 @@ class AcrfConnectorISpec extends BaseISpec with AcrfStubs {
 
   val connector: AcrfConnector = app.injector.instanceOf[AcrfConnector]
   val formData: Map[String, Seq[String]] = Map(
-    "clientIdentifier" -> Seq("123456789"), "clientIdentifierType" -> Seq("vrn"), "service" -> Seq("HMRC-MTD-VAT")
+    "clientIdentifier"     -> Seq("123456789"),
+    "clientIdentifierType" -> Seq("vrn"),
+    "service"              -> Seq("HMRC-MTD-VAT")
   )
   val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
