@@ -127,12 +127,10 @@ class ClientInvitationJourneyController @Inject() (
     legacy.actionShowState { case _ =>
     }
 
-  def warmUp: Action[AnyContent] =
-    Action.async { implicit request =>
+  def warmUp(clientType: String, uid: String, agentName: String, attempt: Option[Int]): Action[AnyContent] =
+    Action.async { _ =>
       Future.successful(
-        appendJourneyId(
-          Results.Redirect(appConfig.manageYourTaxAgentsUrl)
-        )(request)
+        Results.Redirect(appConfig.manageYourTaxAgentsUrl)
       )
     }
 
