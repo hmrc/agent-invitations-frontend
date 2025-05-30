@@ -28,10 +28,11 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AcrfConnector @Inject()(http: HttpClient)(implicit val appConfig: AppConfig) extends Logging {
+class AcrfConnector @Inject() (http: HttpClient)(implicit val appConfig: AppConfig) extends Logging {
 
-  def fastTrack(formData: Map[String, Seq[String]], continueUrl: Option[String], errorUrl: Option[String], hc: HeaderCarrier)
-               (implicit ec: ExecutionContext): Future[String] = {
+  def fastTrack(formData: Map[String, Seq[String]], continueUrl: Option[String], errorUrl: Option[String], hc: HeaderCarrier)(implicit
+    ec: ExecutionContext
+  ): Future[String] = {
 
     val queryStringParams = (continueUrl, errorUrl) match {
       case (Some(continue), Some(error)) =>

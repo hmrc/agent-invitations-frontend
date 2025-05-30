@@ -36,6 +36,7 @@ class ExternalUrls @Inject() (implicit appConfig: AppConfig) {
 
   val subscriptionURL: String = appConfig.agentSubscriptionFrontendExternalUrl
   val agentClientManagementUrl: String = appConfig.acmExternalUrl
+  val manageYourTaxAgentsUrl: String = appConfig.manageYourTaxAgentsUrl
   val agentInvitationsExternalUrl: String = appConfig.agentInvitationsFrontendExternalUrl
   val privacypolicyUrl: String = appConfig.privacyPolicyExternalUrl
   val agentMappingFrontendUrl = s"${appConfig.agentMappingFrontendExternalUrl}/agent-mapping/start"

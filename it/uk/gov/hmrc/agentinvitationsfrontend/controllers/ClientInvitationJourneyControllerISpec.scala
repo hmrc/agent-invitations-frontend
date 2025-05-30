@@ -1,7 +1,6 @@
 package uk.gov.hmrc.agentinvitationsfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.scalatest.Assertion
 import play.api.Application
 import play.api.mvc._
 import play.api.test.Helpers._
@@ -16,7 +15,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import java.time.LocalDate
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBreadcrumbsMatchers with AuthBehaviours {
@@ -55,140 +53,11 @@ class ClientInvitationJourneyControllerISpec extends BaseISpec with StateAndBrea
 
     "journey ID is already present in the session cookie, show the warmup page" should {
 
-      "show new warmup prototype when personal client type" in new Setup {
-        val reqAuthorisedWithJourneyId =
-          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency", Some(1))(reqAuthorisedWithJourneyId)
-        val agencyName = "My Agency"
-        val htmlString = Helpers.contentAsString(result)
-        val html = Jsoup.parse(htmlString)
-        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html
-          .select("#inset_text")
-          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
-        val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
-        paragraphs
-          .get(1)
-          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs
-          .get(2)
-          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
-      }
-
-      "show old warmup prototype when business client type" in new Setup {
-        val reqAuthorisedWithJourneyId =
-          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("business", uid, "My-Agency", None)(reqAuthorisedWithJourneyId)
-        val agencyName = "My Agency"
-        val htmlString = Helpers.contentAsString(result)
-        val html = Jsoup.parse(htmlString)
-        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html
-          .select("#inset_text")
-          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
-        val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
-        paragraphs
-          .get(1)
-          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your business tax affairs."
-        paragraphs.get(2).text() shouldBe "I do not want to authorise My Agency"
-      }
-
-      "work when signed in" in new Setup {
-        val reqAuthorisedWithJourneyId =
-          authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency", None)(reqAuthorisedWithJourneyId)
-        val agencyName = "My Agency"
-        val htmlString = Helpers.contentAsString(result)
-        val html = Jsoup.parse(htmlString)
-        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html
-          .select("#inset_text")
-          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
-        val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
-        paragraphs
-          .get(1)
-          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs
-          .get(2)
-          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
-      }
-
-      "work when not signed in" in new Setup {
-        val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "My-Agency", None)(reqWithJourneyId)
-        val agencyName = "My Agency"
-        val htmlString = Helpers.contentAsString(result)
-        val html = Jsoup.parse(htmlString)
-        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html
-          .select("#inset_text")
-          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
-        val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
-        paragraphs
-          .get(1)
-          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs
-          .get(2)
-          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
-      }
-
       "remove spaces in the url" in new Setup {
         val reqAuthorisedWithJourneyId =
           authorisedAsIndividualClientWithSomeSupportedEnrolments(requestWithJourneyIdInCookie("GET", endpointUrl))
         val result = controller.warmUp("personal", uid, "My-Agency ", None)(reqAuthorisedWithJourneyId)
         val htmlString = Helpers.contentAsString(result)
-        val html = Jsoup.parse(htmlString)
-        val agencyName = "My Agency"
-        html.select(Css.H1).text() shouldBe "Authorise My Agency to deal with HMRC for you"
-        html
-          .select("#inset_text")
-          .text() shouldBe s"If you authorise $agencyName, this will cancel any consent you gave to someone else to act for you for the same service."
-        val paragraphs = html.select(Css.paragraphs)
-        paragraphs.get(0).text() shouldBe s"Use this service to allow $agencyName to manage your tax affairs."
-        paragraphs
-          .get(1)
-          .text() shouldBe "So we can confirm who you are, you will need to sign in with the Government Gateway user ID and password you use for your personal tax affairs or VAT."
-        paragraphs
-          .get(2)
-          .text() shouldBe "If you do not have a Government Gateway user ID for your personal tax affairs or VAT, you will be able to create a new one."
-      }
-
-      "show not-found content on the same page if the url is corrupted" in new Setup {
-        val reqWithJourneyId = requestWithJourneyIdInCookie("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "wrong-agency-name", None)(reqWithJourneyId)
-        status(result) shouldBe 200
-
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.header"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.1"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.2"))
-        checkHtmlResultWithBodyText(result, htmlEscapedMessage("not-found-invitation.description.3"))
-      }
-    }
-
-    "journey ID is not already present in the session cookie, redirect to same page saving the journey ID in the session" should {
-      "work when signed in" in new Setup {
-        def request = authorisedAsIndividualClientWithSomeSupportedEnrolments(FakeRequest("GET", endpointUrl))
-        val result = controller.warmUp("personal", uid, "My-Agency", None)(request)
-        checkRedirectedWithJourneyId(result.futureValue, request, journeyIdKey)
-      }
-
-      "work when not signed in" in new Setup {
-        def request = FakeRequest("GET", endpointUrl)
-        val result = controller.warmUp("personal", uid, "My-Agency", None)(request)
-        checkRedirectedWithJourneyId(result.futureValue, request, journeyIdKey)
-      }
-
-      def checkRedirectedWithJourneyId(result: Result, request: Request[_], journeyIdKey: String): Assertion = {
-        status(result) shouldBe 303
-        redirectLocation(Future.successful(result)) shouldBe Some(s"${request.uri}?attempt=1")
-
-        val journeyId = result.session(request).get(journeyIdKey)
-        journeyId shouldBe a[Some[_]]
-        journeyId.get should not be empty
       }
     }
   }
