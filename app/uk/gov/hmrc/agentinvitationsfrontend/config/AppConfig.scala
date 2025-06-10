@@ -119,5 +119,5 @@ class AppConfig @Inject() (servicesConfig: ServicesConfig) {
   val cancelAuthRequestUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.cancel-auth-request-url")
   val manageAuthRequestsUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.manage-auth-requests-url")
   val fastTrackUrl: String = acrfConnectorUrl + getConfString("agent-client-relationships-frontend.fast-track-url")
-  val manageYourTaxAgentsUrl: String = acrfConnectorUrl + getConfString("agent-client-relationships-frontend.manage-your-tax-agents-url")
+  val manageYourTaxAgentsUrl: String = acrfBaseUrl + getConfString("agent-client-relationships-frontend.manage-your-tax-agents-url")
 }
